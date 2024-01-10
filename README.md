@@ -1,14 +1,20 @@
 # tiktok-matrix
+
 tiktok media matrix operation platform: automatic registration, automatic upload, automatic account maintenance
+
 # dev
+
 ```shell
   cd tiktok-matrix
   npm install
   npm run tauri dev
   npm run tauri build
 ```
+
 # release
+
 ## 0.0.1
+
 - [x] manage devices
 - [x] manage groups
 - [x] manage accounts
