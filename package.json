@@ -1,0 +1,25 @@
+{
+  "name": "tiktok-matrix",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build:rust_server:dev": "cargo build -p rust_server",
+    "build:rust_agent:dev": "cargo build -p rust_agent",
+    "build:rust_server": "cargo build --release -p rust_server",
+    "build:rust_agent": "cargo build --release -p rust_agent",
+    "dev": "npm run build:rust_server:dev && npm run build:rust_agent:dev && vite",
+    "build": "npm run build:rust_server && npm run build:rust_agent && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "vue": "^3.3.4",
+    "@tauri-apps/api": "^1.5.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^5.0.0",
+    "@tauri-apps/cli": "^1.5.8"
+  }
+}
