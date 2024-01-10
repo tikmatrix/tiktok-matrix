@@ -3,7 +3,6 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use std::process::{Command, Stdio};
-
 #[tauri::command]
 fn start_server() -> u32 {
     let env = std::env::var("ENV").unwrap_or_else(|_| "dev".to_string());
@@ -25,15 +24,15 @@ fn start_server() -> u32 {
 }
 
 #[tauri::command]
-fn stop_server(pid: u32) {
-    // 使用 PID 来获取子进程
-    let process = match psutil::process::Process::new(pid) {
-        Ok(process) => process,
-        Err(_) => return,
-    };
-
-    // 停止子进程
-    process.kill().expect("failed to stop server");
+fn stop_server(pid: i32) {
+    unsafe {
+        let result = nix::libc::kill(pid, nix::libc::SIGKILL);
+        if result == 0 {
+            println!("Successfully killed the process");
+        } else {
+            eprintln!("Error killing the process: {}", result);
+        }
+    }
 }
 #[tauri::command]
 fn start_agent() -> u32 {
@@ -55,15 +54,15 @@ fn start_agent() -> u32 {
     }
 }
 #[tauri::command]
-fn stop_agent(pid: u32) {
-    // 使用 PID 来获取子进程
-    let process = match psutil::process::Process::new(pid) {
-        Ok(process) => process,
-        Err(_) => return,
-    };
-
-    // 停止子进程
-    process.kill().expect("failed to stop agent");
+fn stop_agent(pid: i32) {
+    unsafe {
+        let result = nix::libc::kill(pid, nix::libc::SIGKILL);
+        if result == 0 {
+            println!("Successfully killed the process");
+        } else {
+            eprintln!("Error killing the process: {}", result);
+        }
+    }
 }
 fn main() {
     tauri::Builder::default()
