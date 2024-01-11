@@ -4,12 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build:tiktok-vue": "cd ../tiktok-vue && npm run build && move dist ../tiktok-matrix/src-tauri/bin/",
     "build:rust_server:dev": "cargo build -p rust_server",
     "build:rust_agent:dev": "cargo build -p rust_agent",
     "build:rust_server": "cargo build --release -p rust_server",
     "build:rust_agent": "cargo build --release -p rust_agent",
     "dev": "npm run build:rust_server:dev && npm run build:rust_agent:dev && vite",
-    "build": "npm run build:rust_server && npm run build:rust_agent && vite build",
+    "build": "npm run build:tiktok-vue && npm run build:rust_server && npm run build:rust_agent && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
   },

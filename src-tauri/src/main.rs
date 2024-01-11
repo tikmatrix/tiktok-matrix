@@ -25,14 +25,9 @@ fn start_server() -> u32 {
 
 #[tauri::command]
 fn stop_server(pid: i32) {
-    unsafe {
-        let result = nix::libc::kill(pid, nix::libc::SIGKILL);
-        if result == 0 {
-            println!("Successfully killed the process");
-        } else {
-            eprintln!("Error killing the process: {}", result);
-        }
-    }
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/PID", &pid.to_string()])
+        .spawn();
 }
 #[tauri::command]
 fn start_agent() -> u32 {
@@ -55,14 +50,25 @@ fn start_agent() -> u32 {
 }
 #[tauri::command]
 fn stop_agent(pid: i32) {
-    unsafe {
-        let result = nix::libc::kill(pid, nix::libc::SIGKILL);
-        if result == 0 {
-            println!("Successfully killed the process");
-        } else {
-            eprintln!("Error killing the process: {}", result);
-        }
-    }
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/PID", &pid.to_string()])
+        .spawn();
+}
+#[tauri::command]
+fn start_adb_server() -> u32 {
+    //adb -a nodaemon server start
+    let child = Command::new("adb")
+        .args(&["-a", "nodaemon", "server", "start"])
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to start adb server");
+    return child.id();
+}
+#[tauri::command]
+fn stop_adb_server(pid: i32) {
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/PID", &pid.to_string()])
+        .spawn();
 }
 fn main() {
     tauri::Builder::default()
@@ -70,7 +76,9 @@ fn main() {
             start_server,
             stop_server,
             start_agent,
-            stop_agent
+            stop_agent,
+            start_adb_server,
+            stop_adb_server
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

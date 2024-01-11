@@ -18,6 +18,9 @@
       }
     },
     "bundle": {
+      "resources": [
+        "bin"
+      ],
       "active": true,
       "targets": "all",
       "identifier": "com.niostack.tt",
