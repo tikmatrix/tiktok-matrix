@@ -5,10 +5,11 @@ tiktok media matrix operation platform: automatic registration, automatic upload
 # dev
 
 ```shell
-  cd tiktok-matrix
-  npm install
-  npm run tauri dev
-  npm run tauri build
+npm install --global @tauri-apps/cli
+npm install --global shx
+npm install
+npm run tauri dev
+npm run tauri build
 ```
 
 # release

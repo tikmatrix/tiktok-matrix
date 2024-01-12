@@ -19,7 +19,8 @@
     },
     "bundle": {
       "resources": [
-        "bin"
+        "bin",
+        ".env"
       ],
       "active": true,
       "targets": "all",

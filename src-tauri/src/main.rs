@@ -5,22 +5,11 @@
 use std::process::{Command, Stdio};
 #[tauri::command]
 fn start_server() -> u32 {
-    let env = std::env::var("ENV").unwrap_or_else(|_| "dev".to_string());
-    if env == "dev" {
-        let child = Command::new("cargo")
-            .args(&["run", "-p", "rust_server"])
-            .current_dir("../../")
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("failed to start server");
-        return child.id();
-    } else {
-        let child = Command::new("rust_server")
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("failed to start server");
-        return child.id();
-    }
+    let child = Command::new("bin/tiktok-server")
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to start server");
+    return child.id();
 }
 
 #[tauri::command]
@@ -31,22 +20,11 @@ fn stop_server(pid: i32) {
 }
 #[tauri::command]
 fn start_agent() -> u32 {
-    let env = std::env::var("ENV").unwrap_or_else(|_| "dev".to_string());
-    if env == "dev" {
-        let child = Command::new("cargo")
-            .args(&["run", "-p", "rust_agent"])
-            .current_dir("../../")
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("failed to start agent");
-        return child.id();
-    } else {
-        let child = Command::new("rust_agent")
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("failed to start agent");
-        return child.id();
-    }
+    let child = Command::new("bin/tiktok-agent")
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to start agent");
+    return child.id();
 }
 #[tauri::command]
 fn stop_agent(pid: i32) {
@@ -56,12 +34,18 @@ fn stop_agent(pid: i32) {
 }
 #[tauri::command]
 fn start_adb_server() -> u32 {
-    //adb -a nodaemon server start
-    let child = Command::new("adb")
+    //kill adb process
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", "adb.exe"])
+        .status()
+        .expect("failed to kill adb processes");
+
+    let child = Command::new("bin/adb")
         .args(&["-a", "nodaemon", "server", "start"])
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start adb server");
+
     return child.id();
 }
 #[tauri::command]
