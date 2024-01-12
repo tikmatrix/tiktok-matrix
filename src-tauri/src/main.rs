@@ -40,7 +40,7 @@ fn start_adb_server() -> u32 {
         .status()
         .expect("failed to kill adb processes");
 
-    let child = Command::new("bin/adb")
+    let child = Command::new("bin/platform-tools/adb")
         .args(&["-a", "nodaemon", "server", "start"])
         .stdout(Stdio::piped())
         .spawn()
