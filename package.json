@@ -9,7 +9,7 @@
     "build:tiktok-agent:dev": "cargo build -p tiktok-agent && npx shx cp -rf target/debug/tiktok-agent.exe src-tauri/bin/",
     "build:tiktok-server": "cargo build --release -p tiktok-server && npx shx cp -rf target/release/tiktok-server.exe src-tauri/bin/",
     "build:tiktok-agent": "cargo build --release -p tiktok-agent && npx shx cp -rf target/release/tiktok-agent.exe src-tauri/bin/",
-    "dev": "npm run build:tiktok-server:dev && npm run build:tiktok-agent:dev && vite",
+    "dev": "vite",
     "build": "npm run build:tiktok-vue && npm run build:tiktok-server && npm run build:tiktok-agent && vite build",
     "preview": "vite preview",
     "tauri": "tauri"

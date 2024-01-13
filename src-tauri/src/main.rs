@@ -4,7 +4,9 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use std::process::{Command, Stdio};
 #[tauri::command]
-fn start_server() -> u32 {
+fn start_server(proxy_url: String, server_url: String) -> u32 {
+    std::env::set_var("PROXY_URL", &proxy_url);
+    std::env::set_var("SERVER_URL", &server_url);
     let child = Command::new("bin/tiktok-server")
         .stdout(Stdio::piped())
         .spawn()
@@ -19,8 +21,12 @@ fn stop_server(pid: i32) {
         .spawn();
 }
 #[tauri::command]
-fn start_agent() -> u32 {
+fn start_agent(proxy_url: String, server_url: String) -> u32 {
+    std::env::set_var("PROXY_URL", &proxy_url);
+    std::env::set_var("SERVER_URL", &server_url);
     let child = Command::new("bin/tiktok-agent")
+        .arg(proxy_url)
+        .arg(server_url)
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start agent");
@@ -45,7 +51,6 @@ fn start_adb_server() -> u32 {
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start adb server");
-
     return child.id();
 }
 #[tauri::command]

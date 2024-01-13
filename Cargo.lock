@@ -1020,12 +1020,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b"
 
 [[package]]
-name = "dotenvy"
-version = "0.15.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
-
-[[package]]
 name = "dtoa"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3925,7 +3919,6 @@ dependencies = [
  "base64 0.21.6",
  "chrono",
  "derive_more",
- "dotenvy",
  "flexi_logger",
  "local-ip-address",
  "log",
@@ -3965,7 +3958,6 @@ dependencies = [
  "actix-web",
  "chrono",
  "derive_more",
- "dotenvy",
  "flexi_logger",
  "local-ip-address",
  "log",

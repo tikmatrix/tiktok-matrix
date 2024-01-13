@@ -9,16 +9,10 @@ import Greet from "./components/Greet.vue";
     <h1>Welcome to TikTok Matrix System!</h1>
 
     <div class="row">
-      <a href="http://127.0.0.1:8090" target="_blank">
+      <a href="#" onclick="javascript::void(0)">
         <img src="/tiktok.svg" class="logo vite" alt="Vite logo" />
       </a>
-
     </div>
-
-    <p>Click on the TikTok logo to open TikTok Matrix System.</p>
-
-
-
     <Greet />
   </div>
 </template>
