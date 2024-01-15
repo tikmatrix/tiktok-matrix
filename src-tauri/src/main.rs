@@ -4,9 +4,15 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use std::process::{Command, Stdio};
 #[tauri::command]
-fn start_server(proxy_url: String, server_url: String) -> u32 {
+fn local_ip() -> String {
+    let local_ip = local_ip_address::local_ip().unwrap();
+    return local_ip.to_string();
+}
+#[tauri::command]
+fn start_server(proxy_url: String, server_url: String, country: String) -> u32 {
     std::env::set_var("PROXY_URL", &proxy_url);
     std::env::set_var("SERVER_URL", &server_url);
+    std::env::set_var("COUNTRY", &country);
     let child = Command::new("bin/tiktok-server")
         .stdout(Stdio::piped())
         .spawn()
@@ -21,9 +27,10 @@ fn stop_server(pid: i32) {
         .spawn();
 }
 #[tauri::command]
-fn start_agent(proxy_url: String, server_url: String) -> u32 {
+fn start_agent(proxy_url: String, server_url: String, country: String) -> u32 {
     std::env::set_var("PROXY_URL", &proxy_url);
     std::env::set_var("SERVER_URL", &server_url);
+    std::env::set_var("COUNTRY", &country);
     let child = Command::new("bin/tiktok-agent")
         .arg(proxy_url)
         .arg(server_url)
@@ -67,7 +74,8 @@ fn main() {
             start_agent,
             stop_agent,
             start_adb_server,
-            stop_adb_server
+            stop_adb_server,
+            local_ip
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
