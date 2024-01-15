@@ -2,7 +2,11 @@
 
 tiktok media matrix operation platform: automatic registration, automatic upload, automatic account maintenance
 
-# dev
+## get started
+
+[Get Start Doc](doc.md)
+
+## dev
 
 ```shell
 npm install --global @tauri-apps/cli
@@ -12,9 +16,9 @@ npm run tauri dev
 npm run tauri build
 ```
 
-# release
+## release
 
-## 0.0.1
+### 0.0.1
 
 - [x] manage devices
 - [x] manage groups
