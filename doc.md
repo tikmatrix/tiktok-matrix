@@ -6,19 +6,20 @@ Before you run the system, you should prepare the following things:
 1. A windows computer
 2. A android phone or more(below android 12)
 3. A usb cable to connect the phone and the computer
+4. Connect the phone to the computer by usb cable, and enable the usb debug mode on the phone
 
 ## Step 1: Install the package
 
-1. Download the package from [here](https://github.com/niostack/tiktok-matrix/releases/tag/v0.0.1)
-2. Double click the package to install it
+1. Download the the .msi install package from [here](https://github.com/niostack/tiktok-matrix/releases)
+2. Double click package to install it
 
 ## Step 2: Run the system
 
 1. Open the system you just installed
-2. Select target cuntry
+2. Select target country
 3. Edit the proxy_url if you need to use proxy not on the computer(recommend to use Clash for windows)
-4. Click the WebServer start button
-5. Click the Agent start button
+4. Click the WebServer start button,it will open a cmd window,don't close it
+5. Click the Agent start button,it will open two cmd window,don't close them
 
 ## Step 3: Use the system
 
