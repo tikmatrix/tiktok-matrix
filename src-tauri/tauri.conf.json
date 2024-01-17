@@ -22,7 +22,7 @@
         "bin"
       ],
       "active": true,
-      "targets": "all",
+      "targets": "msi",
       "identifier": "com.niostack.tt",
       "icon": [
         "icons/32x32.png",
