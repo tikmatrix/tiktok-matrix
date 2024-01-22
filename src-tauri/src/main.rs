@@ -14,6 +14,7 @@ fn start_server(proxy_url: String, server_url: String, country: String) -> u32 {
     std::env::set_var("PROXY_URL", &proxy_url);
     std::env::set_var("SERVER_URL", &server_url);
     std::env::set_var("COUNTRY", &country);
+
     let child = Command::new("bin/tiktok-server")
         .stdout(Stdio::piped())
         .spawn()
@@ -80,7 +81,7 @@ fn main() {
         ])
         .setup(|app| {
             tauri::async_runtime::spawn(async move {
-                ws::start_server(9090).await.unwrap();
+                ws::start_server(8092).await.unwrap();
             });
             Ok(())
         })

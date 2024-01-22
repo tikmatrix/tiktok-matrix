@@ -40,10 +40,12 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
     let server_to_client = async {
         while let Some(message) = server_read.next().await {
             let message = message.expect("Error reading message from server");
-            client_write
-                .send(message)
-                .await
-                .expect("Error sending message to client");
+            match client_write.send(message).await {
+                Ok(_) => {}
+                Err(_) => {
+                    break;
+                }
+            }
         }
     };
 
