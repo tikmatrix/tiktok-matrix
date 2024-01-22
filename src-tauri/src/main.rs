@@ -3,6 +3,7 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use std::process::{Command, Stdio};
+mod ws;
 #[tauri::command]
 fn local_ip() -> String {
     let local_ip = local_ip_address::local_ip().unwrap();
@@ -77,6 +78,12 @@ fn main() {
             stop_adb_server,
             local_ip
         ])
+        .setup(|app| {
+            tauri::async_runtime::spawn(async move {
+                ws::start_server(9090).await.unwrap();
+            });
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
