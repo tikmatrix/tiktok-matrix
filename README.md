@@ -18,6 +18,16 @@ npm run tauri build
 
 ## release
 
+### 0.0.3
+
+- [x] optimize the stability of auto publish video
+- [x] add account info(like follower count,earning)
+
+### 0.0.2
+
+- [x] add target country select
+- [x] Optimize the stability of video releases
+
 ### 0.0.1
 
 - [x] manage devices
