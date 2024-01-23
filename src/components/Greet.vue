@@ -21,14 +21,14 @@ async function stop_server() {
   server_status.value = 0;
 }
 async function start_agent() {
-  await start_adb_server();
+  // await start_adb_server();
   agent_pid.value = await invoke("start_agent", { proxyUrl: proxy_url.value, serverUrl: server_url.value, country: country.value });
   agent_status.value = 1;
 
 }
 
 async function stop_agent() {
-  await stop_adb_server();
+  // await stop_adb_server();
   await invoke("stop_agent", { pid: agent_pid.value });
   agent_status.value = 0;
 }
