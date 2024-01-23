@@ -4,7 +4,7 @@ tiktok media matrix operation platform: automatic registration, automatic upload
 
 ## get started
 
-[Get Start Doc](doc.md)
+[Get Start Doc](https://github.com/niostack/tiktok-matrix/wiki)
 
 ## dev
 
