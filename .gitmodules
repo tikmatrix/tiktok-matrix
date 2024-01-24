@@ -1,0 +1,3 @@
+[submodule "tiktok-web"]
+	path = tiktok-web
+	url = https://github.com/niostack/tiktok-vue.git
