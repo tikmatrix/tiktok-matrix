@@ -81,6 +81,12 @@ fn main() {
         ])
         .setup(|app| {
             tauri::async_runtime::spawn(async move {
+                let _ = Command::new("taskkill")
+                    .args(&["/F", "/IM", "adb.exe"])
+                    .status()
+                    .expect("failed to kill adb processes");
+                //sleep 3 s
+                std::thread::sleep(std::time::Duration::from_secs(3));
                 ws::start_server(8092).await.unwrap();
             });
             Ok(())

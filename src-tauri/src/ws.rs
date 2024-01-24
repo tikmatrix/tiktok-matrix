@@ -29,20 +29,30 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
 
     let client_to_server = async {
         while let Some(message) = client_read.next().await {
-            let message = message.expect("Error reading message from client");
-            server_write
-                .send(message)
-                .await
-                .expect("Error sending message to server");
+            match message {
+                Ok(message) => match server_write.send(message).await {
+                    Ok(_) => {}
+                    Err(_) => {
+                        break;
+                    }
+                },
+                Err(e) => {
+                    break;
+                }
+            }
         }
     };
 
     let server_to_client = async {
         while let Some(message) = server_read.next().await {
-            let message = message.expect("Error reading message from server");
-            match client_write.send(message).await {
-                Ok(_) => {}
-                Err(_) => {
+            match message {
+                Ok(message) => match client_write.send(message).await {
+                    Ok(_) => {}
+                    Err(_) => {
+                        break;
+                    }
+                },
+                Err(e) => {
                     break;
                 }
             }
