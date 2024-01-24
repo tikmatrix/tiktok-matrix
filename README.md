@@ -1,10 +1,19 @@
 # tiktok-matrix
 
-tiktok media matrix operation platform: automatic registration, automatic upload, automatic account maintenance
+tiktok matrix 是一个可以本地部署的，基于adb和android无障碍服务的tiktok自动化运营工具，可以实现自动注册账号，自动发布视频，自动点赞，自动关注，自动收藏，自动浏览视频等功能。
+> tiktok matrix is a tiktok automation tool based on adb and android accessibility services that can be deployed locally. It can automatically register accounts, automatically publish videos, automatically like, automatically follow, automatically collect, and automatically browse videos.
 
 ## get started
 
-[Get Start Doc](https://github.com/niostack/tiktok-matrix/wiki)
+[官方网站](https://niostack.com/tiktok.html)
+
+[中文文档](https://github.com/niostack/tiktok-matrix/wiki/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3)
+
+[English Document](https://github.com/niostack/tiktok-matrix/wiki/EnglishDoc)
+
+## telegram group
+
+[Join Niostack telegram group](https://t.me/+iGhozoBfAbI5YmE1)
 
 ## dev
 
