@@ -1,3 +1,9 @@
 [submodule "tiktok-vue"]
 	path = tiktok-vue
 	url = https://github.com/niostack/tiktok-vue.git
+[submodule "tiktok-agent"]
+	path = tiktok-agent
+	url = https://github.com/niostack/tiktok-agent.git
+[submodule "tiktok-server"]
+	path = tiktok-server
+	url = https://github.com/niostack/tiktok-server.git
