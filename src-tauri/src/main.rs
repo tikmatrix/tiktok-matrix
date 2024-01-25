@@ -47,7 +47,7 @@ fn get_settings() -> Result<Settings, String> {
         .unwrap_or_else(|| format!("http://{}:8090", local_ip));
     let country = db
         .get::<String>("country")
-        .unwrap_or_else(|| "US".to_string());
+        .unwrap_or_else(|| "UK".to_string());
     let wifi_name = db
         .get::<String>("wifi_name")
         .unwrap_or_else(|| "ChinaNet-LVBC".to_string());
