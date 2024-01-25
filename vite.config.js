@@ -16,7 +16,7 @@ export default defineConfig(async () => ({
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**",
-        "src-tauri/bin/**",
+        "src-tauri/data/**",
       ],
     },
   },
