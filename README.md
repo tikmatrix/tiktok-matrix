@@ -27,6 +27,11 @@ npm run tauri build
 
 ## release
 
+### 0.0.4
+
+- [x] save settings to local file
+- [x] add wifi config, auto connect wifi
+
 ### 0.0.3
 
 - [x] optimize the stability of auto publish video
