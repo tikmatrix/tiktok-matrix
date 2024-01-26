@@ -25,6 +25,13 @@ npm run tauri dev
 npm run tauri build
 ```
 
+## 感谢下面开源项目
+
+* https://github.com/niostack/atx-agent
+* https://github.com/niostack/android-uiautomator-server
+* https://github.com/DeviceFarmer/minicap
+* https://github.com/DeviceFarmer/minitouch
+
 ## release
 
 ### 0.0.4
