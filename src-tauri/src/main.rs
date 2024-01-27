@@ -119,6 +119,11 @@ fn start_agent() -> u32 {
 }
 #[tauri::command]
 fn stop_agent(pid: i32) {
+    //kill adb process
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", "adb.exe"])
+        .status()
+        .expect("failed to kill adb processes");
     let _ = Command::new("taskkill")
         .args(&["/F", "/PID", &pid.to_string()])
         .spawn();

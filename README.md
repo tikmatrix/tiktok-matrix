@@ -27,34 +27,35 @@ npm run tauri build
 
 ## 感谢下面开源项目
 
-* https://github.com/niostack/atx-agent
-* https://github.com/niostack/android-uiautomator-server
-* https://github.com/DeviceFarmer/minicap
-* https://github.com/DeviceFarmer/minitouch
+* <https://github.com/niostack/atx-agent>
+* <https://github.com/niostack/android-uiautomator-server>
+* <https://github.com/DeviceFarmer/minicap>
+* <https://github.com/DeviceFarmer/minitouch>
 
 ## release
 
 ### 0.0.4
 
-- [x] save settings to local file
-- [x] add wifi config, auto connect wifi
+* save settings to local file
+* add wifi config, auto connect wifi
+* clear device video cache before upload video
 
 ### 0.0.3
 
-- [x] optimize the stability of auto publish video
-- [x] add account info(like follower count,earning)
+* optimize the stability of auto publish video
+* add account info(like follower count,earning)
 
 ### 0.0.2
 
-- [x] add target country select
-- [x] Optimize the stability of video releases
+* add target country select
+* Optimize the stability of video releases
 
 ### 0.0.1
 
-- [x] manage devices
-- [x] manage groups
-- [x] manage accounts
-- [x] manage materials
-- [x] auto register tiktok account
-- [x] auto upload video to tiktok with product link (ai video or upload material)
-- [x] auto train account by auto swipe to view For You videos ,auto click like , follow,collection
+* manage devices
+* manage groups
+* manage accounts
+* manage materials
+* auto register tiktok account
+* auto upload video to tiktok with product link (ai video or upload material)
+* auto train account by auto swipe to view For You videos ,auto click like , follow,collection
