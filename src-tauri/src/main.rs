@@ -22,6 +22,8 @@ fn setup_env() {
     std::env::set_var("COUNTRY", &settings.country);
     std::env::set_var("WIFI_NAME", &settings.wifi_name);
     std::env::set_var("WIFI_PASSWORD", &settings.wifi_password);
+    //disable system proxy
+    std::env::set_var("http_proxy", "");
 }
 #[tauri::command]
 fn get_settings() -> Result<Settings, String> {
@@ -163,6 +165,7 @@ fn main() {
         ])
         .setup(|app| {
             tauri::async_runtime::spawn(async move {
+                std::env::set_var("http_proxy", "");
                 let _ = Command::new("taskkill")
                     .args(&["/F", "/IM", "adb.exe"])
                     .status()

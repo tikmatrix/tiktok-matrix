@@ -39,6 +39,7 @@ npm run tauri build
 * save settings to local file
 * add wifi config, auto connect wifi
 * clear device video cache before upload video
+* fix auto upload video bug
 
 ### 0.0.3
 
