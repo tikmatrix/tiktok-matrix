@@ -34,6 +34,12 @@ npm run tauri build
 
 ## release
 
+### 0.0.5
+
+* add music menu, you can add music list and auto publish video with random music from music list
+* can open device detail panel from publish job list
+* fix auto upload video bug
+
 ### 0.0.4
 
 * save settings to local file
