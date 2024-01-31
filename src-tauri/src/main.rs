@@ -14,6 +14,7 @@ struct Settings {
     country: String,
     wifi_name: String,
     wifi_password: String,
+    version: String,
 }
 fn setup_env() {
     let settings = get_settings().unwrap();
@@ -22,8 +23,7 @@ fn setup_env() {
     std::env::set_var("COUNTRY", &settings.country);
     std::env::set_var("WIFI_NAME", &settings.wifi_name);
     std::env::set_var("WIFI_PASSWORD", &settings.wifi_password);
-    //disable system proxy
-    std::env::set_var("http_proxy", "");
+    std::env::set_var("VERSION", &settings.version);
 }
 #[tauri::command]
 fn get_settings() -> Result<Settings, String> {
@@ -56,12 +56,16 @@ fn get_settings() -> Result<Settings, String> {
     let wifi_password = db
         .get::<String>("wifi_password")
         .unwrap_or_else(|| "5bvwmej4".to_string());
+    let version = db
+        .get::<String>("version")
+        .unwrap_or_else(|| "0.0.0".to_string());
     return Ok(Settings {
         proxy_url,
         server_url,
         country,
         wifi_name,
         wifi_password,
+        version,
     });
 }
 #[tauri::command]
@@ -71,6 +75,7 @@ fn set_settings(
     country: Option<String>,
     wifi_name: Option<String>,
     wifi_password: Option<String>,
+    version: Option<String>,
 ) {
     let mut db = PickleDb::new(
         "data/settings.db",
@@ -91,6 +96,9 @@ fn set_settings(
     }
     if let Some(wifi_password) = wifi_password {
         db.set("wifi_password", &wifi_password).unwrap();
+    }
+    if let Some(version) = version {
+        db.set("version", &version).unwrap();
     }
 }
 #[tauri::command]
@@ -164,6 +172,8 @@ fn main() {
             set_settings
         ])
         .setup(|app| {
+            let version = app.package_info().version.to_string();
+            set_settings(None, None, None, None, None, Some(version));
             tauri::async_runtime::spawn(async move {
                 std::env::set_var("http_proxy", "");
                 let _ = Command::new("taskkill")
