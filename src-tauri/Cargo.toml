@@ -1,8 +1,8 @@
 [package]
 name = "tiktok-matrix"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+version = "0.0.5"
+description = "TikTok Matrix System by niostack.com"
+authors = ["niostack"]
 license = ""
 repository = ""
 edition = "2021"
