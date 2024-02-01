@@ -40,9 +40,10 @@ npm run tauri build
 
 ### 0.0.6
 
-* add otg mode, you can use use or otg to connect android device
+* add otg mode, you can use use or tcp(otg) to connect android device
 * fix bug of register account
 * fix bug of proxy server config
+* auto refresh device list when device connect or disconnect
 
 ### 0.0.5
 

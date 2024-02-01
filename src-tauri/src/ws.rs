@@ -22,7 +22,11 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         .expect("Expected URL message from client")
         .expect("Error reading URL message from client");
     let local_url = String::from_utf8(url_msg.into_data()).expect("Error parsing URL message");
-    let (server_ws_stream, _) = connect_async(&local_url).await.expect("Failed to connect");
+    let server_ws_stream = connect_async(&local_url).await;
+    if server_ws_stream.is_err() {
+        return;
+    }
+    let (server_ws_stream, _) = server_ws_stream.unwrap();
 
     let (mut client_write, mut client_read) = client_ws_stream.split();
     let (mut server_write, mut server_read) = server_ws_stream.split();
