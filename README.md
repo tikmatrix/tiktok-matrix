@@ -34,11 +34,22 @@ npm run tauri build
 
 ## release
 
+### 0.0.7
+
+* add auto switch account feature, you can add multi account to one device, and auto switch account to publish video
+
+### 0.0.6
+
+* add otg mode, you can use use or otg to connect android device
+* fix bug of register account
+* fix bug of proxy server config
+
 ### 0.0.5
 
 * add music menu, you can add music list and auto publish video with random music from music list
 * can open device detail panel from publish job list
 * fix auto upload video bug
+* request admin permission when app start,beacuse save data to local file need admin permission
 
 ### 0.0.4
 

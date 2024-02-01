@@ -24,6 +24,10 @@ fn setup_env() {
     std::env::set_var("WIFI_NAME", &settings.wifi_name);
     std::env::set_var("WIFI_PASSWORD", &settings.wifi_password);
     std::env::set_var("VERSION", &settings.version);
+
+    // if cfg!(debug_assertions) {
+    //     std::env::set_var("RUST_BACKTRACE", "1");
+    // }
 }
 #[tauri::command]
 fn get_settings() -> Result<Settings, String> {
@@ -159,7 +163,12 @@ fn stop_adb_server(pid: i32) {
         .args(&["/F", "/PID", &pid.to_string()])
         .spawn();
 }
-fn main() {
+fn main() -> std::io::Result<()> {
+    std::fs::create_dir_all("./tmp")?;
+    std::fs::create_dir_all("./data")?;
+    std::fs::create_dir_all("./upload")?;
+    std::fs::create_dir_all("./upload/material")?;
+    std::fs::create_dir_all("./upload/apk")?;
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_server,
@@ -188,4 +197,5 @@ fn main() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+    Ok(())
 }

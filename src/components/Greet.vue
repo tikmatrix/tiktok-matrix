@@ -54,6 +54,10 @@ async function set_settings() {
   console.log("set_settings");
   await invoke("set_settings", { serverUrl: server_url.value, proxyUrl: proxy_url.value, country: country.value, wifiName: wifi_name.value, wifiPassword: wifi_password.value });
 }
+async function disable_proxy_server() {
+  proxy_url.value = ":0";
+  await set_settings();
+}
 
 onMounted(() => {
   window.addEventListener('beforeunload', (event) => {
@@ -76,7 +80,7 @@ onMounted(() => {
   <div class="button-container">
     <label>Proxy Server:</label>
     <input type="text" v-model="proxy_url" @change="set_settings" />
-    <button @click="proxy_url = ':0'">Disable</button>
+    <button @click="disable_proxy_server">Disable</button>
   </div>
   <div class="button-container">
     <label>Web Server:</label>
