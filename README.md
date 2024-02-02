@@ -36,7 +36,11 @@ npm run tauri build
 
 ### 0.0.7
 
-* add auto switch account feature, you can add multi account to one device, and auto switch account to publish video
+* auto register account by swith account, max account number is 5/pre device
+* support auto switch account when auto publish video
+* support auto switch account when auto train account
+* Incorporate the three scripts of registration, setting avatar, and collecting username into the registration automation process
+* show task status in device operation panel
 
 ### 0.0.6
 
