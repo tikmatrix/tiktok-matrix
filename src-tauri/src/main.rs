@@ -6,6 +6,7 @@ use std::process::{Command, Stdio};
 
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
 use serde::{Deserialize, Serialize};
+use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowBuilder};
 mod request_util;
 mod ws;
 
@@ -33,9 +34,8 @@ fn setup_env() {
     //     std::env::set_var("RUST_BACKTRACE", "1");
     // }
 }
-#[tauri::command]
-fn get_settings() -> Result<Settings, String> {
-    let db = PickleDb::load(
+fn get_db() -> PickleDb {
+    PickleDb::load(
         "data/settings.db",
         PickleDbDumpPolicy::AutoDump,
         SerializationMethod::Json,
@@ -46,7 +46,11 @@ fn get_settings() -> Result<Settings, String> {
             PickleDbDumpPolicy::AutoDump,
             SerializationMethod::Json,
         )
-    });
+    })
+}
+#[tauri::command]
+fn get_settings() -> Result<Settings, String> {
+    let db = get_db();
 
     let local_ip = local_ip_address::local_ip().unwrap();
     let proxy_url = db
@@ -89,11 +93,7 @@ fn set_settings(
     wifi_password: Option<String>,
     version: Option<String>,
 ) {
-    let mut db = PickleDb::new(
-        "data/settings.db",
-        PickleDbDumpPolicy::AutoDump,
-        SerializationMethod::Json,
-    );
+    let mut db = get_db();
     if let Some(url) = proxy_url {
         db.set("proxy_url", &url).unwrap();
     }
@@ -129,13 +129,12 @@ fn add_license(key: String) -> VerifyLicenseResponse {
         uid, key
     ));
     if let Ok(license) = license {
-        let mut db = PickleDb::new(
-            "data/settings.db",
-            PickleDbDumpPolicy::AutoDump,
-            SerializationMethod::Json,
-        );
+        let mut db = get_db();
         db.set("license", &key).unwrap();
         return license;
+    } else {
+        let mut db = get_db();
+        db.set("license", &"").unwrap();
     }
     return result;
 }
@@ -250,6 +249,7 @@ fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("./upload")?;
     std::fs::create_dir_all("./upload/material")?;
     std::fs::create_dir_all("./upload/apk")?;
+    let menu = Menu::new().add_item(CustomMenuItem::new("github", "GitHub"));
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_server,
@@ -264,6 +264,17 @@ fn main() -> std::io::Result<()> {
             get_license
         ])
         .setup(|app| {
+            let main_window = app.get_window("main").unwrap();
+            main_window.on_menu_event(move |event| match event.menu_item_id() {
+                "github" => {
+                    if let Err(err) = webbrowser::open("https://github.com/niostack/tiktok-matrix")
+                    {
+                        eprintln!("Failed to open web page: {}", err);
+                    }
+                }
+
+                _ => {}
+            });
             let version = app.package_info().version.to_string();
             set_settings(None, None, None, None, None, Some(version));
             tauri::async_runtime::spawn(async move {
@@ -278,6 +289,7 @@ fn main() -> std::io::Result<()> {
             });
             Ok(())
         })
+        .menu(menu)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())
