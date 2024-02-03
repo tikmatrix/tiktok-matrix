@@ -5,6 +5,8 @@
 use std::process::{Command, Stdio};
 
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
+use serde::{Deserialize, Serialize};
+mod request_util;
 mod ws;
 
 #[derive(serde::Serialize)]
@@ -15,6 +17,7 @@ struct Settings {
     wifi_name: String,
     wifi_password: String,
     version: String,
+    license: String,
 }
 fn setup_env() {
     let settings = get_settings().unwrap();
@@ -24,6 +27,7 @@ fn setup_env() {
     std::env::set_var("WIFI_NAME", &settings.wifi_name);
     std::env::set_var("WIFI_PASSWORD", &settings.wifi_password);
     std::env::set_var("VERSION", &settings.version);
+    std::env::set_var("LICENSE", &settings.license);
 
     // if cfg!(debug_assertions) {
     //     std::env::set_var("RUST_BACKTRACE", "1");
@@ -63,6 +67,9 @@ fn get_settings() -> Result<Settings, String> {
     let version = db
         .get::<String>("version")
         .unwrap_or_else(|| "0.0.0".to_string());
+    let license = db
+        .get::<String>("license")
+        .unwrap_or_else(|| "".to_string());
     return Ok(Settings {
         proxy_url,
         server_url,
@@ -70,6 +77,7 @@ fn get_settings() -> Result<Settings, String> {
         wifi_name,
         wifi_password,
         version,
+        license,
     });
 }
 #[tauri::command]
@@ -105,6 +113,79 @@ fn set_settings(
         db.set("version", &version).unwrap();
     }
 }
+#[tauri::command]
+fn add_license(key: String) -> VerifyLicenseResponse {
+    let uid: String = machine_uid::get().unwrap();
+    let result: VerifyLicenseResponse = VerifyLicenseResponse {
+        uid: uid.clone(),
+        key: "".to_string(),
+        status: "unlicensed".to_string(),
+        name: None,
+        limit: None,
+        left_days: None,
+    };
+    let license = request_util::get_json::<VerifyLicenseResponse>(&format!(
+        "/api/license/verify?uid={}&key={}",
+        uid, key
+    ));
+    if let Ok(license) = license {
+        let mut db = PickleDb::new(
+            "data/settings.db",
+            PickleDbDumpPolicy::AutoDump,
+            SerializationMethod::Json,
+        );
+        db.set("license", &key).unwrap();
+        return license;
+    }
+    return result;
+}
+#[derive(Debug, Deserialize, Serialize, Clone)]
+struct VerifyLicenseResponse {
+    pub uid: String,
+    pub key: String,
+    pub status: String,
+    pub name: Option<String>,
+    pub limit: Option<i32>,
+    pub left_days: Option<i32>,
+}
+#[tauri::command]
+fn get_license() -> VerifyLicenseResponse {
+    let uid: String = machine_uid::get().unwrap();
+    let result: VerifyLicenseResponse = VerifyLicenseResponse {
+        uid: uid.clone(),
+        key: "".to_string(),
+        status: "unlicensed".to_string(),
+        name: None,
+        limit: None,
+        left_days: None,
+    };
+    let db = PickleDb::load(
+        "data/settings.db",
+        PickleDbDumpPolicy::AutoDump,
+        SerializationMethod::Json,
+    )
+    .unwrap_or_else(|_| {
+        PickleDb::new(
+            "data/settings.db",
+            PickleDbDumpPolicy::AutoDump,
+            SerializationMethod::Json,
+        )
+    });
+    let key = db.get::<String>("license");
+    if key.is_none() {
+        return result;
+    }
+    let key = key.unwrap();
+    let license = request_util::get_json::<VerifyLicenseResponse>(&format!(
+        "/api/license/verify?uid={}&key={}",
+        uid, key
+    ));
+    if let Ok(license) = license {
+        return license;
+    }
+    return result;
+}
+//check license
 #[tauri::command]
 fn start_server() -> u32 {
     setup_env();
@@ -178,7 +259,9 @@ fn main() -> std::io::Result<()> {
             start_adb_server,
             stop_adb_server,
             get_settings,
-            set_settings
+            set_settings,
+            add_license,
+            get_license
         ])
         .setup(|app| {
             let version = app.package_info().version.to_string();

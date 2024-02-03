@@ -13,6 +13,13 @@ const proxy_url = ref("192.168.0.1:7890");
 const country = ref("UK");
 const wifi_name = ref("");
 const wifi_password = ref("");
+const license = ref({
+  left_days: 0,
+  key: "",
+  uid: "",
+  status: "pass"
+});
+const remainingDays = ref(0);
 
 async function start_server() {
   server_pid.value = await invoke("start_server");
@@ -49,16 +56,31 @@ async function get_settings() {
   country.value = settings.country;
   wifi_name.value = settings.wifi_name;
   wifi_password.value = settings.wifi_password;
+
 }
 async function set_settings() {
   console.log("set_settings");
-  await invoke("set_settings", { serverUrl: server_url.value, proxyUrl: proxy_url.value, country: country.value, wifiName: wifi_name.value, wifiPassword: wifi_password.value });
+  await invoke("set_settings", {
+    serverUrl: server_url.value, proxyUrl: proxy_url.value,
+    country: country.value, wifiName: wifi_name.value,
+    wifiPassword: wifi_password.value
+  });
 }
 async function disable_proxy_server() {
   proxy_url.value = ":0";
   await set_settings();
 }
-
+async function add_license() {
+  await invoke("add_license", { key: license.value.key });
+  get_license();
+}
+async function get_license() {
+  var license_info = await invoke("get_license");
+  license.value = license_info;
+}
+async function copy_uid() {
+  navigator.clipboard.writeText(license.value.uid);
+}
 onMounted(() => {
   window.addEventListener('beforeunload', (event) => {
     if (server_status.value == 1) {
@@ -72,6 +94,7 @@ onMounted(() => {
     }
   });
   get_settings();
+  get_license();
 
 });
 </script>
@@ -93,18 +116,31 @@ onMounted(() => {
     <label>Agent:</label>
     <button @click="start_agent" v-if="agent_status == 0">Start</button>
     <button @click="stop_agent" v-if="agent_status == 1">Stop: {{ agent_pid }}</button>
-  </div>
-
-  <div class="button-container">
     <label>Country:</label>
     <select v-model="country" @change="set_settings">
       <option value="UK">UK</option>
       <option value="US">US</option>
     </select>
   </div>
+
   <div class="button-container">
     <label>Wifi:</label>
     <input type="text" v-model="wifi_name" @change="set_settings" placeholder="name" />
     <input type="text" v-model="wifi_password" @change="set_settings" placeholder="password" />
+  </div>
+  <div class="button-container">
+    <label>UID:</label>
+    <input type="text" v-model="license.uid" placeholder="uid" readonly />
+    <button @click="copy_uid">Copy</button>
+  </div>
+  <div class="button-container">
+    <label>License:</label>
+    <input type="text" v-model="license.key" placeholder="key" />
+    <button @click="add_license">Save</button>
+    <label v-if="license.status != 'pass'" style="color: red; font-weight: bold;">{{ license.status }}</label>
+    <p v-if="license.status == 'pass'">
+      For: <label style="color: green; font-weight: bold;">{{ license.name }}</label>
+      Left: <label style="color: red; font-weight: bold;">{{ license.left_days }}</label> days.
+    </p>
   </div>
 </template>
