@@ -34,9 +34,13 @@ npm run tauri build
 
 ## release
 
+### 0.0.8 developing
+
+* support custom register email
+
 ### 0.0.7
 
-* auto register account by swith account, max account number is 8/pre device
+* auto register account by switch account, max account number is 8/device
 * support auto switch account when auto publish video
 * support auto switch account when auto train account
 * show task status in device operation panel
