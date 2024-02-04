@@ -9,17 +9,12 @@ const agent_pid = ref(0);
 const adb_server_status = ref(0);
 const adb_server_pid = ref(0);
 const server_url = ref("");
-const proxy_url = ref("");
-const country = ref("");
-const wifi_name = ref("");
-const wifi_password = ref("");
 const license = ref({
   left_days: 0,
   key: "",
   uid: "",
   status: "pass"
 });
-const remainingDays = ref(0);
 
 async function start_server() {
   server_pid.value = await invoke("start_server");
@@ -52,24 +47,15 @@ async function stop_adb_server() {
 async function get_settings() {
   var settings = await invoke("get_settings");
   server_url.value = settings.server_url;
-  proxy_url.value = settings.proxy_url;
-  country.value = settings.country;
-  wifi_name.value = settings.wifi_name;
-  wifi_password.value = settings.wifi_password;
 
 }
 async function set_settings() {
   console.log("set_settings");
   await invoke("set_settings", {
-    serverUrl: server_url.value, proxyUrl: proxy_url.value,
-    country: country.value, wifiName: wifi_name.value,
-    wifiPassword: wifi_password.value
+    serverUrl: server_url.value
   });
 }
-async function disable_proxy_server() {
-  proxy_url.value = ":0";
-  await set_settings();
-}
+
 async function add_license() {
   await invoke("add_license", { key: license.value.key });
   get_license();
@@ -101,11 +87,6 @@ onMounted(() => {
 
 <template>
   <div class="button-container">
-    <label>Proxy Server:</label>
-    <input type="text" v-model="proxy_url" @change="set_settings" />
-    <button @click="disable_proxy_server">Disable</button>
-  </div>
-  <div class="button-container">
     <label>Web Server:</label>
     <button @click="start_server" v-if="server_status == 0">Start</button>
     <button @click="stop_server" v-if="server_status == 1">Stop: {{ server_pid }}</button>
@@ -116,21 +97,13 @@ onMounted(() => {
     <label>Agent:</label>
     <button @click="start_agent" v-if="agent_status == 0">Start</button>
     <button @click="stop_agent" v-if="agent_status == 1">Stop: {{ agent_pid }}</button>
-    <label>Country:</label>
-    <select v-model="country" @change="set_settings">
-      <option value="UK">UK</option>
-      <option value="US">US</option>
-    </select>
+
   </div>
 
-  <div class="button-container">
-    <label>Wifi:</label>
-    <input type="text" v-model="wifi_name" @change="set_settings" placeholder="name" />
-    <input type="text" v-model="wifi_password" @change="set_settings" placeholder="password" />
-  </div>
+
   <div class="button-container">
     <label>UID:</label>
-    <input type="text" v-model="license.uid" placeholder="uid" readonly />
+    <span>{{ license.uid }}</span>
     <button @click="copy_uid">Copy</button>
   </div>
   <div class="button-container">

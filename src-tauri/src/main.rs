@@ -6,27 +6,19 @@ use std::process::{Command, Stdio};
 
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
 use serde::{Deserialize, Serialize};
-use tauri::{CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowBuilder};
+use tauri::{CustomMenuItem, Manager, Menu};
 mod request_util;
 mod ws;
 
 #[derive(serde::Serialize)]
 struct Settings {
-    proxy_url: String,
     server_url: String,
-    country: String,
-    wifi_name: String,
-    wifi_password: String,
     version: String,
     license: String,
 }
 fn setup_env() {
     let settings = get_settings().unwrap();
-    std::env::set_var("PROXY_URL", &settings.proxy_url);
     std::env::set_var("SERVER_URL", &settings.server_url);
-    std::env::set_var("COUNTRY", &settings.country);
-    std::env::set_var("WIFI_NAME", &settings.wifi_name);
-    std::env::set_var("WIFI_PASSWORD", &settings.wifi_password);
     std::env::set_var("VERSION", &settings.version);
     std::env::set_var("LICENSE", &settings.license);
 
@@ -53,21 +45,11 @@ fn get_settings() -> Result<Settings, String> {
     let db = get_db();
 
     let local_ip = local_ip_address::local_ip().unwrap();
-    let proxy_url = db
-        .get::<String>("proxy_url")
-        .unwrap_or_else(|| format!("{}:7890", local_ip));
+
     let server_url = db
         .get::<String>("server_url")
         .unwrap_or_else(|| format!("http://{}:8090", local_ip));
-    let country = db
-        .get::<String>("country")
-        .unwrap_or_else(|| "UK".to_string());
-    let wifi_name = db
-        .get::<String>("wifi_name")
-        .unwrap_or_else(|| "ChinaNet-LVBC".to_string());
-    let wifi_password = db
-        .get::<String>("wifi_password")
-        .unwrap_or_else(|| "5bvwmej4".to_string());
+
     let version = db
         .get::<String>("version")
         .unwrap_or_else(|| "0.0.0".to_string());
@@ -75,40 +57,19 @@ fn get_settings() -> Result<Settings, String> {
         .get::<String>("license")
         .unwrap_or_else(|| "".to_string());
     return Ok(Settings {
-        proxy_url,
         server_url,
-        country,
-        wifi_name,
-        wifi_password,
         version,
         license,
     });
 }
 #[tauri::command]
-fn set_settings(
-    proxy_url: Option<String>,
-    server_url: Option<String>,
-    country: Option<String>,
-    wifi_name: Option<String>,
-    wifi_password: Option<String>,
-    version: Option<String>,
-) {
+fn set_settings(server_url: Option<String>, version: Option<String>) {
     let mut db = get_db();
-    if let Some(url) = proxy_url {
-        db.set("proxy_url", &url).unwrap();
-    }
+
     if let Some(url) = server_url {
         db.set("server_url", &url).unwrap();
     }
-    if let Some(country) = country {
-        db.set("country", &country).unwrap();
-    }
-    if let Some(wifi_name) = wifi_name {
-        db.set("wifi_name", &wifi_name).unwrap();
-    }
-    if let Some(wifi_password) = wifi_password {
-        db.set("wifi_password", &wifi_password).unwrap();
-    }
+
     if let Some(version) = version {
         db.set("version", &version).unwrap();
     }
@@ -276,7 +237,7 @@ fn main() -> std::io::Result<()> {
                 _ => {}
             });
             let version = app.package_info().version.to_string();
-            set_settings(None, None, None, None, None, Some(version));
+            set_settings(None, Some(version));
             tauri::async_runtime::spawn(async move {
                 std::env::set_var("http_proxy", "");
                 let _ = Command::new("taskkill")
