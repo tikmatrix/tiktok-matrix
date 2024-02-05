@@ -9,12 +9,7 @@ const agent_pid = ref(0);
 const adb_server_status = ref(0);
 const adb_server_pid = ref(0);
 const server_url = ref("");
-const license = ref({
-  left_days: 0,
-  key: "",
-  uid: "",
-  status: "pass"
-});
+
 
 async function start_server() {
   server_pid.value = await invoke("start_server");
@@ -56,17 +51,7 @@ async function set_settings() {
   });
 }
 
-async function add_license() {
-  await invoke("add_license", { key: license.value.key });
-  get_license();
-}
-async function get_license() {
-  var license_info = await invoke("get_license");
-  license.value = license_info;
-}
-async function copy_uid() {
-  navigator.clipboard.writeText(license.value.uid);
-}
+
 onMounted(() => {
   window.addEventListener('beforeunload', (event) => {
     if (server_status.value == 1) {
@@ -80,7 +65,6 @@ onMounted(() => {
     }
   });
   get_settings();
-  get_license();
 
 });
 </script>
@@ -98,22 +82,5 @@ onMounted(() => {
     <button @click="start_agent" v-if="agent_status == 0">Start</button>
     <button @click="stop_agent" v-if="agent_status == 1">Stop: {{ agent_pid }}</button>
 
-  </div>
-
-
-  <div class="button-container">
-    <label>UID:</label>
-    <span>{{ license.uid }}</span>
-    <button @click="copy_uid">Copy</button>
-  </div>
-  <div class="button-container">
-    <label>License:</label>
-    <input type="text" v-model="license.key" placeholder="key" />
-    <button @click="add_license">Save</button>
-    <label v-if="license.status != 'pass'" style="color: red; font-weight: bold;">{{ license.status }}</label>
-    <p v-if="license.status == 'pass'">
-      For: <label style="color: green; font-weight: bold;">{{ license.name }}</label>
-      Left: <label style="color: red; font-weight: bold;">{{ license.left_days }}</label> days.
-    </p>
   </div>
 </template>
