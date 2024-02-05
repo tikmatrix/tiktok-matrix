@@ -37,6 +37,7 @@ npm run tauri build
 ### 0.0.8 developing
 
 * support custom register email
+* support username/nickname, password, avatar, bio
 
 ### 0.0.7
 
