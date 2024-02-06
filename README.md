@@ -36,8 +36,9 @@ npm run tauri build
 
 ### 0.0.8 developing
 
-* support custom register email
-* support username/nickname, password, avatar, bio
+* add email suffix setting, auto register account with email suffix
+* add avatar repository, ramdom select avatar when register account
+* add openai api-key setting, auto generate username/nickname/bio by AI(chatgpt) when register account
 
 ### 0.0.7
 
