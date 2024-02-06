@@ -145,6 +145,7 @@ fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("./data")?;
     std::fs::create_dir_all("./upload")?;
     std::fs::create_dir_all("./upload/material")?;
+    std::fs::create_dir_all("./upload/avatar")?;
     std::fs::create_dir_all("./upload/apk")?;
     let menu = Menu::new().add_item(CustomMenuItem::new("github", "GitHub"));
     tauri::Builder::default()
