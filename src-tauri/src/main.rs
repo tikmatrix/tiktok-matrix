@@ -88,6 +88,11 @@ fn stop_server(pid: i32) {
     let _ = Command::new("taskkill")
         .args(&["/F", "/PID", &pid.to_string()])
         .spawn();
+    //kill tiktok-server process
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", "tiktok-server.exe"])
+        .status()
+        .expect("failed to kill server processes");
 }
 #[tauri::command]
 fn start_agent() -> u32 {
@@ -108,6 +113,11 @@ fn stop_agent(pid: i32) {
     let _ = Command::new("taskkill")
         .args(&["/F", "/PID", &pid.to_string()])
         .spawn();
+    //kill tiktok-agent process
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", "tiktok-agent.exe"])
+        .status()
+        .expect("failed to kill agent processes");
 }
 #[tauri::command]
 fn start_adb_server() -> u32 {
