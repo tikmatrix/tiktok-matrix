@@ -34,7 +34,13 @@ npm run tauri build
 
 ## release
 
-### 0.0.8 developing
+### 0.0.9 developing
+
+* fix bug of license check
+* fix bug of auto register account
+* add video description setting, random select description when publish video
+
+### 0.0.8
 
 * add email suffix setting, auto register account with email suffix
 * add avatar repository, ramdom select avatar when register account
