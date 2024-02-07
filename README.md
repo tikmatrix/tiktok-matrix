@@ -38,7 +38,8 @@ npm run tauri build
 
 * fix bug of license check
 * fix bug of auto register account
-* add video description setting, random select description when publish video
+* fix bug of add sound
+* add video title setting, random select title when publish video
 
 ### 0.0.8
 
