@@ -40,6 +40,7 @@ npm run tauri build
 * fix bug of auto register account
 * fix bug of add sound
 * add video title setting, random select title when publish video
+* delete unused ocr models, reduce package size
 
 ### 0.0.8
 
