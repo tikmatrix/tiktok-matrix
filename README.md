@@ -34,7 +34,11 @@ npm run tauri build
 
 ## release
 
-### 0.0.9 developing
+### 1.0.0 in progress
+
+* add dashboard, you can view device status, account status, task status
+
+### 0.0.9
 
 * fix bug of license check
 * fix bug of auto register account
