@@ -1,7 +1,7 @@
 {
   "name": "tiktok-matrix",
   "private": true,
-  "version": "0.0.6",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "build:tiktok-vue": "cd tiktok-vue && npm install && npm run build && npx shx cp -rf dist ../src-tauri/bin/",
