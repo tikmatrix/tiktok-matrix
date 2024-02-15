@@ -10,6 +10,7 @@ edition = "2021"
 
 [build-dependencies]
 tauri-build = { version = "1.5", features = [] }
+embed-resource = "2.4"
 
 [dependencies]
 tauri = { version = "1.5", features = ["app-all", "shell-open"] }

@@ -80,7 +80,7 @@ fn start_server() -> u32 {
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start server");
-    return child.id();
+    child.id()
 }
 
 #[tauri::command]
@@ -101,7 +101,7 @@ fn start_agent() -> u32 {
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start agent");
-    return child.id();
+    child.id()
 }
 #[tauri::command]
 fn stop_agent(pid: i32) {
@@ -132,7 +132,7 @@ fn start_adb_server() -> u32 {
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start adb server");
-    return child.id();
+    child.id()
 }
 #[tauri::command]
 fn stop_adb_server(pid: i32) {

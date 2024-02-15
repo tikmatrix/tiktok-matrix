@@ -3338,6 +3338,7 @@ dependencies = [
 name = "tiktok-matrix"
 version = "0.0.5"
 dependencies = [
+ "embed-resource",
  "futures-util",
  "local-ip-address",
  "pickledb",
