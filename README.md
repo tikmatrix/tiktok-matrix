@@ -37,6 +37,11 @@ npm run tauri build
 ### 1.0.0 in progress
 
 * add dashboard, you can view device status, account status, task status
+* Reorganize the UI
+* add likeProbability, followProbability, collectionProbability setting in group train
+* show more devices in device list
+* Add continuous registration feature, click once to register 8 accounts for each device
+* Each group can create 6 training tasks and 6 publishing tasks per day
 
 ### 0.0.9
 
