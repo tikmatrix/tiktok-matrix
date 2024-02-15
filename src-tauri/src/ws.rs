@@ -40,7 +40,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                         break;
                     }
                 },
-                Err(e) => {
+                Err(_) => {
                     break;
                 }
             }
@@ -56,7 +56,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                         break;
                     }
                 },
-                Err(e) => {
+                Err(_) => {
                     break;
                 }
             }
