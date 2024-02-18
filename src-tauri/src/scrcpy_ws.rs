@@ -65,7 +65,7 @@ async fn start_scrcpy_server(serial: &str) -> Result<Child, Box<dyn std::error::
         .arg("control=false")
         .arg("cleanup=false")
         .arg("raw_stream=true")
-        .arg("max_size=1920")
+        .arg("max_size=720")
         .spawn()
         .expect("Failed to start scrcpy server");
 
@@ -209,5 +209,5 @@ fn start_ffmpeg() -> Child {
 }
 #[tokio::test]
 pub async fn main() {
-    start_server(8092).await.unwrap();
+    start_server(8093).await.unwrap();
 }
