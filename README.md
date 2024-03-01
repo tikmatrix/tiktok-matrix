@@ -34,7 +34,16 @@ npm run tauri build
 
 ## release
 
-### 1.0.0 in progress
+### 1.0.2
+
+* fix bug of account edit
+* fix bug of post video
+
+### 1.0.1
+
+* fix group edit bug
+
+### 1.0.0
 
 * add dashboard, you can view device status, account status, task status
 * Reorganize the UI
