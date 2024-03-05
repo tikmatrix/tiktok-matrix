@@ -7,7 +7,6 @@ use std::process::{Command, Stdio};
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
 use tauri::{CustomMenuItem, Manager, Menu};
 mod scrcpy_ws;
-mod ws;
 
 #[derive(serde::Serialize)]
 struct Settings {
@@ -176,14 +175,8 @@ fn main() -> std::io::Result<()> {
             set_settings(None, Some(version));
             tauri::async_runtime::spawn(async move {
                 std::env::set_var("http_proxy", "");
-                // let _ = Command::new("taskkill")
-                //     .args(&["/F", "/IM", "adb.exe"])
-                //     .status()
-                //     .expect("failed to kill adb processes");
-                // //sleep 3 s
-                // std::thread::sleep(std::time::Duration::from_secs(3));
-                // ws::start_server(8092).await.unwrap();
-                scrcpy_ws::start_server(8091).await.unwrap();
+
+                scrcpy_ws::start_server(8092).await.unwrap();
             });
             Ok(())
         })
