@@ -5,11 +5,9 @@ tiktok matrix 是一个可以本地部署的，基于adb和android无障碍服�
 
 ## get started
 
-[官方网站](https://niostack.com/tiktok.html)
+[Official website](https://niostack.com)
 
-[中文文档](https://github.com/niostack/tiktok-matrix/wiki/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3)
-
-[English Document](https://github.com/niostack/tiktok-matrix/wiki/EnglishDoc)
+[Document](https://doc.niostack.com)
 
 ## telegram group
 
