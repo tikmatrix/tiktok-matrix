@@ -44,10 +44,10 @@ fn get_settings() -> Result<Settings, String> {
 
     let mut server_url = db
         .get::<String>("server_url")
-        .unwrap_or_else(|| format!("http://{}:8090", local_ip));
+        .unwrap_or_else(|| format!("http://{}:7090", local_ip));
 
     if server_url.is_empty() {
-        server_url = format!("http://{}:8090", local_ip);
+        server_url = format!("http://{}:7090", local_ip);
     }
     println!("server_url: {}", server_url);
     let version = db
@@ -176,7 +176,7 @@ fn main() -> std::io::Result<()> {
             tauri::async_runtime::spawn(async move {
                 std::env::set_var("http_proxy", "");
 
-                scrcpy_ws::start_server(8092).await.unwrap();
+                scrcpy_ws::start_server(9092).await.unwrap();
             });
             Ok(())
         })
