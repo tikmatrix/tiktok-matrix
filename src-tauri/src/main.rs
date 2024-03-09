@@ -175,8 +175,7 @@ fn main() -> std::io::Result<()> {
             set_settings(None, Some(version));
             tauri::async_runtime::spawn(async move {
                 std::env::set_var("http_proxy", "");
-
-                scrcpy_ws::start_server(9092).await.unwrap();
+                scrcpy_ws::start_server(7092).await.unwrap();
             });
             Ok(())
         })
