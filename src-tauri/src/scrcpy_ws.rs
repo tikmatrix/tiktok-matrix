@@ -183,6 +183,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                     // rescale x, y to scrcpy server's coordinate
                     let x = (x as f32 / w as f32 * width as f32) as i32;
                     let y = (y as f32 / h as f32 * height as f32) as i32;
+                    println!("x: {}, y: {}", x, y);
                     let mut cursor = Cursor::new(Vec::new());
                     // dos.writeByte(ControlMessage.TYPE_INJECT_TOUCH_EVENT);
                     byteorder::WriteBytesExt::write_u8(&mut cursor, 2).unwrap();
@@ -195,9 +196,9 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                     // dos.writeInt(200);//y
                     byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, y).unwrap();
                     // dos.writeShort(1080);//width
-                    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, w).unwrap();
+                    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, width as i16).unwrap();
                     // dos.writeShort(1920);//height
-                    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, h).unwrap();
+                    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, height as i16).unwrap();
                     // dos.writeShort(0xffff); // pressure
                     byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, 1).unwrap();
                     // dos.writeInt(MotionEvent.BUTTON_PRIMARY); // action button
@@ -251,7 +252,13 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
             // Now you can write the packet data to ffmpeg's stdin
             match ffmpeg.stdin.as_mut() {
                 Some(stdin) => {
-                    stdin.write_all(&packet_data).await.unwrap();
+                    match stdin.write_all(&packet_data).await {
+                        Ok(_) => {},
+                        Err(e) => {
+                            println!("Failed to write to ffmpeg's stdin: {}", e);
+                            break;
+                        }
+                    }
                 }
                 None => {
                     println!("Failed to get ffmpeg's stdin");
@@ -307,8 +314,8 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
 
 fn start_ffmpeg() -> Child {
     let ffmpeg = Command::new("bin/ffmpeg.exe")
-        .arg("-hwaccel")
-        .arg("auto") // 自动选择最佳的硬件加速方法
+        .arg("-hwaccel_output_format")
+        .arg("qsv") // 自动选择最佳的硬件加速方法
         .arg("-i")
         .arg("-")
         .arg("-f")
