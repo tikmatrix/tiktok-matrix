@@ -94,13 +94,14 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         .expect("Error reading first message from client");
     let serial = String::from_utf8(url_msg.into_data()).expect("Error parsing first message");
     println!("serial: {}", serial);
-    let local_port = adb_forward_scrcpy_serber(&serial).await.unwrap();
-    println!("local_port: {}", local_port);
+    
     let serial_clone = serial.clone();
     tauri::async_runtime::spawn(async move {
         start_scrcpy_server(&serial_clone).await.unwrap();
     });
     tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
+    let local_port = adb_forward_scrcpy_serber(&serial).await.unwrap();
+    println!("local_port: {}", local_port);
     println!("scrcpy server started");
     let (mut client_write, mut client_read) = client_ws_stream.split();
     let local_url = format!("127.0.0.1:{}", local_port);
@@ -177,10 +178,11 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
 
                     let x = json["x"].as_i64().unwrap() as i32;
                     let y = json["y"].as_i64().unwrap() as i32;
-                    let w = width as i16;
-                    let h = height as i16;
-                    // 1080x2220
-                    //
+                    let w = json["w"].as_i64().unwrap() as i16;
+                    let h = json["h"].as_i64().unwrap() as i16;
+                    // rescale x, y to scrcpy server's coordinate
+                    let x = (x as f32 / w as f32 * width as f32) as i32;
+                    let y = (y as f32 / h as f32 * height as f32) as i32;
                     let mut cursor = Cursor::new(Vec::new());
                     // dos.writeByte(ControlMessage.TYPE_INJECT_TOUCH_EVENT);
                     byteorder::WriteBytesExt::write_u8(&mut cursor, 2).unwrap();
@@ -208,11 +210,11 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                     // send to scrcpy server
                     match scrcpy_control_write.write_all(&packet).await {
                         Ok(_) => {
-                            println!(
-                                "write to scrcpy server success - {:?} length: {}",
-                                packet,
-                                packet.len()
-                            );
+                            // println!(
+                            //     "write to scrcpy server success - {:?} length: {}",
+                            //     packet,
+                            //     packet.len()
+                            // );
                         }
                         Err(e) => {
                             println!("Error writing to scrcpy server: {}", e);
