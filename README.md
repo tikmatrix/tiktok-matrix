@@ -5,11 +5,9 @@ tiktok matrix 是一个可以本地部署的，基于adb和android无障碍服�
 
 ## get started
 
-[官方网站](https://niostack.com/tiktok.html)
+[Official website](https://niostack.com)
 
-[中文文档](https://github.com/niostack/tiktok-matrix/wiki/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3)
-
-[English Document](https://github.com/niostack/tiktok-matrix/wiki/EnglishDoc)
+[Document](https://doc.niostack.com)
 
 ## telegram group
 
@@ -34,7 +32,16 @@ npm run tauri build
 
 ## release
 
-### 1.0.0 in progress
+### 1.0.2
+
+* fix bug of account edit
+* fix bug of post video
+
+### 1.0.1
+
+* fix group edit bug
+
+### 1.0.0
 
 * add dashboard, you can view device status, account status, task status
 * Reorganize the UI

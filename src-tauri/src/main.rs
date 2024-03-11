@@ -18,9 +18,9 @@ fn setup_env() {
     std::env::set_var("SERVER_URL", &settings.server_url);
     std::env::set_var("VERSION", &settings.version);
 
-    // if cfg!(debug_assertions) {
-    //     std::env::set_var("RUST_BACKTRACE", "1");
-    // }
+    if cfg!(debug_assertions) {
+        std::env::set_var("RUST_BACKTRACE", "1");
+    }
 }
 fn get_db() -> PickleDb {
     PickleDb::load(
