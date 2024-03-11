@@ -71,9 +71,11 @@ async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<C
         .arg("2.3.1")
         .arg("tunnel_forward=true")
         .arg("audio=false")
+        .arg("power_on=true")
         .arg(format!("control={}",control))
         .arg("cleanup=true")
         .arg(format!("max_size={}",max_size))
+        .arg("max_fps=30")
         .spawn()
         .expect("Failed to start scrcpy server");
 
