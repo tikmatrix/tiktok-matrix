@@ -7,7 +7,6 @@ use std::io::Cursor;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::process::{Child, Command};
-use tokio::time::{sleep, Duration};
 use tokio_tungstenite::accept_async;
 use tokio_tungstenite::tungstenite::Message;
 
@@ -51,7 +50,7 @@ async fn adb_forward_scrcpy_serber(serial: &str) -> Result<String, Box<dyn std::
     Ok(String::from_utf8(output.stdout).unwrap())
 }
 // adb -s 394b4d4d37313098 shell CLASSPATH=/data/local/tmp/scrcpy-server.jar app_process / com.genymobile.scrcpy.Server 2.3.1 tunnel_forward=true audio=false control=true cleanup=false raw_stream=true max_size=720
-async fn start_scrcpy_server(serial: &str) -> Result<Child, Box<dyn std::error::Error>> {
+async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<Child, Box<dyn std::error::Error>> {
     //push scrcpy-server.jar to device
     Command::new("bin/platform-tools/adb.exe")
         .arg("-s")
@@ -72,9 +71,9 @@ async fn start_scrcpy_server(serial: &str) -> Result<Child, Box<dyn std::error::
         .arg("2.3.1")
         .arg("tunnel_forward=true")
         .arg("audio=false")
-        .arg("control=true")
+        .arg(format!("control={}",control))
         .arg("cleanup=true")
-        .arg("max_size=800")
+        .arg(format!("max_size={}",max_size))
         .spawn()
         .expect("Failed to start scrcpy server");
 
@@ -152,22 +151,38 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
     let mut client_ws_stream = accept_async(stream)
         .await
         .expect("Error during the websocket handshake occurred");
-
-    let url_msg = client_ws_stream
+    // read serial from client
+    let serial = client_ws_stream
         .next()
         .await
         .expect("Expected first message from client")
         .expect("Error reading first message from client");
-    let serial = String::from_utf8(url_msg.into_data()).expect("Error parsing first message");
+    let serial = String::from_utf8(serial.into_data()).expect("Error parsing first message");
     println!("serial: {}", serial);
+    // read max size from client
+    let max_size = client_ws_stream
+        .next()
+        .await
+        .expect("Expected second message from client")
+        .expect("Error reading second message from client");
+    let max_size:i16 = String::from_utf8(max_size.into_data()).expect("Error parsing second message").parse().unwrap(); 
+    println!("max_size: {}", max_size);
+    // read control from client
+    let control = client_ws_stream
+        .next()
+        .await
+        .expect("Expected third message from client")
+        .expect("Error reading third message from client");
+    let control = String::from_utf8(control.into_data()).expect("Error parsing third message");
+    println!("control: {}", control);
+    
     
     let serial_clone = serial.clone();
+    let control_clone = control.clone();
     tauri::async_runtime::spawn(async move {
-        start_scrcpy_server(&serial_clone).await.unwrap();
+        start_scrcpy_server(&serial_clone,max_size,&control_clone).await.unwrap();
         println!("scrcpy server started");
     });
-    // tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
-    
     let (mut client_write, mut client_read) = client_ws_stream.split();
     
     let result = connect_to_video_socket(&serial).await;
@@ -178,13 +193,18 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
     
     let mut scrcpy_video_server = result.unwrap();
     let (mut scrcpy_video_read_socket, _) = scrcpy_video_server.split();
-    let result = connect_to_control_socket(&serial).await;
-    if result.is_err() {
-        println!("Failed to connect to scrcpy control server");
-        return;
+    let mut scrcpy_control_server = None;
+    if control == "true" {
+        println!("control is true");
+        let result = connect_to_control_socket(&serial).await;
+        if result.is_err() {
+            println!("Failed to connect to scrcpy control server");
+            return;
+        }
+        scrcpy_control_server = Some(result.unwrap());
+        
     }
-    let mut scrcpy_control_server = result.unwrap();
-    let (_, mut scrcpy_control_write) = scrcpy_control_server.split();
+    
 
     let mut ffmpeg = start_ffmpeg();
    
@@ -207,9 +227,11 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
     );
     let client_to_server = async {
         while let Some(msg) = client_read.next().await {
+            if scrcpy_control_server.is_none() {
+                continue;
+            }
             let msg = msg.expect("Error reading message from client");
             // println!("client_to_server: {:?}", msg);
-            //convert minitouch message to scrcpy server message
             match msg {
                 Message::Text(s) => {
                     let json: serde_json::Value = serde_json::from_str(&s).unwrap();
@@ -254,7 +276,8 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                     let packet = cursor.into_inner();
 
                     // send to scrcpy server
-                    match scrcpy_control_write.write_all(&packet).await {
+                    let scrcpy_control_write_socket = scrcpy_control_server.as_mut().unwrap();
+                    match scrcpy_control_write_socket.write_all(&packet).await {
                         Ok(_) => {
                             // println!(
                             //     "write to scrcpy server success - {:?} length: {}",
