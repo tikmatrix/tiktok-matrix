@@ -51,15 +51,7 @@ async fn adb_forward_scrcpy_serber(serial: &str) -> Result<String, Box<dyn std::
 }
 // adb -s 394b4d4d37313098 shell CLASSPATH=/data/local/tmp/scrcpy-server.jar app_process / com.genymobile.scrcpy.Server 2.3.1 tunnel_forward=true audio=false control=true cleanup=false raw_stream=true max_size=720
 async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<Child, Box<dyn std::error::Error>> {
-    //push scrcpy-server.jar to device
-    Command::new("bin/platform-tools/adb.exe")
-        .arg("-s")
-        .arg(serial)
-        .arg("push")
-        .arg("bin/scrcpy-server-v2.3.1")
-        .arg("/data/local/tmp/scrcpy-server-manual.jar")
-        .output()
-        .await?;
+   
     let child = Command::new("bin/platform-tools/adb.exe")
         .arg("-s")
         .arg(serial)
