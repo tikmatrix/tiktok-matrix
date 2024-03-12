@@ -57,7 +57,7 @@ async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<C
         .arg("-s")
         .arg(serial)
         .arg("push")
-        .arg("bin/scrcpy-server-v2.3.1")
+        .arg("bin/raw/scrcpy-server-v2.3.1")
         .arg("/data/local/tmp/scrcpy-server-manual.jar")
         .output()
         .await?;
@@ -386,8 +386,8 @@ fn new_scrcpy_event(event: String, width: u32, height: u32) -> Option<Vec<u8>> {
 
 fn start_ffmpeg() -> Child {
     let ffmpeg = Command::new("bin/ffmpeg.exe")
-        .arg("-hwaccel_output_format")
-        .arg("qsv") // qsv for intel, nvenc for nvidia
+        .arg("-hwaccel")
+        .arg("auto") // auto, cuvid, qsv, d3d11va, dxva2, vaapi, vdpau, videotoolbox
         .arg("-i")
         .arg("-")
         .arg("-f")

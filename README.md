@@ -29,6 +29,18 @@ npm run tauri build
 
 ## release
 
+### 1.0.4
+
+* support android 5.0 and above
+* fix some bugs
+
+### 1.0.3
+
+* fix bug of account edit
+* fix bug of post video
+* fix bug of group edit
+* fix bug of auto register account
+
 ### 1.0.2
 
 * fix bug of account edit
