@@ -1,8 +1,10 @@
+use std::ops::ControlFlow;
 use std::process::Stdio;
 
 use byteorder::BigEndian;
 use futures_util::sink::SinkExt;
 use futures_util::StreamExt;
+use serde::de;
 use std::io::Cursor;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
@@ -13,7 +15,6 @@ use tokio_tungstenite::tungstenite::Message;
 pub async fn start_server(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     let listener = TcpListener::bind(("0.0.0.0", port)).await?;
     while let Ok((stream, _)) = listener.accept().await {
-        println!("new connection");
         tokio::spawn(handle_connection(stream));
     }
     Ok(())
@@ -71,11 +72,14 @@ async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<C
         .arg("2.3.1")
         .arg("tunnel_forward=true")
         .arg("audio=false")
+        .arg("log_level=info")
         .arg("power_on=true")
         .arg(format!("control={}",control))
         .arg("cleanup=true")
         .arg(format!("max_size={}",max_size))
         .arg("max_fps=30")
+        .stderr(Stdio::null())
+        .stdout(Stdio::null())
         .spawn()
         .expect("Failed to start scrcpy server");
 
@@ -84,13 +88,13 @@ async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<C
 async fn connect_to_video_socket(serial: &str) -> Result<tokio::net::TcpStream, Box<dyn std::error::Error + Send + Sync>> {
     for _ in 0..10 {
         let local_port = adb_forward_scrcpy_serber(&serial).await.unwrap();
-        println!("local_port: {}", local_port);
+        // println!("local_port: {}", local_port);
         if local_port.is_empty() {
             tokio::time::sleep(std::time::Duration::from_secs(1000)).await;
             continue;
         }
         let local_url = format!("127.0.0.1:{}", local_port);
-        println!("connecting to scrcpy video server: {}", local_url);
+        // println!("connecting to scrcpy video server: {}", local_url);
         match tokio::net::TcpStream::connect(local_url.clone()).await {
             Ok(stream) => {
                 let scrcpy_video_server = Some(stream);
@@ -104,11 +108,9 @@ async fn connect_to_video_socket(serial: &str) -> Result<tokio::net::TcpStream, 
                 };
                 let (mut read_socket, _) = scrcpy_video_server.split();
                 
-                println!("connected to scrcpy video server");
                  // read one byte to check if scrcpy server is ready
                 let mut buffer = [0; 1];
                 let n = read_socket.read(&mut buffer).await.unwrap();
-                println!("read {} bytes from scrcpy video server for test!", n);
                 if n > 0 {
                     return Ok(scrcpy_video_server);
                 }
@@ -126,12 +128,12 @@ async fn connect_to_video_socket(serial: &str) -> Result<tokio::net::TcpStream, 
 }
 async fn connect_to_control_socket(serial: &str) -> Result<tokio::net::TcpStream, Box<dyn std::error::Error + Send + Sync>> {
         let local_port = adb_forward_scrcpy_serber(&serial).await.unwrap();
-        println!("local_port: {}", local_port);
+        // println!("local_port: {}", local_port);
         if local_port.is_empty() {
             return Err("Failed to forward scrcpy server".into());
         }
         let local_url = format!("127.0.0.1:{}", local_port);
-        println!("connecting to scrcpy control server: {}", local_url);
+        // println!("connecting to scrcpy control server: {}", local_url);
         match tokio::net::TcpStream::connect(local_url.clone()).await {
             Ok(stream) => {
                 let scrcpy_control_server = Some(stream);
@@ -142,7 +144,7 @@ async fn connect_to_control_socket(serial: &str) -> Result<tokio::net::TcpStream
                         return Err("Failed to connect".into());
                     }
                 };
-                println!("connected to scrcpy control server");
+                // println!("connected to scrcpy control server");
                 return Ok(scrcpy_control_server);
             }
             Err(e) => {
@@ -152,6 +154,7 @@ async fn connect_to_control_socket(serial: &str) -> Result<tokio::net::TcpStream
         }
     }
 async fn handle_connection(stream: tokio::net::TcpStream) {
+    println!("new connection");
     let mut client_ws_stream = accept_async(stream)
         .await
         .expect("Error during the websocket handshake occurred");
@@ -162,7 +165,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         .expect("Expected first message from client")
         .expect("Error reading first message from client");
     let serial = String::from_utf8(serial.into_data()).expect("Error parsing first message");
-    println!("serial: {}", serial);
+    // println!("serial: {}", serial);
     // read max size from client
     let max_size = client_ws_stream
         .next()
@@ -170,7 +173,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         .expect("Expected second message from client")
         .expect("Error reading second message from client");
     let max_size:i16 = String::from_utf8(max_size.into_data()).expect("Error parsing second message").parse().unwrap(); 
-    println!("max_size: {}", max_size);
+    // println!("max_size: {}", max_size);
     // read control from client
     let control = client_ws_stream
         .next()
@@ -178,14 +181,12 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         .expect("Expected third message from client")
         .expect("Error reading third message from client");
     let control = String::from_utf8(control.into_data()).expect("Error parsing third message");
-    println!("control: {}", control);
-    
+    // println!("control: {}", control);
     
     let serial_clone = serial.clone();
     let control_clone = control.clone();
     tauri::async_runtime::spawn(async move {
         start_scrcpy_server(&serial_clone,max_size,&control_clone).await.unwrap();
-        println!("scrcpy server started");
     });
     let (mut client_write, mut client_read) = client_ws_stream.split();
     
@@ -215,20 +216,17 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
     // read device name
     let mut buffer = [0; 64];
     let n = scrcpy_video_read_socket.read(&mut buffer).await.unwrap();
-    println!("read {} bytes from scrcpy video server", n);
     let device_name = String::from_utf8_lossy(&buffer[..n]);
-    println!("device_name: {}", device_name);
     //  read codec_id, width, height
     let mut buffer = [0; 12];
     let n = scrcpy_video_read_socket.read(&mut buffer).await.unwrap();
-    println!("read {} bytes from scrcpy video server", n);
     let codec_id = u32::from_be_bytes([buffer[0], buffer[1], buffer[2], buffer[3]]);
     let width = u32::from_be_bytes([buffer[4], buffer[5], buffer[6], buffer[7]]);
     let height = u32::from_be_bytes([buffer[8], buffer[9], buffer[10], buffer[11]]);
     println!(
-        " codec_id: {}, width: {}, height: {}",
-        codec_id, width, height
+        "device_name: {}, codec_id: {}, width: {}, height: {}", device_name, codec_id, width, height
     );
+    
     let client_to_server = async {
         while let Some(msg) = client_read.next().await {
             if scrcpy_control_server.is_none() {
@@ -238,46 +236,10 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
             // println!("client_to_server: {:?}", msg);
             match msg {
                 Message::Text(s) => {
-                    let json: serde_json::Value = serde_json::from_str(&s).unwrap();
-                    let operation = json["operation"].as_str().unwrap();
-                    let action = match operation {
-                        "d" => 0,
-                        "m" => 2,
-                        "u" => 1,
-                        _ => continue,
+                    let packet = match new_scrcpy_event(s, width, height) {
+                        Some(value) => value,
+                        None => continue,
                     };
-
-                    let x = json["x"].as_i64().unwrap() as i32;
-                    let y = json["y"].as_i64().unwrap() as i32;
-                    let w = json["w"].as_i64().unwrap() as i16;
-                    let h = json["h"].as_i64().unwrap() as i16;
-                    // rescale x, y to scrcpy server's coordinate
-                    let x = (x as f32 / w as f32 * width as f32) as i32;
-                    let y = (y as f32 / h as f32 * height as f32) as i32;
-                    // println!("x: {}, y: {}", x, y);
-                    let mut cursor = Cursor::new(Vec::new());
-                    // dos.writeByte(ControlMessage.TYPE_INJECT_TOUCH_EVENT);
-                    byteorder::WriteBytesExt::write_u8(&mut cursor, 2).unwrap();
-                    // dos.writeByte(MotionEvent.ACTION_DOWN);
-                    byteorder::WriteBytesExt::write_u8(&mut cursor, action).unwrap();
-                    // dos.writeLong(-42); // pointerId
-                    byteorder::WriteBytesExt::write_i64::<BigEndian>(&mut cursor, -42).unwrap();
-                    // dos.writeInt(100);//x
-                    byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, x).unwrap();
-                    // dos.writeInt(200);//y
-                    byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, y).unwrap();
-                    // dos.writeShort(1080);//width
-                    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, width as i16).unwrap();
-                    // dos.writeShort(1920);//height
-                    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, height as i16).unwrap();
-                    // dos.writeShort(0xffff); // pressure
-                    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, 1).unwrap();
-                    // dos.writeInt(MotionEvent.BUTTON_PRIMARY); // action button
-                    byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, 1).unwrap();
-                    // dos.writeInt(MotionEvent.BUTTON_PRIMARY); // buttons
-                    byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, 1).unwrap();
-
-                    let packet = cursor.into_inner();
 
                     // send to scrcpy server
                     let scrcpy_control_write_socket = scrcpy_control_server.as_mut().unwrap();
@@ -298,13 +260,17 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                 _ => continue,
             };
         }
-        println!("client_to_server finished");
+        // println!("client_to_server finished");
     };
     let server_to_ffmpeg = async {
         
-        println!("server_to_ffmpeg started");
         let mut buffer = [0; 12];
         while let Ok(n) = scrcpy_video_read_socket.read(&mut buffer).await {
+            if n == 0 {
+                // scrcpy server has closed the connection
+                println!("scrcpy server has closed the connection");
+                break;
+            }
             // println!("read {} bytes from scrcpy server", n);
             // let config_packet_flag = (buffer[0] & 0b1000_0000) != 0;
             // let key_frame_flag = (buffer[0] & 0b0100_0000) != 0;
@@ -338,57 +304,90 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                 }
             }
         }
-        println!("server_to_ffmpeg finished")
+        // println!("server_to_ffmpeg finished");
     };
     let ffmpeg_to_client = async {
-        println!("ffmpeg_to_client started");
-        let mut buffer = vec![0; 1024 * 10];
-        let mut image_buffer = vec![];
+        enum ParseState {
+            SearchingForStart,
+            BuildingImage,
+        }
+        
+        let mut state = ParseState::SearchingForStart;
+        let mut buffer = vec![0; 1024*1024];
+        let mut image_buffer = Vec::new();
         let mut stdout = ffmpeg.stdout.take().expect("Failed to open stdout");
+        
         while let Ok(n) = stdout.read(&mut buffer).await {
             if n == 0 {
-                //sleep for a while to prevent busy loop
-                tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-                continue;
+                break;
             }
-            // check buffer for jpeg start and end
-            let mut end = 0;
-            for i in 0..n - 1 {
-                if buffer[i] == 0xff && buffer[i + 1] == 0xd9 {
-                    end = i + 2;
-                    // println!("fond end at {}", end);
-                    break;
-                }
-            }
-            if end > 0 {
-                image_buffer.extend_from_slice(&buffer[..end]);
-                match client_write
-                    .send(Message::binary(image_buffer.to_vec()))
-                    .await
-                {
-                    Ok(_) => {}
-                    Err(e) => {
-                        println!("Error writing to client: {}", e);
-                        break;
+           
+            for i in 0..n-1 {
+                match state {
+                    ParseState::SearchingForStart => {
+                        if buffer[i] == 0xff && buffer[i + 1] == 0xd8 {
+                            image_buffer.clear();
+                            image_buffer.push(buffer[i]);
+                            state = ParseState::BuildingImage;
+                        }
+                    }
+                    ParseState::BuildingImage => {
+                        image_buffer.push(buffer[i]);
+                        if buffer[i] == 0xff && buffer[i + 1] == 0xd9 {
+                            image_buffer.push(buffer[i + 1]);
+                            match client_write.send(Message::binary(image_buffer.clone())).await {
+                                Ok(_) => {}
+                                Err(e) => {
+                                    return;
+                                }
+                            }
+                            state = ParseState::SearchingForStart;
+                        }
                     }
                 }
-                image_buffer.clear();
-                buffer.copy_within(end..n, 0);
-            } else {
-                image_buffer.extend_from_slice(&buffer[..n]);
             }
         }
-        println!("ffmpeg_to_client finished")
+        
     };
 
     tokio::join!(client_to_server, server_to_ffmpeg, ffmpeg_to_client,);
-    println!("all finished");
+    println!("connect finished");
+}
+
+fn new_scrcpy_event(event: String, width: u32, height: u32) -> Option<Vec<u8>> {
+    let json: serde_json::Value = serde_json::from_str(&event).unwrap();
+    let operation = json["operation"].as_str().unwrap();
+    let action = match operation {
+        "d" => 0,
+        "m" => 2,
+        "u" => 1,
+        _ => return None,
+    };
+    let x = json["x"].as_i64().unwrap() as i32;
+    let y = json["y"].as_i64().unwrap() as i32;
+    let w = json["w"].as_i64().unwrap() as i16;
+    let h = json["h"].as_i64().unwrap() as i16;
+    let x = (x as f32 / w as f32 * width as f32) as i32;
+    let y = (y as f32 / h as f32 * height as f32) as i32;
+    let mut cursor = Cursor::new(Vec::new());
+    byteorder::WriteBytesExt::write_u8(&mut cursor, 2).unwrap();
+    byteorder::WriteBytesExt::write_u8(&mut cursor, action).unwrap();
+    byteorder::WriteBytesExt::write_i64::<BigEndian>(&mut cursor, -42).unwrap();
+    byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, x).unwrap();
+    byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, y).unwrap();
+    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, width as i16).unwrap();
+    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, height as i16).unwrap();
+    byteorder::WriteBytesExt::write_i16::<BigEndian>(&mut cursor, 1).unwrap();
+    byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, 1).unwrap();
+    byteorder::WriteBytesExt::write_i32::<BigEndian>(&mut cursor, 1).unwrap();
+    let packet = cursor.into_inner();
+    Some(packet)
 }
 
 fn start_ffmpeg() -> Child {
     let ffmpeg = Command::new("bin/ffmpeg.exe")
         .arg("-hwaccel_output_format")
-        .arg("qsv") // 自动选择最佳的硬件加速方法
+        .arg("qsv") // qsv for intel, nvenc for nvidia
         .arg("-i")
         .arg("-")
         .arg("-f")
@@ -396,8 +395,11 @@ fn start_ffmpeg() -> Child {
         .arg("-c:v")
         .arg("mjpeg")
         .arg("-")
+        .arg("-loglevel")
+        .arg("error")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
+        .stderr(Stdio::null())
         .spawn()
         .expect("Failed to start FFmpeg");
     ffmpeg

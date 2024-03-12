@@ -25,8 +25,6 @@ npm run tauri build
 
 ## 感谢下面开源项目
 
-* https://github.com/niostack/atx-agent
-* https://github.com/niostack/android-uiautomator-server
 * https://github.com/Genymobile/scrcpy
 
 ## release
