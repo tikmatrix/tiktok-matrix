@@ -6,7 +6,7 @@ use std::process::{Command, Stdio};
 
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
 use tauri::{CustomMenuItem, Manager, Menu};
-mod ws;
+mod scrcpy_ws;
 
 #[derive(serde::Serialize)]
 struct Settings {
@@ -44,10 +44,10 @@ fn get_settings() -> Result<Settings, String> {
 
     let mut server_url = db
         .get::<String>("server_url")
-        .unwrap_or_else(|| format!("http://{}:8090", local_ip));
+        .unwrap_or_else(|| format!("http://{}:7090", local_ip));
 
     if server_url.is_empty() {
-        server_url = format!("http://{}:8090", local_ip);
+        server_url = format!("http://{}:7090", local_ip);
     }
     println!("server_url: {}", server_url);
     let version = db
@@ -175,13 +175,7 @@ fn main() -> std::io::Result<()> {
             set_settings(None, Some(version));
             tauri::async_runtime::spawn(async move {
                 std::env::set_var("http_proxy", "");
-                let _ = Command::new("taskkill")
-                    .args(&["/F", "/IM", "adb.exe"])
-                    .status()
-                    .expect("failed to kill adb processes");
-                //sleep 3 s
-                std::thread::sleep(std::time::Duration::from_secs(3));
-                ws::start_server(8092).await.unwrap();
+                scrcpy_ws::start_server(7092).await.unwrap();
             });
             Ok(())
         })

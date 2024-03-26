@@ -76,6 +76,7 @@ onMounted(() => {
     <button @click="stop_server" v-if="server_status == 1">Stop: {{ server_pid }}</button>
     <input type="text" v-model="server_url" @change="set_settings" />
     <a :href="server_url" target="_blank">Open</a>
+    
   </div>
   <div class="button-container">
     <label>Agent:</label>
