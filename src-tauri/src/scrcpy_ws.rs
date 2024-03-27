@@ -49,9 +49,13 @@ async fn adb_forward_scrcpy_serber(serial: &str) -> Result<String, Box<dyn std::
     Ok(String::from_utf8(output.stdout).unwrap())
 }
 // adb -s 394b4d4d37313098 shell CLASSPATH=/data/local/tmp/scrcpy-server.jar app_process / com.genymobile.scrcpy.Server 2.3.1 tunnel_forward=true audio=false control=true cleanup=false raw_stream=true max_size=720
-async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<Child, Box<dyn std::error::Error>> {
-   //push scrcpy-server.jar to device
-   Command::new("bin/platform-tools/adb.exe")
+async fn start_scrcpy_server(
+    serial: &str,
+    max_size: i16,
+    control: &str,
+) -> Result<Child, Box<dyn std::error::Error>> {
+    //push scrcpy-server.jar to device
+    Command::new("bin/platform-tools/adb.exe")
         .arg("-s")
         .arg(serial)
         .arg("push")
@@ -72,9 +76,9 @@ async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<C
         .arg("audio=false")
         .arg("log_level=info")
         .arg("power_on=true")
-        .arg(format!("control={}",control))
+        .arg(format!("control={}", control))
         .arg("cleanup=true")
-        .arg(format!("max_size={}",max_size))
+        .arg(format!("max_size={}", max_size))
         .arg("max_fps=50")
         .stderr(Stdio::null())
         .stdout(Stdio::null())
@@ -83,7 +87,9 @@ async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<C
 
     Ok(child)
 }
-async fn connect_to_video_socket(serial: &str) -> Result<tokio::net::TcpStream, Box<dyn std::error::Error + Send + Sync>> {
+async fn connect_to_video_socket(
+    serial: &str,
+) -> Result<tokio::net::TcpStream, Box<dyn std::error::Error + Send + Sync>> {
     for _ in 0..10 {
         let local_port = adb_forward_scrcpy_serber(&serial).await.unwrap();
         // println!("local_port: {}", local_port);
@@ -105,8 +111,8 @@ async fn connect_to_video_socket(serial: &str) -> Result<tokio::net::TcpStream, 
                     }
                 };
                 let (mut read_socket, _) = scrcpy_video_server.split();
-                
-                 // read one byte to check if scrcpy server is ready
+
+                // read one byte to check if scrcpy server is ready
                 let mut buffer = [0; 1];
                 let n = read_socket.read(&mut buffer).await.unwrap();
                 if n > 0 {
@@ -124,33 +130,35 @@ async fn connect_to_video_socket(serial: &str) -> Result<tokio::net::TcpStream, 
     }
     Err("Failed to connect after 10 attempts".into())
 }
-async fn connect_to_control_socket(serial: &str) -> Result<tokio::net::TcpStream, Box<dyn std::error::Error + Send + Sync>> {
-        let local_port = adb_forward_scrcpy_serber(&serial).await.unwrap();
-        // println!("local_port: {}", local_port);
-        if local_port.is_empty() {
-            return Err("Failed to forward scrcpy server".into());
+async fn connect_to_control_socket(
+    serial: &str,
+) -> Result<tokio::net::TcpStream, Box<dyn std::error::Error + Send + Sync>> {
+    let local_port = adb_forward_scrcpy_serber(&serial).await.unwrap();
+    // println!("local_port: {}", local_port);
+    if local_port.is_empty() {
+        return Err("Failed to forward scrcpy server".into());
+    }
+    let local_url = format!("127.0.0.1:{}", local_port);
+    // println!("connecting to scrcpy control server: {}", local_url);
+    match tokio::net::TcpStream::connect(local_url.clone()).await {
+        Ok(stream) => {
+            let scrcpy_control_server = Some(stream);
+            let scrcpy_control_server = match scrcpy_control_server {
+                Some(server) => server,
+                None => {
+                    println!("Failed to connect: {}, retrying...", "None");
+                    return Err("Failed to connect".into());
+                }
+            };
+            // println!("connected to scrcpy control server");
+            return Ok(scrcpy_control_server);
         }
-        let local_url = format!("127.0.0.1:{}", local_port);
-        // println!("connecting to scrcpy control server: {}", local_url);
-        match tokio::net::TcpStream::connect(local_url.clone()).await {
-            Ok(stream) => {
-                let scrcpy_control_server = Some(stream);
-                let scrcpy_control_server = match scrcpy_control_server {
-                    Some(server) => server,
-                    None => {
-                        println!("Failed to connect: {}, retrying...", "None");
-                        return Err("Failed to connect".into());
-                    }
-                };
-                // println!("connected to scrcpy control server");
-                return Ok(scrcpy_control_server);
-            }
-            Err(e) => {
-                println!("Failed to connect: {}, retrying...", e);
-                return Err("Failed to connect".into());
-            }
+        Err(e) => {
+            println!("Failed to connect: {}, retrying...", e);
+            return Err("Failed to connect".into());
         }
     }
+}
 async fn handle_connection(stream: tokio::net::TcpStream) {
     println!("new connection");
     let mut client_ws_stream = accept_async(stream)
@@ -170,7 +178,10 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         .await
         .expect("Expected second message from client")
         .expect("Error reading second message from client");
-    let max_size:i16 = String::from_utf8(max_size.into_data()).expect("Error parsing second message").parse().unwrap(); 
+    let max_size: i16 = String::from_utf8(max_size.into_data())
+        .expect("Error parsing second message")
+        .parse()
+        .unwrap();
     // println!("max_size: {}", max_size);
     // read control from client
     let control = client_ws_stream
@@ -180,20 +191,22 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         .expect("Error reading third message from client");
     let control = String::from_utf8(control.into_data()).expect("Error parsing third message");
     // println!("control: {}", control);
-    
+
     let serial_clone = serial.clone();
     let control_clone = control.clone();
     tauri::async_runtime::spawn(async move {
-        start_scrcpy_server(&serial_clone,max_size,&control_clone).await.unwrap();
+        start_scrcpy_server(&serial_clone, max_size, &control_clone)
+            .await
+            .unwrap();
     });
     let (mut client_write, mut client_read) = client_ws_stream.split();
-    
+
     let result = connect_to_video_socket(&serial).await;
     if result.is_err() {
         println!("Failed to connect after 10 attempts");
         return;
     }
-    
+
     let mut scrcpy_video_server = result.unwrap();
     let (mut scrcpy_video_read_socket, _) = scrcpy_video_server.split();
     let mut scrcpy_control_server = None;
@@ -205,12 +218,10 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
             return;
         }
         scrcpy_control_server = Some(result.unwrap());
-        
     }
-    
 
     let mut ffmpeg = start_ffmpeg();
-   
+
     // read device name
     let mut buffer = [0; 64];
     let n = scrcpy_video_read_socket.read(&mut buffer).await.unwrap();
@@ -222,9 +233,10 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
     let width = u32::from_be_bytes([buffer[4], buffer[5], buffer[6], buffer[7]]);
     let height = u32::from_be_bytes([buffer[8], buffer[9], buffer[10], buffer[11]]);
     println!(
-        "device_name: {}, codec_id: {}, width: {}, height: {}", device_name, codec_id, width, height
+        "device_name: {}, codec_id: {}, width: {}, height: {}",
+        device_name, codec_id, width, height
     );
-    
+
     let client_to_server = async {
         while let Some(msg) = client_read.next().await {
             if scrcpy_control_server.is_none() {
@@ -261,7 +273,6 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         // println!("client_to_server finished");
     };
     let server_to_ffmpeg = async {
-        
         let mut buffer = [0; 12];
         while let Ok(n) = scrcpy_video_read_socket.read(&mut buffer).await {
             if n == 0 {
@@ -283,19 +294,20 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
 
             // Now read the packet data
             let mut packet_data = vec![0; packet_size as usize];
-            scrcpy_video_read_socket.read_exact(&mut packet_data).await.unwrap();
+            scrcpy_video_read_socket
+                .read_exact(&mut packet_data)
+                .await
+                .unwrap();
 
             // Now you can write the packet data to ffmpeg's stdin
             match ffmpeg.stdin.as_mut() {
-                Some(stdin) => {
-                    match stdin.write_all(&packet_data).await {
-                        Ok(_) => {},
-                        Err(e) => {
-                            println!("Failed to write to ffmpeg's stdin: {}", e);
-                            break;
-                        }
+                Some(stdin) => match stdin.write_all(&packet_data).await {
+                    Ok(_) => {}
+                    Err(e) => {
+                        println!("Failed to write to ffmpeg's stdin: {}", e);
+                        break;
                     }
-                }
+                },
                 None => {
                     println!("Failed to get ffmpeg's stdin");
                     break;
@@ -309,18 +321,18 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
             SearchingForStart,
             BuildingImage,
         }
-        
+
         let mut state = ParseState::SearchingForStart;
-        let mut buffer = vec![0; 1024*4];
+        let mut buffer = Vec::new();
         let mut image_buffer = Vec::new();
         let mut stdout = ffmpeg.stdout.take().expect("Failed to open stdout");
-        
-        while let Ok(n) = stdout.read(&mut buffer).await {
+
+        while let Ok(n) = stdout.read_to_end(&mut buffer).await {
             if n == 0 {
                 break;
             }
-           
-            for i in 0..n-1 {
+
+            for i in 0..n - 1 {
                 match state {
                     ParseState::SearchingForStart => {
                         if buffer[i] == 0xff && buffer[i + 1] == 0xd8 {
@@ -333,7 +345,10 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                         image_buffer.push(buffer[i]);
                         if buffer[i] == 0xff && buffer[i + 1] == 0xd9 {
                             image_buffer.push(buffer[i + 1]);
-                            match client_write.send(Message::binary(image_buffer.clone())).await {
+                            match client_write
+                                .send(Message::binary(image_buffer.clone()))
+                                .await
+                            {
                                 Ok(_) => {}
                                 Err(e) => {
                                     return;
@@ -345,7 +360,6 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                 }
             }
         }
-        
     };
 
     tokio::join!(client_to_server, server_to_ffmpeg, ffmpeg_to_client,);
