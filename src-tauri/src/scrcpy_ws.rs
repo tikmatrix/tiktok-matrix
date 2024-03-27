@@ -1,10 +1,8 @@
-use std::ops::ControlFlow;
 use std::process::Stdio;
 
 use byteorder::BigEndian;
 use futures_util::sink::SinkExt;
 use futures_util::StreamExt;
-use serde::de;
 use std::io::Cursor;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
@@ -77,7 +75,7 @@ async fn start_scrcpy_server(serial: &str,max_size:i16,control:&str) -> Result<C
         .arg(format!("control={}",control))
         .arg("cleanup=true")
         .arg(format!("max_size={}",max_size))
-        .arg("max_fps=30")
+        .arg("max_fps=50")
         .stderr(Stdio::null())
         .stdout(Stdio::null())
         .spawn()
@@ -313,7 +311,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         }
         
         let mut state = ParseState::SearchingForStart;
-        let mut buffer = vec![0; 1024*1024];
+        let mut buffer = vec![0; 1024*4];
         let mut image_buffer = Vec::new();
         let mut stdout = ffmpeg.stdout.take().expect("Failed to open stdout");
         
