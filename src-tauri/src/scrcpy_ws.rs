@@ -24,6 +24,7 @@ async fn adb_forward_scrcpy_serber(serial: &str) -> Result<String, Box<dyn std::
         .arg(serial)
         .arg("forward")
         .arg("--list")
+        .creation_flags(0x08000000)
         .output()
         .await?;
     let output = String::from_utf8(output.stdout).unwrap();
@@ -44,6 +45,7 @@ async fn adb_forward_scrcpy_serber(serial: &str) -> Result<String, Box<dyn std::
         .arg("forward")
         .arg("tcp:0")
         .arg("localabstract:scrcpy")
+        .creation_flags(0x08000000)
         .output()
         .await?;
     Ok(String::from_utf8(output.stdout).unwrap())
@@ -61,6 +63,7 @@ async fn start_scrcpy_server(
         .arg("push")
         .arg("bin/raw/scrcpy-server-v2.3.1")
         .arg("/data/local/tmp/scrcpy-server-manual.jar")
+        .creation_flags(0x08000000)
         .output()
         .await?;
     let child = Command::new("bin/platform-tools/adb.exe")
@@ -80,6 +83,7 @@ async fn start_scrcpy_server(
         .arg("cleanup=true")
         .arg(format!("max_size={}", max_size))
         .arg("max_fps=50")
+        .creation_flags(0x08000000)
         .stderr(Stdio::null())
         .stdout(Stdio::null())
         .spawn()
