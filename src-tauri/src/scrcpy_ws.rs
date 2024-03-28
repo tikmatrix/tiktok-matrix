@@ -220,8 +220,6 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         scrcpy_control_server = Some(result.unwrap());
     }
 
-    let mut ffmpeg = start_ffmpeg();
-
     // read device name
     let mut buffer = [0; 64];
     let n = scrcpy_video_read_socket.read(&mut buffer).await.unwrap();
@@ -272,7 +270,7 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
         }
         // println!("client_to_server finished");
     };
-    let server_to_ffmpeg = async {
+    let server_to_client = async {
         let mut buffer = [0; 12];
         while let Ok(n) = scrcpy_video_read_socket.read(&mut buffer).await {
             if n == 0 {
@@ -299,70 +297,17 @@ async fn handle_connection(stream: tokio::net::TcpStream) {
                 .await
                 .unwrap();
 
-            // Now you can write the packet data to ffmpeg's stdin
-            match ffmpeg.stdin.as_mut() {
-                Some(stdin) => match stdin.write_all(&packet_data).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        println!("Failed to write to ffmpeg's stdin: {}", e);
-                        break;
-                    }
-                },
-                None => {
-                    println!("Failed to get ffmpeg's stdin");
+            match client_write.send(Message::Binary(packet_data)).await {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Failed to write to client's stdout: {}", e);
                     break;
                 }
             }
         }
-        // println!("server_to_ffmpeg finished");
-    };
-    let ffmpeg_to_client = async {
-        enum ParseState {
-            SearchingForStart,
-            BuildingImage,
-        }
-
-        let mut state = ParseState::SearchingForStart;
-        let mut buffer = Vec::new();
-        let mut image_buffer = Vec::new();
-        let mut stdout = ffmpeg.stdout.take().expect("Failed to open stdout");
-
-        while let Ok(n) = stdout.read_to_end(&mut buffer).await {
-            if n == 0 {
-                break;
-            }
-
-            for i in 0..n - 1 {
-                match state {
-                    ParseState::SearchingForStart => {
-                        if buffer[i] == 0xff && buffer[i + 1] == 0xd8 {
-                            image_buffer.clear();
-                            image_buffer.push(buffer[i]);
-                            state = ParseState::BuildingImage;
-                        }
-                    }
-                    ParseState::BuildingImage => {
-                        image_buffer.push(buffer[i]);
-                        if buffer[i] == 0xff && buffer[i + 1] == 0xd9 {
-                            image_buffer.push(buffer[i + 1]);
-                            match client_write
-                                .send(Message::binary(image_buffer.clone()))
-                                .await
-                            {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    return;
-                                }
-                            }
-                            state = ParseState::SearchingForStart;
-                        }
-                    }
-                }
-            }
-        }
     };
 
-    tokio::join!(client_to_server, server_to_ffmpeg, ffmpeg_to_client,);
+    tokio::join!(client_to_server, server_to_client,);
     println!("connect finished");
 }
 
@@ -396,26 +341,6 @@ fn new_scrcpy_event(event: String, width: u32, height: u32) -> Option<Vec<u8>> {
     Some(packet)
 }
 
-fn start_ffmpeg() -> Child {
-    let ffmpeg = Command::new("bin/ffmpeg.exe")
-        .arg("-hwaccel")
-        .arg("auto") // auto, cuvid, qsv, d3d11va, dxva2, vaapi, vdpau, videotoolbox
-        .arg("-i")
-        .arg("-")
-        .arg("-f")
-        .arg("image2pipe")
-        .arg("-c:v")
-        .arg("mjpeg")
-        .arg("-")
-        .arg("-loglevel")
-        .arg("error")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()
-        .expect("Failed to start FFmpeg");
-    ffmpeg
-}
 #[tokio::test]
 pub async fn main() {
     start_server(7092).await.unwrap();
