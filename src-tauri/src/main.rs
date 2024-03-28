@@ -6,7 +6,7 @@ use std::process::{Command, Stdio};
 
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
 use tauri::{CustomMenuItem, Manager, Menu};
-mod ws;
+mod scrcpy_ws;
 
 #[derive(serde::Serialize)]
 struct Settings {
@@ -41,13 +41,16 @@ fn get_settings() -> Result<Settings, String> {
     let db = get_db();
 
     let local_ip = local_ip_address::local_ip().unwrap();
-
+    let mut port = 8090;
+    if cfg!(debug_assertions) {
+        port = 18090;
+    }
     let mut server_url = db
         .get::<String>("server_url")
-        .unwrap_or_else(|| format!("http://{}:8090", local_ip));
+        .unwrap_or_else(|| format!("http://{}:{}", local_ip, port));
 
     if server_url.is_empty() {
-        server_url = format!("http://{}:8090", local_ip);
+        server_url = format!("http://{}:{}", local_ip, port);
     }
     println!("server_url: {}", server_url);
     let version = db
@@ -89,10 +92,10 @@ fn stop_server(pid: i32) {
         .args(&["/F", "/PID", &pid.to_string()])
         .spawn();
     //kill tiktok-server process
-    let _ = Command::new("taskkill")
-        .args(&["/F", "/IM", "tiktok-server.exe"])
-        .status()
-        .expect("failed to kill server processes");
+    // let _ = Command::new("taskkill")
+    //     .args(&["/F", "/IM", "tiktok-server.exe"])
+    //     .status()
+    //     .expect("failed to kill server processes");
 }
 #[tauri::command]
 fn start_agent() -> u32 {
@@ -106,40 +109,20 @@ fn start_agent() -> u32 {
 #[tauri::command]
 fn stop_agent(pid: i32) {
     //kill adb process
-    let _ = Command::new("taskkill")
-        .args(&["/F", "/IM", "adb.exe"])
-        .status()
-        .expect("failed to kill adb processes");
+    // let _ = Command::new("taskkill")
+    //     .args(&["/F", "/IM", "adb.exe"])
+    //     .status()
+    //     .expect("failed to kill adb processes");
     let _ = Command::new("taskkill")
         .args(&["/F", "/PID", &pid.to_string()])
         .spawn();
     //kill tiktok-agent process
-    let _ = Command::new("taskkill")
-        .args(&["/F", "/IM", "tiktok-agent.exe"])
-        .status()
-        .expect("failed to kill agent processes");
+    // let _ = Command::new("taskkill")
+    //     .args(&["/F", "/IM", "tiktok-agent.exe"])
+    //     .status()
+    //     .expect("failed to kill agent processes");
 }
-#[tauri::command]
-fn start_adb_server() -> u32 {
-    //kill adb process
-    let _ = Command::new("taskkill")
-        .args(&["/F", "/IM", "adb.exe"])
-        .status()
-        .expect("failed to kill adb processes");
 
-    let child = Command::new("bin/platform-tools/adb")
-        .args(&["-a", "nodaemon", "server", "start"])
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("failed to start adb server");
-    child.id()
-}
-#[tauri::command]
-fn stop_adb_server(pid: i32) {
-    let _ = Command::new("taskkill")
-        .args(&["/F", "/PID", &pid.to_string()])
-        .spawn();
-}
 fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("./tmp")?;
     std::fs::create_dir_all("./data")?;
@@ -154,8 +137,6 @@ fn main() -> std::io::Result<()> {
             stop_server,
             start_agent,
             stop_agent,
-            start_adb_server,
-            stop_adb_server,
             get_settings,
             set_settings,
         ])
@@ -175,13 +156,11 @@ fn main() -> std::io::Result<()> {
             set_settings(None, Some(version));
             tauri::async_runtime::spawn(async move {
                 std::env::set_var("http_proxy", "");
-                let _ = Command::new("taskkill")
-                    .args(&["/F", "/IM", "adb.exe"])
-                    .status()
-                    .expect("failed to kill adb processes");
-                //sleep 3 s
-                std::thread::sleep(std::time::Duration::from_secs(3));
-                ws::start_server(8092).await.unwrap();
+                let mut port = 8092;
+                if cfg!(debug_assertions) {
+                    port = 18092;
+                }
+                scrcpy_ws::start_server(port).await.unwrap();
             });
             Ok(())
         })

@@ -24,6 +24,7 @@ tokio = { version = "1", features = ["full"] }
 pickledb = "0.5.1"
 reqwest = { version = "0.11", features = ["blocking", "multipart", "json"] }
 webbrowser = "0.8.12"
+byteorder = "1.4.3"
 
 
 [features]
