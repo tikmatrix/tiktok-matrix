@@ -17,16 +17,15 @@ pub async fn start_server(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     }
     Ok(())
 }
+
 async fn adb_forward_scrcpy_serber(serial: &str) -> Result<String, Box<dyn std::error::Error>> {
     //check if already forwarded
-    let output = Command::new("bin/platform-tools/adb.exe")
-        .arg("-s")
-        .arg(serial)
-        .arg("forward")
-        .arg("--list")
-        .creation_flags(0x08000000)
-        .output()
-        .await?;
+    let mut command = Command::new("bin/platform-tools/adb.exe");
+    command.args(&["-s", serial, "forward", "--list"]);
+
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    let output = command.output().await?;
     let output = String::from_utf8(output.stdout).unwrap();
     // check lines containing scrcpy
     let output = output.split('\n').collect::<Vec<&str>>();
@@ -39,15 +38,13 @@ async fn adb_forward_scrcpy_serber(serial: &str) -> Result<String, Box<dyn std::
             return Ok(local_port.to_string());
         }
     }
-    let output = Command::new("bin/platform-tools/adb.exe")
-        .arg("-s")
-        .arg(serial)
-        .arg("forward")
-        .arg("tcp:0")
-        .arg("localabstract:scrcpy")
-        .creation_flags(0x08000000)
-        .output()
-        .await?;
+
+    let mut command = Command::new("bin/platform-tools/adb.exe");
+    command.args(&["-s", serial, "forward", "tcp:0", "localabstract:scrcpy"]);
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    let output = command.output().await?;
+
     Ok(String::from_utf8(output.stdout).unwrap())
 }
 // adb -s 394b4d4d37313098 shell CLASSPATH=/data/local/tmp/scrcpy-server.jar app_process / com.genymobile.scrcpy.Server 2.3.1 tunnel_forward=true audio=false control=true cleanup=false raw_stream=true max_size=720
@@ -57,33 +54,41 @@ async fn start_scrcpy_server(
     control: &str,
 ) -> Result<Child, Box<dyn std::error::Error>> {
     //push scrcpy-server.jar to device
-    Command::new("bin/platform-tools/adb.exe")
-        .arg("-s")
-        .arg(serial)
-        .arg("push")
-        .arg("bin/raw/scrcpy-server-v2.3.1")
-        .arg("/data/local/tmp/scrcpy-server-manual.jar")
-        .creation_flags(0x08000000)
-        .output()
-        .await?;
-    let child = Command::new("bin/platform-tools/adb.exe")
-        .arg("-s")
-        .arg(serial)
-        .arg("shell")
-        .arg("CLASSPATH=/data/local/tmp/scrcpy-server-manual.jar")
-        .arg("app_process")
-        .arg("/")
-        .arg("com.genymobile.scrcpy.Server")
-        .arg("2.3.1")
-        .arg("tunnel_forward=true")
-        .arg("audio=false")
-        .arg("log_level=info")
-        .arg("power_on=true")
-        .arg(format!("control={}", control))
-        .arg("cleanup=true")
-        .arg(format!("max_size={}", max_size))
-        .arg("max_fps=50")
-        .creation_flags(0x08000000)
+    let mut command = Command::new("bin/platform-tools/adb.exe");
+    command.args(&[
+        "-s",
+        serial,
+        "push",
+        "bin/raw/scrcpy-server.jar",
+        "/data/local/tmp/scrcpy-server-manual.jar",
+    ]);
+
+    #[cfg(target_os = "windows")]
+    let command = command.creation_flags(0x08000000);
+    command.output().await?;
+    let mut command = Command::new("bin/platform-tools/adb.exe");
+    command.args(&[
+        "-s",
+        serial,
+        "shell",
+        "CLASSPATH=/data/local/tmp/scrcpy-server-manual.jar",
+        "app_process",
+        "/",
+        "com.genymobile.scrcpy.Server",
+        "2.3.1",
+        "tunnel_forward=true",
+        "audio=false",
+        "log_level=info",
+        "power_on=true",
+        &format!("control={}", control),
+        "cleanup=true",
+        &format!("max_size={}", max_size),
+        "max_fps=50",
+    ]);
+
+    #[cfg(target_os = "windows")]
+    let command = command.creation_flags(0x08000000);
+    let child = command
         .stderr(Stdio::null())
         .stdout(Stdio::null())
         .spawn()
