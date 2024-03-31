@@ -51,7 +51,6 @@ fn get_settings() -> Result<Settings, String> {
     if server_url.is_empty() {
         server_url = format!("http://{}:{}", local_ip, port);
     }
-    println!("server_url: {}", server_url);
     let version = db
         .get::<String>("version")
         .unwrap_or_else(|| "0.0.0".to_string());
@@ -73,11 +72,9 @@ fn set_settings(server_url: Option<String>, version: Option<String>) {
     }
 }
 
-//check license
 #[tauri::command]
 fn start_server() -> u32 {
     setup_env();
-
     let child = Command::new("bin/tiktok-server")
         .stdout(Stdio::piped())
         .spawn()
