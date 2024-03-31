@@ -125,6 +125,11 @@ fn stop_agent(pid: i32) {
         .args(&["/F", "/IM", "tiktok-agent.exe"])
         .status()
         .expect("failed to kill agent processes");
+    //kill scrcpy-agent process
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", "scrcpy-agent.exe"])
+        .status()
+        .expect("failed to kill agent processes");
 }
 
 fn main() -> std::io::Result<()> {
