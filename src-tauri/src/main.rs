@@ -5,8 +5,9 @@
 use std::process::{Command, Stdio};
 
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use tauri::{CustomMenuItem, Manager, Menu};
-
 #[derive(serde::Serialize)]
 struct Settings {
     server_url: String,
