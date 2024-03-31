@@ -29,7 +29,8 @@
         "bin/platform-tools",
         "bin/raw",
         "bin/tiktok-agent.exe",
-        "bin/tiktok-server.exe"
+        "bin/tiktok-server.exe",
+        "bin/scrcpy-agent.exe"
       ],
       "active": true,
       "targets": "msi",
