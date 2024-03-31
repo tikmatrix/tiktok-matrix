@@ -77,8 +77,10 @@ fn set_settings(server_url: Option<String>, version: Option<String>) {
 fn start_server() -> u32 {
     setup_env();
     let mut command = Command::new("bin/tiktok-server");
-    #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
+    if !cfg!(debug_assertions) {
+        #[cfg(target_os = "windows")]
+        command.creation_flags(0x08000000);
+    }
     let child = command
         .stdout(Stdio::piped())
         .spawn()
@@ -109,15 +111,19 @@ fn start_agent() -> u32 {
     setup_env();
     //start scrcpy-agent
     let mut command = Command::new("bin/scrcpy-agent");
-    #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
+    if !cfg!(debug_assertions) {
+        #[cfg(target_os = "windows")]
+        command.creation_flags(0x08000000);
+    }
     command
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start agent");
     let mut command = Command::new("bin/tiktok-agent");
-    #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
+    if !cfg!(debug_assertions) {
+        #[cfg(target_os = "windows")]
+        command.creation_flags(0x08000000);
+    }
     let child = command
         .stdout(Stdio::piped())
         .spawn()
