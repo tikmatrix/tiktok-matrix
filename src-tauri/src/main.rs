@@ -75,7 +75,10 @@ fn set_settings(server_url: Option<String>, version: Option<String>) {
 #[tauri::command]
 fn start_server() -> u32 {
     setup_env();
-    let child = Command::new("bin/tiktok-server")
+    let mut command = Command::new("bin/tiktok-server");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    let child = command
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start server");
@@ -84,11 +87,18 @@ fn start_server() -> u32 {
 
 #[tauri::command]
 fn stop_server(pid: i32) {
-    let _ = Command::new("taskkill")
+    let mut command = Command::new("taskkill");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    command
         .args(&["/F", "/PID", &pid.to_string()])
-        .spawn();
+        .status()
+        .expect("failed to kill agent processes");
     //kill tiktok-server process
-    let _ = Command::new("taskkill")
+    let mut command = Command::new("taskkill");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    command
         .args(&["/F", "/IM", "tiktok-server.exe"])
         .status()
         .expect("failed to kill server processes");
@@ -97,11 +107,17 @@ fn stop_server(pid: i32) {
 fn start_agent() -> u32 {
     setup_env();
     //start scrcpy-agent
-    let child = Command::new("bin/scrcpy-agent")
+    let mut command = Command::new("bin/scrcpy-agent");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    command
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start agent");
-    let child = Command::new("bin/tiktok-agent")
+    let mut command = Command::new("bin/tiktok-agent");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    let child = command
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start agent");
@@ -110,20 +126,33 @@ fn start_agent() -> u32 {
 #[tauri::command]
 fn stop_agent(pid: i32) {
     //kill adb process
-    let _ = Command::new("taskkill")
+    let mut command = Command::new("taskkill");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    command
         .args(&["/F", "/IM", "adb.exe"])
         .status()
         .expect("failed to kill adb processes");
-    let _ = Command::new("taskkill")
+    let mut command = Command::new("taskkill");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    command
         .args(&["/F", "/PID", &pid.to_string()])
-        .spawn();
+        .status()
+        .expect("failed to kill agent processes");
     //kill tiktok-agent process
-    let _ = Command::new("taskkill")
+    let mut command = Command::new("taskkill");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    command
         .args(&["/F", "/IM", "tiktok-agent.exe"])
         .status()
         .expect("failed to kill agent processes");
     //kill scrcpy-agent process
-    let _ = Command::new("taskkill")
+    let mut command = Command::new("taskkill");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    command
         .args(&["/F", "/IM", "scrcpy-agent.exe"])
         .status()
         .expect("failed to kill agent processes");
