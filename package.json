@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build:tiktok-vue:dev": "cd tiktok-vue && npm install && npm run build:dev && npx shx cp -rf dist ../src-tauri/bin/",
     "build:tiktok-vue": "cd tiktok-vue && npm install && npm run build && npx shx cp -rf dist ../src-tauri/bin/",
     "copy:bots": "npx shx cp -rf tiktok-agent/bin/* src-tauri/bin/",
     "build:tiktok-server:dev": "cd tiktok-server && cargo build && npx shx cp -rf target/debug/tiktok-server.exe ../src-tauri/bin/",
@@ -12,7 +13,7 @@
     "build:tiktok-server": "cd tiktok-server && cargo build --release && npx shx cp -rf target/release/tiktok-server.exe ../src-tauri/bin/",
     "build:tiktok-agent": "cd tiktok-agent && cargo build --release && npx shx cp -rf target/release/tiktok-agent.exe ../src-tauri/bin/",
     "build:scrcpy-agent": "cd scrcpy-agent && cargo build --release && npx shx cp -rf target/release/scrcpy-agent.exe ../src-tauri/bin/",
-    "dev": "npm run build:tiktok-vue && npm run build:tiktok-server:dev && npm run build:tiktok-agent:dev && npm run build:scrcpy-agent:dev && vite",
+    "dev": "npm run build:tiktok-vue:dev && npm run build:tiktok-server:dev && npm run build:tiktok-agent:dev && npm run build:scrcpy-agent:dev && vite",
     "build": "npm run build:tiktok-vue && npm run build:tiktok-server && npm run build:tiktok-agent && npm run build:scrcpy-agent && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
