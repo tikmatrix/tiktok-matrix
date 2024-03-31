@@ -7,3 +7,6 @@
 [submodule "tiktok-server"]
 	path = tiktok-server
 	url = https://github.com/niostack/tiktok-server.git
+[submodule "scrcpy-agent"]
+	path = scrcpy-agent
+	url = https://github.com/niostack/scrcpy-agent.git

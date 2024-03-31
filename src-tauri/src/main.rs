@@ -6,7 +6,6 @@ use std::process::{Command, Stdio};
 
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
 use tauri::{CustomMenuItem, Manager, Menu};
-mod scrcpy_ws;
 
 #[derive(serde::Serialize)]
 struct Settings {
@@ -92,14 +91,19 @@ fn stop_server(pid: i32) {
         .args(&["/F", "/PID", &pid.to_string()])
         .spawn();
     //kill tiktok-server process
-    // let _ = Command::new("taskkill")
-    //     .args(&["/F", "/IM", "tiktok-server.exe"])
-    //     .status()
-    //     .expect("failed to kill server processes");
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", "tiktok-server.exe"])
+        .status()
+        .expect("failed to kill server processes");
 }
 #[tauri::command]
 fn start_agent() -> u32 {
     setup_env();
+    //start scrcpy-agent
+    let child = Command::new("bin/scrcpy-agent")
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to start agent");
     let child = Command::new("bin/tiktok-agent")
         .stdout(Stdio::piped())
         .spawn()
@@ -109,18 +113,18 @@ fn start_agent() -> u32 {
 #[tauri::command]
 fn stop_agent(pid: i32) {
     //kill adb process
-    // let _ = Command::new("taskkill")
-    //     .args(&["/F", "/IM", "adb.exe"])
-    //     .status()
-    //     .expect("failed to kill adb processes");
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", "adb.exe"])
+        .status()
+        .expect("failed to kill adb processes");
     let _ = Command::new("taskkill")
         .args(&["/F", "/PID", &pid.to_string()])
         .spawn();
     //kill tiktok-agent process
-    // let _ = Command::new("taskkill")
-    //     .args(&["/F", "/IM", "tiktok-agent.exe"])
-    //     .status()
-    //     .expect("failed to kill agent processes");
+    let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", "tiktok-agent.exe"])
+        .status()
+        .expect("failed to kill agent processes");
 }
 
 fn main() -> std::io::Result<()> {
@@ -154,14 +158,7 @@ fn main() -> std::io::Result<()> {
             });
             let version = app.package_info().version.to_string();
             set_settings(None, Some(version));
-            tauri::async_runtime::spawn(async move {
-                std::env::set_var("http_proxy", "");
-                let mut port = 8092;
-                if cfg!(debug_assertions) {
-                    port = 18092;
-                }
-                scrcpy_ws::start_server(port).await.unwrap();
-            });
+
             Ok(())
         })
         .menu(menu)
