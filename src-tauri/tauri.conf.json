@@ -25,7 +25,6 @@
     "bundle": {
       "resources": [
         "bin/dist",
-        "bin/PaddleOCR-json_v.1.3.1",
         "bin/platform-tools",
         "bin/raw",
         "bin/tiktok-agent.exe",
