@@ -25,9 +25,13 @@ npm run tauri build
 
 ## 感谢下面开源项目
 
-* https://github.com/Genymobile/scrcpy
+* <https://github.com/Genymobile/scrcpy>
 
 ## release
+
+### 1.0.5
+
+* fix some bugs
 
 ### 1.0.4
 
