@@ -13,7 +13,7 @@
     "build:tiktok-server": "cd tiktok-server && cargo build --release && npx shx cp -rf target/release/tiktok-server.exe ../src-tauri/bin/",
     "build:tiktok-agent": "cd tiktok-agent && cargo build --release && npx shx cp -rf target/release/tiktok-agent.exe ../src-tauri/bin/",
     "build:scrcpy-agent": "cd scrcpy-agent && cargo build --release && npx shx cp -rf target/release/scrcpy-agent.exe ../src-tauri/bin/",
-    "dev": "npm run build:tiktok-vue:dev && npm run build:tiktok-server:dev && npm run build:tiktok-agent:dev && npm run build:scrcpy-agent:dev && vite",
+    "dev": "vite",
     "build": "npm run build:tiktok-vue && npm run build:tiktok-server && npm run build:tiktok-agent && npm run build:scrcpy-agent && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
