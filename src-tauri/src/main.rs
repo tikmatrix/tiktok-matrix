@@ -7,7 +7,6 @@ use std::process::{Command, Stdio};
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
-use tauri::{CustomMenuItem, Manager, Menu};
 #[derive(serde::Serialize)]
 struct Settings {
     server_url: String,
@@ -89,14 +88,7 @@ fn start_server() -> u32 {
 }
 
 #[tauri::command]
-fn stop_server(pid: i32) {
-    let mut command = Command::new("taskkill");
-    #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
-    command
-        .args(&["/F", "/PID", &pid.to_string()])
-        .status()
-        .expect("failed to kill agent processes");
+fn stop_server() {
     //kill tiktok-server process
     let mut command = Command::new("taskkill");
     #[cfg(target_os = "windows")]
@@ -131,7 +123,7 @@ fn start_agent() -> u32 {
     child.id()
 }
 #[tauri::command]
-fn stop_agent(pid: i32) {
+fn stop_agent() {
     //kill adb process
     let mut command = Command::new("taskkill");
     #[cfg(target_os = "windows")]
@@ -140,13 +132,7 @@ fn stop_agent(pid: i32) {
         .args(&["/F", "/IM", "adb.exe"])
         .status()
         .expect("failed to kill adb processes");
-    let mut command = Command::new("taskkill");
-    #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
-    command
-        .args(&["/F", "/PID", &pid.to_string()])
-        .status()
-        .expect("failed to kill agent processes");
+
     //kill tiktok-agent process
     let mut command = Command::new("taskkill");
     #[cfg(target_os = "windows")]
@@ -172,7 +158,6 @@ fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("./upload/material")?;
     std::fs::create_dir_all("./upload/avatar")?;
     std::fs::create_dir_all("./upload/apk")?;
-    let menu = Menu::new().add_item(CustomMenuItem::new("github", "GitHub"));
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_server,
@@ -183,23 +168,10 @@ fn main() -> std::io::Result<()> {
             set_settings,
         ])
         .setup(|app| {
-            let main_window = app.get_window("main").unwrap();
-            main_window.on_menu_event(move |event| match event.menu_item_id() {
-                "github" => {
-                    if let Err(err) = webbrowser::open("https://github.com/niostack/tiktok-matrix")
-                    {
-                        eprintln!("Failed to open web page: {}", err);
-                    }
-                }
-
-                _ => {}
-            });
             let version = app.package_info().version.to_string();
             set_settings(None, Some(version));
-
             Ok(())
         })
-        .menu(menu)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())
