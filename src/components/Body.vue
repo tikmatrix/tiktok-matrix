@@ -8,7 +8,7 @@ const server_url = ref("");
 
 
 async function start_server() {
-  server_pid.value = await invoke("start_server");
+  await invoke("start_server");
   server_status.value = 1;
 }
 async function stop_server() {
@@ -16,7 +16,7 @@ async function stop_server() {
   server_status.value = 0;
 }
 async function start_agent() {
-  agent_pid.value = await invoke("start_agent");
+  await invoke("start_agent");
   agent_status.value = 1;
 
 }
