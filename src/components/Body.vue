@@ -2,6 +2,9 @@
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 import { onMounted } from 'vue';
+import { window } from "@tauri-apps/api"
+import { TauriEvent } from "@tauri-apps/api/event"
+import { ask } from '@tauri-apps/api/dialog';
 const server_status = ref(0);
 const agent_status = ref(0);
 const server_url = ref("");
@@ -57,15 +60,16 @@ function toggle_agent() {
 
 
 onMounted(() => {
-  window.addEventListener('beforeunload', (event) => {
-    if (server_status.value == 1) {
-      stop_server();
-    }
-    if (agent_status.value == 1) {
-      stop_agent();
-    }
-
-  });
+    window.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
+      const yes = await ask("Closing window and maybe saving some data :)", "Are you sure?");
+      console.log("result:" + yes);
+      if (yes) {
+        stop_server();
+        stop_agent();
+        window.getCurrent().close();
+      }
+    });
+  
   get_settings();
 
 });

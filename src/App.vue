@@ -13,6 +13,14 @@ export default {
   components: {
     AppBar,
     Body
-  }
+  },
+  data() {
+    return {
+    }
+  },
+  methods: {
+  },
+
+
 }
 </script>
