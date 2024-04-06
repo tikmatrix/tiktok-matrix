@@ -61,7 +61,7 @@
       "active": true,
       "dialog": true,
       "endpoints": [
-        "https://gist.githubusercontent.com/niostack/e287c72cb91dcd62f13b2ca08d5e7093/raw/f3b384ecaf5a61ffaadf756c380fcfd12826df9d/gistfile1.txt"
+        "https://raw.githubusercontent.com/niostack/tiktok-matrix/main/update.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENCNzMyMUE4ODZENTcwOEEKUldTS2NOV0dxQ0Z6eStkaXhiMERsc3c4MWF5Y1R0YUp6Wlo1VE5saWt5bXlVYmV3ejVSQW5PR1cK",
       "windows": {
