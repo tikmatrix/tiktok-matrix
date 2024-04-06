@@ -56,7 +56,8 @@
                             </ul>
                         </details>
                     </li> -->
-
+                    <li>
+                        <a @click="checkUpdate">Check Update</a></li>
                 </ul>
             </div>
 
@@ -64,7 +65,7 @@
     </div>
 </template>
 <script>
-
+import { emit } from '@tauri-apps/api/event';
 export default {
     name: 'appbar',
     components: {
@@ -76,6 +77,9 @@ export default {
     },
 
     methods: {
+        async checkUpdate() {
+            await emit('tauri://update', {  });
+        },
         loadTheme() {
             this.isDark = localStorage.getItem('theme') === 'dark'
         },
