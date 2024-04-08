@@ -5,6 +5,6 @@ if ($message -eq "") {
 }
 echo commint: $message
 git submodule foreach git add .
-git submodule foreach git commit -m $message | echo "Nothing to commit"
+git submodule foreach "git commit -a -m '$message' || echo nothing to commit"
 git add .
 git commit -m $message
