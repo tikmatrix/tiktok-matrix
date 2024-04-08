@@ -1,7 +1,7 @@
 [package]
 name = "tiktok-matrix"
 version = "0.0.5"
-description = "TikTok Matrix System by niostack.com"
+description = "TikTok Matrix System by tikmatrix.com"
 authors = ["niostack"]
 repository = ""
 edition = "2021"
