@@ -1,5 +1,5 @@
-[submodule "tikmatrix-admin"]
-	path = tikmatrix-admin
+[submodule "TikMatrix-Admin"]
+	path = TikMatrix-Admin
 	url = https://github.com/tikmatrix/TikMatrix-Admin.git
 [submodule "tiktok-agent"]
 	path = tiktok-agent
