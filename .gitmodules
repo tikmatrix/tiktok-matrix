@@ -7,6 +7,3 @@
 [submodule "tiktok-server"]
 	path = tiktok-server
 	url = https://github.com/tikmatrix/tiktok-server.git
-[submodule "scrcpy-agent"]
-	path = scrcpy-agent
-	url = https://github.com/tikmatrix/scrcpy-agent.git
