@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "run:tiktok-vue:test": "cd tiktok-vue && npm run test",
+    "run:tiktok-vue:dev": "cd tiktok-vue && npm run dev",
     "build:tiktok-vue:dev": "cd tiktok-vue && npm install && npm run build:dev && npx shx cp -rf dist ../src-tauri/bin/",
     "build:tiktok-vue": "cd tiktok-vue && npm install && npm run build && npx shx cp -rf dist ../src-tauri/bin/",
     "copy:bots": "npx shx cp -rf tiktok-agent/bin/* src-tauri/bin/",
