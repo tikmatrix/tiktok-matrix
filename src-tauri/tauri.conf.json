@@ -71,9 +71,7 @@
         "bin/dist",
         "bin/platform-tools",
         "bin/raw",
-        "bin/tiktok-agent.exe",
-        "bin/tiktok-server.exe",
-        "bin/scrcpy-agent.exe"
+        "bin/*.exe"
       ],
       "active": true,
       "targets": [
