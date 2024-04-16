@@ -10,6 +10,7 @@
             <div class="flex-1 visible lg:invisible">
                 <font-awesome-icon icon="fa-brands fa-tiktok" />
                 <a class="btn btn-ghost text-xl">TikTok Matrix</a>
+                
             </div>
             <div class="flex-none">
                 <ul class="menu menu-horizontal px-1">

@@ -73,32 +73,6 @@ fn set_settings(server_url: Option<String>, version: Option<String>) {
 }
 
 #[tauri::command]
-fn start_server() -> u32 {
-    setup_env();
-    let mut command = Command::new("bin/tiktok-server");
-    if !cfg!(debug_assertions) {
-        #[cfg(target_os = "windows")]
-        command.creation_flags(0x08000000);
-    }
-    let child = command
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("failed to start server");
-    child.id()
-}
-
-#[tauri::command]
-fn stop_server() {
-    //kill tiktok-server process
-    let mut command = Command::new("taskkill");
-    #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
-    command
-        .args(&["/F", "/IM", "tiktok-server.exe"])
-        .status()
-        .expect("failed to kill server processes");
-}
-#[tauri::command]
 fn start_agent() -> u32 {
     setup_env();
     //start scrcpy-agent
@@ -150,8 +124,21 @@ fn stop_agent() {
         .status()
         .expect("failed to kill agent processes");
 }
+//open_log_dir
+#[tauri::command]
+fn open_log_dir() {
+    let mut command = Command::new("cmd");
+    #[cfg(target_os = "windows")]
+    command.creation_flags(0x08000000);
+    command
+        .arg("start")
+        .arg("logs")
+        .status()
+        .expect("failed to open log dir");
+}
 
 fn main() -> std::io::Result<()> {
+    std::fs::create_dir_all("./logs")?;
     std::fs::create_dir_all("./tmp")?;
     std::fs::create_dir_all("./data")?;
     std::fs::create_dir_all("./upload")?;
@@ -160,12 +147,11 @@ fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("./upload/apk")?;
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            start_server,
-            stop_server,
             start_agent,
             stop_agent,
             get_settings,
             set_settings,
+            open_log_dir
         ])
         .setup(|app| {
             let version = app.package_info().version.to_string();

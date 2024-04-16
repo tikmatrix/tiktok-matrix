@@ -4,6 +4,3 @@
 [submodule "tiktok-agent"]
 	path = tiktok-agent
 	url = https://github.com/tikmatrix/tiktok-agent.git
-[submodule "tiktok-server"]
-	path = tiktok-server
-	url = https://github.com/tikmatrix/tiktok-server.git
