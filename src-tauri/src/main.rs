@@ -131,8 +131,7 @@ fn open_log_dir() {
     #[cfg(target_os = "windows")]
     command.creation_flags(0x08000000);
     command
-        .arg("start")
-        .arg("logs")
+        .args(&["/C", "start", "logs"])
         .status()
         .expect("failed to open log dir");
 }
