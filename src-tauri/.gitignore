@@ -3,6 +3,7 @@
 /target/
 dist
 *.exe
+apk
 tmp
 upload
 logs
