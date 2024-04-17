@@ -76,7 +76,7 @@ fn set_settings(server_url: Option<String>, version: Option<String>) {
 fn start_agent() -> u32 {
     setup_env();
     //start scrcpy-agent
-    let mut command = Command::new("bin/scrcpy-agent");
+    let mut command = Command::new("bin/script/scrcpy-agent");
     if !cfg!(debug_assertions) {
         #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
@@ -85,7 +85,7 @@ fn start_agent() -> u32 {
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start agent");
-    let mut command = Command::new("bin/tiktok-agent");
+    let mut command = Command::new("bin/script/tiktok-agent");
     if !cfg!(debug_assertions) {
         #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
@@ -126,12 +126,12 @@ fn stop_agent() {
 }
 //open_log_dir
 #[tauri::command]
-fn open_log_dir() {
+fn open_dir(name: String) {
     let mut command = Command::new("cmd");
     #[cfg(target_os = "windows")]
     command.creation_flags(0x08000000);
     command
-        .args(&["/C", "start", "logs"])
+        .args(&["/C", "start", &name])
         .status()
         .expect("failed to open log dir");
 }
@@ -150,7 +150,7 @@ fn main() -> std::io::Result<()> {
             stop_agent,
             get_settings,
             set_settings,
-            open_log_dir
+            open_dir
         ])
         .setup(|app| {
             let version = app.package_info().version.to_string();

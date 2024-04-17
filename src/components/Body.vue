@@ -28,14 +28,11 @@ async function stop_agent() {
 async function get_settings() {
   settings.value = await invoke("get_settings");
 }
-async function set_settings() {
-  console.log("set_settings");
-  await invoke("set_settings", {
-    serverUrl: server_url.value
+
+async function open_dir(name) {
+  await invoke("open_dir", {
+    name
   });
-}
-async function open_log_dir() {
-  await invoke("open_log_dir");
 }
 
 
@@ -61,6 +58,7 @@ onMounted(() => {
     });
   
   get_settings();
+  stop_agent();
   start_agent();
 
 });
@@ -85,8 +83,11 @@ onMounted(() => {
       </div>
     </div>
     <div class="flex justify-center px-4 py-4 border-t border-base-300">
-      <a class="link link-primary" :href="settings.server_url" target="_blank">Click to open</a>
+      <button class="btn btn-outline btn-success m-2" @click="open_admin_console">
+      <a :href="settings.server_url" target="_blank">Open Admin Console</a>
+      </button>
     </div>
   </div>
-  <a class="link link-error" @click="open_log_dir">Open Logs Directory</a>
+  <button class="btn btn-outline btn-primary m-2" @click="open_dir('logs')">Open Logs Dir</button>
+  <button class="btn btn-outline btn-secondary m-2" @click="open_dir('bin\\script')">Open Scripts Dir</button>
 </template>
