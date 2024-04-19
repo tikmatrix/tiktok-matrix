@@ -6,11 +6,9 @@
   "scripts": {
     "run:tiktok-vue:test": "cd tiktok-vue && npm run test",
     "run:tiktok-vue:dev": "cd tiktok-vue && npm run dev",
-    "build:tiktok-vue:dev": "cd tiktok-vue && npm install && npm run build:dev && npx shx cp -rf dist ../src-tauri/bin/",
-    "build:tiktok-vue": "cd tiktok-vue && npm install && npm run build && npx shx cp -rf dist ../src-tauri/bin/",
-    "copy:bots": "npx shx cp -rf tiktok-agent/bin/* src-tauri/bin/",
     "build:tiktok-agent:dev": "cd tiktok-agent && cargo build && npx shx cp -rf target/debug/*.exe ../src-tauri/bin/script/",
     "build:tiktok-agent": "cd tiktok-agent && cargo build --release && npx shx cp -rf target/release/*.exe ../src-tauri/bin/script/",
+    "copy:bots": "npx shx cp -rf tiktok-agent/bin/* src-tauri/bin/",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

@@ -6,18 +6,13 @@ import { window } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
 import { ask } from '@tauri-apps/api/dialog';
 
-
-
-
 const agent_status = ref(false);
 const settings = ref({});
-
-
+const admin_url = ref("https://admin.tikmatrix.com");
 
 async function start_agent() {
   await invoke("start_agent");
   agent_status.value = true;
-
 }
 
 async function stop_agent() {
@@ -73,18 +68,17 @@ onMounted(() => {
         <input type="checkbox" class="toggle toggle-secondary" @change="toggle_agent" v-model="agent_status"/>
       </label>
     </div>
-
   </div>
 
   <div class="mockup-browser border border-base-300">
     <div class="mockup-browser-toolbar">
       <div class="input border border-base-300">
-        {{ settings.server_url }}
+        {{ admin_url }}
       </div>
     </div>
     <div class="flex justify-center px-4 py-4 border-t border-base-300">
       <button class="btn btn-outline btn-success m-2" @click="open_admin_console">
-      <a :href="settings.server_url" target="_blank">Open Admin Console</a>
+          <a href="https://admin.tikmatrix.com" target="_blank">Open Admin Console</a>
       </button>
     </div>
   </div>
