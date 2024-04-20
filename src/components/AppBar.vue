@@ -14,7 +14,7 @@
             </div>
             <div class="flex-none">
                 <ul class="menu menu-horizontal px-1">
-                    <li><a href="https://doc.tikmatrix.com" target="_blank">Doc</a></li>
+                    <li><a href="https://doc.tikmatrix.com" target="_blank">Document</a></li>
                     <li>
                         <label class="swap swap-rotate">
 
