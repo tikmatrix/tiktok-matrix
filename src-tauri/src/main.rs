@@ -75,16 +75,7 @@ fn set_settings(server_url: Option<String>, version: Option<String>) {
 #[tauri::command]
 fn start_agent() -> u32 {
     setup_env();
-    //start scrcpy-agent
-    let mut command = Command::new("bin/script/scrcpy-agent");
-    if !cfg!(debug_assertions) {
-        #[cfg(target_os = "windows")]
-        command.creation_flags(0x08000000);
-    }
-    command
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("failed to start agent");
+
     let mut command = Command::new("bin/script/tiktok-agent");
     if !cfg!(debug_assertions) {
         #[cfg(target_os = "windows")]
@@ -113,14 +104,6 @@ fn stop_agent() {
     command.creation_flags(0x08000000);
     command
         .args(&["/F", "/IM", "tiktok-agent.exe"])
-        .status()
-        .expect("failed to kill agent processes");
-    //kill scrcpy-agent process
-    let mut command = Command::new("taskkill");
-    #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
-    command
-        .args(&["/F", "/IM", "scrcpy-agent.exe"])
         .status()
         .expect("failed to kill agent processes");
 }
