@@ -89,34 +89,67 @@ fn start_agent() -> u32 {
 }
 #[tauri::command]
 fn stop_agent() {
-    //kill adb process
-    let mut command = Command::new("taskkill");
+    // Kill adb process
     #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
-    command
-        .args(&["/F", "/IM", "adb.exe"])
-        .status()
-        .expect("failed to kill adb processes");
+    {
+        let mut command = Command::new("taskkill");
+        command.creation_flags(0x08000000);
+        command
+            .args(&["/F", "/IM", "adb.exe"])
+            .status()
+            .expect("failed to kill adb processes");
+    }
 
-    //kill tiktok-agent process
-    let mut command = Command::new("taskkill");
+    #[cfg(target_os = "macos")]
+    {
+        let mut command = Command::new("pkill");
+        command
+            .args(&["-f", "adb"])
+            .status()
+            .expect("failed to kill adb processes");
+    }
+
+    // Kill tiktok-agent process
     #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
-    command
-        .args(&["/F", "/IM", "tiktok-agent.exe"])
-        .status()
-        .expect("failed to kill agent processes");
+    {
+        let mut command = Command::new("taskkill");
+        command.creation_flags(0x08000000);
+        command
+            .args(&["/F", "/IM", "tiktok-agent.exe"])
+            .status()
+            .expect("failed to kill agent processes");
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let mut command = Command::new("pkill");
+        command
+            .args(&["-f", "tiktok-agent"])
+            .status()
+            .expect("failed to kill agent processes");
+    }
 }
 //open_log_dir
 #[tauri::command]
 fn open_dir(name: String) {
-    let mut command = Command::new("cmd");
     #[cfg(target_os = "windows")]
-    command.creation_flags(0x08000000);
-    command
-        .args(&["/C", "start", &name])
-        .status()
-        .expect("failed to open log dir");
+    {
+        let mut command = Command::new("cmd");
+        #[cfg(target_os = "windows")]
+        command.creation_flags(0x08000000);
+        command
+            .args(&["/C", "start", &name])
+            .status()
+            .expect("failed to open log dir");
+    }
+    #[cfg(target_os = "macos")]
+    {
+        let mut command = Command::new("open");
+        command
+            .args(&[&name])
+            .status()
+            .expect("failed to open log dir");
+    }
 }
 
 fn main() -> std::io::Result<()> {
