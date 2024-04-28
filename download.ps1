@@ -1,7 +1,7 @@
 param([string]$url)
 $timestamp = Get-Date -Format "yyyyMMddHHmmssfff"
 $filename = $timestamp.Substring($timestamp.Length - 6)
-
+$Env:http_proxy = "http://127.0.0.1:7890"; $Env:https_proxy = "http://127.0.0.1:7890"
 # 下载视频
 ./src-tauri/bin/yt-dlp.exe -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" --merge-output-format mp4 --output "videos/input_$filename.mp4" --proxy 127.0.0.1:7890 $url
 
