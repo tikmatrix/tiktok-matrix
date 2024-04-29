@@ -42,7 +42,7 @@ fn get_settings() -> Result<Settings, String> {
     let local_ip = local_ip_address::local_ip().unwrap();
     let mut port = 8090;
     if cfg!(debug_assertions) {
-        port = 18090;
+        port = 8090;
     }
     let mut server_url = db
         .get::<String>("server_url")
