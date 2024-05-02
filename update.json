@@ -1,11 +1,11 @@
 {
-    "version": "v1.1.7",
-    "notes": "v1.1.7 is released! Please update to the new version.",
-    "pub_date": "2024-04-23T23:00:00Z",
+    "version": "v1.1.8",
+    "notes": "v1.1.8 is released! Please update to the new version.",
+    "pub_date": "2024-05-03T23:00:00Z",
     "platforms": {
         "windows-x86_64": {
-            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTS2NOV0dxQ0Z6eXdXWk5DbHBPblJoSVVINDNNdmpyQkxCU1JTb2tDQnd2blhWaDBvNFo0V0pnS3pBS0RJM1FNVzBmK0lCZVVIeVZPYzd1czcrcjBVNmN0dzNqd0lkTnc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzE0NTc2MjA4CWZpbGU6dGlrdG9rLW1hdHJpeF8xLjEuN194NjRfZW4tVVMubXNpLnppcAo3SlVyKy9vNGpJSWxoN0huRkVHclo5YUh3WFFpWVRQeThFcHl5WHRvOThsL2xLRXMxUjBEczhrVVBCU3lBYUNQWFBVTDdjWmdKWUttQjhoWUhxZklDdz09Cg==",
-            "url": "https://github.com/niostack/tiktok-matrix/releases/download/v1.1.7/tiktok-matrix_1.1.7_x64_en-US.msi.zip"
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTS2NOV0dxQ0Z6eTEvazYvYkRKMGttQ1JobW5ZT2lCWHpiazg4VnhXRUpxanlkdGxVMlBaUkZEUmlCUTZEOGdXZ0QxOUV4cnIzNHQxYWw3WEppSm9hY1VIM3cyU05TREFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzE0NjY3NTk2CWZpbGU6dGlrdG9rLW1hdHJpeF8xLjEuOF94NjRfZW4tVVMubXNpLnppcAozbytFSkRGQno1bVVSWWdWa1JqTkFnSGN2N0dSSmpraVpFSGRlcU9sZ0hna1piVmhlbVZLMGFuUU4xN203aTZnK2tscXBhOXlXOXVkbTZaODU5bWxBZz09Cg==",
+            "url": "https://github.com/niostack/tiktok-matrix/releases/download/v1.1.8/tiktok-matrix_1.1.8_x64_en-US.msi.zip"
         }
     }
 }
