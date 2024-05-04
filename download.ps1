@@ -1,8 +1,8 @@
 $urlList = @(
-    "https://www.youtube.com/shorts/129n3H-epWs",
-    "https://www.youtube.com/shorts/FXZRi7JMc4g", 
-    "https://www.youtube.com/shorts/b7EdOq3vRQI", 
-    "https://www.youtube.com/shorts/AK6U_sEcAfs"
+    "https://www.youtube.com/shorts/12dgpud4KNs",
+    "https://www.youtube.com/shorts/XJ7yMgaZjfc", 
+    "https://www.youtube.com/shorts/UqJRuXcIM94", 
+    "https://www.youtube.com/shorts/k2XhkYxKd9E"
 )
 function DownloadVideo {
     param([string]$url)
