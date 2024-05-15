@@ -39,10 +39,11 @@ export function get_materials_byused({ used }) {
     params: { used }
   })
 }
-export function get_materials() {
+export function get_materials({ group_id }) {
   return request({
     method: 'get',
-    url: api.material
+    url: api.material,
+    params: { group_id }
   })
 }
 export function get_material_count({ used, group_id }) {

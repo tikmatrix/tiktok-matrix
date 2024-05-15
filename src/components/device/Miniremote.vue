@@ -49,7 +49,7 @@
             </div>
             <BottomBar v-if="big" @send_keycode="send_keycode" />
           </div>
-          <RightBars v-if="big"  />
+          <RightBars v-if="big" />
         </div>
 
       </div>
@@ -128,7 +128,8 @@ export default {
       task_status: 'IDLE',
       input_dialog_title: '',
       input_dialog_text: '',
-      input_callback: null
+      input_callback: null,
+      timer_video: null
     }
   },
   methods: {
@@ -268,7 +269,7 @@ export default {
       this.scrcpy = new WebSocket(import.meta.env.VITE_WS_URL)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+        // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.index)
         let max_size = this.big ? 1080 : 480
         this.scrcpy.send(`${this.device.serial}`)
         // max size
@@ -279,24 +280,27 @@ export default {
       }
       this.scrcpy.onclose = () => {
         this.loading = true
-        // this.jmuxer.reset()
         console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.index)
-        //sleep 1s
-        // setTimeout(() => {
+        // if (!this.operating) {
         //   this.connect()
-        // })
+        // }
       }
       this.scrcpy.onerror = () => {
         this.loading = true
-        // this.jmuxer.reset()
         console.log(this.index, ':onerror')
-        // setTimeout(() => {
+        // if (!this.operating) {
         //   this.connect()
-        // })
+        // }
       }
       this.scrcpy.onmessage = message => {
         if (!this.jmuxer) {
           console.log('jmuxer is null,big:', this.big, 'operating:', this.operating, 'index:', this.index, 'scrcpy:', this.scrcpy)
+          if (this.scrcpy) {
+            console.log('scrcpy close,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+            this.scrcpy.close()
+            this.scrcpy = null
+          }
+          // this.connect()
           return
         }
         if (this.loading) {
@@ -319,8 +323,8 @@ export default {
       this.jmuxer = new JMuxer({
         node: this.$refs.display,
         mode: 'video',
-        flushingTime: 1,
-        maxDelay: 100,
+        flushingTime: 0,
+        maxDelay: 500,
         // fps: 50,
         debug: false,
         onError: function () {
@@ -330,23 +334,23 @@ export default {
           }
         }
       })
-      console.log('jmuxer init,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+      // console.log('jmuxer init,big:', this.big, 'operating:', this.operating, 'index:', this.index)
       this.connect()
-      // 播放事件
-      let video=this.$refs.display
-      video.addEventListener('play', function () {
-        console.log('视频开始播放');
-        console.log(video.currentTime, video.duration);
-        // 视频进度快进到结尾
-        video.currentTime = 999999;
+      // // 播放事件
+      // let video = this.$refs.display
+      // video.addEventListener('play', function () {
+      //   console.log('视频开始播放');
+      //   console.log(video.currentTime, video.duration);
+      //   // 视频进度快进到结尾
+      //   video.currentTime = 999999;
 
-      });
+      // });
 
-      // 暂停事件
-      video.addEventListener('pause', function () {
-        console.log('视频暂停播放');
-        // 在这里执行你想要的操作
-      });
+      // // 暂停事件
+      // video.addEventListener('pause', function () {
+      //   console.log('视频暂停播放');
+      //   // 在这里执行你想要的操作
+      // });
       // this.$refs.display.play();
     }
   },
@@ -398,6 +402,11 @@ export default {
         this.get_task_status()
       }, 1000)
     }
+    // this.timer_video = setInterval(() => {
+    //   let video = this.$refs.display
+    //   console.log(video.currentTime, video.duration);
+    //   video.currentTime = 99999999
+    // }, 3000)
   },
   unmounted() {
     console.log('miniremote unmounted,big:', this.big, 'operating:', this.operating, 'index:', this.index)
@@ -415,6 +424,8 @@ export default {
     this.timer_fps = null
     clearInterval(this.timer_task_status)
     this.timer_task_status = null
+    clearInterval(this.timer_video)
+    this.timer_video = null
   }
 }
 </script>

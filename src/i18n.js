@@ -272,6 +272,13 @@ export const i18n = createI18n({
       profile: 'Profile',
       profileTips: 'Setup Profile',
       proxys: 'Proxys',
+      source: 'Source',
+      createTime: 'Create Time',
+      editGroup: 'Edit Group',
+      deleteGroup: 'Delete Group',
+      commandSendSuccess: 'Command Send Success',
+      noDevicesSelected: 'No Devices Selected',
+
     },
     'zh-CN': {
       siteName: 'Tik Matrix',
@@ -488,6 +495,13 @@ export const i18n = createI18n({
       profile: '资料',
       profileTips: '设置个人资料',
       proxys: '代理',
+      source: '来源',
+      createTime: '创建时间',
+      editGroup: '编辑分组',
+      deleteGroup: '删除分组',
+      uploadVideo: '上传视频',
+      commandSendSuccess: '命令发送成功',
+      noDevicesSelected: '未选择设备'
     }
   }
 })

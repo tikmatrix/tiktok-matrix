@@ -62,7 +62,7 @@
     </button>
     <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
-      :data-tip="$t('train')" @click="train">
+      :data-tip="$t('train')" @click="$emitter.emit('train')">
       <font-awesome-icon icon="fa-solid fa-graduation-cap" class="h-4 w-4 text-blue-500" />
       <span class="text-xs block font-normal">{{ $t('train') }}</span>
     </button>
@@ -83,7 +83,7 @@
         <font-awesome-icon icon="fa-solid fa-graduation-cap" class="h-4 w-4 text-blue-500" />
         <span class="text-xs block font-normal">{{ $t('match') }}</span>
         </button> -->
-        
+
 
 
   </div>
@@ -114,25 +114,7 @@ export default {
     }
   },
   methods: {
-    train() {
-      let topics = this.group.topic.split("\n");
-      let ramdomTopic = ''
-      if (topics.length > 0) {
-        ramdomTopic = topics[Math.floor(Math.random() * topics.length)];
-      }
 
-      this.$emitter.emit('scriptEventData', {
-        name: 'train', args: [
-          '0',
-          `${this.group.like_probable}`,
-          `${this.group.floow_probable}`,
-          `${this.group.collect_probable}`,
-          '',
-          `${this.group.train_duration}`,
-          ramdomTopic
-        ]
-      })
-    },
     post() {
       this.$service.get_and_use_one_material({
         group_id: this.group.id

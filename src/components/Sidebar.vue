@@ -53,16 +53,43 @@
           <a ref="settings" role="tab" class="tab tab-active" @click="selectTab('settings')">{{ $t('general') }}</a>
           <a ref="tools" role="tab" class="tab" @click="selectTab('tools')">{{ $t('toolbox') }}</a>
         </div>
-        <div class="flex flex-row flex-wrap mt-2">
+        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'settings'">
           <button v-for="(item, index) in menuItems" :key="index"
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white tooltip text-xs block font-normal ml-1 mb-1 min-w-max"
-            :data-tip="$t(item.name)" @click="selectItem(item)">
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="selectItem(item)">
             <font-awesome-icon :icon="item.icon" class="h-3 w-3" />{{ $t(`${item.name}`) }}
           </button>
           <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white tooltip text-xs block font-normal ml-1 mb-1 min-w-max"
-            :data-tip="$t('settings')" @click="open_dir('logs')">
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="open_dir('logs')">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3" />{{ $t('logs') }}
+          </button>
+          <button
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="showHiddenDevices">
+            <font-awesome-icon icon="fa-solid fa-eye" class="h-3 w-3" />{{ $t('showHiddenDevices') }}
+          </button>
+        </div>
+        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tools'">
+          <button
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="$emitter.emit('scriptEventData', { name: 'register', args: ['1'] })">
+            <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('register') }}
+          </button>
+          <button
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="$emitter.emit('scriptEventData', { name: 'profile', args: [] })">
+            <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('profile') }}
+          </button>
+          <button
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="$emitter.emit('scriptEventData', { name: 'login', args: [] })">
+            <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('login') }}
+          </button>
+          <button
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="$emitter.emit('train')">
+            <font-awesome-icon icon="fa-solid fa-graduation-cap" class="h-3 w-3" />{{ $t('train') }}
           </button>
         </div>
         <div class="flex flex-col">
@@ -79,12 +106,20 @@
                 :checked="isSelectAll(item.id)" />
               <span class="label-text text-blue-500  text-xs">{{ item.name }}({{ groupDevices[item.id].length }})</span>
             </label>
-            <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer ml-2"
-              @click="selectItem({ name: 'editGroup', group: item })"></font-awesome-icon>
-            <font-awesome-icon icon="fa-solid fa-film" class="text-blue-500 cursor-pointer ml-2"
-              @click="selectItem({ name: 'materials', group: item })"></font-awesome-icon>
-            <font-awesome-icon icon="fa-solid fa-trash" class="text-red-500 cursor-pointer ml-2"
-              @click="deleteGroup(item.id)"></font-awesome-icon>
+            <div class="tooltip" :data-tip="$t('editGroup')">
+              <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer ml-2"
+                @click="selectItem({ name: 'editGroup', group: item })"></font-awesome-icon>
+            </div>
+            <div class="tooltip" :data-tip="$t('uploadVideo')">
+              <font-awesome-icon icon="fa-solid fa-film" class="text-blue-500 cursor-pointer ml-2"
+                @click="selectItem({ name: 'materials', group: item })"></font-awesome-icon>
+            </div>
+
+            <div class="tooltip" :data-tip="$t('deleteGroup')">
+              <font-awesome-icon icon="fa-solid fa-trash" class="text-red-500 cursor-pointer ml-2"
+                @click="deleteGroup(item.id)"></font-awesome-icon>
+            </div>
+
             <span class="label-text text-xs text-right flex-1">{{ $t('selected') }}
               {{ selections[item.id].length }}
               {{ $t('units') }}
@@ -191,9 +226,7 @@ export default {
       selections: {
         0: [],
       },
-      // selectedAlls: {
-      //   0: false
-      // },
+      selectedTab: 'settings',
       groupDevices: {
         0: [],
       },
@@ -209,6 +242,10 @@ export default {
     }
   },
   methods: {
+
+    showHiddenDevices() {
+      this.$emitter.emit('show-hidden-devices')
+    },
     open_dir(name) {
       invoke("open_dir", {
         name
@@ -325,6 +362,10 @@ export default {
         })
     },
     script(name, args = []) {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
       this.$service
         .script({
           name: name,
@@ -333,12 +374,15 @@ export default {
         })
         .then(res => {
           console.log(res)
+          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
+
         })
         .catch(err => {
           console.log(err)
         })
     },
     selectTab(tab) {
+      this.selectedTab = tab
       switch (tab) {
         case 'settings':
           this.$refs.settings.classList.add('tab-active')
@@ -431,6 +475,14 @@ export default {
       }, 3000)
 
     },
+    train() {
+      this.$emitter.emit('scriptEventData', {
+        name: 'train', args: [
+          '0',
+          '',
+        ]
+      })
+    },
   },
   mounted() {
     this.$i18n.locale = this.locale
@@ -472,6 +524,9 @@ export default {
         data: data
       }
       this.$emitter.emit('syncEventData', new_data)
+    });
+    this.$emitter.on('train', () => {
+      this.train();
     });
   }
 }

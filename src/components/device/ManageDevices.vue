@@ -17,9 +17,6 @@
             </label>
           </div>
         </div>
-
-
-        <MyButton class="btn btn-success ml-2" @click="showHiddenDevices" label="showHiddenDevices" />
       </template>
       <template v-slot:default="slotProps">
         <div class="flex flex-wrap gap-2 p-4">
@@ -132,9 +129,7 @@ export default {
           console.log(err)
         })
     },
-    showHiddenDevices() {
-      this.$emitter.emit('show-hidden-devices')
-    }
+
 
   },
 

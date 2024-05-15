@@ -34,7 +34,7 @@
       <ManageGroups v-if="selectedItem.name === 'groups' && $refs.page_dialog.open" />
       <ManageAccounts v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
       <ManageAnalytics v-if="selectedItem.name === 'analytics' && $refs.page_dialog.open" />
-      <ManageMaterials v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
+      <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
       <ManageComments v-if="selectedItem.name === 'comments' && $refs.page_dialog.open" />
       <ManageProxys v-if="selectedItem.name === 'proxys' && $refs.page_dialog.open" />
       <ManageMusics v-if="selectedItem.name === 'musics' && $refs.page_dialog.open" />
@@ -78,9 +78,7 @@ import { inject } from 'vue'
 import * as util from './utils'
 import Toast from './components/Toast.vue'
 import EditGroup from './components/group/EditGroup.vue'
-import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
-import { onMounted } from 'vue';
 import { window } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
 import { ask } from '@tauri-apps/api/dialog';
@@ -152,8 +150,6 @@ export default {
       console.log(this.$refs.page_dialog.open)
       //listener
       this.$refs.page_dialog.addEventListener('close', () => {
-        console.log(this.$refs.page_dialog.open)
-        console.log('close', (this.selectedItem.name === 'editGroup' && this.$refs.page_dialog.open))
         this.selectedItem = {}
 
       })
