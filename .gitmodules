@@ -1,6 +1,3 @@
-[submodule "tiktok-vue"]
-	path = tiktok-vue
-	url = https://github.com/tikmatrix/tiktok-vue.git
 [submodule "tiktok-agent"]
 	path = tiktok-agent
 	url = https://github.com/tikmatrix/tiktok-agent.git

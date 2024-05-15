@@ -4,20 +4,37 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "run:tiktok-vue:test": "cd tiktok-vue && npm install && npm run test",
-    "run:tiktok-vue:dev": "cd tiktok-vue && npm install && npm run dev",
     "run:tiktok-matrix:dev": "npm install && npm run tauri dev",
     "build:tiktok-agent:dev": "cd tiktok-agent && cargo build && npx shx cp -rf target/debug/*.exe ../src-tauri/bin/script/",
     "build:tiktok-agent": "cd tiktok-agent && cargo build --release && npx shx cp -rf target/release/*.exe ../src-tauri/bin/script/",
     "copy:bots": "npx shx cp -rf tiktok-agent/bin/* src-tauri/bin/",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "vite --mode dev",
+    "build": "vite build --mode prod",
+    "preview": "vite preview --mode test",
     "tauri": "tauri"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.5.2",
-    "vue": "^3.3.4"
+    "vue": "^3.3.4",
+    "@coleqiu/vue-drag-select": "^2.0.6-beta.1",
+    "@fortawesome/fontawesome-svg-core": "^6.4.2",
+    "@fortawesome/free-brands-svg-icons": "^6.4.2",
+    "@fortawesome/free-regular-svg-icons": "^6.4.2",
+    "@fortawesome/free-solid-svg-icons": "^6.4.2",
+    "@fortawesome/vue-fontawesome": "^3.0.5",
+    "@types/jmuxer": "^2.0.6",
+    "@vuepic/vue-datepicker": "^7.2.2",
+    "axios": "^1.6.1",
+    "countup.js": "^2.8.0",
+    "jmuxer": "^2.0.5",
+    "mitt": "^3.0.1",
+    "odometer_countup": "^1.0.4",
+    "vue-axios": "^3.5.2",
+    "vue-clipboard3": "^2.0.0",
+    "vue-draggable-resizable": "^3.0.0",
+    "vue-i18n": "^9.8.0",
+    "vue3-clipboard": "^1.0.0",
+    "vue3-datepicker": "^0.4.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.9",
@@ -26,6 +43,8 @@
     "daisyui": "^4.9.0",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "axios-mock-adapter": "^1.22.0",
+    "shx": "^0.3.4"
   }
 }

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8" />
+    <title>TikMatrixDevTool</title>
+    <link rel="stylesheet"
+      href="/static/cdn_libraries/cdn.jsdelivr.net/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet"
+      href="/static/cdn_libraries/unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+    <link rel="stylesheet" type="text/css" href="/static/libs/css/buttons.css">
+    <link rel="stylesheet" type="text/css"
+      href="/static/libs/fontawesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css"
+      href="/static/cdn_libraries/cdn.jsdelivr.net/bootstrap.select/1.12.2/css/bootstrap-select.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <!-- jstree -->
+    <link rel="stylesheet"
+      href="/static/cdn_libraries/cdn.jsdelivr.net/npm/jstree@3.3.8/dists/themes/default/style.min.css">
+  </head>
+
+  <body>
+    <div id="app">
+      <nav class="navbar navbar-default" style="margin-bottom: 0px">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed"
+            data-toggle="collapse"
+            data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">
+            TikMatrixDevTool
+          </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <!--         <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        </ul> -->
+          <form class="navbar-form navbar-left" onsubmit="return false">
+            <div class="form-group">
+
+              <input type="text" v-model="serial" class="form-control"
+                v-bind:placeholder="deviceUrl">
+            </div>
+
+            <button :disabled="loading || connecting" class="btn btn-default"
+              v-on:click="dumpHierarchyWithScreen()">
+              <i class="fa fa-refresh" :class='{"fa-spin": dumping}'></i> Dump
+              Hierarchy
+            </button>
+
+          </form>
+
+        </div>
+      </nav>
+      <div id="upper">
+        <div id="left">
+          <div>
+          </div>
+          <section id="screen">
+            <canvas id="fgCanvas" @dblclick="doTap(nodeSelected)"
+              class="canvas-fg" v-bind:style="canvasStyle"></canvas>
+            <canvas id="bgCanvas" class="canvas-bg"
+              v-bind:style="canvasStyle"></canvas>
+            <span class="finger finger-0"
+              style="transform: translate3d(200px, 100px, 0px)"></span>
+            <img style="z-index: 10" v-if="loading" src="/static/loading.svg">
+          </section>
+
+          <!-- <div class="horizon-gap"></div> -->
+
+        </div>
+        <div id="vertical-gap1" class="handle vertical-gap"></div>
+
+        <div class="middle">
+          <div class="panel panel-default middle-panel">
+            <div class="panel-heading">
+              <i class="fa fa-empire" aria-hidden="true"></i> Selected Element
+              <span class="pull-right">
+                <button :disabled="loading" class="btn btn-default btn-xs"
+                  v-on:click="clearCanvas()">
+                  <i class="fa fa-square-o"></i> Clear Canvas
+                </button>
+              </span>
+            </div>
+            <div class="panel-body">
+              <div class="text-center">
+                <button class="btn btn-default btn-sm" :disabled="!nodeSelected"
+                  @click="doTapWidget()">Tap
+                  Widget(Beta)</button>
+                <button class="btn btn-default btn-sm" :disabled="!nodeSelected"
+                  v-on:click="doTap()">Tap</button>
+                <button class="btn btn-default btn-sm"
+                  v-on:click="doSendKeys('')">Send Keys</button>
+                <!-- <button class="btn btn-default btn-sm" v-on:click="doClear()">Clear Text</button> -->
+              </div>
+            </div>
+            <table class="table table-bordered table-weditor table-condensed">
+              <thead>
+                <tr>
+                  <th style="width: 8em">Prop</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-if="platform == 'Android'">
+                  <tr>
+                    <td class="always-exists-attr">activity</td>
+                    <td contenteditable v-text="activity"></td>
+                  </tr>
+                </template>
+                <template>
+                  <tr>
+                    <td class="always-exists-attr">XPathLite</td>
+                    <td contenteditable v-text="elemXPathLite"></td>
+                  </tr>
+                  <!-- <tr>
+                  <td>XPath(full)</td>
+                  <td contenteditable v-text="elemXPathFull"></td>
+                </tr> -->
+                  <tr>
+                    <td>
+                      <span @click="showCursorPercent = !showCursorPercent"
+                        class="cursor-pointer">
+                        坐标
+                        <i :class="{'inactive': !showCursorPercent}">%</i>
+                        <i :class="{'inactive': showCursorPercent}">px</i>
+                      </span>
+                    </td>
+                    <td>
+                      <span title="双击复制"
+                        @dblclick="copyToClipboard('('+cursorValue.x+', '+cursorValue.y+')')">
+                        ({{!cursorValue.x}}, {{!cursorValue.y}})
+                      </span>
+                      <a href="#"
+                        @click="doPositionTap(cursorValue.x, cursorValue.y)">点击</a>
+                    </td>
+                  </tr>
+                </template>
+                <template>
+                  <tr v-show="elem._type">
+                    <td>className</td>
+                    <td>
+                      <i v-if="platform == 'iOS'">XCUIElementType</i><span
+                        v-text="elem._type"></span>
+                      <small v-if="platform == 'iOS'"
+                        style="cursor: pointer; float: right;"
+                        @click="copyToClipboard('XCUIElementType' + elem._type)">复制</small>
+                    </td>
+                  </tr>
+                  <tr v-for="key in filterAttributeKeys(elem)" :key="key">
+                    <td>{{!"* " + key}}</td>
+                    <td><code v-text="elem[key]" class="prop-value"></code></td>
+                  </tr>
+                  <tr v-if="elem.rect">
+                    <td># rect</td>
+                    <td>{{!JSON.stringify(elem.rect)}}</td>
+                  </tr>
+                </template>
+              </tbody>
+              <tfoot></tfoot>
+            </table>
+            <h5>
+              代码
+            </h5>
+            <!-- c9-ide -->
+            <input type="text" v-model="generatedCode"
+              class="form-control input-sm">
+            <div class="checkbox">
+              <label>
+                <input v-model="autoCopy" type="checkbox"> 自动复制代码
+              </label>
+              <label>
+                <input v-model="useXPathOnly" type="checkbox"> 强制使用XPath
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="vertical-gap"></div>
+        <div id="right">
+
+          <!-- Colding Area -->
+          <el-tabs type="border-card" v-model="tabActiveName">
+            <el-tab-pane label="Hierarchy" name="hierarchy">
+              <div class="input-group input-group-sm">
+                <div class="input-group-btn">
+                  <button class="btn btn-default">
+                    <i class="glyphicon glyphicon-plus"></i>
+                  </button>
+                </div>
+                <input id="jstree-search" type="text" class="form-control"
+                  placeholder="Search for...">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button">
+                    <i class="glyphicon glyphicon-search"></i>
+                  </button>
+                </span>
+              </div>
+              <div class="box">
+                <div id="jstree-hierarchy"></div>
+              </div>
+            </el-tab-pane>
+
+          </el-tabs>
+        </div>
+      </div>
+
+      <!-- alert and dialogs -->
+      <div class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"
+                aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+              <h4 class="modal-title">
+                <span class="color-red">
+                  <i class="fa fa-warning"></i> Error</span>
+              </h4>
+            </div>
+            <div class="modal-body">
+              <pre v-html="error"></pre>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default"
+                data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/npm/jquery@3.3.1/dists/jquery.min.js"></script>
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/bootstrap.select/1.12.2/js/bootstrap-select.min.js"></script>
+
+  <!-- ace editor -->
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/npm/ace-builds@1.4.12/src-noconflict/ace.min.js"></script>
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/npm/ace-builds@1.4.12/src-noconflict/mode-python.min.js"></script>
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/npm/ace-builds@1.4.12/src-noconflict/ext-language_tools.min.js"></script>
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/npm/ace-builds@1.4.12/src-noconflict/ext-searchbox.min.js"></script>
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/npm/ace-builds@1.4.12/src-noconflict/theme-monokai.js"></script>
+
+  <!-- <script src="http://10.240.187.174:8000/_d/js"></script> -->
+  <script
+    src="/static/cdn_libraries/cdn.jsdelivr.net/npm/jstree@3.3.8/dists/jstree.min.js"></script>
+
+  <script src="/static/libs/vue-2.5.16/vue.js"></script>
+
+  <script
+    src="/static/cdn_libraries/unpkg.com/element-ui/lib/index.js"></script>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/index.js"></script>
+</html>

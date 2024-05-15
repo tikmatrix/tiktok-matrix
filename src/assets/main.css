@@ -1,0 +1,16 @@
+#app {
+  max-width: 100%;
+  margin: 0 auto;
+  font-weight: normal;
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+  }
+
+  #app {
+    display: flex;
+    width: 100%;
+  }
+}

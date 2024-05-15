@@ -13,13 +13,13 @@
     "allowlist": {
       "all": false,
       "window": {
-        "all": false,
-        "center": false,
+        "all": true,
+        "create": true,
+        "center": true,
         "close": true,
-        "create": false,
-        "hide": false,
-        "maximize": false,
-        "minimize": false,
+        "hide": true,
+        "maximize": true,
+        "minimize": true,
         "print": false,
         "requestUserAttention": false,
         "setAlwaysOnTop": false,
@@ -94,8 +94,9 @@
         "fullscreen": false,
         "resizable": true,
         "title": "tiktok-matrix",
-        "width": 800,
-        "height": 600
+        "width": 1024,
+        "height": 768,
+        "maximized": true
       }
     ],
     "updater": {
