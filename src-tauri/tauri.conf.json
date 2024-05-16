@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "tiktok-matrix",
-    "version": "1.2.2"
+    "version": "1.2.1"
   },
   "tauri": {
     "allowlist": {
@@ -107,7 +107,7 @@
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENCNzMyMUE4ODZENTcwOEEKUldTS2NOV0dxQ0Z6eStkaXhiMERsc3c4MWF5Y1R0YUp6Wlo1VE5saWt5bXlVYmV3ejVSQW5PR1cK",
       "windows": {
-        "installMode": "passive"
+        "installMode": "basicUi"
       }
     }
   }

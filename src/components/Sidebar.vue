@@ -239,10 +239,12 @@ export default {
     locale() {
       util.setData('locale', this.locale)
       this.$i18n.locale = this.locale
+    },
+    selection() {
+      this.refreshSelections()
     }
   },
   methods: {
-
     showHiddenDevices() {
       this.$emitter.emit('show-hidden-devices')
     },
@@ -398,13 +400,7 @@ export default {
       return this.groupDevices[id].length > 0 && this.selections[id].length == this.groupDevices[id].length
     },
     selectAll(id) {
-      // if (this.isSelectAll(id)) {
-      //   this.selectedAlls[id]=false
-      // }else{
-      //   this.selectedAlls[id]=true
-      // }
-      // this.selectedAlls[id] = !this.selectedAlls[id]
-      // console.log(this.selectedAlls[id]);
+
       if (!this.isSelectAll(id)) {
         if (id == 0) {
           this.selection = this.devices.map(device => device.serial)

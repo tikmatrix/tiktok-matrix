@@ -86,6 +86,9 @@ export default {
         .get_proxys()
         .then(res => {
           this.proxy_data = res.data
+          for (let i = 0; i < this.proxy_data.proxies.length; i++) {
+            this.test_speed(this.proxy_data.proxies[i])
+          }
         })
         .catch(err => {
           console.log(err)
