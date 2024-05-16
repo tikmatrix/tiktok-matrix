@@ -128,10 +128,6 @@ export default {
     }
   },
   methods: {
-    start_agent() {
-      invoke("start_agent");
-      this.agent_status = true;
-    },
     stop_agent() {
       invoke("stop_agent");
       this.agent_status = false;
@@ -187,8 +183,6 @@ export default {
     });
 
     this.get_settings();
-    this.stop_agent();
-    this.start_agent();
     // this.checkAuth()
     this.needLogin = false
     this.showDemoTip = import.meta.env.VITE_APP_MOCK === 'true'
@@ -212,6 +206,7 @@ export default {
 
   },
   unmounted() {
+    this.stop_agent()
   }
 }
 </script>

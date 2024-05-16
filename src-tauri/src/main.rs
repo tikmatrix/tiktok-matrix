@@ -128,6 +128,24 @@ fn stop_agent() {
             .status()
             .expect("failed to kill agent processes");
     }
+    #[cfg(target_os = "windows")]
+    {
+        let mut command = Command::new("taskkill");
+        command.creation_flags(0x08000000);
+        command
+            .args(&["/F", "/IM", "train.exe"])
+            .status()
+            .expect("failed to kill train processes");
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let mut command = Command::new("pkill");
+        command
+            .args(&["-f", "train"])
+            .status()
+            .expect("failed to kill train processes");
+    }
 }
 //open_log_dir
 #[tauri::command]
@@ -160,6 +178,7 @@ fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("./upload/material")?;
     std::fs::create_dir_all("./upload/avatar")?;
     std::fs::create_dir_all("./upload/apk")?;
+    start_agent();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_agent,
