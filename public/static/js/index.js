@@ -223,69 +223,7 @@ window.vm = new Vue({
   },
   methods: {
 
-    initPythonWebSocket() {
-      // 初始化变量
-      this.pyshell.running = false
-      this.pyshell.restarting = false
 
-      const ws = this.pyshell.ws = new WebSocket("ws://" + location.host + "/ws/v1/python")
-      ws.onopen = () => {
-        this.pyshell.wsOpen = true
-        this.resetConsole()
-        console.log("websocket opened")
-      }
-      ws.onmessage = (message) => {
-        const data = JSON.parse(message.data)
-        // 用蓝色的breakpoint标记已经运行过的代码
-        // 用另外的breakpoint标记当前运行中的代码
-        // 代码行号:lineno 从0开始
-        switch (data.method) {
-          case "gotoLine":
-            let lineNumber = data.value + this.pyshell.lineno.offset;
-            this.setLineGoThrough(this.pyshell.lineno.current)
-            this.pyshell.lineno.current = lineNumber
-            this.editor.session.setBreakpoint(lineNumber)
-
-            // 下面这两行注释掉，因为会影响 "运行当前行" 功能中的自动跳到下一行的功能
-            //this.editor.selection.moveTo(lineNumber, 0) // 移动光标
-            //this.editor.scrollToLine(lineNumber) // 屏幕滚动到当前行
-            break;
-          case "resetContent":
-            this.editor.setValue(data.value)
-            break;
-          case "output":
-            this.appendConsole(data.value)
-            break;
-          case "finish":
-            this.setLineGoThrough(this.pyshell.lineno.current)
-            this.pyshell.running = false
-            let timeUsed = (data.value / 1000) + "s"
-            this.appendConsole("[Finished " + timeUsed + "]")
-            break;
-          case "restarted":
-            this.pyshell.restarting = false
-            this.pyshell.running = false
-            this.resetEditor()
-            this.$notify.success({
-              title: "重启内核",
-              message: "成功",
-              duration: 800,
-              offset: 100,
-            })
-            this.runPython(this.generatePreloadCode())
-            break
-          default:
-            console.error("Unknown method", data.method)
-        }
-      }
-      ws.onclose = () => {
-        this.pyshell.wsOpen = false
-        this.pyshell.ws = null
-        this.pyshell.running = false
-        this.resetEditor()
-        console.log("websocket closed")
-      }
-    },
     filterAttributeKeys(elem) {
       return Object.keys(elem).filter(k => {
         if (['children', 'rect'].includes(k)) {
@@ -294,19 +232,7 @@ window.vm = new Vue({
         return !k.startsWith("_");
       })
     },
-    clearCode() {
-      const code = [
-        "# coding: utf-8",
-        "#",
-        "import uiautomator2 as u2",
-        "",
-        "d = u2.connect()",
-        "",
-        "",
-      ].join("\n");
-      this.editor.setValue(code)
-      this.editor.session.selection.clearSelection()
-    },
+
     copyToClipboard(text) {
       copyToClipboard(text)
       this.$message.success('复制成功');
@@ -327,17 +253,7 @@ window.vm = new Vue({
       this.mapAttrCount[collectionKey][key] = count + 1;
     },
 
-    doKeyevent: function (meta) {
-      var code = 'd.press("' + meta + '")'
-      if (this.platform != 'Android' && meta == 'home') {
-        code = 'd.home()'
-      }
-      return this.runPythonWithConnect(code)
-        .then(function () {
-          return this.codeInsert(code);
-        }.bind(this))
-        .then(this.delayReload)
-    },
+
     sourceToJstree: function (source) {
       var n = {}
       n.id = source._id;
@@ -476,189 +392,8 @@ window.vm = new Vue({
         document.addEventListener('mouseleave', dragStopListener)
       })
     },
-    initEditor: function (editor) {
-      var self = this;
-      editor.setTheme("ace/theme/monokai")
-      editor.getSession().setMode("ace/mode/python");
-      editor.getSession().setUseSoftTabs(true);
-      editor.getSession().setUseWrapMode(true);
 
-      // auto save
-      editor.insert(localStorage.getItem("code") || "")
-      editor.on("change", function (e) {
-        localStorage.setItem("code", editor.getValue())
-      })
-      editor.on("focus", () => {
-        editor.resize();
-      })
 
-      editor.commands.addCommands([{
-        name: 'build',
-        bindKey: {
-          win: 'Ctrl-B',
-          mac: 'Command-B'
-        },
-        exec: function (editor) {
-          self.runPythonWithConnect(editor.getValue())
-        },
-      }, {
-        name: 'build',
-        bindKey: {
-          win: 'Ctrl-Enter',
-          mac: 'Command-Enter'
-        },
-        exec: function (editor) {
-          self.runPythonWithConnect(editor.getValue())
-        },
-      }, {
-        name: "build-inline",
-        bindKey: {
-          win: "Ctrl-Shift-Enter",
-          mac: "Command-Shift-Enter",
-        },
-        exec: function (editor) {
-          self.codeRunSelected()
-        }
-      }]);
-
-      const AndroidCompletions = [
-        { name: "应用安装", value: "d.app_install" },
-        { name: "启动应用", value: "d.app_start" },
-        { name: "清空应用", value: "d.app_clear" },
-        { name: "停止应用", value: "d.app_stop" },
-        { name: "当前应用", value: "d.app_current()" },
-        { name: "获取应用信息", value: "d.app_info" },
-        { name: "等待应用运行", value: "d.app_wait" },
-        { name: "窗口大小", value: "d.window_size()" },
-        { name: "截图", value: "d.screenshot()" },
-        { name: "推送文件", value: "d.push" },
-        { name: "执行shell命令", value: "d.shell" },
-        { name: "shell: pwd", value: 'd.shell("pwd").output' },
-        { name: "XPath", value: "d.xpath" },
-        { name: "XPath 点击", value: 'd.xpath("购买").click()' },
-        { name: "WLAN IP", value: "d.wlan_ip" },
-        { name: "剪贴板设置", value: "d.clipboard = " },
-        { name: "剪贴板获取", value: "d.clipboard" },
-        { name: "上滑60%", value: 'd.swipe_ext("up", 0.6)' },
-        { name: "右滑60%", value: 'd.swipe_ext("right", 0.6)' },
-        { name: "显示信息", value: "d.info" },
-        { name: "最长等待时间", value: "d.implicitly_wait(20)" },
-        { name: "常用设置", value: "d.settings" },
-        { name: "服务最大空闲时间", value: "d.set_new_command_timeout" },
-        { name: "调试开关", value: "d.debug = True" },
-        { name: "坐标点击 x,y", value: "d.click" },
-        { name: "获取图层", value: "d.dump_hierarchy()" },
-        { name: "监控", value: "d.watcher" },
-        { name: "停止uiautomator", value: "d.uiautomator.stop()" },
-        { name: "视频录制", value: "d.screenrecord('output.mp4')" },
-        { name: "停止视频录制", value: "d.screenrecord.stop()" },
-        { name: "回到桌面", value: 'd.press("home")' },
-        { name: "返回", value: 'd.press("back")' },
-        { name: "等待activity", value: 'd.wait_activity("xxxx", timeout=10)' },
-        { name: "abc", value: 'd.wait_activity("xxxx", timeout=10)' }
-      ]
-
-      const iOSCompletions = [
-        { name: "状态信息", value: "d.status()" },
-        { name: "等待就绪", value: "d.wait_ready(timeout=300)" },
-        { name: "HOME", value: "d.home()" },
-        { name: "截图", value: "d.screenshot()" },
-        { name: "截图保存", value: "d.screenshot().save" },
-        { name: "截图+旋转+保存", value: 's.screenshot().transpose(Image.ROTATE_90).save("correct.png")' },
-        { name: "Healthcheck", value: "d.healthcheck()" },
-        { name: "启动应用", value: "d.app_launch" },
-        { name: "启动应用设置", value: "d.app_launch('com.apple.Preferences')" },
-        { name: "当前应用", value: "d.app_current()" },
-        { name: "将应用放到前台", value: "d.app_activate" },
-        { name: "杀掉应用", value: "d.app_terminate" },
-        { name: "获取应用状态", value: "d.app_state" },
-        { name: "设置搜索等待时间", value: "d.implicitly_wait(30.0)" },
-        { name: "窗口UI大小", value: "d.window_size()" },
-        { name: "点击", value: "d.click" },
-        { name: "双击", value: "d.double_tap" },
-        { name: "滑动", value: "d.swipe" },
-        { name: "从中央滑动到底部", value: "d.swipe(0.5, 0.5, 0.5, 0.99)" },
-        { name: "长按1s", value: "d.tap_hold(x, y, 1.0)" },
-        { name: "输入", value: "d.send_keys" },
-        { name: "弹窗点击", value: "d.alert.click(按钮名)" },
-        { name: "弹窗按钮", value: "d.alert.buttons()" },
-        { name: "等待弹窗", value: "d.alert.wait(timeout=20.0)" },
-        { name: "弹窗是否存在", value: "d.alert.exists" },
-      ]
-
-      const xpathCompletions = [
-        { name: "点击", value: "click()" },
-        { name: "存在时点击", value: "click_exists()" },
-        { name: "等待元素出现", value: "wait()" },
-        { name: "等待元素消失", value: "wait_gone()" },
-        { name: "是否存在", value: "exists" },
-        { name: "控件截图", value: "screenshot()" },
-        { name: "控件上滑", value: 'swipe("up")' },
-        { name: "获取控件中心点坐标", value: "center()" },
-        { name: "信息", value: "info" },
-        { name: "获取Element", value: "get()" },
-        { name: "返回所有匹配", value: "all()" },
-        { name: "获取XpathElement", value: "get(timeout=10)" },
-      ]
-
-      const isAndroid = (this.platform === "Android")
-
-      let keywordCompleter = {
-        identifierRegexps: [/\./],
-        getCompletions: (editor, session, pos, prefix, callback) => {
-          console.log("completer", prefix, pos, "line", JSON.stringify(editor.session.getLine(pos.row)))
-          const line = editor.session.getLine(pos.row).trimLeft()
-
-          if (prefix === "." && /\w+\.xpath\([^)]+\)\./.test(line)) { // match: d.xpath("settings").
-            callback(null, xpathCompletions.map(v => {
-              return {
-                score: 1,
-                meta: v.name,
-                value: prefix + v.value,
-              }
-            }))
-          } else if (prefix === "d") {
-            callback(null, (isAndroid ? AndroidCompletions : iOSCompletions).map(v => {
-              return {
-                name: v.name, // 显示的名字,没什么乱用
-                value: v.value, // 插入的值
-                score: 1, // 分数越大，排名越靠前
-                meta: v.name, //描述,
-              }
-            }))
-          } else {
-            callback(null, [])
-          }
-        }
-      }
-
-      let langTools = ace.require("ace/ext/language_tools")
-      // langTools.addCompleter(keywordCompleter)
-
-      editor.setOptions({
-        enableLiveAutocompletion: [keywordCompleter],
-      })
-
-      editor.$blockScrolling = Infinity;
-    },
-    codeRunSelected() {
-      const editor = this.editor;
-      let code = editor.getSelectedText()
-      if (!code) {
-        // 如果没有选中，使用光标所在行代码
-        const pos = editor.getCursorPosition()
-        let row = pos.row;
-        this.pyshell.lineno.offset = row // 修正服务端的行号
-        code = editor.getSession().getLine(row).trimLeft();
-
-        // 运行完后调转到下一行，方便连续点击
-        editor.selection.moveTo(pos.row + 1, pos.column)
-      } else {
-        this.pyshell.lineno.offset = editor.getSelectionRange().start.row
-      }
-      this.pyshell.lineno.current = this.pyshell.lineno.offset // 重置编辑器当前行号
-      return this.runPythonWithConnect(code)
-    },
     resizeScreen(img) {
       // check if need update
       if (img) {
@@ -707,7 +442,20 @@ window.vm = new Vue({
       this.loading = true;
       this.canvasStyle.opacity = 0.8;
       this.screenRefresh();
+      this.getCurrentActivity();
       return this.dumpHierarchy();
+    },
+    getCurrentActivity() {
+      return $.ajax({
+        url: 'http://127.0.0.1:8090/api/device/activity?serial=' + this.serial,
+        type: 'GET',
+        cache: false
+      })
+        .then((activity) => {
+          console.log(activity)
+          localStorage.setItem("activity", activity);
+          this.activity = activity;
+        })
     },
     dumpHierarchy: function () { // v2
       this.dumping = true
@@ -724,7 +472,7 @@ window.vm = new Vue({
           console.log(xml)
           localStorage.setItem("xmlHierarchy", xml);
           json = this.xml2json(xml);
-          console.log(json)
+          console.log(JSON.stringify(json, null, 2));
           this.drawAllNodeFromSource(json);
           this.nodeSelected = null;
         })
@@ -796,15 +544,7 @@ window.vm = new Vue({
               ks[k] = f(attrs[1].nodeValue);
             }
           }
-          // for (const attrs of Object.entries(node.attributes)) {
-          //   const k = alias[attrs.nodeName] || attrs.nodeName;
-          //   const f = parsers[k];
-          //   if (attrs.nodeValue === null) {
-          //     ks[k] = null;
-          //   } else if (f) {
-          //     ks[k] = f(attrs.nodeValue);
-          //   }
-          // }
+
           if (ks['bounds']) {
             const [lx, ly, rx, ry] = ks['bounds'].map(Number);
             ks['rect'] = { x: lx, y: ly, width: rx - lx, height: ry - ly };
@@ -832,6 +572,8 @@ window.vm = new Vue({
               return;
             }
             const jsonNode = parseUiAutomatorNode(node);
+            // console.log(node, "->", JSON.stringify(jsonNode))
+
             jsonNode['_id'] = generateUuid();
             if (jsonNode['_type'] !== 'android.webkit.WebView' && node.childNodes) {
               const children = [];
@@ -908,18 +650,7 @@ window.vm = new Vue({
       img.src = url;
       return dtd;
     },
-    loadLiveHierarchy: function () {
-      if (this.nodeHovered || this.nodeSelected) {
-        setTimeout(this.loadLiveHierarchy, 500)
-        return
-      }
-      if (this.liveScreen) {
-        this.dumpHierarchy()
-          .then(() => {
-            this.loadLiveHierarchy()
-          })
-      }
-    },
+
 
     runAll() {
       this.pyshell.lineno.offset = 0
@@ -1024,38 +755,7 @@ window.vm = new Vue({
           return this.codeInsert(code);
         }.bind(this))
     },
-    doTapWidget() {
-      const node = this.nodeSelected
-      console.log(node)
-      console.log(this.elemXPathLite)
-      console.log(this.elemXPathFull)
-      console.log(node.rect, node.description, node.resourceId, node.text)
-      $.ajax({
-        method: "post",
-        url: "/api/v1/widgets",
-        dataType: "json",
-        contentType: 'application/json; charset=UTF-8',
-        data: JSON.stringify({
-          bounds: [node.rect.x, node.rect.y, node.rect.x + node.rect.width, node.rect.y + node.rect.height],
-          text: node.text,
-          className: node._type,
-          description: node.description,
-          resourceId: node.resourceId,
-          xpath: this.elemXPathLite,
-          package: node.package,
-          hierarchy: localStorage.xmlHierarchy,
-          screenshot: localStorage.screenshotBase64,
-          windowSize: localStorage.windowSize.split(",").map(v => { return parseInt(v, 10) }),
-          activity: localStorage.activity,
-        })
-      }).then(ret => {
-        const code = `d.widget.click("${ret.id}#${ret.note}")`;
-        this.codeInsert(code)
-        this.nodeSelected = null;
-        this.runPythonWithConnect(code)
-          .then(this.delayReload)
-      })
-    },
+
     doTap: function (node) {
       node = node || this.nodeSelected
       var self = this;

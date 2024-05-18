@@ -278,6 +278,8 @@ export const i18n = createI18n({
       deleteGroup: 'Delete Group',
       commandSendSuccess: 'Command Send Success',
       noDevicesSelected: 'No Devices Selected',
+      debug: 'Debug',
+      scanTCPDevice: 'Scan TCP Device',
 
     },
     'zh-CN': {
@@ -501,7 +503,9 @@ export const i18n = createI18n({
       deleteGroup: '删除分组',
       uploadVideo: '上传视频',
       commandSendSuccess: '命令发送成功',
-      noDevicesSelected: '未选择设备'
+      noDevicesSelected: '未选择设备',
+      debug: '调试',
+      scanTCPDevice: '扫描 TCP 设备',
     }
   }
 })

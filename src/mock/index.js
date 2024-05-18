@@ -203,7 +203,6 @@ const data = {
       wifi_name: 'ExampleWiFi',
       wifi_password: 'ExamplePassword',
       version: '1.0.0',
-      adb_mode: 'USB'
     },
     [api.task_status]: 'RUNNING',
     [api.count_online_device]: 2000,

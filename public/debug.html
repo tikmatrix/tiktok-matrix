@@ -89,14 +89,7 @@
             </div>
             <div class="panel-body">
               <div class="text-center">
-                <button class="btn btn-default btn-sm" :disabled="!nodeSelected"
-                  @click="doTapWidget()">Tap
-                  Widget(Beta)</button>
-                <button class="btn btn-default btn-sm" :disabled="!nodeSelected"
-                  v-on:click="doTap()">Tap</button>
-                <button class="btn btn-default btn-sm"
-                  v-on:click="doSendKeys('')">Send Keys</button>
-                <!-- <button class="btn btn-default btn-sm" v-on:click="doClear()">Clear Text</button> -->
+
               </div>
             </div>
             <table class="table table-bordered table-weditor table-condensed">
@@ -122,7 +115,7 @@
                   <td>XPath(full)</td>
                   <td contenteditable v-text="elemXPathFull"></td>
                 </tr> -->
-                  <tr>
+                  <!-- <tr>
                     <td>
                       <span @click="showCursorPercent = !showCursorPercent"
                         class="cursor-pointer">
@@ -139,7 +132,7 @@
                       <a href="#"
                         @click="doPositionTap(cursorValue.x, cursorValue.y)">点击</a>
                     </td>
-                  </tr>
+                  </tr> -->
                 </template>
                 <template>
                   <tr v-show="elem._type">
@@ -153,22 +146,22 @@
                     </td>
                   </tr>
                   <tr v-for="key in filterAttributeKeys(elem)" :key="key">
-                    <td>{{!"* " + key}}</td>
+                    <td>{{ key}}</td>
                     <td><code v-text="elem[key]" class="prop-value"></code></td>
                   </tr>
                   <tr v-if="elem.rect">
                     <td># rect</td>
-                    <td>{{!JSON.stringify(elem.rect)}}</td>
+                    <td>{{JSON.stringify(elem.rect)}}</td>
                   </tr>
                 </template>
               </tbody>
               <tfoot></tfoot>
             </table>
-            <h5>
+            <!-- <h5>
               代码
-            </h5>
+            </h5> -->
             <!-- c9-ide -->
-            <input type="text" v-model="generatedCode"
+            <!-- <input type="text" v-model="generatedCode"
               class="form-control input-sm">
             <div class="checkbox">
               <label>
@@ -177,7 +170,7 @@
               <label>
                 <input v-model="useXPathOnly" type="checkbox"> 强制使用XPath
               </label>
-            </div>
+            </div> -->
           </div>
         </div>
         <div class="vertical-gap"></div>

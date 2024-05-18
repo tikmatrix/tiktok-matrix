@@ -69,28 +69,19 @@
             @click="showHiddenDevices">
             <font-awesome-icon icon="fa-solid fa-eye" class="h-3 w-3" />{{ $t('showHiddenDevices') }}
           </button>
+          <button
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="openDebugWindow">
+            <font-awesome-icon icon="fa-solid fa-bug" class="h-3 w-3" />{{ $t('debug') }}
+          </button>
+          <button
+            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+            @click="scanTCPDevice">
+            <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
+          </button>
         </div>
         <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tools'">
-          <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="$emitter.emit('scriptEventData', { name: 'register', args: ['1'] })">
-            <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('register') }}
-          </button>
-          <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="$emitter.emit('scriptEventData', { name: 'profile', args: [] })">
-            <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('profile') }}
-          </button>
-          <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="$emitter.emit('scriptEventData', { name: 'login', args: [] })">
-            <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('login') }}
-          </button>
-          <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="$emitter.emit('train')">
-            <font-awesome-icon icon="fa-solid fa-graduation-cap" class="h-3 w-3" />{{ $t('train') }}
-          </button>
+          <Tools :settings="settings" />
         </div>
         <div class="flex flex-col">
           <span class="font-sans mt-4 mb-4">{{ $t('groups') }}</span>
@@ -191,13 +182,17 @@
 import { inject } from 'vue'
 import * as util from '../utils'
 import { invoke } from "@tauri-apps/api/tauri";
+import { WebviewWindow } from '@tauri-apps/api/window'
+import Tools from './Tools.vue'
 export default {
   name: 'Sidebar',
   setup() {
     const devices = inject('devices')
     return { devices: devices.list }
   },
-
+  components: {
+    Tools
+  },
   data() {
     return {
       showSidebar: true,
@@ -245,6 +240,20 @@ export default {
     }
   },
   methods: {
+    openDebugWindow() {
+      const webview = new WebviewWindow('Debug', {
+        title: 'Debug Tools',
+        url: 'debug.html',
+        maximized: true
+      })
+
+      webview.once('tauri://created', function () {
+        // webview window successfully created
+      })
+      webview.once('tauri://error', function (e) {
+        // an error happened creating the webview window
+      })
+    },
     showHiddenDevices() {
       this.$emitter.emit('show-hidden-devices')
     },
