@@ -4,7 +4,7 @@
     "pub_date": "2024-05-04T23:00:00Z",
     "platforms": {
         "windows-x86_64": {
-            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTS2NOV0dxQ0Z6eS9wWG5oaXV6bGhQRTV1U3JvQUVFRFdzUXRuVUVjYWd4Mld5V2o3ZGZVMklEUGdXQkdaK1RxajJWMEdsTUpTTGtOeW9oU3VjdGVjQXN2d2JaZmVxendzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzE2MTc1MDE2CWZpbGU6dGlrdG9rLW1hdHJpeF8xLjIuNF94NjRfZW4tVVMubXNpLnppcAorNmF6TENkRkFYM2lHNVpQV2pPZFhOK1lYKzRVMHRGUjRxcVFGMU1HVCtIY0RxU25iUWgwYkJFVW5UQnBxaXZKcElkMlhTb1pJZUM0UmlOOWhCWkFEUT09Cg==",
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTS2NOV0dxQ0Z6eS95TlpMRHcya1B1cXJJWVpjTVJvakJOWlRaMDVqTi9TZnl0aWkySFBTTWZvZm8yeCtPcVpoZkRwVUpvQ3Z3SFRVeGhxWXZ5T0dZTDdsSUl1a1VXS3dRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzE2MTc2OTgyCWZpbGU6dGlrdG9rLW1hdHJpeF8xLjIuNF94NjRfZW4tVVMubXNpLnppcAo3ZnJnR2kxZUdJSG84NzBVeUtNeTRzSVNUbkhwRENEdTNaTmdxS0JZU0Z4dVNyeGI0OWtxeVptampHelpZSWR3UDZEVHJDM2xsL0MvZ0h3SzNvNXdBdz09Cg==",
             "url": "https://github.tikmatrix.com/https://github.com/tikmatrix/tiktok-matrix/releases/download/v1.2.4/tiktok-matrix_1.2.4_x64_en-US.msi.zip"
         }
     }

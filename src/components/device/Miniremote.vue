@@ -336,22 +336,7 @@ export default {
       })
       // console.log('jmuxer init,big:', this.big, 'operating:', this.operating, 'index:', this.index)
       this.connect()
-      // 播放事件
-      let video = this.$refs.display
-      video.addEventListener('play', function () {
-        console.log('视频开始播放');
-        console.log(video.currentTime, video.duration);
-        // 视频进度快进到结尾
-        video.currentTime = 999999;
 
-      });
-
-      // 暂停事件
-      video.addEventListener('pause', function () {
-        console.log('视频暂停播放');
-        // 在这里执行你想要的操作
-      });
-      this.$refs.display.play();
     }
   },
   mounted() {
