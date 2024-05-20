@@ -280,6 +280,9 @@ export const i18n = createI18n({
       noDevicesSelected: 'No Devices Selected',
       debug: 'Debug',
       scanTCPDevice: 'Scan TCP Device',
+      startScan: 'Start Scan',
+      scanIpTitle: 'Scan IP Range',
+      scanPortTip: 'Scan Port',
 
     },
     'zh-CN': {
@@ -506,6 +509,9 @@ export const i18n = createI18n({
       noDevicesSelected: '未选择设备',
       debug: '调试',
       scanTCPDevice: '扫描 TCP 设备',
+      startScan: '开始扫描',
+      scanIpTitle: '扫描 IP 范围',
+      scanPortTip: '扫描端口',
     }
   }
 })

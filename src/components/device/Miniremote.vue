@@ -324,8 +324,8 @@ export default {
         node: this.$refs.display,
         mode: 'video',
         flushingTime: 0,
-        maxDelay: 500,
-        // fps: 50,
+        maxDelay: 1,
+        fps: 60,
         debug: false,
         onError: function () {
           console.log('onError')

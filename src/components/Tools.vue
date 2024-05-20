@@ -1,6 +1,20 @@
 <template>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="app_install">
+        <font-awesome-icon icon="fa-brands fa-android" class="h-4 w-4 text-white" />
+        {{ $t('installApk') }}
+        <input id="app_install_input" type="file" v-on:change="on_app_install" multiple hidden />
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="uploadVideo">
+        <font-awesome-icon icon="fa fa-upload" class="h-4 w-4 text-white" />
+        {{ $t('upload') }}
+        <input id="upload_video_input" type="file" v-on:change="on_upload_video" multiple hidden />
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.zhiliaoapp.musically/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-4 w-4 text-white" />
         {{ $t('open') }}
@@ -65,5 +79,20 @@
 export default {
     name: 'Tools',
     props: ['settings'],
+    methods: {
+        app_install() {
+            document.getElementById('app_install_input').click()
+        },
+        on_app_install(e) {
+            this.$emitter.emit('installApks', e.target.files)
+        },
+        uploadVideo() {
+            document.getElementById('upload_video_input').click()
+        },
+        on_upload_video(e) {
+            console.log(e.target.files)
+            this.$emitter.emit('uploadFiles', e.target.files)
+        },
+    }
 }
 </script>

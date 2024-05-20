@@ -163,6 +163,30 @@
       </div>
     </div>
   </transition>
+  <dialog ref="scan_dialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
+      <div class="flex flex-row items-center">
+        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_1" />
+        <span class="font-bold p-1">.</span>
+        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_2" />
+        <span class="font-bold p-1">.</span>
+        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_3" />
+        <span class="font-bold p-1">.</span>
+        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_4" />
+        <span class="font-bold p-2">-</span>
+        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_5" />
+      </div>
+      <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
+      <input class="input input-bordered input-sm w-24" type="number" v-model="port" />
+      <button class="btn btn-sm btn-primary ml-2" @click="scan">{{ $t('startScan') }}</button>
+
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
+
 </template>
 <style>
 .fade-enter-active,
@@ -196,6 +220,12 @@ export default {
   data() {
     return {
       showSidebar: true,
+      ip_1: util.getData('ip_1') || 192,
+      ip_2: util.getData('ip_2') || 168,
+      ip_3: util.getData('ip_3') || 1,
+      ip_4: util.getData('ip_4') || 2,
+      ip_5: util.getData('ip_5') || 254,
+      port: util.getData('port') || 5555,
       menuItems: [],
       fullMenuItems: [
         // { name: 'dashboard', icon: 'tachometer-alt' },
@@ -240,6 +270,24 @@ export default {
     }
   },
   methods: {
+    scan() {
+      util.setData('ip_1', this.ip_1)
+      util.setData('ip_2', this.ip_2)
+      util.setData('ip_3', this.ip_3)
+      util.setData('ip_4', this.ip_4)
+      util.setData('ip_5', this.ip_5)
+      util.setData('port', this.port)
+      this.$service.scan_tcp({
+        start_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_4}`,
+        end_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_5}`,
+        port: this.port
+      }).then((res) => {
+        console.log(res)
+      })
+    },
+    scanTCPDevice() {
+      this.$refs.scan_dialog.show()
+    },
     openDebugWindow() {
       const webview = new WebviewWindow('Debug', {
         title: 'Debug Tools',

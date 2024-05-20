@@ -526,9 +526,10 @@ export function script(scriptRequest) {
     url: api.script
   })
 }
-export function scan_tcp() {
+export function scan_tcp(data) {
   return request({
-    method: 'get',
+    method: 'post',
+    data,
     url: api.scan_tcp
   })
 }
