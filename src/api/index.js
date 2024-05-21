@@ -56,5 +56,6 @@ const api = {
   get_group_by_id: '/api/group/get_by_id',
   move_to_group: '/api/device/move_to_group',
   set_text: '/api/device/set_text',
+  capture_video: '/api/video/capture_video'
 }
 export default api

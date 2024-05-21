@@ -581,3 +581,10 @@ export function set_text(data) {
     url: api.set_text
   })
 }
+export function capture_video(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.capture_video
+  })
+}
