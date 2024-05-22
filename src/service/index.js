@@ -588,3 +588,10 @@ export function capture_video(data) {
     url: api.capture_video
   })
 }
+export function fission_video(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.fission_video
+  })
+}
