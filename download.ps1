@@ -1,8 +1,5 @@
 $urlList = @(
-    "https://www.youtube.com/shorts/ourxyY7RqrQ",
-    "https://www.youtube.com/shorts/W4Tc8otOrA4", 
-    "https://www.youtube.com/shorts/XPwr6dIL14Q", 
-    "https://www.youtube.com/watch?v=UWL5ZVZMedY"
+    "https://www.tiktok.com/@tikmatrix6931/video/7369856283689880878"
 )
 function DownloadVideo {
     param([string]$url)
@@ -11,7 +8,7 @@ function DownloadVideo {
     $userdir = [Environment]::GetFolderPath("User")
     
     # 下载视频
-    ./src-tauri/bin/yt-dlp.exe -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" --merge-output-format mp4 --output "$userdir/Videos/input_$filename.mp4" --proxy 127.0.0.1:7890 $url
+    ./src-tauri/bin/yt-dlp.exe --merge-output-format mp4 --output "$userdir/Videos/input_$filename.mp4" --proxy 127.0.0.1:7890 $url
     # 修改画面尺寸或比例（这里将画面缩小为原来的一半）
     ./src-tauri/bin/ffmpeg.exe -i "$userdir/Videos/input_$filename.mp4" -vf "scale=iw/2:ih/2" "$userdir/Videos/temp_$filename.mp4"
     

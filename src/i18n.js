@@ -283,7 +283,9 @@ export const i18n = createI18n({
       startScan: 'Start Scan',
       scanIpTitle: 'Scan IP Range',
       scanPortTip: 'Scan Port',
-
+      capture: 'Capture',
+      videoUrl: 'Video Url',
+      supportedSites: 'Supported Sites',
     },
     'zh-CN': {
       siteName: 'Tik Matrix',
@@ -512,6 +514,9 @@ export const i18n = createI18n({
       startScan: '开始扫描',
       scanIpTitle: '扫描 IP 范围',
       scanPortTip: '扫描端口',
+      capture: '采集',
+      videoUrl: '视频链接',
+      supportedSites: '支持站点',
     }
   }
 })

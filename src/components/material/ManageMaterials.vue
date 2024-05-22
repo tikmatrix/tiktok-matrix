@@ -2,8 +2,8 @@
   <div class="w-full">
     <Pagination :items="materials" :searchKeys="['name']" @refresh="get_materials">
       <template v-slot:buttons>
-        <!-- <MyButton onclick="confirm_modal.showModal()" label="clearAll" /> -->
-        <MyButton @click="add_material" label="add" icon="fa fa-add" />
+        <MyButton @click="$refs.upload_material_input.click()" label="upload" icon="fa fa-add" />
+        <MyButton @click="$refs.add_video_dialog.showModal()" label="capture" icon="fa fa-add" />
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
@@ -86,6 +86,29 @@
       </div>
     </div>
   </dialog>
+  <!-- add video dialog -->
+  <dialog ref="add_video_dialog" class="modal">
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <h3 class="font-bold text-lg">{{ $t('capture') }}</h3>
+      <a class="link link-primary link-sm" href="https://doc.tikmatrix.com/blog/download-video-supported-sites"
+        target="_blank">{{ $t('supportedSites') }}</a>
+      <label class="input input-sm flex items-center gap-2 my-4">
+        {{ $t('videoUrl') }}:
+        <input type="text" class="grow" placeholder="https://www.tiktok.com/@tikmatrix6931/video/7369856283689880878"
+          v-model="new_video_url" />
+      </label>
+      <button class="btn btn-primary btn-sm" @click="capture">{{ $t('capture') }}</button>
+      <div class="py-4">
+        <p class="text-sm">{{ downloadOutput }}</p>
+      </div>
+      <div class="modal-action">
+
+      </div>
+    </div>
+  </dialog>
 </template>
 <script>
 import Detail from './Detail.vue'
@@ -111,14 +134,41 @@ export default {
       materials: [],
       currentMaterial: null,
       upload_progress: 10,
-      max_upload_progress: 100
+      max_upload_progress: 100,
+      new_video_url: null,
+      downloadOutput: null
     }
   },
   methods: {
-    add_material() {
-      this.$refs.upload_material_input.click()
+    capture() {
+      if (this.new_video_url) {
+        let events = new EventSource("http://127.0.0.1:8090/api/video/output");
+        events.onmessage = (event) => {
+          if (event.data === "connected" || event.data === "ping") {
+            return
+          }
+          this.downloadOutput = event.data
+        }
+        events.onerror = (event) => {
+          console.log(event)
+        }
+        events.addEventListener("error", (event) => {
+          console.log(event)
+        })
+        events.addEventListener("finish", (event) => {
+          console.log(event)
+        })
+        this.$service
+          .capture_video({ url: this.new_video_url, group_id: this.group.id })
+          .then(res => {
+            // this.$refs.add_video_dialog.close()
+            this.get_materials()
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      }
     },
-
     on_upload_material(e) {
       const totalFiles = e.target.files.length
       let index = 0
