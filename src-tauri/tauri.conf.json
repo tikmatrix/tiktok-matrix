@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "tiktok-matrix",
-    "version": "1.2.4"
+    "version": "1.2.5"
   },
   "tauri": {
     "allowlist": {
@@ -70,7 +70,8 @@
       "resources": [
         "bin/platform-tools",
         "bin/apk",
-        "bin/script"
+        "bin/script",
+        "bin/yt-dlp.exe"
       ],
       "active": true,
       "targets": [

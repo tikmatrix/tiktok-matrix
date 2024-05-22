@@ -286,6 +286,11 @@ export const i18n = createI18n({
       capture: 'Capture',
       videoUrl: 'Video Url',
       supportedSites: 'Supported Sites',
+      fission: 'Fission',
+      dynamicScale: 'Dynamic Scale',
+      smartFrameCut: 'Smart Frame Cut',
+      adjustFrameRate: 'Adjust Frame Rate',
+      adjustBitRate: 'Adjust Bit Rate',
     },
     'zh-CN': {
       siteName: 'Tik Matrix',
@@ -517,6 +522,11 @@ export const i18n = createI18n({
       capture: '采集',
       videoUrl: '视频链接',
       supportedSites: '支持站点',
+      fission: '裂变',
+      dynamicScale: '动态缩放',
+      smartFrameCut: '智能抽帧',
+      adjustFrameRate: '调整帧率',
+      adjustBitRate: '调整码率',
     }
   }
 })

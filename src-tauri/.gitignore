@@ -12,4 +12,5 @@ bin/dist
 bin/script
 bin/*.exe
 data
+ffmpeg
 
