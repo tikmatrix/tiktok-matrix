@@ -43,8 +43,8 @@
                 </td>
                 <td>{{ material.create_time }}</td>
                 <td>
-                  <button class="btn btn-sm btn-success" @click="show_fission_video_dialog(material)">{{ $t('fission')
-                    }}</button>
+                  <!-- <button class="btn btn-sm btn-success" @click="show_fission_video_dialog(material)">{{ $t('fission')
+                    }}</button> -->
                   <button class="bg-red-500 hover:bg-red-700 text-white btn btn-sm" @click="delete_material(material)">
                     {{ $t('delete') }}
                   </button>
@@ -110,7 +110,7 @@
         <input type="text" class="grow" placeholder="https://www.tiktok.com/@tikmatrix6931/video/7369856283689880878"
           v-model="new_video_url" />
       </label>
-      <!-- <button class="btn btn-primary btn-sm" @click="capture">{{ $t('capture') }}</button> -->
+      <button class="btn btn-primary btn-sm" @click="capture">{{ $t('capture') }}</button>
       <div class="py-4">
         <p class="text-sm">{{ downloadOutput }}</p>
       </div>
