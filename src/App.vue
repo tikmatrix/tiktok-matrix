@@ -22,8 +22,8 @@
     </div>
   </div>
 
-  <vue-draggable-resizable v-if="device && device.serial" :w="411" :h="677" :resizable="false" :parent="false" :z="20"
-    drag-handle=".drag"
+  <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
+    :z="20" drag-handle=".drag"
     class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col">
     <Miniremote :device="device" :index="device.index" :big="true" :key="device.serial + '_big'" />
   </vue-draggable-resizable>

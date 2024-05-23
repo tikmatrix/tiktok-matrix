@@ -44,9 +44,8 @@
                     train_job.username }}</a>
                 </td>
                 <td>
-                  <a class="link link-primary"
-                    @click="show_device(train_job.device_index, train_job.device)">{{ train_job.device_index }} - {{
-                      train_job.device }}</a>
+                  <a class="link link-primary" @click="show_device(train_job.device_index, train_job.device)">{{
+                    train_job.device_index }}</a>
                 </td>
                 <td>{{ train_job.group_name || 'N/A' }}</td>
                 <td>

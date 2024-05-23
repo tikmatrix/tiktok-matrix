@@ -533,10 +533,10 @@ export function scan_tcp(data) {
     url: api.scan_tcp
   })
 }
-export function stop_task({ serial }) {
+export function stop_task(data) {
   return request({
-    method: 'get',
-    params: { serial },
+    method: 'post',
+    data,
     url: api.stop_task
   })
 }
@@ -600,5 +600,12 @@ export function train_now(data) {
     method: 'post',
     data,
     url: api.train_now
+  })
+}
+export function publish_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.publish_now
   })
 }
