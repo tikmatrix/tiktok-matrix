@@ -54,10 +54,7 @@
 
       </div>
     </div>
-    <!-- <div v-if="!big && !loading && !operating"
-      class="indicator-item indicator-center indicator-middle badge badge-lg badge-neutral bg-opacity-50 font-bold">
-      <span>{{ index + 1 }}</span>
-    </div> -->
+
 
   </div>
 
@@ -288,9 +285,7 @@ export default {
       this.scrcpy.onerror = () => {
         this.loading = true
         console.log(this.index, ':onerror')
-        // if (!this.operating) {
-        //   this.connect()
-        // }
+
       }
       this.scrcpy.onmessage = message => {
         if (!this.jmuxer) {
@@ -300,7 +295,6 @@ export default {
             this.scrcpy.close()
             this.scrcpy = null
           }
-          // this.connect()
           return
         }
         if (this.loading) {

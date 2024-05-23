@@ -595,3 +595,10 @@ export function fission_video(data) {
     url: api.fission_video
   })
 }
+export function train_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.train_now
+  })
+}

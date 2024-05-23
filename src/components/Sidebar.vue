@@ -529,12 +529,22 @@ export default {
 
     },
     train() {
-      this.$emitter.emit('scriptEventData', {
-        name: 'train', args: [
-          '0',
-          '',
-        ]
-      })
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+      this.$service
+        .train_now({
+          serials: this.selection,
+        })
+        .then(res => {
+          console.log(res)
+          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
+
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
   },
   mounted() {
