@@ -529,12 +529,70 @@ export default {
 
     },
     train() {
-      this.$emitter.emit('scriptEventData', {
-        name: 'train', args: [
-          '0',
-          '',
-        ]
-      })
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+      this.$service
+        .train_now({
+          serials: this.selection,
+        })
+        .then(res => {
+          console.log(res)
+          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
+
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    publish() {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+      this.$service
+        .publish_now({
+          serials: this.selection,
+        })
+        .then(res => {
+          console.log(res)
+          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
+
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    stop_task() {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+      this.$service
+        .stop_task({
+          serials: this.selection,
+        })
+        .then(res => {
+          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    send_keycode(keycode) {
+      this.$emitter.emit('eventData', JSON.stringify({
+        type: 'keycode',//type=keycode
+        operation: 'd',//operation=down
+        keycode,
+      }));
+      setTimeout(() => {
+        this.$emitter.emit('eventData', JSON.stringify({
+          type: 'keycode',//type=keycode
+          operation: 'u',//operation=up
+          keycode,
+        }));
+      }, 100);
     },
   },
   mounted() {
@@ -580,6 +638,15 @@ export default {
     });
     this.$emitter.on('train', () => {
       this.train();
+    });
+    this.$emitter.on('publish', () => {
+      this.publish();
+    });
+    this.$emitter.on('stop_task', () => {
+      this.stop_task();
+    });
+    this.$emitter.on('send_keycode', (code) => {
+      this.send_keycode(code)
     });
   }
 }

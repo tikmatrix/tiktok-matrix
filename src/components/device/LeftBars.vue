@@ -66,11 +66,12 @@
       <font-awesome-icon icon="fa-solid fa-graduation-cap" class="h-4 w-4 text-blue-500" />
       <span class="text-xs block font-normal">{{ $t('train') }}</span>
     </button>
-    <!-- <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip" :data-tip="$t('post')"
-        @click="post">
-        <font-awesome-icon icon="fa-solid fa-paper-plane" class="h-4 w-4 text-blue-500" />
-        <span class="text-xs block font-normal">{{ $t('post') }}</span>
-        </button> -->
+    <button
+      class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
+      :data-tip="$t('publish')" @click="$emitter.emit('publish')">
+      <font-awesome-icon icon="fa-solid fa-paper-plane" class="h-4 w-4 text-blue-500" />
+      <span class="text-xs block font-normal">{{ $t('publish') }}</span>
+    </button>
     <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
       :data-tip="$t('init')" @click="$emitter.emit('initDevice')">

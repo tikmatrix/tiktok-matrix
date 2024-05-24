@@ -291,6 +291,8 @@ export const i18n = createI18n({
       smartFrameCut: 'Smart Frame Cut',
       adjustFrameRate: 'Adjust Frame Rate',
       adjustBitRate: 'Adjust Bit Rate',
+      publish: 'Publish',
+      stopTask: 'Stop Task',
     },
     'zh-CN': {
       siteName: 'Tik Matrix',
@@ -527,6 +529,8 @@ export const i18n = createI18n({
       smartFrameCut: '智能抽帧',
       adjustFrameRate: '调整帧率',
       adjustBitRate: '调整码率',
+      publish: '发布',
+      stopTask: '停止任务',
     }
   }
 })

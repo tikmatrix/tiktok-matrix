@@ -8,6 +8,8 @@ const api = {
   material_count: '/api/material/count',
   publish_job: '/api/publish_job',
   train_job: '/api/train_job',
+  train_now: '/api/train_now',
+  publish_now: '/api/publish_now',
   init: '/api/device/init',
   group: '/api/group',
   music: '/api/music',

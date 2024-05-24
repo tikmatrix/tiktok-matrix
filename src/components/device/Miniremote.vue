@@ -9,9 +9,9 @@
               <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-green-500' : ' text-red-500')" v-if="big"> -
                 {{
                   $t(task_status) }}</span>
-              <button class="btn btn-sm  bg-base-200 hover:bg-base-100 hover:text-red-500 text-red-700 border-0"
+              <!-- <button class="btn btn-sm  bg-base-200 hover:bg-base-100 hover:text-red-500 text-red-700 border-0"
                 v-if="big && task_status == 'RUNNING'" @click="stop_task">
-                <font-awesome-icon icon="fa fa-stop" class="h-4 w-4" />{{ $t('stop') }}</button>
+                <font-awesome-icon icon="fa fa-stop" class="h-4 w-4" />{{ $t('stop') }}</button> -->
             </div>
             <div class="justify-center items-center text-center">
               <span class="text-xs mr-2 font-bold" v-if="big">{{ device.serial }} </span>
@@ -31,7 +31,7 @@
         </div>
 
         <div class="flex flex-row flex-1 ">
-          <LeftBars v-if="big" :device="device" />
+          <!-- <LeftBars v-if="big" :device="device" /> -->
           <div>
             <div :class="'relative flex-1 object-fill' + (big ? ' w-[320px] h-[580px]' : ' w-[110px] h-[200px]')">
               <video class="absolute top-0 left-0 w-full h-full" ref="display" autoplay
@@ -47,17 +47,14 @@
               </div>
 
             </div>
-            <BottomBar v-if="big" @send_keycode="send_keycode" />
+            <!-- <BottomBar v-if="big" @send_keycode="send_keycode" /> -->
           </div>
           <RightBars v-if="big" />
         </div>
 
       </div>
     </div>
-    <!-- <div v-if="!big && !loading && !operating"
-      class="indicator-item indicator-center indicator-middle badge badge-lg badge-neutral bg-opacity-50 font-bold">
-      <span>{{ index + 1 }}</span>
-    </div> -->
+
 
   </div>
 
@@ -133,20 +130,7 @@ export default {
     }
   },
   methods: {
-    send_keycode(keycode) {
-      this.$emitter.emit('eventData', JSON.stringify({
-        type: 'keycode',//type=keycode
-        operation: 'd',//operation=down
-        keycode,
-      }));
-      setTimeout(() => {
-        this.$emitter.emit('eventData', JSON.stringify({
-          type: 'keycode',//type=keycode
-          operation: 'u',//operation=up
-          keycode,
-        }));
-      }, 100);
-    },
+
     get_task_status() {
       this.$service
         .get_task_status({
@@ -159,17 +143,7 @@ export default {
           console.log(err)
         })
     },
-    stop_task() {
-      this.$service
-        .stop_task({
-          serial: this.device.serial
-        })
-        .then(res => {
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    },
+
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -288,9 +262,7 @@ export default {
       this.scrcpy.onerror = () => {
         this.loading = true
         console.log(this.index, ':onerror')
-        // if (!this.operating) {
-        //   this.connect()
-        // }
+
       }
       this.scrcpy.onmessage = message => {
         if (!this.jmuxer) {
@@ -300,7 +272,6 @@ export default {
             this.scrcpy.close()
             this.scrcpy = null
           }
-          // this.connect()
           return
         }
         if (this.loading) {

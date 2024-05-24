@@ -57,7 +57,7 @@
                 <td>
                   <a class="cursor-pointer underline text-blue-500"
                     @click="show_device(publish_job.device_index, publish_job.device)">{{
-                      publish_job.device_index }} - {{ publish_job.device }}</a>
+                      publish_job.device_index }}</a>
                 </td>
                 <td>{{ publish_job.group_name || 'N/A' }}</td>
                 <td>
