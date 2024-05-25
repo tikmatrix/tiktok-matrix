@@ -7,13 +7,11 @@ TikMatrix 是一个群控安卓真实手机（非云控，非协议），基于a
 
 [Official website](https://www.tikmatrix.com)
 
-[Document](https://doc.tikmatrix.com)
-
 [Video Tutorial](https://www.youtube.com/@tikmatrix)
 
 ## Discussions
 
-[Join Niostack telegram group](https://t.me/+iGhozoBfAbI5YmE1)
+[Join our Telegram](https://t.me/+iGhozoBfAbI5YmE1)
 
 ## Development
 
@@ -34,4 +32,4 @@ npm run tauri build
 Paypal: [paypal.me/yaohp](https://paypal.me/yaohp)
 
 USDT-TRC20: `TDe4ZmkDBPYHVqWpX6jWjf3j45JdipB7Lx`
-![](usdt.png)
+![ustd](usdt.png)
