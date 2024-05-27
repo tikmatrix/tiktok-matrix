@@ -213,7 +213,9 @@ export const i18n = createI18n({
       train: 'Train',
       copy: 'Copy',
       topics: 'Topics',
+      comments: 'Comments',
       topicsTips: 'Enter the topic to be searched,one topic per line',
+      commentsTips: 'Enter the content to be commented,one content per line',
       titlesTips: 'Enter the title and tags of the video,one title per line',
       remark: 'Remark',
       document: 'Document',
@@ -293,6 +295,7 @@ export const i18n = createI18n({
       adjustBitRate: 'Adjust Bit Rate',
       publish: 'Publish',
       stopTask: 'Stop Task',
+      comment: 'Comment',
     },
     'zh-CN': {
       siteName: 'Tik Matrix',
@@ -467,8 +470,10 @@ export const i18n = createI18n({
       trainTimer: '养号定时器',
       trainDuration: '养号时长',
       topics: '话题',
+      comments: '评论',
       publishTimer: '发布定时器',
       topicsTips: '输入要搜索的话题,一行一个话题',
+      commentsTips: '输入要评论的内容,一行一个评论',
       titlesTips: '输入视频的标题和标签,一行一个标题',
       hideTips: '隐藏这个设备',
       showHiddenDevices: '显示隐藏设备',
@@ -531,6 +536,7 @@ export const i18n = createI18n({
       adjustBitRate: '调整码率',
       publish: '发布',
       stopTask: '停止任务',
+      comment: '评论',
     }
   }
 })
