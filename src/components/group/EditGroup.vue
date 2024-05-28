@@ -34,12 +34,16 @@
       </div>
       <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-1">{{ $t('topics') }}:</label>
-        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32" :placeholder="$t('topicsTips')"
+        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-16" :placeholder="$t('topicsTips')"
           autocomplete="off" v-model="mygroup.topic"> </textarea>
       </div>
-      <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
+      <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
+        <label class="font-bold text-right col-span-1">{{ $t('comments') }}:</label>
+        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-16" :placeholder="$t('commentsTips')"
+          autocomplete="off" v-model="mygroup.comment"> </textarea>
+      </div>
+      <div class="grid grid-cols-10 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-2">{{ $t('interact') }}:</label>
-
         <div class="col-span-2 grid grid-cols-6 items-center">
           <label class="text-sm text-right col-span-3">{{ $t('floow') }}: </label>
           <input type="number" class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="mygroup.floow_probable"
@@ -56,6 +60,12 @@
           <label class="text-sm text-right col-span-3">{{ $t('collect') }}: </label>
           <input type="number" class="border-2 border-gray-300 p-2 rounded col-span-2"
             v-model="mygroup.collect_probable" placeholder="0" />
+          <label class="text-sm text-left col-span-1">%</label>
+        </div>
+        <div class="col-span-2 grid grid-cols-6 items-center">
+          <label class="text-sm text-right col-span-3">{{ $t('comment') }}: </label>
+          <input type="number" class="border-2 border-gray-300 p-2 rounded col-span-2"
+            v-model="mygroup.comment_probable" placeholder="0" />
           <label class="text-sm text-left col-span-1">%</label>
         </div>
       </div>
@@ -192,8 +202,10 @@ export default {
           floow_probable: Number(group.floow_probable),
           like_probable: Number(group.like_probable),
           collect_probable: Number(group.collect_probable),
+          comment_probable: Number(group.comment_probable),
           train_duration: Number(group.train_duration),
-          topic: group.topic
+          topic: group.topic,
+          comment: group.comment
         })
         .then(() => {
           this.$emitter.emit('closePageDialog', {})
