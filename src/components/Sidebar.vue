@@ -51,7 +51,8 @@
 
         <div role="tablist" class="tabs tabs-lifted">
           <a ref="settings" role="tab" class="tab tab-active" @click="selectTab('settings')">{{ $t('general') }}</a>
-          <a ref="tools" role="tab" class="tab" @click="selectTab('tools')">{{ $t('toolbox') }}</a>
+          <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
+          <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
         </div>
         <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'settings'">
           <button v-for="(item, index) in menuItems" :key="index"
@@ -80,7 +81,10 @@
             <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
           </button>
         </div>
-        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tools'">
+        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'quickActions'">
+          <QuickActions :settings="settings" />
+        </div>
+        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tktools'">
           <Tools :settings="settings" />
         </div>
         <div class="flex flex-col">
@@ -208,6 +212,7 @@ import * as util from '../utils'
 import { invoke } from "@tauri-apps/api/tauri";
 import { WebviewWindow } from '@tauri-apps/api/window'
 import Tools from './Tools.vue'
+import QuickActions from './QuickActions.vue';
 export default {
   name: 'Sidebar',
   setup() {
@@ -215,7 +220,8 @@ export default {
     return { devices: devices.list }
   },
   components: {
-    Tools
+    Tools,
+    QuickActions
   },
   data() {
     return {
@@ -445,11 +451,18 @@ export default {
       switch (tab) {
         case 'settings':
           this.$refs.settings.classList.add('tab-active')
-          this.$refs.tools.classList.remove('tab-active')
+          this.$refs.quickActions.classList.remove('tab-active')
+          this.$refs.tktools.classList.remove('tab-active')
           break
-        case 'tools':
+        case 'tktools':
           this.$refs.settings.classList.remove('tab-active')
-          this.$refs.tools.classList.add('tab-active')
+          this.$refs.quickActions.classList.remove('tab-active')
+          this.$refs.tktools.classList.add('tab-active')
+          break
+        case 'quickActions':
+          this.$refs.settings.classList.remove('tab-active')
+          this.$refs.tktools.classList.remove('tab-active')
+          this.$refs.quickActions.classList.add('tab-active')
           break
       }
     },

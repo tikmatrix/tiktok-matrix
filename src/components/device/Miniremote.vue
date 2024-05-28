@@ -267,11 +267,7 @@ export default {
       this.scrcpy.onmessage = message => {
         if (!this.jmuxer) {
           console.log('jmuxer is null,big:', this.big, 'operating:', this.operating, 'index:', this.index, 'scrcpy:', this.scrcpy)
-          if (this.scrcpy) {
-            console.log('scrcpy close,big:', this.big, 'operating:', this.operating, 'index:', this.index)
-            this.scrcpy.close()
-            this.scrcpy = null
-          }
+          this.closeScrcpy()
           return
         }
         if (this.loading) {
@@ -307,11 +303,26 @@ export default {
       })
       // console.log('jmuxer init,big:', this.big, 'operating:', this.operating, 'index:', this.index)
       this.connect()
-
+    },
+    closeScrcpy() {
+      if (this.scrcpy) {
+        this.scrcpy.close()
+        this.scrcpy.onerror = null
+        this.scrcpy.onmessage = null
+        this.scrcpy.onclose = null
+        this.scrcpy.onopen = null
+        this.scrcpy = null
+      }
+    },
+    closeJmuxer() {
+      if (this.jmuxer) {
+        this.jmuxer.destroy()
+        this.jmuxer = null
+      }
     }
   },
   mounted() {
-    console.log('miniremote mounted,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+    // console.log('miniremote mounted,big:', this.big, 'operating:', this.operating, 'index:', this.index)
     if (!this.big) {
       this.$emitter.on('closeDevice', (device) => {
         if (device.serial === this.device.serial) {
@@ -322,14 +333,8 @@ export default {
       this.$emitter.on('openDevice', (device) => {
         if (device.serial === this.device.serial) {
           this.operating = true
-          if (this.scrcpy) {
-            this.scrcpy.close()
-            this.scrcpy = null
-          }
-          if (this.jmuxer) {
-            this.jmuxer.destroy()
-            this.jmuxer = null
-          }
+          this.closeScrcpy()
+          this.closeJmuxer()
         }
         if (device.serial !== this.device.serial && this.operating) {
           this.syncDisplay()
@@ -340,7 +345,7 @@ export default {
 
     this.syncDisplay()
     this.$emitter.on('syncEventData', (data) => {
-      // console.log("receive syncEventData: ", data.devices)
+      console.log("receive syncEventData: ", data.devices)
       if (!data.devices.includes(this.device.serial)) {
         return
       }
@@ -365,17 +370,8 @@ export default {
     }, 5000)
   },
   unmounted() {
-    console.log('miniremote unmounted,big:', this.big, 'operating:', this.operating, 'index:', this.index)
-    if (this.scrcpy) {
-      console.log('scrcpy close,big:', this.big, 'operating:', this.operating, 'index:', this.index)
-      this.scrcpy.close()
-      this.scrcpy = null
-    }
-    if (this.jmuxer) {
-      console.log('jmuxer close,big:', this.big, 'operating:', this.operating, 'index:', this.index)
-      this.jmuxer.destroy()
-      this.jmuxer = null
-    }
+    this.closeScrcpy()
+    this.closeJmuxer()
     clearInterval(this.timer_fps)
     this.timer_fps = null
     clearInterval(this.timer_task_status)
