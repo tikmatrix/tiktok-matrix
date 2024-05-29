@@ -325,11 +325,13 @@ export default {
           publish_start_time: '',
           train_start_time: '',
           title: '',
+          comment: '',
           publish_type: 0,
           product_link: '',
           floow_probable: 0,
           like_probable: 0,
           collect_probable: 0,
+          comment_probable: 0,
           train_duration: 0,
           topic: ''
         })

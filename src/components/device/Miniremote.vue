@@ -254,7 +254,7 @@ export default {
       }
       this.scrcpy.onclose = () => {
         this.loading = true
-        console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+        // console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.index)
         // if (!this.operating) {
         //   this.connect()
         // }
@@ -293,7 +293,7 @@ export default {
         flushingTime: 0,
         maxDelay: 1,
         fps: 60,
-        debug: false,
+        debug: true,
         onError: function () {
           console.log('onError')
           if (/Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor)) {
@@ -345,7 +345,7 @@ export default {
 
     this.syncDisplay()
     this.$emitter.on('syncEventData', (data) => {
-      console.log("receive syncEventData: ", data.devices)
+      // console.log("receive syncEventData: ", data.devices)
       if (!data.devices.includes(this.device.serial)) {
         return
       }
