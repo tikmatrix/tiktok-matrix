@@ -6,7 +6,7 @@
     <RunAgentTips />
   </template>
   <div class="flex flex-row items-start bg-base-300 h-screen w-screen" v-else>
-    <Sidebar @menu_selected="menu_selected" />
+    <Sidebar />
     <div class="flex-1 p-4 rounded-lg">
       <div role="alert" class="alert alert-warning mb-1" v-show="showDemoTip">
         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
@@ -44,6 +44,7 @@
       <ManageSettings v-if="selectedItem.name === 'settings' && $refs.page_dialog.open" />
       <ManagePostBots v-if="selectedItem.name === 'postBots' && $refs.page_dialog.open" />
       <ManageEditBots v-if="selectedItem.name === 'editBots' && $refs.page_dialog.open" />
+      <BuyLicense v-if="selectedItem.name === 'buyLicense' && $refs.page_dialog.open" />
       <EditGroup :group="selectedItem.group" v-if="selectedItem.name === 'editGroup' && $refs.page_dialog.open" />
     </div>
     <form method="dialog" class="modal-backdrop">
@@ -82,6 +83,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { window } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
 import { ask } from '@tauri-apps/api/dialog';
+import BuyLicense from './components/settings/BuyLicense.vue'
 
 export default {
   name: 'app',
@@ -111,7 +113,8 @@ export default {
     ManageEditBots,
     Miniremote,
     Toast,
-    EditGroup
+    EditGroup,
+    BuyLicense
   },
   data() {
     return {
@@ -122,7 +125,6 @@ export default {
       selectedItem: {},
       agentRunning: true,
       page_title: '',
-      agent_status: false,
       settings: {},
       admin_url: "https://admin.tikmatrix.com"
     }
@@ -130,7 +132,7 @@ export default {
   methods: {
     stop_agent() {
       invoke("stop_agent");
-      this.agent_status = false;
+      this.agentRunning = false;
     },
     get_settings() {
       this.settings = invoke("get_settings");
@@ -186,14 +188,10 @@ export default {
     // this.checkAuth()
     this.needLogin = false
     this.showDemoTip = import.meta.env.VITE_APP_MOCK === 'true'
-    //check this.$apiUrl is ok
-    this.$service.get_devices().then(res => {
-      this.agentRunning = true
-      console.log("agent running")
-    }).catch(err => {
-      this.agentRunning = false
-      console.log("agent not running")
-    })
+
+    this.$emitter.on('agentStatus', (status) => {
+      this.agentRunning = status
+    });
     this.$emitter.on('openDevice', (device) => {
       this.device = device
     });
@@ -202,6 +200,9 @@ export default {
     });
     this.$emitter.on('closePageDialog', (data) => {
       this.$refs.page_dialog.close()
+    })
+    this.$emitter.on('menuSelected', (item) => {
+      this.menu_selected(item)
     })
 
   },

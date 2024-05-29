@@ -43,11 +43,16 @@ emitter.on('show-hidden-devices', () => {
   util.setData('hideDevices', hideDevices)
 })
 async function getDevices() {
-  const res = await service.get_devices()
-  if (hideDevices.length > 0) {
-    res.data = res.data.filter(device => !hideDevices.includes(device.serial))
-  }
-  devices.list.splice(0, devices.list.length, ...res.data)
+  service.get_devices().then(res => {
+    if (hideDevices.length > 0) {
+      res.data = res.data.filter(device => !hideDevices.includes(device.serial))
+    }
+    devices.list.splice(0, devices.list.length, ...res.data)
+    emitter.emit('agentStatus', true)
+  }).catch(err => {
+    console.log(err)
+    emitter.emit('agentStatus', false)
+  })
 }
 getDevices() //get devices on page load
 setInterval(getDevices, 3000)

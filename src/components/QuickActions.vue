@@ -14,18 +14,7 @@
         <input id="upload_video_input" type="file" v-on:change="on_upload_video" multiple hidden />
     </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'settings', 'put', 'global', 'http_proxy', `${settings.proxy_url}`] })">
-        <font-awesome-icon icon="fa-solid fa-link" class="h-3 w-3 text-white" />
-        {{ $t('enableProxy') }}
-    </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'settings', 'put', 'global', 'http_proxy', ':0'] })">
-        <font-awesome-icon icon="fa-solid fa-unlink" class="h-3 w-3 text-yellow-500" />
-        {{ $t('disableProxy') }}
-    </button>
+
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'https://whoer.net'] })">
