@@ -1,8 +1,12 @@
 <template>
   <div class="flex h-screen bg-gray-200 justify-center items-center w-full">
     <div class="bg-white p-8 rounded-lg shadow-lg">
-      <h1 class="text-2xl font-bold mb-4">Service start failed</h1>
-      <h2>Please restart the service</h2>
+      <h1 class="text-2xl font-bold mb-4">
+        {{ $t('serverStarting') }}
+      </h1>
+      <h2>
+        {{ $t('serverStartingTips') }}
+      </h2>
       <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="restart_agent">
