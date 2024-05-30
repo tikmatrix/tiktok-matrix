@@ -178,6 +178,7 @@ fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("./upload/material")?;
     std::fs::create_dir_all("./upload/avatar")?;
     std::fs::create_dir_all("./upload/apk")?;
+    stop_agent();
     start_agent();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![

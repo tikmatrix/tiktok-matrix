@@ -292,8 +292,8 @@ export default {
         mode: 'video',
         flushingTime: 0,
         maxDelay: 1,
-        fps: 60,
-        debug: true,
+        // fps: 60,
+        // debug: false,
         onError: function () {
           console.log('onError')
           if (/Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor)) {

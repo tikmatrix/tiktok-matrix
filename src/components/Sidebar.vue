@@ -42,44 +42,36 @@
       </div>
       <div class="p-4">
         <div class="flex flex-row">
-          <div class="flex-1"></div>
-          <a class="link link-primary text-sm float-right" href="https://doc.tikmatrix.com" target="_blank">
+          <div class="flex-1">
+
+          </div>
+          <a class="link link-primary text-xs float-right"
+            @click="$emitter.emit('menuSelected', { name: 'buyLicense' })">
+            <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4" />
+            {{ $t('buyLicense') }}
+          </a>
+          <a class="link link-primary text-xs float-right" href="https://chat.whatsapp.com/G15tFqXqbRGADnggV5OEvg"
+            target="_blank">
+            <font-awesome-icon icon="fab fa-whatsapp" class="text-blue-500 h-4 w-4" />
+            {{ $t('whatsapp') }}
+          </a>
+          <a class="link link-primary text-xs float-right" href="https://t.me/+iGhozoBfAbI5YmE1" target="_blank">
+            <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-4 w-4" />
+            {{ $t('telegram') }}
+          </a>
+          <a class="link link-primary text-xs float-right" href="https://www.tikmatrix.com" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4" />
             {{ $t('document') }}
           </a>
         </div>
 
         <div role="tablist" class="tabs tabs-lifted">
-          <a ref="settings" role="tab" class="tab tab-active" @click="selectTab('settings')">{{ $t('general') }}</a>
+          <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
           <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
           <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
         </div>
-        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'settings'">
-          <button v-for="(item, index) in menuItems" :key="index"
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="selectItem(item)">
-            <font-awesome-icon :icon="item.icon" class="h-3 w-3" />{{ $t(`${item.name}`) }}
-          </button>
-          <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="open_dir('logs')">
-            <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3" />{{ $t('logs') }}
-          </button>
-          <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="showHiddenDevices">
-            <font-awesome-icon icon="fa-solid fa-eye" class="h-3 w-3" />{{ $t('showHiddenDevices') }}
-          </button>
-          <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="openDebugWindow">
-            <font-awesome-icon icon="fa-solid fa-bug" class="h-3 w-3" />{{ $t('debug') }}
-          </button>
-          <button
-            class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-            @click="scanTCPDevice">
-            <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
-          </button>
+        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'general'">
+          <General :menuItems="menuItems" />
         </div>
         <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'quickActions'">
           <QuickActions :settings="settings" />
@@ -103,11 +95,11 @@
             </label>
             <div class="tooltip" :data-tip="$t('editGroup')">
               <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer ml-2"
-                @click="selectItem({ name: 'editGroup', group: item })"></font-awesome-icon>
+                @click="$emitter.emit('menuSelected', { name: 'editGroup', group: item })"></font-awesome-icon>
             </div>
             <div class="tooltip" :data-tip="$t('uploadVideo')">
               <font-awesome-icon icon="fa-solid fa-film" class="text-blue-500 cursor-pointer ml-2"
-                @click="selectItem({ name: 'materials', group: item })"></font-awesome-icon>
+                @click="$emitter.emit('menuSelected', { name: 'materials', group: item })"></font-awesome-icon>
             </div>
 
             <div class="tooltip" :data-tip="$t('deleteGroup')">
@@ -167,29 +159,7 @@
       </div>
     </div>
   </transition>
-  <dialog ref="scan_dialog" class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
-      <div class="flex flex-row items-center">
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_1" />
-        <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_2" />
-        <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_3" />
-        <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_4" />
-        <span class="font-bold p-2">-</span>
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_5" />
-      </div>
-      <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
-      <input class="input input-bordered input-sm w-24" type="number" v-model="port" />
-      <button class="btn btn-sm btn-primary ml-2" @click="scan">{{ $t('startScan') }}</button>
 
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button>close</button>
-    </form>
-  </dialog>
 
 </template>
 <style>
@@ -209,8 +179,7 @@
 <script>
 import { inject } from 'vue'
 import * as util from '../utils'
-import { invoke } from "@tauri-apps/api/tauri";
-import { WebviewWindow } from '@tauri-apps/api/window'
+import General from './General.vue'
 import Tools from './Tools.vue'
 import QuickActions from './QuickActions.vue';
 export default {
@@ -220,25 +189,21 @@ export default {
     return { devices: devices.list }
   },
   components: {
+    General,
     Tools,
     QuickActions
   },
   data() {
     return {
       showSidebar: true,
-      ip_1: util.getData('ip_1') || 192,
-      ip_2: util.getData('ip_2') || 168,
-      ip_3: util.getData('ip_3') || 1,
-      ip_4: util.getData('ip_4') || 2,
-      ip_5: util.getData('ip_5') || 254,
-      port: util.getData('port') || 5555,
+
       menuItems: [],
       fullMenuItems: [
         // { name: 'dashboard', icon: 'tachometer-alt' },
         { name: 'accounts', icon: 'user' },
         { name: 'analytics', icon: 'chart-bar' },
         { name: 'comments', icon: 'comment' },
-        { name: 'proxys', icon: 'globe' },
+        // { name: 'proxys', icon: 'globe' },
         { name: 'postBots', icon: 'upload' },
         { name: 'editBots', icon: 'video' },
         { name: 'musics', icon: 'music' },
@@ -257,7 +222,7 @@ export default {
       selections: {
         0: [],
       },
-      selectedTab: 'settings',
+      selectedTab: 'general',
       groupDevices: {
         0: [],
       },
@@ -265,7 +230,6 @@ export default {
     }
   },
 
-  emits: ['menu_selected'],
   watch: {
     locale() {
       util.setData('locale', this.locale)
@@ -276,46 +240,6 @@ export default {
     }
   },
   methods: {
-    scan() {
-      util.setData('ip_1', this.ip_1)
-      util.setData('ip_2', this.ip_2)
-      util.setData('ip_3', this.ip_3)
-      util.setData('ip_4', this.ip_4)
-      util.setData('ip_5', this.ip_5)
-      util.setData('port', this.port)
-      this.$service.scan_tcp({
-        start_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_4}`,
-        end_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_5}`,
-        port: this.port
-      }).then((res) => {
-        console.log(res)
-      })
-    },
-    scanTCPDevice() {
-      this.$refs.scan_dialog.show()
-    },
-    openDebugWindow() {
-      const webview = new WebviewWindow('Debug', {
-        title: 'Debug Tools',
-        url: 'debug.html',
-        maximized: true
-      })
-
-      webview.once('tauri://created', function () {
-        // webview window successfully created
-      })
-      webview.once('tauri://error', function (e) {
-        // an error happened creating the webview window
-      })
-    },
-    showHiddenDevices() {
-      this.$emitter.emit('show-hidden-devices')
-    },
-    open_dir(name) {
-      invoke("open_dir", {
-        name
-      });
-    },
     addGroup() {
       this.$service
         .add_group({
@@ -451,18 +375,18 @@ export default {
     selectTab(tab) {
       this.selectedTab = tab
       switch (tab) {
-        case 'settings':
-          this.$refs.settings.classList.add('tab-active')
+        case 'general':
+          this.$refs.general.classList.add('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
           break
         case 'tktools':
-          this.$refs.settings.classList.remove('tab-active')
+          this.$refs.general.classList.remove('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
           this.$refs.tktools.classList.add('tab-active')
           break
         case 'quickActions':
-          this.$refs.settings.classList.remove('tab-active')
+          this.$refs.general.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
           this.$refs.quickActions.classList.add('tab-active')
           break
@@ -506,9 +430,7 @@ export default {
         this.menuItems = this.fullMenuItems.filter(item => res.data.includes(item.name))
       })
     },
-    selectItem(item) {
-      this.$emit('menu_selected', item)
-    },
+
     get_settings() {
       this.$service.get_settings().then(res => {
         this.settings = res.data
