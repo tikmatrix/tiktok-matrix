@@ -30,7 +30,7 @@
                 <td @click="show_material(material)">
                   <div class="cursor-pointer border rounded items-center text-center flex align-middle">
                     <template v-if="material.name.endsWith('.mp4') || material.name.endsWith('.webm')">
-                      <video :src="`${$config.apiUrl}/${material.name}`" controls
+                      <video :src="`${$config.apiUrl}/${material.name}`"
                         class="w-[100px] h-[100px] max-w-none flex-1"></video>
                     </template>
                     <template v-else>
@@ -57,7 +57,7 @@
     </Pagination>
 
     <dialog ref="detail_modal" class="modal">
-      <div class="modal-box w-10/12 max-w-4xl">
+      <div class="modal-box">
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
@@ -201,6 +201,7 @@ export default {
   },
   methods: {
     fission() {
+
       let events = new EventSource("http://127.0.0.1:8090/api/video/output");
       events.onmessage = (event) => {
         if (event.data === "connected" || event.data === "ping") {
@@ -224,13 +225,17 @@ export default {
         smart_frame_cut: this.smart_frame_cut,
         adjust_frame_rate: this.adjust_frame_rate,
         adjust_bit_rate: this.adjust_bit_rate
+      }).then(res => {
+        this.get_materials()
       })
     },
     show_fission_video_dialog(material) {
       this.currentMaterial = material
       this.$refs.fission_video_dialog.showModal()
+      this.fissionOutput = null
     },
     capture() {
+      this.downloadOutput = null
       if (this.new_video_url) {
         if (this.download_proxy) {
           util.setData('download_proxy', this.download_proxy)
