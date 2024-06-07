@@ -13,8 +13,8 @@
                 v-if="big && task_status == 'RUNNING'" @click="stop_task">
                 <font-awesome-icon icon="fa fa-stop" class="h-4 w-4" />{{ $t('stop') }}</button> -->
             </div>
-            <div class="justify-center items-center text-center">
-              <span class="text-xs mr-2 font-bold" v-if="big">{{ device.serial }} </span>
+            <div class="justify-center items-center text-center" v-if="big">
+              <span class="text-xs mr-2 font-bold">{{ device.serial }} </span>
               <span class="text-xs font-sans">FPS: {{ fps.toFixed(0) }}</span>
             </div>
           </div>
@@ -354,14 +354,15 @@ export default {
       }
     });
 
-    this.timer_fps = setInterval(() => {
-      this.fps = this.periodImageCount / 0.5
-      this.periodImageCount = 0
-    }, 500)
+
     if (this.big) {
       this.timer_task_status = setInterval(() => {
         this.get_task_status()
       }, 1000)
+      this.timer_fps = setInterval(() => {
+        this.fps = this.periodImageCount / 0.5
+        this.periodImageCount = 0
+      }, 500)
     }
     this.timer_video = setInterval(() => {
       if (this.loading) {

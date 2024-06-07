@@ -48,7 +48,7 @@
             </div>
             <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
             <input class="input input-bordered input-sm w-24" type="number" v-model="port" />
-            <button class="btn btn-sm btn-primary ml-2" @click="scan">{{ $t('startScan') }}</button>
+            <MyButton @click="scan" label="startScan" :showLoading="scaning" />
 
         </div>
         <form method="dialog" class="modal-backdrop">
@@ -76,9 +76,13 @@
 import * as util from '../utils'
 import { invoke } from "@tauri-apps/api/tauri";
 import { WebviewWindow } from '@tauri-apps/api/window'
+import MyButton from './Button.vue'
 export default {
     name: 'Tools',
     props: ['menuItems'],
+    components: {
+        MyButton
+    },
     data() {
         return {
             ip_1: util.getData('ip_1') || 192,
@@ -88,7 +92,8 @@ export default {
             ip_5: util.getData('ip_5') || 254,
             port: util.getData('port') || 5555,
             proxy_host: util.getData('proxy_host') || '127.0.0.1',
-            proxy_port: util.getData('proxy_port') || 8080
+            proxy_port: util.getData('proxy_port') || 8080,
+            scaning: false
         }
     },
     methods: {
@@ -108,6 +113,7 @@ export default {
             });
         },
         scan() {
+            this.scaning = true
             util.setData('ip_1', this.ip_1)
             util.setData('ip_2', this.ip_2)
             util.setData('ip_3', this.ip_3)
@@ -120,6 +126,7 @@ export default {
                 port: this.port
             }).then((res) => {
                 console.log(res)
+                this.scaning = false
             })
         },
 
