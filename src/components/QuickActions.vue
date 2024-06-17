@@ -2,7 +2,6 @@
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
-        <font-awesome-icon icon="fa-brands fa-neko" class="h-3 w-3 text-white" />
         {{ $t('openNekoBox') }}
     </button>
 
@@ -20,16 +19,16 @@
         {{ $t('uploadToGallery') }}
         <input id="upload_video_input" type="file" v-on:change="on_upload_video" multiple hidden />
     </button>
-    <button
+    <!-- <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'rm', '-rf', '/storage/emulated/0/DCIM/*'] })">
         <font-awesome-icon icon="fa fa-eraser" class="h-3 w-3 text-white" />
         {{ $t('clearGallery') }}
-    </button>
+    </button> -->
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'https://whoer.net'] })">
+        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'https://ip.niostack.com'] })">
         <font-awesome-icon icon="fa-brands fa-wikipedia-w" class="h-3 w-3 text-white" />
         {{ $t('openIpChecker') }}
     </button>
