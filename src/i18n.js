@@ -314,8 +314,12 @@ export const i18n = createI18n({
       setProxy: 'Set Proxy',
       serverStarting: 'Server Starting',
       serverStartingTips: 'Server starting, please wait for a moment, if it takes too long, please try to restart the server',
+      clearGallery: 'Clear Gallery',
+      openNekoBox: 'Open NekoBox',
     },
     'zh-CN': {
+      openNekoBox: '打开 NekoBox',
+      clearGallery: '清除图库',
       serverStartingTips: '服务正在启动中,请稍候,如果长时间没有反应，请尝试重启服务',
       serverStarting: '服务正在启动',
       setProxy: '设置代理',
