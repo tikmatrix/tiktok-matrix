@@ -47,7 +47,7 @@ async function getDevices() {
     if (hideDevices.length > 0) {
       res.data = res.data.filter(device => !hideDevices.includes(device.serial))
     }
-    devices.list.splice(10, devices.list.length, ...res.data)
+    devices.list.splice(0, devices.list.length, ...res.data)
     emitter.emit('agentStatus', true)
   }).catch(err => {
     console.log(err)
