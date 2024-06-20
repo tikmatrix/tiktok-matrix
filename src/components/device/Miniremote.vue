@@ -33,7 +33,7 @@
         <div class="flex flex-row flex-1 ">
           <!-- <LeftBars v-if="big" :device="device" /> -->
           <div>
-            <div :class="'relative flex-1 object-fill' + (big ? ' w-[320px] h-[580px]' : ' w-[150px] h-[250px]')">
+            <div :class="'relative flex-1 object-fill' + (big ? ' w-[320px] h-[580px]' : ' w-[110px] h-[200px]')">
               <video class="absolute top-0 left-0 w-full h-full" ref="display" autoplay
                 poster="../../assets/preview.jpg" muted @mousedown="mouseDownListener" @mouseup="mouseUpListener"
                 @mouseleave="mouseLeaveListener" @mousemove="mouseMoveListener"></video>
