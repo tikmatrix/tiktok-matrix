@@ -12,7 +12,7 @@
                 <th>{{ $t('id') }}</th>
                 <th>{{ $t('email') }}</th>
                 <th>{{ $t('username') }}</th>
-                <th>{{ $t('fans') }}</th>
+                <!-- <th>{{ $t('fans') }}</th> -->
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
@@ -25,7 +25,7 @@
                   <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">{{
                     account.username }}</a>
                 </td>
-                <td>{{ account.fans }}</td>
+                <!-- <td>{{ account.fans }}</td> -->
 
                 <td>
                   <a class="cursor-pointer underline text-blue-500"
