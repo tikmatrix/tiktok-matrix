@@ -89,6 +89,12 @@
       <font-awesome-icon icon="fa-solid fa-network-wired" class="h-4 w-4 text-blue-500" />
       <span class="text-xs block font-normal">{{ $t('tcp') }}</span>
     </button> -->
+
+    <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
+      @click="openDebugWindow">
+      <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 text-blue-500" />
+      <span class="text-xs block font-normal">{{ $t('debug') }}</span>
+    </button>
   </div>
   <dialog ref="input_dialog" class="modal">
     <div class="modal-box">
@@ -108,8 +114,17 @@
   </dialog>
 </template>
 <script>
+import { WebviewWindow } from '@tauri-apps/api/window'
 export default {
   name: 'RightBars',
+  props: {
+    serial: {
+      type: String,
+      default: () => {
+        return ''
+      }
+    }
+  },
   data() {
     return {
       input_dialog_text: '',
@@ -118,6 +133,21 @@ export default {
     }
   },
   methods: {
+    openDebugWindow() {
+      localStorage.setItem('serial', this.serial);
+      const webview = new WebviewWindow('Debug', {
+        title: 'Debug Tools',
+        url: 'debug.html',
+        maximized: true
+      })
+
+      webview.once('tauri://created', function () {
+        // webview window successfully created
+      })
+      webview.once('tauri://error', function (e) {
+        // an error happened creating the webview window
+      })
+    },
     show_text_input_dialog() {
       this.$refs.input_dialog.showModal()
       this.input_dialog_title = 'Input Text'

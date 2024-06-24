@@ -14,21 +14,22 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.5.2",
-    "vue": "^3.3.4",
     "@coleqiu/vue-drag-select": "^2.0.6-beta.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-brands-svg-icons": "^6.4.2",
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/vue-fontawesome": "^3.0.5",
+    "@tauri-apps/api": "^1.5.2",
     "@types/jmuxer": "^2.0.6",
     "@vuepic/vue-datepicker": "^7.2.2",
     "axios": "^1.6.1",
     "countup.js": "^2.8.0",
+    "h264-converter": "^0.1.4",
     "jmuxer": "^2.0.5",
     "mitt": "^3.0.1",
     "odometer_countup": "^1.0.4",
+    "vue": "^3.3.4",
     "vue-axios": "^3.5.2",
     "vue-clipboard3": "^2.0.0",
     "vue-draggable-resizable": "^3.0.0",
@@ -40,11 +41,11 @@
     "@tauri-apps/cli": "^1.5.9",
     "@vitejs/plugin-vue": "^4.2.3",
     "autoprefixer": "^10.4.19",
+    "axios-mock-adapter": "^1.22.0",
     "daisyui": "^4.9.0",
     "postcss": "^8.4.38",
+    "shx": "^0.3.4",
     "tailwindcss": "^3.4.3",
-    "vite": "^5.0.0",
-    "axios-mock-adapter": "^1.22.0",
-    "shx": "^0.3.4"
+    "vite": "^5.0.0"
   }
 }

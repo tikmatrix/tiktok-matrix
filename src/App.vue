@@ -145,7 +145,7 @@ export default {
     menu_selected(item) {
       this.selectedItem = item
       this.$refs.page_dialog.showModal()
-      console.log(this.$refs.page_dialog.open)
+      // console.log(this.$refs.page_dialog.open)
       //listener
       this.$refs.page_dialog.addEventListener('close', () => {
         this.selectedItem = {}

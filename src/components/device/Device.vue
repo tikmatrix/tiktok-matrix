@@ -13,9 +13,9 @@
                 v-if="big && task_status == 'RUNNING'" @click="stop_task">
                 <font-awesome-icon icon="fa fa-stop" class="h-4 w-4" />{{ $t('stop') }}</button> -->
             </div>
-            <div class="justify-center items-center text-center">
-              <span :class="'mr-2 ' + (big ? 'text-sm font-bold' : 'text-xs')">{{ device.name }} </span>
-              <span class="text-xs font-sans" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
+            <div class="justify-center items-center text-center" v-if="big">
+              <span class="text-xs mr-2 font-bold">{{ device.serial }} </span>
+              <span class="text-xs font-sans">FPS: {{ fps.toFixed(0) }}</span>
             </div>
           </div>
           <button
@@ -23,17 +23,17 @@
             @click="$emitter.emit('closeDevice', this.device)" v-if="big">
             <font-awesome-icon icon="fa fa-times" class="h-4 w-4" />
           </button>
-          <!-- <span
+          <span
             class="bg-transparent hover:bg-transparent hover:text-red-500 text-gray-700 float-right border-0 pl-1 pr-1 pt-0 pb-0 cursor-pointer tooltip"
             :data-tip="$t('hideTips')" @click="$emitter.emit('hideDevice', this.device)" v-if="!big">
             <font-awesome-icon icon="fa fa-eye" class="h-4 w-4" />
-          </span> -->
+          </span>
         </div>
 
         <div class="flex flex-row flex-1 ">
           <!-- <LeftBars v-if="big" :device="device" /> -->
           <div>
-            <div :class="'relative flex-1 object-fill' + (big ? ' w-[320px] h-[580px]' : ' w-[120px] h-[220px]')">
+            <div :class="'relative flex-1 object-fill' + (big ? ' w-[320px] h-[580px]' : ' w-[110px] h-[200px]')">
               <video class="absolute top-0 left-0 w-full h-full" ref="display" autoplay
                 poster="../../assets/preview.jpg" muted @mousedown="mouseDownListener" @mouseup="mouseUpListener"
                 @mouseleave="mouseLeaveListener" @mousemove="mouseMoveListener"></video>
@@ -49,7 +49,7 @@
             </div>
             <!-- <BottomBar v-if="big" @send_keycode="send_keycode" /> -->
           </div>
-          <RightBars v-if="big" :serial="device.serial" />
+          <RightBars v-if="big" />
         </div>
 
       </div>
@@ -83,7 +83,7 @@
 }
 </style>
 <script>
-import JMuxer from 'jmuxer'
+import VideoConverter from 'h264-converter';
 import LeftBars from './LeftBars.vue';
 import RightBars from './RightBars.vue';
 import BottomBar from './BottomBar.vue';
@@ -118,7 +118,7 @@ export default {
       periodImageCount: 0,
       timer_fps: null,
       timer_task_status: null,
-      jmuxer: null,
+      converter: null,
       scrcpy: null,
       loading: true,
       operating: false,
@@ -244,7 +244,7 @@ export default {
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
         // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.index)
-        let max_size = this.big ? 1080 : 540
+        let max_size = this.big ? 1080 : 600
         this.scrcpy.send(`${this.device.serial}`)
         // max size
         this.scrcpy.send(max_size)
@@ -265,8 +265,8 @@ export default {
 
       }
       this.scrcpy.onmessage = message => {
-        if (!this.jmuxer) {
-          // console.log('jmuxer is null,big:', this.big, 'operating:', this.operating, 'index:', this.index, 'scrcpy:', this.scrcpy)
+        if (!this.converter) {
+          console.log('converter is null,big:', this.big, 'operating:', this.operating, 'index:', this.index, 'scrcpy:', this.scrcpy)
           this.closeScrcpy()
           return
         }
@@ -274,34 +274,16 @@ export default {
           this.loading = false
         }
         this.periodImageCount += 1
-        this.jmuxer.feed({
-          video: new Uint8Array(message.data)
-        })
+        let value = new Uint8Array(message.data);
+        console.log(value);
+        this.converter.appendRawData(value);
+        // this.converter.appendRawData(message.data);
+        // this.converter.play();
       }
     },
     syncDisplay() {
-      if (import.meta.env.VITE_APP_MOCK === 'true') {
-        setTimeout(() => {
-          this.loading = false
-        }, 3000)
-        return
-      }
-      this.loading = true
-      this.jmuxer = new JMuxer({
-        node: this.$refs.display,
-        mode: 'video',
-        flushingTime: 1,
-        maxDelay: 0,
-        fps: 60,
-        debug: false,
-        onError: function () {
-          console.log('onError')
-          if (/Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor)) {
-            this.jmuxer.reset()
-          }
-        }
-      })
-      // console.log('jmuxer init,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+      // setup
+      this.converter = new VideoConverter(this.$refs.display, 30, 6);
       this.connect()
     },
     closeScrcpy() {
@@ -314,10 +296,9 @@ export default {
         this.scrcpy = null
       }
     },
-    closeJmuxer() {
-      if (this.jmuxer) {
-        this.jmuxer.destroy()
-        this.jmuxer = null
+    closeconverter() {
+      if (this.converter) {
+        this.converter = null
       }
     }
   },
@@ -334,7 +315,7 @@ export default {
         if (device.serial === this.device.serial) {
           this.operating = true
           this.closeScrcpy()
-          this.closeJmuxer()
+          this.closeconverter()
         }
         if (device.serial !== this.device.serial && this.operating) {
           this.syncDisplay()
@@ -372,7 +353,7 @@ export default {
   },
   unmounted() {
     this.closeScrcpy()
-    this.closeJmuxer()
+    this.closeconverter()
     clearInterval(this.timer_fps)
     this.timer_fps = null
     clearInterval(this.timer_task_status)
