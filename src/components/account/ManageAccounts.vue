@@ -12,7 +12,7 @@
                 <th>{{ $t('id') }}</th>
                 <th>{{ $t('email') }}</th>
                 <th>{{ $t('username') }}</th>
-                <th>{{ $t('fans') }}</th>
+                <!-- <th>{{ $t('fans') }}</th> -->
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
@@ -25,12 +25,11 @@
                   <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">{{
                     account.username }}</a>
                 </td>
-                <td>{{ account.fans }}</td>
+                <!-- <td>{{ account.fans }}</td> -->
 
                 <td>
                   <a class="cursor-pointer underline text-blue-500"
-                    @click="show_device(account.device_index, account.device)">{{ account.device_index }} - {{
-                      account.device }}</a>
+                    @click="show_device(account.device_index, account.device)">{{ account.device_index }} </a>
                 </td>
 
                 <td>
@@ -51,20 +50,20 @@
     </Pagination>
     <dialog ref="edit_dialog" class="modal">
       <div class="modal-box">
-        <Edit :account="currentAccount" @update="updateAccount" v-if="currentAccount"/>
+        <Edit :account="currentAccount" @update="updateAccount" v-if="currentAccount" />
       </div>
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
       </form>
-  </dialog>
-  <dialog ref="add_dialog" class="modal">
+    </dialog>
+    <dialog ref="add_dialog" class="modal">
       <div class="modal-box">
         <Add @add="addAccount" />
       </div>
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
       </form>
-  </dialog>
+    </dialog>
   </div>
 </template>
 <script>

@@ -1,7 +1,6 @@
 <template>
   <div class="w-full">
     <Pagination ref="device_panel" :items="devices" :searchKeys="['serial', 'account']" :showRefBtn="false">
-
       <template v-slot:default="slotProps">
         <div class="flex flex-wrap gap-2 p-4">
 
@@ -30,6 +29,7 @@
 <script>
 import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
+import Device from './Device.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
 import { inject } from 'vue'
@@ -43,6 +43,7 @@ export default {
   components: {
     MyButton,
     Miniremote,
+    Device,
     Modal,
     Pagination,
   },

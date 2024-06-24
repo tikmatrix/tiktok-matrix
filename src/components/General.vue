@@ -11,16 +11,12 @@
         @click="open_dir('logs')">
         <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3" />{{ $t('logs') }}
     </button>
-    <button
+    <!-- <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('show-hidden-devices')">
         <font-awesome-icon icon="fa-solid fa-eye" class="h-3 w-3" />{{ $t('showHiddenDevices') }}
-    </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="openDebugWindow">
-        <font-awesome-icon icon="fa-solid fa-bug" class="h-3 w-3" />{{ $t('debug') }}
-    </button>
+    </button> -->
+
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.proxy_dialog.show()">
@@ -75,7 +71,7 @@
 <script>
 import * as util from '../utils'
 import { invoke } from "@tauri-apps/api/tauri";
-import { WebviewWindow } from '@tauri-apps/api/window'
+
 import MyButton from './Button.vue'
 export default {
     name: 'Tools',
@@ -130,20 +126,7 @@ export default {
             })
         },
 
-        openDebugWindow() {
-            const webview = new WebviewWindow('Debug', {
-                title: 'Debug Tools',
-                url: 'debug.html',
-                maximized: true
-            })
 
-            webview.once('tauri://created', function () {
-                // webview window successfully created
-            })
-            webview.once('tauri://error', function (e) {
-                // an error happened creating the webview window
-            })
-        },
     }
 }
 </script>
