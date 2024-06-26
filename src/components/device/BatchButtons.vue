@@ -6,14 +6,13 @@
         <input id="app_install_input" type="file" v-on:change="on_app_install" hidden />
         <MyButton icon="fa fa-upload" @click="app_install" label="installApk" />
         <MyButton icon="fa fa-trash" @click="app_uninstall" label="uninstallApk" />
-        <MyButton label="1080x1920" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'wm', 'size', '1080x1920'])" />
-        <MyButton label="320" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'wm', 'density', '320'])" />
-        <MyButton label="setInputMethod" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'ime', 'set','com.github.tikmatrix/.FastInputIME'])" />
-        <MyButton
-          label="openTiktok"
-          icon="fa-brands fa-tiktok"
-          @click="adb_command(['shell', 'am', 'start', '-n', 'com.zhiliaoapp.musically/com.ss.android.ugc.aweme.splash.SplashActivity'])"
-        />
+        <MyButton label="1080x1920" icon="fa-solid fa-mobile"
+          @click="adb_command(['shell', 'wm', 'size', '1080x1920'])" />
+        <MyButton label="320" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'wm', 'density', '420'])" />
+        <MyButton label="setInputMethod" icon="fa-solid fa-mobile"
+          @click="adb_command(['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'])" />
+        <MyButton label="openTiktok" icon="fa-brands fa-tiktok"
+          @click="adb_command(['shell', 'am', 'start', '-n', 'com.zhiliaoapp.musically/com.ss.android.ugc.aweme.splash.SplashActivity'])" />
         <MyButton @click="script('match_account')" label="matchAccount" icon="fa-solid fa-user-plus" />
       </div>
     </details>
@@ -45,19 +44,19 @@ export default {
         this.$service.get_ip({
           serial: this.devices[i].serial,
         })
-        .then(res => {
-          this.$service.enable_proxy_rule({
-            serial: this.devices[i].serial,
-            ip: res.data
-          })
           .then(res => {
-            console.log(res)
+            this.$service.enable_proxy_rule({
+              serial: this.devices[i].serial,
+              ip: res.data
+            })
+              .then(res => {
+                console.log(res)
+              })
           })
-        })
-       
-        
+
+
       }
-      
+
     },
     adb_command(args) {
       this.$service
@@ -96,7 +95,7 @@ export default {
         console.log('未输入包名')
       }
     },
-    script(name, args=[]) {
+    script(name, args = []) {
       this.$service
         .script({
           name: name,
