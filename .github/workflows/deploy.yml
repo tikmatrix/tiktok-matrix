@@ -18,7 +18,7 @@ jobs:
         run: |
           git config --global user.email "niostack@gmail.com"
           git config --global user.name "ciuser"
-          export GIT_TERMINAL_PROMPT=0  # Disable Git prompts
+          set GIT_TERMINAL_PROMPT=0
       - name: Initialize and update submodules
         run: |
           git submodule update --init --recursive
@@ -35,8 +35,6 @@ jobs:
           .\build.ps1
       - name: commit
         run: |
-          git config user.name github-actions
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
           git commit -m "Release"
           git push
