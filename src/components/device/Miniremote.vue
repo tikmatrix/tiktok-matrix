@@ -14,7 +14,7 @@
                 <font-awesome-icon icon="fa fa-stop" class="h-4 w-4" />{{ $t('stop') }}</button> -->
             </div>
             <div class="justify-center items-center text-center">
-              <span :class="'mr-2 ' + (big ? 'text-sm font-bold' : 'text-xs')">{{ device.name }} </span>
+              <span :class="'mr-2 ' + (big ? 'text-sm font-bold' : 'text-xs')">{{ name }} </span>
               <span class="text-xs font-sans" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
             </div>
           </div>
@@ -33,7 +33,7 @@
         <div class="flex flex-row flex-1 ">
           <!-- <LeftBars v-if="big" :device="device" /> -->
           <div>
-            <div :class="'relative flex-1 object-fill' + (big ? ' w-[320px] h-[580px]' : ' w-[120px] h-[220px]')">
+            <div class="relative flex-1 object-fill" :style="'width:' + width + 'px;height:' + height + 'px'">
               <video class="absolute top-0 left-0 w-full h-full" ref="display" autoplay
                 poster="../../assets/preview.jpg" muted @mousedown="mouseDownListener" @mouseup="mouseUpListener"
                 @mouseleave="mouseLeaveListener" @mousemove="mouseMoveListener"></video>
@@ -87,6 +87,7 @@ import JMuxer from 'jmuxer'
 import LeftBars from './LeftBars.vue';
 import RightBars from './RightBars.vue';
 import BottomBar from './BottomBar.vue';
+import { height } from '@fortawesome/free-brands-svg-icons/fa42Group';
 export default {
   name: 'Miniremote',
   components: {
@@ -126,7 +127,11 @@ export default {
       input_dialog_title: '',
       input_dialog_text: '',
       input_callback: null,
-      timer_video: null
+      timer_video: null,
+      message_index: 0,
+      name: 'UNKNOWN',
+      width: this.big ? 320 : 110,
+      height: this.big ? 580 : 220,
     }
   },
   methods: {
@@ -273,6 +278,35 @@ export default {
         if (this.loading) {
           this.loading = false
         }
+        if (this.message_index < 2) {
+          // console.log(message)
+          switch (this.message_index) {
+            case 0:
+              this.name = message.data.replace(/[\x00]+$/g, '');;
+              break
+            case 1:
+              this.width = message.data.split('x')[0]
+              this.height = message.data.split('x')[1]
+              console.log(this.width, this.height)
+              if (this.big) {
+                let scaled = 580 / this.height;
+                console.log(scaled)
+                this.width = this.width * scaled
+                this.height = 580
+              } else {
+                let scaled = 220 / this.height;
+                console.log(scaled)
+                this.width = this.width * scaled
+                this.height = 220
+                console.log(this.width, this.height)
+              }
+              break
+          }
+          this.message_index += 1
+          return
+        }
+
+        //read video
         this.periodImageCount += 1
         this.jmuxer.feed({
           video: new Uint8Array(message.data)
@@ -287,6 +321,9 @@ export default {
         return
       }
       this.loading = true
+      if (this.$refs.display == null) {
+        console.log('display is null,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+      }
       this.jmuxer = new JMuxer({
         node: this.$refs.display,
         mode: 'video',

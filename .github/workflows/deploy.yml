@@ -1,0 +1,35 @@
+name: Release
+run-name: ${{ github.actor }} is building Release 🚀
+on:
+  push:
+    branches:
+      - release
+jobs:
+  deploy:
+    runs-on: windows-latest
+    steps:  
+      - uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: setup rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: build
+        run: |
+          npm install
+          npm run build:tiktok-agent
+          .\build.ps1
+      - name: commit
+        run: |
+          git config user.name github-actions
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Release"
+          git push
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./src-tauri/target/release/bundled/msi/*
+
+      
