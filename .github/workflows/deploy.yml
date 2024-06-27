@@ -8,6 +8,7 @@ permissions:
   contents: write
 jobs:
   deploy:
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: windows-latest
     strategy:
       fail-fast: true
