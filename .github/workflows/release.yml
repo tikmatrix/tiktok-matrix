@@ -1,13 +1,10 @@
 name: Send Release Notify Telegram
-
 on:
   release:
-    types: [created]
-
+    types: [published]
 jobs:
   notify-telegram:
     runs-on: ubuntu-latest
-
     steps:
     - name: Send notification to Telegram
       env:

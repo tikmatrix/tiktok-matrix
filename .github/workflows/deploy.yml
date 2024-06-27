@@ -1,6 +1,9 @@
 name: Release
 run-name: ${{ github.actor }} is building Release 🚀
-on: push
+on:
+  push:
+    tags:
+      - 'v*'
 permissions:
   contents: write
 jobs:
