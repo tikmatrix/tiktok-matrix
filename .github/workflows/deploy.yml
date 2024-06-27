@@ -10,11 +10,18 @@ jobs:
     strategy:
       fail-fast: true
     steps:  
-      - uses: actions/checkout@v3
-      - name: checkout submodules
+      - name: Checkout main repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for full submodule history
+      - name: Set up Git environment
+        run: |
+          git config --global user.email "niostack@gmail.com"
+          git config --global user.name "ciuser"
+          export GIT_TERMINAL_PROMPT=0  # Disable Git prompts
+      - name: Initialize and update submodules
         run: |
           git submodule update --init --recursive
-          ./checkout.ps1 release
       - name: setup node
         uses: actions/setup-node@v4
         with:
