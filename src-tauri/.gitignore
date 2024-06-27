@@ -5,12 +5,13 @@ tmp
 upload
 download
 logs
-bin/apk
+# bin/apk
 bin/PaddleOCR-json_v.1.3.1
-bin/platform-tools
+# bin/platform-tools
 bin/dist
 bin/script
-bin/*.exe
+# bin/*.exe
+bin/ffmpeg.exe
 data
 ffmpeg
 
