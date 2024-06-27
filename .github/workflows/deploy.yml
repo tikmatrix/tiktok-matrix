@@ -1,9 +1,6 @@
 name: Release
 run-name: ${{ github.actor }} is building Release 🚀
-on:
-  push:
-    branches:
-      - release
+on: push
 permissions:
   contents: write
 jobs:
@@ -15,6 +12,8 @@ jobs:
     steps:  
       - name: Checkout main repository
         uses: actions/checkout@v3
+        with:
+          ref: release
       - name: setup node
         uses: actions/setup-node@v4
         with:
