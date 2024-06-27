@@ -20,6 +20,13 @@ jobs:
           node-version: lts/*
       - name: setup rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
       - name: build
         run: |
           npm install
@@ -34,6 +41,6 @@ jobs:
       - name: release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./src-tauri/target/release/bundled/msi/*
+          files: ./src-tauri/target/release/bundle/msi/*
 
       

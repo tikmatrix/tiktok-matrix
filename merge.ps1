@@ -1,4 +1,3 @@
-echo merging origin main to current branch
 git add .
 git commit -m "merge origin main to current branch"
 git pull
