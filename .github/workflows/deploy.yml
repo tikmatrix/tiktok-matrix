@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - release
+permissions:
+  contents: write
 jobs:
   deploy:
     runs-on: windows-latest
