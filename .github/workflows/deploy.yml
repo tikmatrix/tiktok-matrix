@@ -21,7 +21,7 @@ jobs:
           set GIT_TERMINAL_PROMPT=0
       - name: Initialize and update submodules
         run: |
-          git submodule update --init --recursive
+          git clone https://github.com/tikmatrix/tiktok-agent.git tiktok-agent
       - name: setup node
         uses: actions/setup-node@v4
         with:
