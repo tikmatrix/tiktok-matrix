@@ -12,22 +12,6 @@ jobs:
     steps:  
       - name: Checkout main repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Fetch all history for full submodule history
-      - name: Set up Git environment
-        run: |
-          git config --global user.email "niostack@gmail.com"
-          git config --global user.name "ciuser"
-          set GIT_TERMINAL_PROMPT=0
-      - name: Initialize and update submodules
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git clone git@github.com:tikmatrix/tiktok-agent.git tiktok-agent
       - name: setup node
         uses: actions/setup-node@v4
         with:
@@ -37,10 +21,11 @@ jobs:
       - name: build
         run: |
           npm install
-          npm run build:tiktok-agent
           .\build.ps1
       - name: commit
         run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git add -A
           git commit -m "Release"
           git push
