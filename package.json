@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "run:tiktok-matrix:dev": "npm install && npm run tauri dev",
-    "build:tiktok-agent:dev": "cd tiktok-agent && cargo build && npx shx cp -rf target/debug/*.exe ../src-tauri/bin/script/",
-    "build:tiktok-agent": "cd tiktok-agent && cargo build --release && npx shx cp -rf target/release/*.exe ../src-tauri/bin/script/",
+    "build:tiktok-agent:dev": "cd tiktok-agent && cargo build",
+    "install:tiktok-agent:dev": "cd tiktok-agent && cargo build && npx shx cp -rf target/debug/*.exe ../src-tauri/bin/script/",
+    "install:tiktok-agent": "cd tiktok-agent && cargo build --release && npx shx cp -rf target/release/*.exe ../src-tauri/bin/script/",
     "update-version": "node ./scripts/update-version.js",
     "copy:bots": "npx shx cp -rf tiktok-agent/bin/* src-tauri/bin/",
     "dev": "vite --mode dev",

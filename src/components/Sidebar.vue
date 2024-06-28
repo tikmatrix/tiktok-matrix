@@ -209,6 +209,7 @@ export default {
         { name: 'musics', icon: 'music' },
         { name: 'publishJobs', icon: 'robot' },
         { name: 'trainJobs', icon: 'sync-alt' },
+        { name: 'messageJobs', icon: 'envelope' },
         { name: 'dialogWatcher', icon: 'exclamation-circle' },
         { name: 'settings', icon: 'cogs' },
       ],
@@ -476,7 +477,7 @@ export default {
         })
         .then(res => {
           console.log(res)
-          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
+          this.$emitter.emit('showToast', this.$t('taskCreated'))
 
         })
         .catch(err => {
@@ -494,7 +495,26 @@ export default {
         })
         .then(res => {
           console.log(res)
-          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
+          this.$emitter.emit('showToast', this.$t('taskCreated'))
+
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    message() {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+
+      this.$service
+        .message_now({
+          serials: this.selection,
+        })
+        .then(res => {
+          console.log(res)
+          this.$emitter.emit('showToast', this.$t('taskCreated'))
 
         })
         .catch(err => {
@@ -578,6 +598,9 @@ export default {
     });
     this.$emitter.on('publish', () => {
       this.publish();
+    });
+    this.$emitter.on('message', () => {
+      this.message();
     });
     this.$emitter.on('stop_task', () => {
       this.stop_task();

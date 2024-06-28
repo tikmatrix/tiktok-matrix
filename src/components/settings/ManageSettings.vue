@@ -1,38 +1,55 @@
 <template>
-  <div class="flex flex-col items-start p-12 w-full">
+  <div class="flex flex-col items-start p-12">
 
     <div class="divider">{{ $t('registerSettings') }}</div>
-    <div class="flex items-center flex-row gap-2 max-w-lg w-full">
+    <div class="flex items-center flex-row gap-2 max-w-full w-full">
       <span class="font-bold">{{ $t('emailSuffix') }}: </span>
       <input type="text" placeholder="example: @tikmatrix.com" class="input input-sm grow input-bordered"
         v-model="settings.email_suffix" />
-      <MyButton @click="set_settings" label="save" :loading-time="2000" />
+
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-lg w-full">
+    <div class="flex items-center flex-row gap-2 max-w-full w-full">
       <span class="font-bold">{{ $t('nicknames') }}: </span>
       <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('nicknamesTips')" autocomplete="off"
         v-model="settings.nicknames"> </textarea>
-      <MyButton @click="set_settings" label="save" :loading-time="2000" />
+
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-lg w-full mt-2">
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('usernames') }}: </span>
       <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('usernamesTips')" autocomplete="off"
         v-model="settings.usernames"> </textarea>
-      <MyButton @click="set_settings" label="save" :loading-time="2000" />
+
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-lg w-full mt-2">
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('bios') }}: </span>
       <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('biosTips')" autocomplete="off"
         v-model="settings.bios"> </textarea>
-      <MyButton @click="set_settings" label="save" :loading-time="2000" />
+
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-lg w-full mt-2">
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('avatarsPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/avatars"
         class="input input-sm grow input-bordered" v-model="settings.avatars_path" />
+
+    </div>
+    <div class="divider">{{ $t('messageSettings') }}</div>
+
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+      <span class="font-bold">{{ $t('messageContent') }}: </span>
+      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('messageContentTips')" autocomplete="off"
+        v-model="settings.message_content"> </textarea>
+
+    </div>
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+      <span class="font-bold">{{ $t('targetUsernamesPath') }}: </span>
+      <input type="text" placeholder="example: C:/Users/Administrator/Desktop/usernames.txt"
+        class="input input-sm grow input-bordered" v-model="settings.target_username_path" />
+
+    </div>
+    <div class="flex items-center flex-row gap-2 max-w-full w-full">
+      <div class="flex flex-1"></div>
       <MyButton @click="set_settings" label="save" :loading-time="2000" />
     </div>
-
 
   </div>
 </template>

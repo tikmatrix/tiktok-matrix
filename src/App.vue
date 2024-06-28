@@ -40,6 +40,7 @@
       <ManageMusics v-if="selectedItem.name === 'musics' && $refs.page_dialog.open" />
       <ManagePublishJobs v-if="selectedItem.name === 'publishJobs' && $refs.page_dialog.open" />
       <ManageTrainJobs v-if="selectedItem.name === 'trainJobs' && $refs.page_dialog.open" />
+      <ManageMessageJobs v-if="selectedItem.name === 'messageJobs' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
       <ManageSettings v-if="selectedItem.name === 'settings' && $refs.page_dialog.open" />
       <ManagePostBots v-if="selectedItem.name === 'postBots' && $refs.page_dialog.open" />
@@ -63,6 +64,7 @@ import ManageAccounts from './components/account/ManageAccounts.vue'
 import ManageAnalytics from './components/analytics/ManageAnalytics.vue'
 import ManageMaterials from './components/material/ManageMaterials.vue'
 import ManagePublishJobs from './components/publishJob/ManagePublishJobs.vue'
+import ManageMessageJobs from './components/messageJob/ManageMessageJobs.vue'
 import ManageDialog from './components/dialog/ManageDialog.vue'
 import ManageTrainJobs from './components/trainJob/ManageTrainJobs.vue'
 import ManageGroups from './components/group/ManageGroups.vue'
@@ -102,6 +104,7 @@ export default {
     ManageAnalytics,
     ManageMaterials,
     ManagePublishJobs,
+    ManageMessageJobs,
     ManageDialog,
     ManageTrainJobs,
     ManageGroups,

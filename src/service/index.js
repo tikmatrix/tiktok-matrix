@@ -103,6 +103,12 @@ export function get_publish_jobs() {
     url: api.publish_job
   })
 }
+export function get_message_jobs() {
+  return request({
+    method: 'get',
+    url: api.message_job
+  })
+}
 export function add_account(account) {
   return request({
     method: 'post',
@@ -180,6 +186,20 @@ export function update_publish_job({ id, status, publish_type }) {
     method: 'put',
     url: api.publish_job,
     data: { id, status, publish_type }
+  })
+}
+export function delete_message_job({ id }) {
+  return request({
+    method: 'delete',
+    url: api.message_job,
+    params: { id }
+  })
+}
+export function update_message_job(data) {
+  return request({
+    method: 'put',
+    url: api.message_job,
+    data
   })
 }
 
@@ -320,6 +340,12 @@ export function count_publish_job_by_status() {
     url: api.count_publish_job_by_status
   })
 }
+export function count_message_job_by_status() {
+  return request({
+    method: 'get',
+    url: api.count_message_job_by_status
+  })
+}
 export function count_online_device() {
   return request({
     method: 'get',
@@ -349,6 +375,12 @@ export function retry_all_failed_publish_job() {
   return request({
     method: 'get',
     url: api.retry_all_failed_publish_job
+  })
+}
+export function retry_all_failed_message_job() {
+  return request({
+    method: 'get',
+    url: api.retry_all_failed_message_job
   })
 }
 export function add_post_comment({ post_url }) {
@@ -415,6 +447,12 @@ export function delete_all_publish_jobs() {
   return request({
     method: 'delete',
     url: api.delete_all_publish_jobs
+  })
+}
+export function delete_all_message_jobs() {
+  return request({
+    method: 'delete',
+    url: api.delete_all_message_jobs
   })
 }
 export function delete_all_post_comments() {
@@ -607,5 +645,13 @@ export function publish_now(data) {
     method: 'post',
     data,
     url: api.publish_now
+  })
+}
+
+export function message_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.message_now
   })
 }
