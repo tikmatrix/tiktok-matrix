@@ -9,13 +9,13 @@
       <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.pwd" />
     </div>
     <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right">{{ $t('username') }}:</label>
+      <div class="text-right">
+        <label class="font-bold text-red-500">*</label>
+        <label class="font-bold">{{ $t('username') }}:</label>
+      </div>
       <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.username" />
     </div>
-    <!-- <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
-            <label class="font-bold text-right">{{ $t('fans') }}:</label>
-            <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.fans" type="number"/>
-        </div> -->
+
     <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
       <label class="font-bold text-right col-span-1">{{ $t('device') }}:</label>
       <div class="relative col-span-2">
@@ -26,8 +26,6 @@
           <div class="cursor-pointer p-2 hover:bg-gray-200" v-for="(device, index) in devices" :key="device.serial"
             @click="selectDevice(device)">
             {{ index + 1 }} - {{ device.serial }}
-            <!-- <span v-if="device.email" class="text-green-500 m-1">{{ device.email }}</span>
-                        <span v-else class="text-red-500 m-1">{{ $t('unbinded') }}</span> -->
           </div>
         </div>
       </div>

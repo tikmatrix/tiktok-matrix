@@ -82,10 +82,10 @@
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <h3 class="font-bold text-lg">Confirm Clear All?</h3>
+        <h3 class="font-bold text-lg">{{ $t('confirmClearAll') }}</h3>
         <div class="modal-action">
           <form method="dialog">
-            <button class="btn btn-primary" @click="delete_all">Confirm</button>
+            <button class="btn btn-primary" @click="delete_all">{{ $t('confirm') }}</button>
           </form>
         </div>
       </div>

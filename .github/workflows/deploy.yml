@@ -22,14 +22,8 @@ jobs:
         with:
           node-version: lts/*
       - name: setup rust
+        id: setup-rust
         uses: dtolnay/rust-toolchain@stable
-      - name: Cache Cargo dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
       - name: build
         run: |
           npm install
@@ -42,8 +36,14 @@ jobs:
           git commit -m "Release"
           git push
       - name: release
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           files: ./src-tauri/target/release/bundle/msi/*
-
-      
+      - name: telegram
+        uses: appleboy/telegram-action@master
+        with:
+          to: -1002080383068
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            A new release is available: ${{ github.ref }}. Check it out at ${{ steps.create_release.outputs.url }}

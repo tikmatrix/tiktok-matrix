@@ -1,33 +1,37 @@
 <template>
-  <div class="bg-base-100 flex flex-col items-start p-4">
-    <div class="flex flex-row items-center gap-2 mb-2 w-full">
-      <textarea class="textarea textarea-success w-full max-w-xs" placeholder="input formated comments" autocomplete="off" v-model="post_comment_topic.content">
+  <div class="bg-base-100 flex flex-col items-start p-4 min-h-96">
+    <div class="flex flex-col items-center gap-2 mb-2 w-full">
+      <textarea class="textarea textarea-success w-full" placeholder="input formated comments" autocomplete="off"
+        v-model="post_comment_topic.content">
       </textarea>
-      <label class="input input-bordered flex items-center gap-2">
-        <span class="text-primary">AccountCount: </span>
-        <input type="number" class="grow" placeholder="account count" v-model="post_comment_topic.account_count" readonly />
-      </label>
+      <div class="mt-4 w-full flex justify-end align-middle text-center items-center">
+        <span class="text-success">{{ $t('accountCount') }}: {{ post_comment_topic.account_count }}</span>
+        <MyButton class="btn-primary" @click="genComments" label="parse" />
+        <MyButton class="btn-primary" @click="add" label="save" :disabled="error_msg !== ''" />
+      </div>
       <!-- gen comments btn -->
-      <MyButton class="btn-primary" @click="genComments" label="parse" />
-      <MyButton class="btn-primary" @click="add" label="save" :disabled="error_msg !== ''" />
+
     </div>
-    <div class="divider">comments</div>
+    <div class="divider">{{ $t('comments') }}</div>
     <div class="text-error">{{ error_msg }}</div>
     <!-- comments -->
     <div class="w-full items-center gap-2 mb-2">
       <div class="chat chat-start" v-for="comment in post_comment_topic.comments" :key="comment.no">
         <div class="chat-image avatar">
           <div class="w-14 h-14 rounded-full border-2 border-green-500 text-center bg-blue-400">
-            
+
           </div>
         </div>
         <div class="chat-header">
           #{{ comment.no }}:
-          <span class="text-primary"> {{ comment.username }} {{ comment.parent_no ? 'Reply#' + comment.parent_no : 'Comment' }}</span>
+          <span class="text-primary"> {{ comment.username }} {{ comment.parent_no ? 'Reply#' + comment.parent_no :
+            'Comment' }}</span>
         </div>
-        <div class="chat-bubble">{{ comment.content }}</div>
+        <div class="chat-bubble text-sm">{{ comment.content }}</div>
       </div>
     </div>
+
+
   </div>
 </template>
 
@@ -46,7 +50,7 @@ export default {
   },
   data() {
     return {
-      error_msg: 'parse comments first',
+      error_msg: 'Please Parse Comments First!',
       post_comment_topic: {
         post_comment_id: 0,
         content: '',

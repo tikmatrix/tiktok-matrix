@@ -477,7 +477,7 @@ export default {
         })
         .then(res => {
           console.log(res)
-          this.$emitter.emit('showToast', this.$t('taskCreated'))
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
         })
         .catch(err => {
@@ -495,7 +495,7 @@ export default {
         })
         .then(res => {
           console.log(res)
-          this.$emitter.emit('showToast', this.$t('taskCreated'))
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
         })
         .catch(err => {
@@ -514,7 +514,7 @@ export default {
         })
         .then(res => {
           console.log(res)
-          this.$emitter.emit('showToast', this.$t('taskCreated'))
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
         })
         .catch(err => {

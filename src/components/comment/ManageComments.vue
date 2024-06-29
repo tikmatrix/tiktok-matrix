@@ -52,15 +52,15 @@
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <h3 class="font-bold text-lg">Add Post Comments!</h3>
+        <h3 class="font-bold text-lg">{{ $t('commentTargetPost') }}</h3>
         <label class="input input-bordered flex items-center gap-2 my-4">
-          Post Url
-          <input type="text" class="grow" placeholder="https://www.tiktok.com/@ferchugimenez/video/"
+          {{ $t('postUrl') }}:
+          <input type="text" class="grow" placeholder="https://www.tiktok.com/@tikmatrix001/video/7385402542441647406"
             v-model="new_post_url" />
         </label>
         <div class="modal-action">
           <form method="dialog">
-            <button class="btn btn-primary" @click="add_post_comment">Save</button>
+            <button class="btn btn-primary" @click="add_post_comment">{{ $t('save') }}</button>
           </form>
         </div>
       </div>
@@ -70,21 +70,25 @@
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <h3 class="font-bold text-lg">Confirm Clear All?</h3>
+        <h3 class="font-bold text-lg">{{ $t('confirmClearAll') }}</h3>
         <div class="modal-action">
           <form method="dialog">
-            <button class="btn btn-primary" @click="delete_all">Confirm</button>
+            <button class="btn btn-primary" @click="delete_all">{{ $t('confirm') }}</button>
           </form>
         </div>
       </div>
     </dialog>
-    <Modal :show="showMoal" @close="showMoal = false">
-      <Add :post_comment="current_post_comment || default_post_comment" @add="add_post_comment_topic" />
-    </Modal>
+    <dialog ref="add_dialog" class="modal">
+      <div class="modal-box">
+        <Add :post_comment="current_post_comment || default_post_comment" @add="add_post_comment_topic" />
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
   </div>
 </template>
 <script>
-import Modal from '../Modal.vue'
 import MyButton from '../Button.vue'
 import Add from './Add.vue'
 import Pagination from '../Pagination.vue'
@@ -92,7 +96,6 @@ import Pagination from '../Pagination.vue'
 export default {
   name: 'app',
   components: {
-    Modal,
     MyButton,
     Add,
     Pagination
@@ -102,7 +105,6 @@ export default {
       new_post_url: '',
       post_comments: [],
       current_post_comment: null,
-      showMoal: false,
       default_post_comment: {}
     }
   },
@@ -118,7 +120,7 @@ export default {
         })
     },
     get_post_comments() {
-      this.showMoal = false
+
       this.current_post_comment = null
       this.$service
         .get_post_comments()
@@ -141,9 +143,8 @@ export default {
           console.log(err)
         })
     },
-
     add_topic(post_comment) {
-      this.showMoal = true
+      this.$refs.add_dialog.showModal()
       this.current_post_comment = post_comment
     },
     add_post_comment_topic(post_comment_topic) {
