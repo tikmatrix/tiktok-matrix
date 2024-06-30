@@ -1,7 +1,7 @@
 # TikMatrix
 
-TikMatrix 是一个群控安卓真实手机（非云控，非协议），基于adb和android uiautomator的tiktok自动化运营工具，可以实现自动注册账号，自动登录，自动发布视频，自动点赞，自动关注，自动收藏，自动评论,自动刷视频,全网视频采集等功能。
-> TikMatrix is a real android phone based on adb and android uiautomator. It provides tiktok automation tools for real phone registration, login, publish videos, like videos, follow, collect, comment, and more.
+TikMatrix 是一个群控安卓真实手机（非云控，非协议），基于adb和android uiautomator的tiktok自动化运营工具，可以实现自动注册账号，自动登录，自动发布视频，自动点赞，自动关注，自动收藏，自动评论, 自动私信, 自动刷视频, 全网视频采集等功能。
+> TikMatrix is a real android phone based on adb and android uiautomator. It provides tiktok automation tools for real phone registration, login, publish videos, like videos, follow, collect, comment, private message, brush videos and more.
 
 ## Quick start
 
@@ -29,7 +29,11 @@ npm run tauri build
 
 ## Donate
 
-Paypal: [paypal.me/yaohp](https://paypal.me/yaohp)
+### Paypal
 
-USDT-TRC20: `TDe4ZmkDBPYHVqWpX6jWjf3j45JdipB7Lx`
+[paypal.me/yaohp](https://paypal.me/yaohp)
+
+### USDT-TRC20
+
+`TDe4ZmkDBPYHVqWpX6jWjf3j45JdipB7Lx`
 ![ustd](usdt.png)

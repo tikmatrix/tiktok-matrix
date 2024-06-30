@@ -40,10 +40,11 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./src-tauri/target/release/bundle/msi/*
-      - name: telegram
-        uses: appleboy/telegram-action@master
-        with:
-          to: -1002080383068
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
+      - name: telegram bot
+        env:
+          CHAT_ID: -1002080383068
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          MESSAGE: |
             A new release is available: ${{ github.ref }}. Check it out at ${{ steps.create_release.outputs.url }}
+        run: |
+          npm run send-msg

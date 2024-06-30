@@ -1,6 +1,5 @@
 //read update.json
 import fs from 'fs'
-import path from 'path'
 const configPath = "src-tauri/tauri.conf.json"
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
 console.log(config.package.version)

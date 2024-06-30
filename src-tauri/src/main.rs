@@ -39,7 +39,8 @@ fn get_db() -> PickleDb {
 fn get_settings() -> Result<Settings, String> {
     let db = get_db();
 
-    let local_ip = local_ip_address::local_ip().unwrap();
+    // let local_ip = local_ip_address::local_ip().unwrap();
+    let local_ip = "127.0.0.1";
     let mut port = 8090;
     if cfg!(debug_assertions) {
         port = 8090;

@@ -13,10 +13,15 @@ tauri-build = { version = "1.5", features = [] }
 embed-resource = "2.4"
 
 [dependencies]
-tauri = { version = "1.5", features = [ "window-all", "dialog-all", "updater", "app-all", "shell-open"] }
+tauri = { version = "1.5", features = [
+    "window-all",
+    "dialog-all",
+    "updater",
+    "app-all",
+    "shell-open",
+] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-local-ip-address = "0.5.6"
 pickledb = "0.5.1"
 reqwest = { version = "0.11", features = ["blocking", "multipart", "json"] }
 webbrowser = "0.8.12"
