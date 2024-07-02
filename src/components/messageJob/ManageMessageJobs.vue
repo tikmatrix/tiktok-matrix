@@ -40,7 +40,7 @@
                 </td>
                 <td>{{ message_job.remark }}</td>
                 <td>
-                  <a class="link link-primary" :href="`https://www.tiktok.com/${message_job.username}`"
+                  <a class="link link-primary" :href="`https://www.tiktok.com/${message_job.target_username}`"
                     target="_blank">{{
                       message_job.target_username }}</a>
                 </td>

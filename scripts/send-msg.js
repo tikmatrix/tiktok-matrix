@@ -1,7 +1,13 @@
 const chatId = process.env.CHAT_ID
 const token = process.env.TOKEN
-const message = process.env.MESSAGE
+const tag = process.env.TAG
+const url = process.env.URL
+
 import TelegramBot from 'node-telegram-bot-api';
+// 从CHANGELOG.md中读取版本更新说明
+const fs = require('fs');
+const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+const message = `A new release: ${tag} is available: ${changelog}. Check it out at ${url}`
 
 
 // 创建一个机器人实例

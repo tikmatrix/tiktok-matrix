@@ -40,10 +40,13 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./src-tauri/target/release/bundle/msi/*
+          body_path: ./CHANGELOG.md
       - name: telegram bot
         env:
           CHAT_ID: -1002080383068
           TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TAG: ${{ github.ref }}
+          URL: ${{ steps.create_release.outputs.url }}
           MESSAGE: |
             A new release is available: ${{ github.ref }}. Check it out at ${{ steps.create_release.outputs.url }}
         run: |
