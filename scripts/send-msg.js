@@ -5,7 +5,7 @@ const url = process.env.URL
 
 import TelegramBot from 'node-telegram-bot-api';
 // 从CHANGELOG.md中读取版本更新说明
-const fs = require('fs');
+import fs from 'fs';
 const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
 const message = `A new release: ${tag} is available: ${changelog}. Check it out at ${url}`
 
