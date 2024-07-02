@@ -1,4 +1,3 @@
-//read update.json
 import fs from 'fs'
 const configPath = "src-tauri/tauri.conf.json"
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
@@ -26,7 +25,7 @@ const response1 = await fetch('https://api.tikmatrix.com/update.json', {
         'Content-Length': updateJsonStr.length,
         'Authorization': 'Bearer ' + process.env.TIKMATRIX_API_KEY
     },
-    body: JSON.stringify(updateJsonStr, null, 2)
+    body: updateJsonStr
 })
 console.log(`Response1: ${response1.status} ${response1.statusText}`)
 //update download url
