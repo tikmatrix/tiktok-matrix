@@ -4,6 +4,5 @@ $env:TAURI_KEY_PASSWORD = "123456"
 # npm config set proxy http://localhost:7890
 # npm config set https-proxy http://localhost:7890
 npm run tauri build
-npm run update-version
 # npm config delete proxy
 # npm config delete https-proxy

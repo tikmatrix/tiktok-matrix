@@ -25,11 +25,14 @@ jobs:
         id: setup-rust
         uses: dtolnay/rust-toolchain@stable
       - name: build
-        env:
-          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
         run: |
           npm install
           .\build.ps1
+      - name: upload
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+        run: |
+          npm run update-version
       # - name: commit
       #   run: |
       #     git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"

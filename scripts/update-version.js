@@ -17,15 +17,16 @@ const updateJson = {
         }
     }
 }
-console.log(updateJson)
+const updateJsonStr = JSON.stringify(updateJson, null, 2)
+console.log(updateJsonStr)
 const response1 = await fetch('https://api.tikmatrix.com/update.json', {
     method: 'PUT',
     headers: {
         'Content-Type': 'text/plain',
-        'Content-Length': updateJson.length,
+        'Content-Length': updateJsonStr.length,
         'Authorization': 'Bearer ' + process.env.TIKMATRIX_API_KEY
     },
-    body: JSON.stringify(updateJson, null, 2)
+    body: JSON.stringify(updateJsonStr, null, 2)
 })
 console.log(`Response1: ${response1.status} ${response1.statusText}`)
 //update download url
