@@ -331,8 +331,10 @@ export const i18n = createI18n({
       accountCount: 'Account Count',
       addTopic: 'Add Topic',
       parse: 'Parse',
+      setFastInput: 'Set Fast Input',
     },
     'zh-CN': {
+      setFastInput: '设置快速输入法',
       parse: '解析',
       addTopic: '添加主题',
       accountCount: '账号数量',

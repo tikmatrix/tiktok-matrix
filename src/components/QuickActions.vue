@@ -4,7 +4,12 @@
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
         {{ $t('openNekoBox') }}
     </button>
-
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })">
+        <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-white" />
+        {{ $t('setFastInput') }}
+    </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="app_install">

@@ -16,7 +16,7 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: release
       - name: setup node
         uses: actions/setup-node@v4
         with:
@@ -28,25 +28,25 @@ jobs:
         run: |
           npm install
           .\build.ps1
-      - name: upload
+      - name: update version
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
         run: |
           npm run update-version
-      # - name: commit
-      #   run: |
-      #     git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      #     git config --local user.name "github-actions[bot]"
-      #     git add -A
-      #     git commit -m "Release"
-      #     git push
-      # - name: release
-      #   id: create_release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: ./src-tauri/target/release/bundle/msi/*
-      #     body_path: ./CHANGELOG.md
-      - name: upload
+      - name: commit
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add -A
+          git commit -m "Release"
+          git push
+      - name: release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./src-tauri/target/release/bundle/msi/*
+          body_path: ./CHANGELOG.md
+      - name: upload to r2
         uses: ryand56/r2-upload-action@latest
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
@@ -54,12 +54,12 @@ jobs:
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/release/bundle/msi
-          destination-dir: ./release
-      # - name: telegram bot
-      #   env:
-      #     CHAT_ID: -1002080383068
-      #     TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      #     TAG: ${{ github.ref }}
-      #     URL: ${{ steps.create_release.outputs.url }}
-      #   run: |
-      #     npm run send-msg
+          destination-dir: ./
+      - name: telegram bot
+        env:
+          CHAT_ID: -1002080383068
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TAG: ${{ github.ref }}
+          URL: ${{ steps.create_release.outputs.url }}
+        run: |
+          npm run send-msg

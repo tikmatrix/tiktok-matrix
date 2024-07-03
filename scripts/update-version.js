@@ -12,12 +12,13 @@ const updateJson = {
     "platforms": {
         "windows-x86_64": {
             "signature": signature,
-            "url": `https://r2.tikmatrix.com/release/tiktok-matrix_${config.package.version}_x64_en-US.msi.zip`
+            "url": `https://r2.tikmatrix.com/tiktok-matrix_${config.package.version}_x64_en-US.msi.zip`
         }
     }
 }
 const updateJsonStr = JSON.stringify(updateJson, null, 2)
 console.log(updateJsonStr)
+fs.writeFileSync('update.json', updateJsonStr)
 const response1 = await fetch('https://api.tikmatrix.com/update.json', {
     method: 'PUT',
     headers: {
@@ -29,7 +30,7 @@ const response1 = await fetch('https://api.tikmatrix.com/update.json', {
 })
 console.log(`Response1: ${response1.status} ${response1.statusText}`)
 //update download url
-const downloadUrl = `https://r2.tikmatrix.com/release/tiktok-matrix_${config.package.version}_x64_en-US.msi`
+const downloadUrl = `https://r2.tikmatrix.com/tiktok-matrix_${config.package.version}_x64_en-US.msi`
 console.log(downloadUrl)
 //put https://api.tikmatrix.com/download
 const response2 = await fetch('https://api.tikmatrix.com/downloadUrl', {

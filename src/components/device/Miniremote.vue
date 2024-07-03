@@ -311,6 +311,7 @@ export default {
         this.jmuxer.feed({
           video: new Uint8Array(message.data)
         })
+        this.$refs.display.play();
       }
     },
     syncDisplay() {
