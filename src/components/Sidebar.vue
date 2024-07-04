@@ -41,31 +41,34 @@
         </div>
       </div>
       <div class="p-4">
-        <div class="flex flex-row">
+        <div class="flex flex-row p-2 bg-base-300 rounded-md">
           <div class="flex-1">
 
           </div>
-          <a class="link link-primary text-xs float-right"
+          <a class="link link-primary text-xs float-right flex items-center mr-1"
             @click="$emitter.emit('menuSelected', { name: 'buyLicense' })">
-            <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4" />
+            <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4 mr-1" />
             {{ $t('buyLicense') }}
           </a>
-          <a class="link link-primary text-xs float-right" href="https://chat.whatsapp.com/G15tFqXqbRGADnggV5OEvg"
-            target="_blank">
+
+          <a class="link link-primary text-xs float-right flex items-center mr-1"
+            href="https://chat.whatsapp.com/G15tFqXqbRGADnggV5OEvg" target="_blank">
             <font-awesome-icon icon="fab fa-whatsapp" class="text-blue-500 h-4 w-4" />
             {{ $t('whatsapp') }}
           </a>
-          <a class="link link-primary text-xs float-right" href="https://t.me/+iGhozoBfAbI5YmE1" target="_blank">
+          <a class="link link-primary text-xs float-right flex items-center mr-1" href="https://t.me/+iGhozoBfAbI5YmE1"
+            target="_blank">
             <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-4 w-4" />
             {{ $t('telegram') }}
           </a>
-          <a class="link link-primary text-xs float-right" href="https://www.tikmatrix.com" target="_blank">
+          <a class="link link-primary text-xs float-right flex items-center mr-1" href="https://www.tikmatrix.com"
+            target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4" />
             {{ $t('document') }}
           </a>
         </div>
 
-        <div role="tablist" class="tabs tabs-lifted">
+        <div role="tablist" class="tabs tabs-lifted mt-2 bg-base-200 rounded-md">
           <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
           <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
           <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
@@ -80,12 +83,14 @@
           <Tools :settings="settings" />
         </div>
         <div class="flex flex-col">
-          <span class="font-sans mt-4 mb-4">{{ $t('groups') }}</span>
-          <div class="cursor-pointer items-center" @click="showAddGroup = !showAddGroup">
+          <span class="font-sans p-2 bg-base-200 rounded-md font-bold">{{ $t('groups') }}</span>
+          <button
+            class="btn btn-sm bg-transparent hover:bg-transparent border-1 border-success text-black-500 hover:text-blue-700 p-0 mt-1 block"
+            @click="showAddGroup = !showAddGroup">
             <font-awesome-icon icon="fa-solid fa-plus" class="h-4 w-4 text-blue-500" />
             <span class="text-xs text-blue-500">{{ $t('addGroup') }}</span>
-          </div>
-          <input v-if="showAddGroup" class="input input-sm input-bordered w-full max-w-xs" type="text"
+          </button>
+          <input v-if="showAddGroup" class="input input-sm input-bordered w-full max-w-xs mt-2" type="text"
             v-model="newGroupName" v-on:keyup.enter="addGroup" />
           <div class="flex flex-row form-control items-center" v-for="(item, index) in groups" :key="item.id">
             <label class="label cursor-pointer">
@@ -182,6 +187,7 @@ import * as util from '../utils'
 import General from './General.vue'
 import Tools from './Tools.vue'
 import QuickActions from './QuickActions.vue';
+import { open } from '@tauri-apps/api/dialog';
 export default {
   name: 'Sidebar',
   setup() {
@@ -310,14 +316,21 @@ export default {
           this.refreshSelections()
         })
     },
-    uploadFiles(files) {
-      const formData = new FormData()
-      formData.append('serials', this.selection)
-      for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i])
-      }
+    async uploadFiles() {
+      const filePath = await open({
+        multiple: true, // 是否允许多选文件
+        directory: false, // 是否选择目录
+        filters: [ // 文件过滤器
+          { name: 'Video Files', extensions: ['mp4', 'jpg', 'png'] },
+        ]
+      });
+
+      console.log('Selected file path:', filePath);
       this.$service
-        .upload_video(formData)
+        .upload_video({
+          files: filePath,
+          serials: this.selection
+        })
         .then(res => {
           console.log(res)
         })
@@ -325,14 +338,21 @@ export default {
           console.log(err)
         })
     },
-    installApks(files) {
-      const formData = new FormData()
-      formData.append('serials', this.selection)
-      for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i])
-      }
+    async selectApkFile() {
+      const filePath = await open({
+        multiple: false, // 是否允许多选文件
+        directory: false, // 是否选择目录
+        filters: [ // 文件过滤器
+          { name: 'Apk Files', extensions: ['apk'] },
+        ]
+      });
+
+      console.log('Selected file path:', filePath);
       this.$service
-        .install(formData)
+        .install({
+          file: filePath,
+          serials: this.selection
+        })
         .then(res => {
           console.log(res)
         })
@@ -574,11 +594,11 @@ export default {
       console.log("receive scriptEventData: ", data)
       this.script(data.name, data.args)
     });
-    this.$emitter.on('uploadFiles', (files) => {
-      this.uploadFiles(files)
+    this.$emitter.on('uploadFiles', () => {
+      this.uploadFiles()
     });
-    this.$emitter.on('installApks', (files) => {
-      this.installApks(files)
+    this.$emitter.on('installApks', () => {
+      this.selectApkFile()
     });
     this.$emitter.on('initDevice', () => {
       this.initDevice()

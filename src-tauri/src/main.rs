@@ -134,7 +134,7 @@ fn stop_agent() {
         let mut command = Command::new("taskkill");
         command.creation_flags(0x08000000);
         command
-            .args(&["/F", "/IM", "train.exe"])
+            .args(&["/F", "/IM", "script.exe"])
             .status()
             .expect("failed to kill train processes");
     }
@@ -143,7 +143,7 @@ fn stop_agent() {
     {
         let mut command = Command::new("pkill");
         command
-            .args(&["-f", "train"])
+            .args(&["-f", "script"])
             .status()
             .expect("failed to kill train processes");
     }

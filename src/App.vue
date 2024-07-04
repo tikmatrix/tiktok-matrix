@@ -7,7 +7,7 @@
   </template>
   <div class="flex flex-row items-start bg-base-300 h-screen w-screen" v-else>
     <Sidebar />
-    <div class="flex-1 p-4 rounded-lg">
+    <!-- <div class="flex-1 p-4 rounded-lg">
       <div role="alert" class="alert alert-warning mb-1" v-show="showDemoTip">
         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -15,11 +15,11 @@
         </svg>
         <span class="font-bold">{{ $t('demoTip', { email: 'admin@niostack.com' }) }}</span>
         <a class="link link-primary" href="https://t.me/+iGhozoBfAbI5YmE1">{{ $t('demoTip2') }}</a>
-      </div>
+      </div> -->
 
-      <Toast />
-      <ManageDevices />
-    </div>
+    <Toast />
+    <ManageDevices />
+    <!-- </div> -->
   </div>
 
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"

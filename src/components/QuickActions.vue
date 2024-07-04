@@ -15,14 +15,12 @@
         @click="app_install">
         <font-awesome-icon icon="fa-brands fa-android" class="h-3 w-3 text-white" />
         {{ $t('installApk') }}
-        <input id="app_install_input" type="file" v-on:change="on_app_install" multiple hidden />
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="uploadVideo">
         <font-awesome-icon icon="fa fa-upload" class="h-3 w-3 text-white" />
         {{ $t('uploadToGallery') }}
-        <input id="upload_video_input" type="file" v-on:change="on_upload_video" multiple hidden />
     </button>
     <!-- <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
@@ -78,17 +76,10 @@ export default {
     props: ['settings'],
     methods: {
         app_install() {
-            document.getElementById('app_install_input').click()
-        },
-        on_app_install(e) {
-            this.$emitter.emit('installApks', e.target.files)
+            this.$emitter.emit('installApks', {})
         },
         uploadVideo() {
-            document.getElementById('upload_video_input').click()
-        },
-        on_upload_video(e) {
-            console.log(e.target.files)
-            this.$emitter.emit('uploadFiles', e.target.files)
+            this.$emitter.emit('uploadFiles', {})
         },
     }
 }

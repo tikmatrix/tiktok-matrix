@@ -30,7 +30,7 @@
       <span class="font-bold">{{ $t('avatarsPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/avatars"
         class="input input-sm grow input-bordered" v-model="settings.avatars_path" />
-
+      <button class="btn btn-sm btn-info ml-2" @click="selectAvatars">{{ $t('select') }}</button>
     </div>
     <div class="divider">{{ $t('messageSettings') }}</div>
 
@@ -44,6 +44,7 @@
       <span class="font-bold">{{ $t('targetUsernamesPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/usernames.txt"
         class="input input-sm grow input-bordered" v-model="settings.target_username_path" />
+      <button class="btn btn-sm btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
 
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full">
@@ -55,6 +56,7 @@
 </template>
 <script>
 import MyButton from '../Button.vue'
+import { open } from '@tauri-apps/api/dialog';
 export default {
   name: 'app',
   components: {
@@ -73,6 +75,32 @@ export default {
     }
   },
   methods: {
+    // 选择文件并获取路径
+    async selectTargetUsernames() {
+      const filePath = await open({
+        multiple: false, // 是否允许多选文件
+        directory: false, // 是否选择目录
+        filters: [ // 文件过滤器
+          { name: 'Text Files', extensions: ['txt'] },
+        ]
+      });
+
+      console.log('Selected file path:', filePath);
+      // 将 filePath 用于其他操作
+      this.settings.target_username_path = filePath
+    },
+    //选择头像目录
+    async selectAvatars() {
+      const filePath = await open({
+        multiple: false, // 是否允许多选文件
+        directory: true, // 是否选择目录
+        filters: [ // 文件过滤器
+        ]
+      });
+      console.log('Selected file path:', filePath);
+      // 将 filePath 用于其他操作
+      this.settings.avatars_path = filePath
+    },
     get_settings() {
       this.$service.get_settings().then(res => {
         this.settings = res.data

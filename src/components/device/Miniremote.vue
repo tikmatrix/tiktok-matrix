@@ -255,6 +255,8 @@ export default {
         this.scrcpy.send(max_size)
         // control
         this.scrcpy.send('true')
+        //fps
+        this.scrcpy.send(this.big ? 30 : 10)
 
       }
       this.scrcpy.onclose = () => {
@@ -270,11 +272,11 @@ export default {
 
       }
       this.scrcpy.onmessage = message => {
-        if (!this.jmuxer) {
-          // console.log('jmuxer is null,big:', this.big, 'operating:', this.operating, 'index:', this.index, 'scrcpy:', this.scrcpy)
-          this.closeScrcpy()
-          return
-        }
+        // if (!this.jmuxer) {
+        //   // console.log('jmuxer is null,big:', this.big, 'operating:', this.operating, 'index:', this.index, 'scrcpy:', this.scrcpy)
+        //   this.closeScrcpy()
+        //   return
+        // }
         if (this.loading) {
           this.loading = false
         }
@@ -311,16 +313,16 @@ export default {
         this.jmuxer.feed({
           video: new Uint8Array(message.data)
         })
-        this.$refs.display.play();
+        this.$refs.display.playbackRate = 2;
       }
     },
     syncDisplay() {
-      if (import.meta.env.VITE_APP_MOCK === 'true') {
-        setTimeout(() => {
-          this.loading = false
-        }, 3000)
-        return
-      }
+      // if (import.meta.env.VITE_APP_MOCK === 'true') {
+      //   setTimeout(() => {
+      //     this.loading = false
+      //   }, 3000)
+      //   return
+      // }
       this.loading = true
       if (this.$refs.display == null) {
         console.log('display is null,big:', this.big, 'operating:', this.operating, 'index:', this.index)
@@ -364,19 +366,19 @@ export default {
     if (!this.big) {
       this.$emitter.on('closeDevice', (device) => {
         if (device.serial === this.device.serial) {
-          this.syncDisplay()
           this.operating = false
+          // this.syncDisplay()
         }
       });
       this.$emitter.on('openDevice', (device) => {
         if (device.serial === this.device.serial) {
           this.operating = true
-          this.closeScrcpy()
-          this.closeJmuxer()
+          // this.closeScrcpy()
+          // this.closeJmuxer()
         }
         if (device.serial !== this.device.serial && this.operating) {
-          this.syncDisplay()
           this.operating = false
+          // this.syncDisplay()
         }
       });
     }

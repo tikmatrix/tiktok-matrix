@@ -16,7 +16,7 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v3
         with:
-          ref: release
+          ref: main
       - name: setup node
         uses: actions/setup-node@v4
         with:
@@ -33,13 +33,13 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
         run: |
           npm run update-version
-      - name: commit
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add -A
-          git commit -m "Release"
-          git push
+      # - name: commit
+      #   run: |
+      #     git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      #     git config --local user.name "github-actions[bot]"
+      #     git add -A
+      #     git commit -m "Release"
+      #     git push
       - name: release
         id: create_release
         uses: softprops/action-gh-release@v1

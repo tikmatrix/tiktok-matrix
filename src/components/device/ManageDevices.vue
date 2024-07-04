@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="w-full h-screen overflow-y-auto">
     <Pagination ref="device_panel" :items="devices" :searchKeys="['serial', 'account']" :showRefBtn="false">
       <template v-slot:default="slotProps">
         <div class="flex flex-wrap gap-2 p-4">

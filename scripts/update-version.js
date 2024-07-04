@@ -18,7 +18,7 @@ const updateJson = {
 }
 const updateJsonStr = JSON.stringify(updateJson, null, 2)
 console.log(updateJsonStr)
-fs.writeFileSync('update.json', updateJsonStr)
+// fs.writeFileSync('update.json', updateJsonStr)
 const response1 = await fetch('https://api.tikmatrix.com/update.json', {
     method: 'PUT',
     headers: {

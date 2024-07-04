@@ -5,6 +5,7 @@ const api = {
   account: '/api/account',
   material: '/api/material',
   upload_video: '/api/upload_video',
+  upload_videos: '/api/material/upload_videos',
   material_count: '/api/material/count',
   publish_job: '/api/publish_job',
   message_job: '/api/message_job',

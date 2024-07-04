@@ -21,14 +21,11 @@ export function get_devices() {
   })
 }
 
-export function install(formData) {
+export function install(data) {
   return request({
     method: 'post',
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
     url: api.install,
-    data: formData
+    data
   })
 }
 
@@ -54,13 +51,11 @@ export function get_material_count({ used, group_id }) {
   })
 }
 
-export function upload_material(formData) {
+
+export function upload_videos(data) {
   return post({
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
-    url: api.material,
-    data: formData
+    url: api.upload_videos,
+    data
   })
 }
 export function upload_to_virtualHost(formData) {
@@ -73,14 +68,10 @@ export function upload_to_virtualHost(formData) {
     data: formData
   })
 }
-export function upload_video(formData) {
+export function upload_video(data) {
   return post({
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
     url: api.upload_video,
-
-    data: formData
+    data
   })
 }
 

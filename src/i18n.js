@@ -332,8 +332,10 @@ export const i18n = createI18n({
       addTopic: 'Add Topic',
       parse: 'Parse',
       setFastInput: 'Set Fast Input',
+      select: 'Select',
     },
     'zh-CN': {
+      select: '选择',
       setFastInput: '设置快速输入法',
       parse: '解析',
       addTopic: '添加主题',

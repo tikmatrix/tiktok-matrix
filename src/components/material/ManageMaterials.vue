@@ -2,7 +2,7 @@
   <div class="w-full">
     <Pagination :items="materials" :searchKeys="['name']" @refresh="get_materials">
       <template v-slot:buttons>
-        <MyButton @click="$refs.upload_material_input.click()" label="upload" icon="fa fa-add" />
+        <MyButton @click="selectVideos" label="upload" icon="fa fa-add" />
         <MyButton @click="$refs.add_video_dialog.showModal()" label="capture" icon="fa fa-add" />
       </template>
       <template v-slot:default="slotProps">
@@ -78,7 +78,6 @@
       </div>
     </dialog>
   </div>
-  <input ref="upload_material_input" type="file" v-on:change="on_upload_material" multiple hidden />
   <!-- upload progress dialog -->
   <dialog ref="upload_dialog" class="modal">
     <div class="modal-box">
@@ -168,6 +167,7 @@ import Detail from './Detail.vue'
 import MyButton from '../Button.vue'
 import Pagination from '../Pagination.vue'
 import * as util from '../../utils'
+import { open } from '@tauri-apps/api/dialog';
 export default {
   name: 'app',
   components: {
@@ -200,6 +200,31 @@ export default {
     }
   },
   methods: {
+    async selectVideos() {
+      const filePath = await open({
+        multiple: true, // 是否允许多选文件
+        directory: false, // 是否选择目录
+        filters: [ // 文件过滤器
+          { name: 'Video Files', extensions: ['mp4'] },
+        ]
+      });
+
+      console.log('Selected file path:', filePath);
+      // 将 filePath 用于其他操作
+      this.$service
+        .upload_videos({
+          files: filePath,
+          group_id: this.group.id,
+          source: 'upload'
+        })
+        .then(() => {
+          this.get_materials()
+        })
+        .catch(err => {
+
+        })
+
+    },
     fission() {
 
       let events = new EventSource("http://127.0.0.1:8090/api/video/output");
@@ -267,41 +292,7 @@ export default {
           })
       }
     },
-    on_upload_material(e) {
-      const totalFiles = e.target.files.length
-      let index = 0
-      this.upload_progress = index
-      this.max_upload_progress = totalFiles
-      this.$refs.upload_dialog.showModal()
-      const uploadBatch = () => {
-        const formData = new FormData()
-        formData.append('group_id', this.group.id)
-        formData.append('source', 'upload')
-        let count = 0
-        for (let i = 0; i < 10 && index < totalFiles; i++, index++) {
-          formData.append('files', e.target.files[index])
-          count++
-        }
-        this.$service
-          .upload_material(formData)
-          .then(() => {
-            this.upload_progress = index
-            if (index < totalFiles) {
-              uploadBatch() // Upload next batch
-            } else {
-              this.$refs.upload_material_input.value = ''
-              this.$refs.upload_dialog.close()
-              this.get_materials()
-            }
-          })
-          .catch(err => {
-            console.log(err)
-            index -= count
-          })
-      }
 
-      uploadBatch() // Start uploading
-    },
     delete_all() {
       this.$service
         .delete_all_materials()
