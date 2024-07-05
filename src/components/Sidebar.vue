@@ -61,8 +61,8 @@
             <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-4 w-4" />
             {{ $t('telegram') }}
           </a>
-          <a class="link link-primary text-xs float-right flex items-center mr-1" href="https://www.tikmatrix.com"
-            target="_blank">
+          <a class="link link-primary text-xs float-right flex items-center mr-1"
+            href="https://www.tikmatrix.com/docs/intro" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4" />
             {{ $t('document') }}
           </a>

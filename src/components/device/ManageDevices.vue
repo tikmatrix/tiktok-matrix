@@ -6,7 +6,7 @@
 
           <div class="flex flex-wrap gap-2 flex-1">
             <div v-for="(device, index) in devices" :key="device.serial">
-              <Miniremote :device="device" :index="index" :key="device.serial" />
+              <Miniremote :device="device" :index="index" :key="device.key" />
             </div>
           </div>
         </div>
@@ -49,6 +49,7 @@ export default {
   },
   data() {
     return {
+      mydevices: [],
       settings: {
       },
     }
@@ -82,7 +83,19 @@ export default {
   },
 
   mounted() {
+    this.mydevices = this.devices
+    for (let i = 0; i < this.mydevices.length; i++) {
+      this.mydevices[i].key = i
+    }
     this.get_settings()
+    this.$emitter.on('refreshDevice', (data) => {
+      // console.log("receive refreshDevice: ", data)
+      for (let i = 0; i < this.mydevices.length; i++) {
+        if (this.mydevices[i].serial == data) {
+          this.mydevices[i].key = Date.now()
+        }
+      }
+    });
   },
   unmounted() {
   }

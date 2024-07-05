@@ -117,6 +117,7 @@ export default {
       rotation: 0,
       fps: 0,
       periodImageCount: 0,
+      checkImageCount: 0,
       timer_fps: null,
       timer_task_status: null,
       jmuxer: null,
@@ -248,7 +249,7 @@ export default {
       this.scrcpy = new WebSocket(import.meta.env.VITE_WS_URL)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+        console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.index)
         let max_size = this.big ? 1080 : 540
         this.scrcpy.send(`${this.device.serial}`)
         // max size
@@ -261,14 +262,14 @@ export default {
       }
       this.scrcpy.onclose = () => {
         this.loading = true
-        // console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+        console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.index)
         // if (!this.operating) {
         //   this.connect()
         // }
       }
       this.scrcpy.onerror = () => {
         this.loading = true
-        console.log(this.index, ':onerror')
+        console.log('onerror,big:', this.big, 'operating:', this.operating, 'index:', this.index)
 
       }
       this.scrcpy.onmessage = message => {
@@ -289,18 +290,18 @@ export default {
             case 1:
               this.width = message.data.split('x')[0]
               this.height = message.data.split('x')[1]
-              console.log(this.width, this.height)
+              // console.log(this.width, this.height)
               if (this.big) {
                 let scaled = 580 / this.height;
-                console.log(scaled)
+                // console.log(scaled)
                 this.width = this.width * scaled
                 this.height = 580
               } else {
                 let scaled = 220 / this.height;
-                console.log(scaled)
+                // console.log(scaled)
                 this.width = this.width * scaled
                 this.height = 220
-                console.log(this.width, this.height)
+                // console.log(this.width, this.height)
               }
               break
           }
@@ -310,6 +311,7 @@ export default {
 
         //read video
         this.periodImageCount += 1
+        this.checkImageCount += 1
         this.jmuxer.feed({
           video: new Uint8Array(message.data)
         })
@@ -405,8 +407,13 @@ export default {
       }, 500)
     }
     this.timer_video = setInterval(() => {
+      console.log('checkImageCount:', this.checkImageCount)
+      if (this.checkImageCount == 0) {
+        this.loading = true
+      }
+      this.checkImageCount = 0;
       if (this.loading) {
-        this.connect()
+        this.$emitter.emit('refreshDevice', this.device.serial)
       }
     }, 5000)
   },

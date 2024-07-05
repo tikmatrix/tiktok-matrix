@@ -3,7 +3,7 @@
     <Pagination :items="filter_jobs" :searchKeys="['device', 'id', 'account', 'device_index']"
       @refresh="get_publish_jobs">
       <template v-slot:buttons>
-        <MyButton @click="retry_all_failed" label="retryAllFaied" />
+        <!-- <MyButton @click="retry_all_failed" label="retryAllFaied" /> -->
         <MyButton onclick="confirm_modal.showModal()" label="clearAll" />
         <select v-model="searchStatus" class="select select-sm select-bordered max-w-xs ml-2">
           <option value="">{{ $t('allStatus') }}</option>
