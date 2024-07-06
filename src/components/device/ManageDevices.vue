@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-screen overflow-y-auto">
-    <Pagination ref="device_panel" :items="devices" :searchKeys="['serial', 'account']" :showRefBtn="false">
+    <Pagination ref="device_panel" :items="devices" :searchKeys="['serial', 'account']" @refresh="refreshPage">
       <template v-slot:default="slotProps">
         <div class="flex flex-wrap gap-2 p-4">
 
@@ -33,6 +33,7 @@ import Device from './Device.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
 import { inject } from 'vue'
+
 export default {
   name: 'devices',
   setup() {
@@ -56,7 +57,9 @@ export default {
   },
 
   methods: {
-
+    refreshPage() {
+      window.location.reload();
+    },
 
     get_groups() {
       this.$service
@@ -88,14 +91,14 @@ export default {
       this.mydevices[i].key = i
     }
     this.get_settings()
-    this.$emitter.on('refreshDevice', (data) => {
-      // console.log("receive refreshDevice: ", data)
-      for (let i = 0; i < this.mydevices.length; i++) {
-        if (this.mydevices[i].serial == data) {
-          this.mydevices[i].key = Date.now()
-        }
-      }
-    });
+    // this.$emitter.on('refreshDevice', (data) => {
+    //   // console.log("receive refreshDevice: ", data)
+    //   for (let i = 0; i < this.mydevices.length; i++) {
+    //     if (this.mydevices[i].serial == data) {
+    //       this.mydevices[i].key = Date.now()
+    //     }
+    //   }
+    // });
   },
   unmounted() {
   }

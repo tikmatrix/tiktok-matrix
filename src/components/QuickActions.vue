@@ -1,15 +1,16 @@
 <template>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
-        {{ $t('openNekoBox') }}
+        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.HOME'] })">
+        <font-awesome-icon icon="fa fa-home" class="h-3 w-3 text-white" />
+        {{ $t('home') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })">
-        <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-white" />
-        {{ $t('setFastInput') }}
+        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
+        {{ $t('openNekoBox') }}
     </button>
+
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="app_install">
@@ -36,11 +37,7 @@
         {{ $t('openIpChecker') }}
     </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('initDevice')">
-        <font-awesome-icon icon="fa-solid fa-arrows-rotate" class="h-3 w-3" />{{ $t('initApp') }}
-    </button>
+
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         :data-tip="$t('showTimeSetting')"

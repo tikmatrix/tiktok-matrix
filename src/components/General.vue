@@ -5,7 +5,12 @@
         <font-awesome-icon :icon="item.icon" class="h-3 w-3" />{{ $t(`${item.name}`) }}
     </button>
 
-
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })">
+        <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-white" />
+        {{ $t('setFastInput') }}
+    </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="open_dir('logs')">
@@ -27,6 +32,11 @@
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.scan_dialog.show()">
         <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('initDevice')">
+        <font-awesome-icon icon="fa-solid fa-arrows-rotate" class="h-3 w-3" />{{ $t('initApp') }}
     </button>
     <dialog ref="scan_dialog" class="modal">
         <div class="modal-box">

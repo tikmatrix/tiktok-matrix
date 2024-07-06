@@ -133,6 +133,7 @@ export default {
       name: 'UNKNOWN',
       width: this.big ? 320 : 110,
       height: this.big ? 580 : 220,
+      connect_count: 0,
     }
   },
   methods: {
@@ -257,7 +258,7 @@ export default {
         // control
         this.scrcpy.send('true')
         //fps
-        this.scrcpy.send(this.big ? 30 : 10)
+        this.scrcpy.send(this.big ? 30 : 15)
 
       }
       this.scrcpy.onclose = () => {
@@ -319,6 +320,7 @@ export default {
       }
     },
     syncDisplay() {
+      this.connect_count += 1
       // if (import.meta.env.VITE_APP_MOCK === 'true') {
       //   setTimeout(() => {
       //     this.loading = false
@@ -334,7 +336,7 @@ export default {
         mode: 'video',
         flushingTime: 1,
         maxDelay: 0,
-        fps: 60,
+        fps: this.big ? 30 : 15,
         debug: false,
         onError: function () {
           console.log('onError')
@@ -407,13 +409,14 @@ export default {
       }, 500)
     }
     this.timer_video = setInterval(() => {
-      console.log('checkImageCount:', this.checkImageCount)
+      console.log(`${this.index} - checkImageCount:${this.checkImageCount},connect_count:${this.connect_count} big:${this.big},operating:${this.operating}`)
       if (this.checkImageCount == 0) {
         this.loading = true
       }
       this.checkImageCount = 0;
       if (this.loading) {
-        this.$emitter.emit('refreshDevice', this.device.serial)
+        // this.$emitter.emit('refreshDevice', this.device.serial)
+        this.syncDisplay()
       }
     }, 5000)
   },

@@ -21,7 +21,7 @@
                 <th>{{ $t('id') }}</th>
                 <th>{{ $t('startTime') }}</th>
                 <th>{{ $t('status') }}</th>
-                <th>{{ $t('remark') }}</th>
+                <!-- <th>{{ $t('remark') }}</th> -->
                 <th>{{ $t('username') }}</th>
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('group') }}</th>
@@ -38,7 +38,7 @@
                   <div class="badge badge-success" v-else-if="train_job.status == '2'">{{ $t('success') }}</div>
                   <div class="badge badge-error" v-else-if="train_job.status == '3'">{{ $t('failed') }}</div>
                 </td>
-                <td>{{ train_job.remark }}</td>
+                <!-- <td>{{ train_job.remark }}</td> -->
                 <td>
                   <a class="link link-primary" :href="`https://www.tiktok.com/${train_job.username}`" target="_blank">{{
                     train_job.username }}</a>
