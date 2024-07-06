@@ -202,6 +202,13 @@ export function init({ serial, init }) {
     params: { serial, init }
   })
 }
+export function index({ serial, index }) {
+  return request({
+    method: 'get',
+    url: api.index,
+    params: { serial, index }
+  })
+}
 export function get_groups() {
   return request({
     method: 'get',

@@ -337,8 +337,10 @@ export const i18n = createI18n({
       viewDuration: 'View Duration',
       trainConfig: 'Train Config',
       publishConfig: 'Publish Config',
+      indexUpdated: 'Index Updated',
     },
     'zh-CN': {
+      indexUpdated: '序号已更新',
       publishConfig: '发布配置',
       trainConfig: '养号配置',
       viewDuration: '观看时长',

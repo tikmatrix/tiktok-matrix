@@ -18,7 +18,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(account, index) in slotProps.items" :key="index">
+              <tr v-for="(account, _index) in slotProps.items">
                 <td>{{ account.id }}</td>
                 <td>{{ account.email }}</td>
                 <td>
@@ -28,8 +28,10 @@
                 <!-- <td>{{ account.fans }}</td> -->
 
                 <td>
-                  <a class="cursor-pointer underline text-blue-500"
-                    @click="show_device(account.device_index, account.device)">{{ account.device_index }} </a>
+                  <a class="cursor-pointer underline text-blue-500" v-if="account.device_index"
+                    @click="show_device(account.device_index, account.device)">{{ account.device_index }}
+                  </a>
+                  <span v-else class="text text-red-500">{{ $t('offline') }}</span>
                 </td>
 
                 <td>
@@ -91,9 +93,8 @@ export default {
     }
   },
   methods: {
-    show_device(index, serial) {
+    show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial)
-      mydevice.index = index - 1
       this.$emitter.emit('openDevice', mydevice)
     },
 
@@ -104,8 +105,7 @@ export default {
         .then(res => {
           this.accounts = res.data
           this.accounts.forEach(account => {
-            let device_index = this.devices.findIndex(device => device.serial === account.device)
-            account.device_index = device_index + 1
+            account.device_index = this.devices.find(device => device.serial === account.device)?.index
           })
         })
         .catch(err => {

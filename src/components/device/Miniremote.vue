@@ -3,15 +3,24 @@
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag  bg-base-300">
-          <div class="flex flex-1  justify-center items-center text-center pr-1 pl-1">
+          <div class="flex flex-1 justify-center items-center text-center">
             <div class="flex-1 justify-center items-center text-center">
-              <span class="text-xs font-bold bg-blue-300 pl-2 pr-2 rounded-md">{{ index + 1 }}</span>
+              <details ref="edit_index_input" class="dropdown dropdown-top">
+                <summary class="btn btn-xs bg-transparent hover:bg-transparent border-0">
+                  <span class="text-xs font-bold bg-blue-300 pl-1 pr-1 rounded-md">
+                    {{ device.index }}
+                    <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer"></font-awesome-icon>
+                  </span>
+                </summary>
+                <input
+                  class="input input-sm input-bordered border-2 dropdown-content z-10 shadow bg-white w-20 border-green-500"
+                  v-model="device.index" type="number" @keyup.enter="updateIndex"
+                  @focus="(event) => event.target.select()" @blur="updateIndex" />
+              </details>
+
               <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-green-500' : ' text-red-500')" v-if="big"> -
                 {{
                   $t(task_status) }}</span>
-              <!-- <button class="btn btn-sm  bg-base-200 hover:bg-base-100 hover:text-red-500 text-red-700 border-0"
-                v-if="big && task_status == 'RUNNING'" @click="stop_task">
-                <font-awesome-icon icon="fa fa-stop" class="h-4 w-4" />{{ $t('stop') }}</button> -->
             </div>
             <div class="justify-center items-center text-center">
               <span :class="'mr-2 ' + (big ? 'text-sm font-bold' : 'text-xs')">{{ name }} </span>
@@ -100,10 +109,6 @@ export default {
       type: Boolean,
       default: false
     },
-    index: {
-      type: Number,
-      default: 0
-    },
     device: {
       type: Object,
       default: () => {
@@ -131,13 +136,18 @@ export default {
       timer_video: null,
       message_index: 0,
       name: 'UNKNOWN',
-      width: this.big ? 320 : 110,
-      height: this.big ? 580 : 220,
+      width: this.big ? 320 : 120,
+      height: this.big ? 580 : 250,
       connect_count: 0,
     }
   },
   methods: {
-
+    updateIndex() {
+      this.$refs.edit_index_input.removeAttribute('open')
+      this.$service.index({ serial: this.device.serial, index: this.device.index }).then(res => {
+        this.$emitter.emit('showToast', this.$t('indexUpdated'))
+      })
+    },
     get_task_status() {
       this.$service
         .get_task_status({
@@ -221,7 +231,6 @@ export default {
       if (!this.big) {
         // console.log("open device: ",this.device)
         let mydevice = this.device
-        mydevice.index = this.index
         this.$emitter.emit('openDevice', mydevice)
 
         return
@@ -250,7 +259,7 @@ export default {
       this.scrcpy = new WebSocket(import.meta.env.VITE_WS_URL)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+        console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
         let max_size = this.big ? 1080 : 540
         this.scrcpy.send(`${this.device.serial}`)
         // max size
@@ -263,19 +272,19 @@ export default {
       }
       this.scrcpy.onclose = () => {
         this.loading = true
-        console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+        console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
         // if (!this.operating) {
         //   this.connect()
         // }
       }
       this.scrcpy.onerror = () => {
         this.loading = true
-        console.log('onerror,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+        console.log('onerror,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
 
       }
       this.scrcpy.onmessage = message => {
         // if (!this.jmuxer) {
-        //   // console.log('jmuxer is null,big:', this.big, 'operating:', this.operating, 'index:', this.index, 'scrcpy:', this.scrcpy)
+        //   // console.log('jmuxer is null,big:', this.big, 'operating:', this.operating, 'index:', this.device.index, 'scrcpy:', this.scrcpy)
         //   this.closeScrcpy()
         //   return
         // }
@@ -298,10 +307,10 @@ export default {
                 this.width = this.width * scaled
                 this.height = 580
               } else {
-                let scaled = 220 / this.height;
+                let scaled = 250 / this.height;
                 // console.log(scaled)
                 this.width = this.width * scaled
-                this.height = 220
+                this.height = 250
                 // console.log(this.width, this.height)
               }
               break
@@ -329,7 +338,7 @@ export default {
       // }
       this.loading = true
       if (this.$refs.display == null) {
-        console.log('display is null,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+        console.log('display is null,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
       }
       this.jmuxer = new JMuxer({
         node: this.$refs.display,
@@ -345,7 +354,7 @@ export default {
           }
         }
       })
-      // console.log('jmuxer init,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+      // console.log('jmuxer init,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
       this.connect()
     },
     closeScrcpy() {
@@ -366,7 +375,7 @@ export default {
     }
   },
   mounted() {
-    // console.log('miniremote mounted,big:', this.big, 'operating:', this.operating, 'index:', this.index)
+    // console.log('miniremote mounted,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
     if (!this.big) {
       this.$emitter.on('closeDevice', (device) => {
         if (device.serial === this.device.serial) {
@@ -409,7 +418,7 @@ export default {
       }, 500)
     }
     this.timer_video = setInterval(() => {
-      console.log(`${this.index} - checkImageCount:${this.checkImageCount},connect_count:${this.connect_count} big:${this.big},operating:${this.operating}`)
+      console.log(`${this.device.index} - checkImageCount:${this.checkImageCount},connect_count:${this.connect_count} big:${this.big},operating:${this.operating}`)
       if (this.checkImageCount == 0) {
         this.loading = true
       }

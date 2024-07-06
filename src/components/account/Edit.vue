@@ -19,13 +19,13 @@
     <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
       <label class="font-bold text-right col-span-1">{{ $t('device') }}:</label>
       <div class="relative col-span-2">
-        <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.device"
+        <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.device_index"
           @click="showDeviceList = !showDeviceList" readonly />
         <div class="absolute z-10 bg-white border border-gray-300 rounded mt-2 w-full overflow-y-auto max-h-32"
           v-show="showDeviceList">
-          <div class="cursor-pointer p-2 hover:bg-gray-200" v-for="(device, index) in devices" :key="device.serial"
+          <div class="cursor-pointer p-2 hover:bg-gray-200" v-for="(device, _index) in devices" :key="device.serial"
             @click="selectDevice(device)">
-            {{ index + 1 }} - {{ device.serial }}
+            {{ device.index }}
           </div>
         </div>
       </div>
@@ -68,12 +68,14 @@ export default {
 
     selectDevice(device) {
       this.myaccount.device = device.serial
+      this.myaccount.device_index = device.index
       this.showDeviceList = false
     },
 
   },
   mounted() {
     this.myaccount = this.account
+    this.myaccount.device_index = this.devices.find(device => device.serial === this.myaccount.device)?.index
   }
 }
 </script>

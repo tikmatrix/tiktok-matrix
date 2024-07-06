@@ -44,9 +44,15 @@ emitter.on('show-hidden-devices', () => {
 })
 async function getDevices() {
   service.get_devices().then(res => {
-    if (hideDevices.length > 0) {
-      res.data = res.data.filter(device => !hideDevices.includes(device.serial))
+    // if (hideDevices.length > 0) {
+    // res.data = res.data.filter(device => !hideDevices.includes(device.serial))
+    for (let i = 0; i < res.data.length; i++) {
+      if (res.data[i].index == 0) {
+        res.data[i].index = i + 1
+        console.log(res.data[i])
+      }
     }
+    // }
     devices.list.splice(0, devices.list.length, ...res.data)
     emitter.emit('agentStatus', true)
   }).catch(err => {
@@ -55,7 +61,7 @@ async function getDevices() {
   })
 }
 getDevices() //get devices on page load
-setInterval(getDevices, 3000)
+setInterval(getDevices, 10000)
 let config = {
   wsUrl: import.meta.env.VITE_WS_URL,
   apiUrl: import.meta.env.VITE_API_URL

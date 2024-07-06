@@ -9,10 +9,10 @@
         <button class="join-item btn btn-sm" @click="nextPage" :disabled="currentPage === pageCount">{{ $t('next')
           }}</button>
       </div>
-      <select v-model="pageSize" class="select select-bordered max-w-xs ml-2 select-sm">
+      <!-- <select v-model="pageSize" class="select select-bordered max-w-xs ml-2 select-sm">
         <option :value="filteredItems.length">{{ $t('showAll') }}</option>
         <option v-for="size in [5, 10, 20, 50, 100]" :key="size" :value="size">{{ size }}</option>
-      </select>
+      </select> -->
 
       <div class="relative ml-2">
         <font-awesome-icon :icon="['fas', 'search']" class="absolute left-3 top-1/2 transform -translate-y-1/2" />

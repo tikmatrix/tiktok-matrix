@@ -5,8 +5,8 @@
         <div class="flex flex-wrap gap-2 p-4">
 
           <div class="flex flex-wrap gap-2 flex-1">
-            <div v-for="(device, index) in devices" :key="device.serial">
-              <Miniremote :device="device" :index="index" :key="device.key" />
+            <div v-for="(device, _index) in devices" :key="device.serial">
+              <Miniremote :device="device" :key="device.key" />
             </div>
           </div>
         </div>

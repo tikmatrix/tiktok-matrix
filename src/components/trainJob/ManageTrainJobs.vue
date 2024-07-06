@@ -44,8 +44,9 @@
                     train_job.username }}</a>
                 </td>
                 <td>
-                  <a class="link link-primary" @click="show_device(train_job.device_index, train_job.device)">{{
+                  <a class="link link-primary" @click="show_device(train_job.device)" v-if="train_job.device_index">{{
                     train_job.device_index }}</a>
+                  <span v-else class="text text-red-500">{{ $t('offline') }}</span>
                 </td>
                 <td>{{ train_job.group_name || 'N/A' }}</td>
                 <td>
@@ -124,9 +125,8 @@ export default {
         })
     },
 
-    show_device(index, serial) {
+    show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial)
-      mydevice.index = index - 1
       this.$emitter.emit('openDevice', mydevice)
     },
     get_train_jobs() {
@@ -136,8 +136,7 @@ export default {
         .then(res => {
           this.jobs = res.data
           this.jobs.forEach(job => {
-            let device_index = this.devices.findIndex(device => device.serial === job.device)
-            job.device_index = device_index + 1
+            job.device_index = this.devices.find(device => device.serial === job.device)?.index
           })
           this.get_groups()
         })

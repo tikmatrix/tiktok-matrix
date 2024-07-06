@@ -21,7 +21,7 @@
                 <th>{{ $t('id') }}</th>
                 <th>{{ $t('startTime') }}</th>
                 <th>{{ $t('status') }}</th>
-                <th>{{ $t('remark') }}</th>
+                <!-- <th>{{ $t('remark') }}</th> -->
                 <th>{{ $t('material') }}</th>
                 <th>{{ $t('username') }}</th>
                 <th>{{ $t('device') }}</th>
@@ -39,7 +39,7 @@
                   <div class="badge badge-success" v-else-if="publish_job.status == '2'">{{ $t('success') }}</div>
                   <div class="badge badge-error" v-else-if="publish_job.status == '3'">{{ $t('failed') }}</div>
                 </td>
-                <td>{{ publish_job.remark }}</td>
+                <!-- <td>{{ publish_job.remark }}</td> -->
                 <td>
                   <template v-if="publish_job.material.endsWith('.mp4') || publish_job.material.endsWith('.webm')">
                     <video :src="`${$config.apiUrl}/${publish_job.material}`"
@@ -55,9 +55,10 @@
                       publish_job.username }}</a>
                 </td>
                 <td>
-                  <a class="cursor-pointer underline text-blue-500"
-                    @click="show_device(publish_job.device_index, publish_job.device)">{{
+                  <a class="cursor-pointer underline text-blue-500" @click="show_device(publish_job.device)"
+                    v-if="publish_job.device_index">{{
                       publish_job.device_index }}</a>
+                  <span v-else class="text text-red-500">{{ $t('offline') }}</span>
                 </td>
                 <td>{{ publish_job.group_name || 'N/A' }}</td>
                 <td>
@@ -137,9 +138,8 @@ export default {
         })
     },
 
-    show_device(index, serial) {
+    show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial)
-      mydevice.index = index - 1
       this.$emitter.emit('openDevice', mydevice)
     },
     get_publish_jobs() {
@@ -149,8 +149,7 @@ export default {
         .then(res => {
           this.jobs = res.data
           this.jobs.forEach(job => {
-            let device_index = this.devices.findIndex(device => device.serial === job.device)
-            job.device_index = device_index + 1
+            job.device_index = this.devices.find(device => device.serial === job.device)?.index
           })
           this.get_groups()
         })

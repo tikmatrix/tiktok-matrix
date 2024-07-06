@@ -21,7 +21,7 @@
                 <th>{{ $t('id') }}</th>
                 <th>{{ $t('startTime') }}</th>
                 <th>{{ $t('status') }}</th>
-                <th>{{ $t('remark') }}</th>
+                <!-- <th>{{ $t('remark') }}</th> -->
                 <th>{{ $t('targetUsername') }}</th>
                 <th>{{ $t('username') }}</th>
                 <th>{{ $t('device') }}</th>
@@ -38,7 +38,7 @@
                   <div class="badge badge-success" v-else-if="message_job.status == '2'">{{ $t('success') }}</div>
                   <div class="badge badge-error" v-else-if="message_job.status == '3'">{{ $t('failed') }}</div>
                 </td>
-                <td>{{ message_job.remark }}</td>
+                <!-- <td>{{ message_job.remark }}</td> -->
                 <td>
                   <a class="link link-primary" :href="`https://www.tiktok.com/${message_job.target_username}`"
                     target="_blank">{{
@@ -50,9 +50,10 @@
                       message_job.username }}</a>
                 </td>
                 <td>
-                  <a class="cursor-pointer underline text-blue-500"
-                    @click="show_device(message_job.device_index, message_job.device)">{{
+                  <a class="cursor-pointer underline text-blue-500" @click="show_device(message_job.device)"
+                    v-if="message_job.device_index">{{
                       message_job.device_index }}</a>
+                  <span v-else class="text text-red-500">{{ $t('offline') }}</span>
                 </td>
                 <td>
                   <div class="space-x-4">
@@ -131,9 +132,8 @@ export default {
         })
     },
 
-    show_device(index, serial) {
+    show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial)
-      mydevice.index = index - 1
       this.$emitter.emit('openDevice', mydevice)
     },
     get_message_jobs() {
@@ -143,8 +143,7 @@ export default {
         .then(res => {
           this.jobs = res.data
           this.jobs.forEach(job => {
-            let device_index = this.devices.findIndex(device => device.serial === job.device)
-            job.device_index = device_index + 1
+            job.device_index = this.devices.find(device => device.serial === job.device)?.index
           })
           this.get_groups()
         })

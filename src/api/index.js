@@ -14,6 +14,7 @@ const api = {
   publish_now: '/api/publish_now',
   message_now: '/api/message_now',
   init: '/api/device/init',
+  index: '/api/device/index',
   group: '/api/group',
   music: '/api/music',
   watcher: '/api/dialog_watcher',
