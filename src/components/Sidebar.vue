@@ -571,6 +571,12 @@ export default {
         }));
       }, 100);
     },
+    send_screen_mode(mode) {
+      this.$emitter.emit('eventData', JSON.stringify({
+        type: 'screen',//type=keycode
+        mode
+      }));
+    },
   },
   mounted() {
     this.$i18n.locale = this.locale
@@ -627,6 +633,9 @@ export default {
     });
     this.$emitter.on('send_keycode', (code) => {
       this.send_keycode(code)
+    });
+    this.$emitter.on('send_screen_mode', (mode) => {
+      this.send_screen_mode(mode)
     });
   }
 }

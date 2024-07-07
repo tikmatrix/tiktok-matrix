@@ -7,6 +7,12 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('send_screen_mode', 'off')">
+        <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-white" />
+        {{ $t('screenOff') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
         {{ $t('openNekoBox') }}
     </button>

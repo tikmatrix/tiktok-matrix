@@ -338,8 +338,10 @@ export const i18n = createI18n({
       trainConfig: 'Train Config',
       publishConfig: 'Publish Config',
       indexUpdated: 'Index Updated',
+      screenOff: 'Screen Off',
     },
     'zh-CN': {
+      screenOff: '息屏投屏',
       indexUpdated: '序号已更新',
       publishConfig: '发布配置',
       trainConfig: '养号配置',
