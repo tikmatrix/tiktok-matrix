@@ -264,6 +264,8 @@ export default {
           collect_probable: 0,
           comment_probable: 0,
           train_duration: 0,
+          min_duration: 10,
+          max_duration: 30,
           topic: ''
         })
         .then(() => {

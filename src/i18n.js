@@ -345,8 +345,10 @@ export const i18n = createI18n({
       targetUsername: 'Target Username',
       onlyOneDeviceSelected: 'Only One Device Selected',
       openDownloadDir: 'Open Download Dir',
+      operating: 'Operating',
     },
     'zh-CN': {
+      operating: '操作中',
       openDownloadDir: '打开下载目录',
       onlyOneDeviceSelected: '只能选择一个设备',
       targetUsername: '目标用户名',

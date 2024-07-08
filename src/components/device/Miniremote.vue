@@ -50,9 +50,11 @@
                 v-if="loading">
                 <font-awesome-icon icon="fa-solid fa-hourglass-end" class="h-6 w-6 text-blue-500 rotate" />
               </div>
-              <div class="absolute top-0 left-0 w-full h-full bg-base-200 flex justify-center items-center"
+              <div
+                class="absolute top-0 left-0 w-full h-full bg-base-200 flex flex-col justify-center items-center opacity-90"
                 v-if="operating">
                 <font-awesome-icon icon="fa fa-hand-pointer" class="h-6 w-6 text-blue-500" />
+                <span class="text-blue-500 font-bold">{{ $t('operating') }}</span>
               </div>
 
             </div>
@@ -122,8 +124,6 @@ export default {
       rotation: 0,
       fps: 0,
       periodImageCount: 0,
-      checkImageCount: 0,
-      timer_fps: null,
       timer_task_status: null,
       jmuxer: null,
       scrcpy: null,
@@ -133,7 +133,6 @@ export default {
       input_dialog_title: '',
       input_dialog_text: '',
       input_callback: null,
-      timer_video: null,
       message_index: 0,
       name: 'UNKNOWN',
       width: this.big ? 320 : 120,
@@ -318,14 +317,15 @@ export default {
           this.message_index += 1
           return
         }
-
+        // if (document.hidden) {
+        //   return
+        // }
         //read video
         this.periodImageCount += 1
-        this.checkImageCount += 1
         this.jmuxer.feed({
           video: new Uint8Array(message.data)
         })
-        this.$refs.display.playbackRate = 2;
+
       }
     },
     syncDisplay() {
@@ -345,7 +345,7 @@ export default {
         mode: 'video',
         flushingTime: 1,
         maxDelay: 0,
-        fps: this.big ? 30 : 15,
+        // fps: this.big ? 30 : 15,
         debug: false,
         onError: function () {
           console.log('onError')
@@ -380,64 +380,69 @@ export default {
       this.$emitter.on('closeDevice', (device) => {
         if (device.serial === this.device.serial) {
           this.operating = false
-          // this.syncDisplay()
+          this.$refs.display.play();
         }
       });
       this.$emitter.on('openDevice', (device) => {
         if (device.serial === this.device.serial) {
           this.operating = true
-          // this.closeScrcpy()
-          // this.closeJmuxer()
+          this.$refs.display.play();
         }
         if (device.serial !== this.device.serial && this.operating) {
           this.operating = false
-          // this.syncDisplay()
         }
       });
-    }
+      this.$emitter.on('syncEventData', (data) => {
+        if (!data.devices.includes(this.device.serial)) {
+          return
+        }
+        if (this.scrcpy) {
+          this.scrcpy.send(data.data)
+        }
+      });
+      // 获取视频元素
+      var video = this.$refs.display;
 
-    this.syncDisplay()
-    this.$emitter.on('syncEventData', (data) => {
-      // console.log("receive syncEventData: ", data.devices)
-      if (!data.devices.includes(this.device.serial)) {
-        return
-      }
-      if (this.scrcpy) {
-        this.scrcpy.send(data.data)
-      }
-    });
+      // 添加播放事件监听器
+      video.addEventListener('play', () => {
+        console.log('Video started playing.currentTime: ' + video.currentTime);
+        //set progress to newest
+        video.currentTime = 999999
+        video.playbackRate = 2;
+      });
 
-
-    if (this.big) {
+      // 添加暂停事件监听器
+      video.addEventListener('pause', () => {
+        console.log('Video paused');
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          // this.closeScrcpy()
+          // this.closeJmuxer()
+        } else {
+          // this.syncDisplay()
+          // if (this.jmuxer) {
+          // this.jmuxer.reset()
+          // }
+        }
+      })
+    } else {
       this.timer_task_status = setInterval(() => {
         this.get_task_status()
-      }, 1000)
-      this.timer_fps = setInterval(() => {
         this.fps = this.periodImageCount / 0.5
         this.periodImageCount = 0
-      }, 500)
+      }, 1000)
     }
-    this.timer_video = setInterval(() => {
-      console.log(`${this.device.index} - checkImageCount:${this.checkImageCount},connect_count:${this.connect_count} big:${this.big},operating:${this.operating}`)
-      if (!this.loading && this.checkImageCount == 0) {
-        this.loading = true
-      }
-      this.checkImageCount = 0;
-      if (this.loading) {
-        // this.$emitter.emit('refreshDevice', this.device.serial)
-        this.syncDisplay()
-      }
-    }, 5000)
+    this.syncDisplay()
   },
   unmounted() {
     this.closeScrcpy()
     this.closeJmuxer()
-    clearInterval(this.timer_fps)
-    this.timer_fps = null
     clearInterval(this.timer_task_status)
     this.timer_task_status = null
     clearInterval(this.timer_video)
     this.timer_video = null
-  }
+  },
+
 }
 </script>
