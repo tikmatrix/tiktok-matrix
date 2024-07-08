@@ -176,6 +176,7 @@ fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("./tmp")?;
     std::fs::create_dir_all("./data")?;
     std::fs::create_dir_all("./upload")?;
+    std::fs::create_dir_all("./download")?;
     std::fs::create_dir_all("./upload/material")?;
     std::fs::create_dir_all("./upload/avatar")?;
     std::fs::create_dir_all("./upload/apk")?;

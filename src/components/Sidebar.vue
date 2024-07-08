@@ -577,6 +577,17 @@ export default {
         mode
       }));
     },
+    scrape_fans(targetUsername) {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+      if (this.selection.length > 1) {
+        this.$emitter.emit('showToast', this.$t('onlyOneDeviceSelected'))
+        return
+      }
+      this.script('scrape_fans', [targetUsername])
+    }
   },
   mounted() {
     this.$i18n.locale = this.locale
@@ -633,6 +644,9 @@ export default {
     });
     this.$emitter.on('send_keycode', (code) => {
       this.send_keycode(code)
+    });
+    this.$emitter.on('scrape_fans', (targetUsername) => {
+      this.scrape_fans(targetUsername)
     });
     this.$emitter.on('send_screen_mode', (mode) => {
       this.send_screen_mode(mode)

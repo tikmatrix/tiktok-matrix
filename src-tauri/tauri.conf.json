@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "tiktok-matrix",
-    "version": "1.4.9"
+    "version": "1.5.0"
   },
   "tauri": {
     "allowlist": {

@@ -419,7 +419,7 @@ export default {
     }
     this.timer_video = setInterval(() => {
       console.log(`${this.device.index} - checkImageCount:${this.checkImageCount},connect_count:${this.connect_count} big:${this.big},operating:${this.operating}`)
-      if (this.checkImageCount == 0) {
+      if (!this.loading && this.checkImageCount == 0) {
         this.loading = true
       }
       this.checkImageCount = 0;
