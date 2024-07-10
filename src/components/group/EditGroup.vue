@@ -118,21 +118,25 @@
             <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="publish_time6"
               placeholder="00:00" />
           </div>
-          <!-- <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
+          <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
             <label class="font-bold text-right col-span-1">{{ $t('publishType') }}:</label>
             <div class="col-span-2 flex items-center gap-4">
-                <div class="flex items-center">
-                    <input type="radio" id="selfMade" value="1" v-model="mygroup.publish_type"
-                        class="form-radio text-blue-500 h-4 w-4">
-                    <label for="selfMade" class="ml-2">{{ $t('selfMade') }}</label>
-                </div>
-                <div class="flex items-center">
-                    <input type="radio" id="aiMade" value="2" v-model="mygroup.publish_type"
-                        class="form-radio text-blue-500 h-4 w-4">
-                    <label for="aiMade" class="ml-2">{{ $t('aiMade') }}</label>
-                </div>
+              <div class="flex items-center">
+                <input type="radio" id="video" value="0" v-model="mygroup.publish_type"
+                  class="form-radio text-blue-500 h-4 w-4">
+                <label for="video" class="ml-2">{{ $t('video') }}</label>
+              </div>
+              <div class="flex items-center">
+                <input type="radio" id="image" value="1" v-model="mygroup.publish_type"
+                  class="form-radio text-blue-500 h-4 w-4">
+                <label for="image" class="ml-2">{{ $t('image') }}</label>
+              </div>
+              <div class="flex items-center" v-if="mygroup.publish_type == 1">
+                <input class="border-2 border-gray-300 p-2 rounded col-span-1 input-sm" v-model="mygroup.image_count"
+                  :placeholder="$t('imageCount')" type="number" />
+              </div>
             </div>
-        </div> -->
+          </div>
 
           <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
             <label class="font-bold text-right col-span-1">{{ $t('titles') }}:</label>
@@ -181,6 +185,7 @@ export default {
       mygroup: {
         auto_train: 0,
         auto_publish: 0,
+        image_count: 2,
       },
       train_time1: '',
       train_time2: '',
@@ -235,7 +240,8 @@ export default {
           min_duration: Number(group.min_duration),
           max_duration: Number(group.max_duration),
           topic: group.topic,
-          comment: group.comment
+          comment: group.comment,
+          image_count: Number(group.image_count),
         })
         .then(() => {
           this.$emitter.emit('closePageDialog', {})

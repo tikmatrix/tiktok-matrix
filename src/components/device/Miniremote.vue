@@ -264,7 +264,7 @@ export default {
         // max size
         this.scrcpy.send(max_size)
         // control
-        this.scrcpy.send('true')
+        this.scrcpy.send(this.big ? 'false' : 'true')
         //fps
         this.scrcpy.send(this.big ? 30 : 15)
 

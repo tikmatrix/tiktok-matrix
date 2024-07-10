@@ -141,7 +141,7 @@ export default {
           like_probable: Number(group.like_probable),
           collect_probable: Number(group.collect_probable),
           train_duration: Number(group.train_duration),
-          topic: group.topic
+          topic: group.topic,
         })
         .then(() => {
           this.showMoal = false

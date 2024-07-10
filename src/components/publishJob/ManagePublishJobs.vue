@@ -22,7 +22,7 @@
                 <th>{{ $t('startTime') }}</th>
                 <th>{{ $t('status') }}</th>
                 <!-- <th>{{ $t('remark') }}</th> -->
-                <th>{{ $t('material') }}</th>
+                <!-- <th>{{ $t('material') }}</th> -->
                 <th>{{ $t('username') }}</th>
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('group') }}</th>
@@ -40,15 +40,15 @@
                   <div class="badge badge-error" v-else-if="publish_job.status == '3'">{{ $t('failed') }}</div>
                 </td>
                 <!-- <td>{{ publish_job.remark }}</td> -->
-                <td>
+                <!-- <td>
                   <template v-if="publish_job.material.endsWith('.mp4') || publish_job.material.endsWith('.webm')">
                     <video :src="`${$config.apiUrl}/${publish_job.material}`"
                       class="w-[100px] h-[100px] max-w-none"></video>
                   </template>
-                  <template v-else>
+<template v-else>
                     <img :src="`${$config.apiUrl}/${publish_job.material}`" class="w-[100px] h-[100px] max-w-none" />
                   </template>
-                </td>
+</td> -->
                 <td>
                   <a class="link link-primary" :href="`https://www.tiktok.com/${publish_job.username}`"
                     target="_blank">{{

@@ -60,7 +60,6 @@ const api = {
   scan_tcp: '/agent/api/tcp_scan',
   stop_task: '/agent/api/stop_task',
   menus: '/api/menus',
-  get_and_use_one_material: '/api/material/get_and_use_one',
   get_accounts_by_device: '/api/account_by_device',
   get_group_by_id: '/api/group/get_by_id',
   move_to_group: '/api/device/move_to_group',

@@ -116,29 +116,7 @@ export default {
   },
   methods: {
 
-    post() {
-      this.$service.get_and_use_one_material({
-        group_id: this.group.id
-      }).then(res => {
-        let titles = this.group.title.split("\n");
-        let ramdomTitle = ''
-        if (titles.length > 0) {
-          ramdomTitle = Math.floor(Math.random() * titles.length);
-        }
-        let video = res.data.name
-        this.$emitter.emit('scriptEventData', {
-          name: 'publish', args: [
-            '0',
-            video,
-            ramdomTitle,
-            ''
-          ]
-        })
-      }).catch(err => {
 
-      })
-
-    },
     get_group_by_id() {
       if (this.device.group_id == 0) {
         return;

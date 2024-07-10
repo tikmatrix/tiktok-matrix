@@ -266,7 +266,8 @@ export default {
           train_duration: 0,
           min_duration: 10,
           max_duration: 30,
-          topic: ''
+          topic: '',
+          image_count: 2
         })
         .then(() => {
           this.newGroupName = ''

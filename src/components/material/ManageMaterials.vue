@@ -205,7 +205,7 @@ export default {
         multiple: true, // 是否允许多选文件
         directory: false, // 是否选择目录
         filters: [ // 文件过滤器
-          { name: 'Video Files', extensions: ['mp4'] },
+          { name: 'Video Files', extensions: ['mp4', 'jpg', 'png'] },
         ]
       });
 
@@ -219,9 +219,6 @@ export default {
         })
         .then(() => {
           this.get_materials()
-        })
-        .catch(err => {
-
         })
 
     },

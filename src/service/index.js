@@ -582,13 +582,7 @@ export function get_menus() {
     url: api.menus
   })
 }
-export function get_and_use_one_material({ group_id }) {
-  return request({
-    method: 'get',
-    params: { group_id },
-    url: api.get_and_use_one_material
-  })
-}
+
 export function get_accounts_by_device({ device }) {
   return request({
     method: 'get',
