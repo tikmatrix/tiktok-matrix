@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "tiktok-matrix",
-    "version": "1.5.4"
+    "version": "1.5.5"
   },
   "tauri": {
     "allowlist": {
@@ -68,6 +68,7 @@
     },
     "bundle": {
       "resources": [
+        "i18n/*.json",
         "bin/platform-tools",
         "bin/apk",
         "bin/script",

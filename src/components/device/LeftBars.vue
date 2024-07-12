@@ -3,21 +3,21 @@
     <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
       :data-tip="$t('openTiktok')"
-      @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.zhiliaoapp.musically/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
+      @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
       <font-awesome-icon icon="fa-brands fa-tiktok" class="h-4 w-4 text-blue-500" />
       <span class="text-xs block font-normal">{{ $t('open') }}</span>
     </button>
     <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
       :data-tip="$t('stopTiktok')"
-      @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'force-stop', 'com.zhiliaoapp.musically'] })">
+      @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
       <font-awesome-icon icon="fa-brands fa-tiktok" class="h-4 w-4 text-yellow-500" />
       <span class="text-xs block font-normal">{{ $t('stop') }}</span>
     </button>
     <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
       :data-tip="$t('clearTiktok')"
-      @click="$emitter.emit('adbEventData', { args: ['shell', 'pm', 'clear', 'com.zhiliaoapp.musically'] })">
+      @click="$emitter.emit('adbEventData', { args: ['shell', 'pm', 'clear', settings.packagename] })">
       <font-awesome-icon icon="fa-brands fa-tiktok" class="h-4 w-4 text-pink-500" />
       <span class="text-xs block font-normal">{{ $t('clear') }}</span>
     </button>

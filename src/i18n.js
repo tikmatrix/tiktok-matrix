@@ -353,8 +353,10 @@ export const i18n = createI18n({
       global: 'Global: com.zhiliaoapp.musically',
       asia: 'Asia: com.ss.android.ugc.trill',
       tiktokPackagename: 'Tiktok Packagename',
+      openTikMatrixApp: 'Open TikMatrix App',
     },
     'zh-CN': {
+      openTikMatrixApp: '打开 TikMatrix App',
       tiktokPackagename: 'Tiktok 包名',
       asia: '亚洲: com.ss.android.ugc.trill',
       global: '全球: com.zhiliaoapp.musically',
@@ -651,7 +653,7 @@ export const i18n = createI18n({
       quickActions: '快捷操作',
       uploadToGallery: '上传到相册',
       openIpChecker: '打开 IP 检查器',
-      initApp: '初始化TikMatrix应用',
+      initApp: '初始化TikMatrix App',
     }
   }
 })

@@ -12,7 +12,7 @@
         <MyButton label="setInputMethod" icon="fa-solid fa-mobile"
           @click="adb_command(['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'])" />
         <MyButton label="openTiktok" icon="fa-brands fa-tiktok"
-          @click="adb_command(['shell', 'am', 'start', '-n', 'com.zhiliaoapp.musically/com.ss.android.ugc.aweme.splash.SplashActivity'])" />
+          @click="adb_command(['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'])" />
         <MyButton @click="script('match_account')" label="matchAccount" icon="fa-solid fa-user-plus" />
       </div>
     </details>

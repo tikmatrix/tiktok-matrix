@@ -38,6 +38,11 @@
         @click="$emitter.emit('initDevice')">
         <font-awesome-icon icon="fa-solid fa-arrows-rotate" class="h-3 w-3" />{{ $t('initApp') }}
     </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.github.tikmatrix/.MainActivity'] })">
+        {{ $t('openTikMatrixApp') }}
+    </button>
     <dialog ref="scan_dialog" class="modal">
         <div class="modal-box">
             <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>

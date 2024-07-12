@@ -1,23 +1,14 @@
 <template>
   <div class="bg-base-100 p-4 grid grid-cols-10">
     <div class="relative col-span-4">
-      <video
-        ref="display"
-        autoplay
-        poster="../../assets/preview.jpg"
-        class="rounded-2xl border-2 border-gray-300 shadow-2xl cursor-pointer"
-        @mousedown="mouseDownListener"
-        @mouseup="mouseUpListener"
-        @mouseleave="mouseLeaveListener"
-        @mousemove="mouseMoveListener"
-      />
-      <div
-        v-if="showEffect"
-        class="absolute rounded-full w-12 h-12 bg-white opacity-50 pointer-events-none"
-        :style="{ top: `${effectY}px`, left: `${effectX}px` }"
-      ></div>
+      <video ref="display" autoplay poster="../../assets/preview.jpg"
+        class="rounded-2xl border-2 border-gray-300 shadow-2xl cursor-pointer" @mousedown="mouseDownListener"
+        @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener" @mousemove="mouseMoveListener" />
+      <div v-if="showEffect" class="absolute rounded-full w-12 h-12 bg-white opacity-50 pointer-events-none"
+        :style="{ top: `${effectY}px`, left: `${effectX}px` }"></div>
       <!-- add a tast running tips -->
-      <div class="absolute top-0 p-1 bg-red-500 bg-opacity-50 text-white rounded-lg w-full text-left" v-show="task_status == 'running'">
+      <div class="absolute top-0 p-1 bg-red-500 bg-opacity-50 text-white rounded-lg w-full text-left"
+        v-show="task_status == 'running'">
         <span class=""> Auto Task Running... </span>
         <MyButton @click="stop_task" label="stopTask" icon="fa-solid fa-stop" />
       </div>
@@ -26,7 +17,8 @@
     <div class="p-1 col-span-6">
       <p class="p-1">
         NO: <span class="text-green-500 text-sm" v-text="mydevice.index"></span> Serial:
-        <span class="text-green-500 text-sm" v-text="mydevice.serial"></span> FPS: <span class="text-green-500 text-sm" v-text="fps.toFixed(1)"></span> LAN IP:
+        <span class="text-green-500 text-sm" v-text="mydevice.serial"></span> FPS: <span class="text-green-500 text-sm"
+          v-text="fps.toFixed(1)"></span> LAN IP:
         <span class="text-green-500 text-sm" v-text="ip"></span>
       </p>
       <details class="collapse collapse-arrow bg-base-200">
@@ -34,64 +26,86 @@
         <div class="collapse-content">
           <!-- <MyButton icon="fa fa-upload" @click="app_install" label="installApk" />
         <MyButton icon="fa fa-trash" @click="app_uninstall" label="uninstallApk" /> -->
-        <MyButton label="1080x1920" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'wm', 'size', '1080x1920'])" />
-        <MyButton label="320" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'wm', 'density', '320'])" />
-        <MyButton label="back" icon="fa-solid fa-chevron-left" @click="adb_command(['shell', 'input', 'keyevent', 'KEYCODE_BACK'])" />
-        <MyButton label="home" icon="fa-solid fa-home" @click="adb_command(['shell', 'input', 'keyevent', 'KEYCODE_HOME'])" />
-        <MyButton label="wakeup" icon="fa-solid fa-mobile-screen" @click="adb_command(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP'])" />
-        
-        <MyButton label="sleep" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'input', 'keyevent', 'KEYCODE_SLEEP'])" />
-        <MyButton
-          label="openTiktok"
-          icon="fa-brands fa-tiktok"
-          @click="adb_command(['shell', 'am', 'start', '-n', 'com.zhiliaoapp.musically/com.ss.android.ugc.aweme.splash.SplashActivity'])"
-        />
-        <MyButton label="stopTiktok" icon="fa-brands fa-tiktok" @click="adb_command(['shell', 'am', 'force-stop', 'com.zhiliaoapp.musically'])" />
-        <MyButton label="clearTiktok" icon="fa-brands fa-tiktok" @click="adb_command(['shell', 'pm', 'clear', 'com.zhiliaoapp.musically'])" />
-        <MyButton label="enableProxy" icon="fa-solid fa-link" @click="enable_proxy" />
-        <MyButton label="disableProxy" icon="fa-solid fa-unlink" @click="adb_command(['shell', 'settings', 'put', 'global', 'http_proxy', ':0'])" />
-        <MyButton label="showLanguageSetting" icon="fa-solid fa-trash" @click="adb_command(['shell', 'am', 'start', '-n', 'com.android.settings/.LanguageSettings'])" />
-        <MyButton label="showTimeSetting" icon="fa-solid fa-clock" @click="adb_command(['shell', 'am', 'start', '-a', 'android.settings.DATE_SETTINGS'])" />
-        <MyButton label="showSimInfo" icon="fa-solid fa-sim-card" @click="adb_command(['shell', 'am', 'start', '-a', 'android.settings.DEVICE_INFO_SETTINGS'])" />
-        <MyButton label="openNotification" icon="fa-solid fa-bell" @click="adb_command(['shell', 'input', 'swipe', '500', '0', '500', '1000'])" />
-        <MyButton label="openWhoer" icon="fa-brands fa-wikipedia-w" @click="adb_command(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'https://whoer.net'])" />
-        <MyButton label="ipinfo" icon="fa-solid fa-info" @click="adb_command(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'https://ipinfo.io'])" />
-       
-        <MyButton label="reboot" color="btn-error" icon="fa-solid fa-power-off" @click="adb_command(['shell','reboot'])" />
+          <MyButton label="1080x1920" icon="fa-solid fa-mobile"
+            @click="adb_command(['shell', 'wm', 'size', '1080x1920'])" />
+          <MyButton label="320" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'wm', 'density', '320'])" />
+          <MyButton label="back" icon="fa-solid fa-chevron-left"
+            @click="adb_command(['shell', 'input', 'keyevent', 'KEYCODE_BACK'])" />
+          <MyButton label="home" icon="fa-solid fa-home"
+            @click="adb_command(['shell', 'input', 'keyevent', 'KEYCODE_HOME'])" />
+          <MyButton label="wakeup" icon="fa-solid fa-mobile-screen"
+            @click="adb_command(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP'])" />
+
+          <MyButton label="sleep" icon="fa-solid fa-mobile"
+            @click="adb_command(['shell', 'input', 'keyevent', 'KEYCODE_SLEEP'])" />
+          <MyButton label="openTiktok" icon="fa-brands fa-tiktok"
+            @click="adb_command(['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'])" />
+          <MyButton label="stopTiktok" icon="fa-brands fa-tiktok"
+            @click="adb_command(['shell', 'am', 'force-stop', settings.packagename])" />
+          <MyButton label="clearTiktok" icon="fa-brands fa-tiktok"
+            @click="adb_command(['shell', 'pm', 'clear', settings.packagename])" />
+          <MyButton label="enableProxy" icon="fa-solid fa-link" @click="enable_proxy" />
+          <MyButton label="disableProxy" icon="fa-solid fa-unlink"
+            @click="adb_command(['shell', 'settings', 'put', 'global', 'http_proxy', ':0'])" />
+          <MyButton label="showLanguageSetting" icon="fa-solid fa-trash"
+            @click="adb_command(['shell', 'am', 'start', '-n', 'com.android.settings/.LanguageSettings'])" />
+          <MyButton label="showTimeSetting" icon="fa-solid fa-clock"
+            @click="adb_command(['shell', 'am', 'start', '-a', 'android.settings.DATE_SETTINGS'])" />
+          <MyButton label="showSimInfo" icon="fa-solid fa-sim-card"
+            @click="adb_command(['shell', 'am', 'start', '-a', 'android.settings.DEVICE_INFO_SETTINGS'])" />
+          <MyButton label="openNotification" icon="fa-solid fa-bell"
+            @click="adb_command(['shell', 'input', 'swipe', '500', '0', '500', '1000'])" />
+          <MyButton label="openWhoer" icon="fa-brands fa-wikipedia-w"
+            @click="adb_command(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'https://whoer.net'])" />
+          <MyButton label="ipinfo" icon="fa-solid fa-info"
+            @click="adb_command(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'https://ipinfo.io'])" />
+
+          <MyButton label="reboot" color="btn-error" icon="fa-solid fa-power-off"
+            @click="adb_command(['shell', 'reboot'])" />
           <MyButton label="init" icon="fa-solid fa-wrench" @click="repair(mydevice.serial)" />
         </div>
       </details>
       <details class="collapse collapse-arrow bg-base-200">
         <summary class="collapse-title text-xl font-medium">{{ $t('autoScripts') }}</summary>
         <div class="collapse-content">
-          <MyButton @click="script('train',['0','50','50','50','','300',''])" label="train" icon="fa-solid fa-dumbbell" :disabled="task_status == 'running'" />
-          <MyButton @click="script('connect_wifi')" label="connectWifi" icon="fa-solid fa-wifi" :disabled="task_status == 'running'" />
-          <MyButton @click="script('unlock')" label="unlock" icon="fa-solid fa-unlock" :disabled="task_status == 'running'" />
-          <MyButton @click="script('disconnect_wifi')" label="disconnectWifi" icon="fa-solid fa-wifi" :disabled="task_status == 'running'" />
-          <MyButton @click="script('torch_on')" label="torchOn" icon="fa-solid fa-lightbulb" :disabled="task_status == 'running'" />
-          <MyButton @click="script('torch_off')" label="torchOff" icon="fa-solid fa-power-off" :disabled="task_status == 'running'" />
-          <MyButton @click="script('clear_notification')" label="clearNotification" icon="fa-solid fa-bell-slash" :disabled="task_status == 'running'" />
-          <MyButton @click="script('clear_tasks')" label="clearTasks" icon="fa-solid fa-trash" :disabled="task_status == 'running'" />
-          <MyButton @click="script('profile')" label="setProfile" icon="fa-solid fa-user" :disabled="task_status == 'running'" />
-          <MyButton @click="script('match_account')" label="matchAccount" icon="fa-solid fa-user-plus" :disabled="task_status == 'running'" />
-          <MyButton label="register" icon="fa-solid fa-address-card" @click="script('register',['1'])" :disabled="task_status == 'running'" />
-          <MyButton
-            label="registerAll"
-            icon="fa-solid fa-address-card"
-            @click="script('register', ['8'])"
-            :disabled="task_status == 'running'"
-          />
-          <MyButton label="login" icon="fa-solid fa-address-card" @click="script('login')" :disabled="task_status == 'running'" />
+          <MyButton @click="script('train', ['0', '50', '50', '50', '', '300', ''])" label="train" icon="fa-solid fa-dumbbell"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('connect_wifi')" label="connectWifi" icon="fa-solid fa-wifi"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('unlock')" label="unlock" icon="fa-solid fa-unlock"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('disconnect_wifi')" label="disconnectWifi" icon="fa-solid fa-wifi"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('torch_on')" label="torchOn" icon="fa-solid fa-lightbulb"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('torch_off')" label="torchOff" icon="fa-solid fa-power-off"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('clear_notification')" label="clearNotification" icon="fa-solid fa-bell-slash"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('clear_tasks')" label="clearTasks" icon="fa-solid fa-trash"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('profile')" label="setProfile" icon="fa-solid fa-user"
+            :disabled="task_status == 'running'" />
+          <MyButton @click="script('match_account')" label="matchAccount" icon="fa-solid fa-user-plus"
+            :disabled="task_status == 'running'" />
+          <MyButton label="register" icon="fa-solid fa-address-card" @click="script('register', ['1'])"
+            :disabled="task_status == 'running'" />
+          <MyButton label="registerAll" icon="fa-solid fa-address-card" @click="script('register', ['8'])"
+            :disabled="task_status == 'running'" />
+          <MyButton label="login" icon="fa-solid fa-address-card" @click="script('login')"
+            :disabled="task_status == 'running'" />
         </div>
       </details>
       <details class="collapse collapse-arrow bg-base-200">
         <summary class="collapse-title text-xl font-medium">{{ $t('input_output') }}</summary>
         <div class="collapse-content">
-          <input v-model="text" :placeholder="$t('inputText')" v-on:keyup.enter="inputText" class="w-full p-2 my-2 border-2 border-gray-300 rounded" />
+          <input v-model="text" :placeholder="$t('inputText')" v-on:keyup.enter="inputText"
+            class="w-full p-2 my-2 border-2 border-gray-300 rounded" />
           <input id="upload_video_input" type="file" v-on:change="on_upload_video" multiple hidden />
           <MyButton label="readClipboard" icon="fa-solid fa-clipboard" @click="readClipboard" />
           <MyButton label="uploadVideo" icon="fa-solid fa-upload" @click="uploadVideo" />
-          <MyButton label="setInputMethod" icon="fa-solid fa-mobile" @click="adb_command(['shell', 'ime', 'set','com.github.tikmatrix/.FastInputIME'])" />
+          <MyButton label="setInputMethod" icon="fa-solid fa-mobile"
+            @click="adb_command(['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'])" />
         </div>
       </details>
 
@@ -154,7 +168,7 @@ export default {
       }
       this.$service
         .upload_video(formData)
-        .then(() => {})
+        .then(() => { })
         .catch(err => {
           console.log(err)
         })
@@ -251,7 +265,7 @@ export default {
           console.log(err)
         })
     },
-    script(name, args=[]) {
+    script(name, args = []) {
       this.$service
         .script({
           name: name,
@@ -424,7 +438,7 @@ export default {
     this.timer_task_status = setInterval(() => {
       this.get_task_status()
     }, 1000)
-   
+
     this.get_settings()
   },
   unmounted() {
