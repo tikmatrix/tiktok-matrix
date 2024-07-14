@@ -2,7 +2,7 @@ import fs from 'fs'
 const configPath = "src-tauri/tauri.conf.json"
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
 console.log(config.package.version)
-const signaturePath = `src-tauri/target/release/bundle/msi/tiktok-matrix_${config.package.version}_x64_en-US.msi.zip.sig`
+const signaturePath = `src-tauri/target/release/bundle/msi/TikMatrix_${config.package.version}_x64_en-US.msi.zip.sig`
 const signature = fs.readFileSync(signaturePath, 'utf-8')
 console.log(signature)
 const updateJson = {
@@ -12,7 +12,7 @@ const updateJson = {
     "platforms": {
         "windows-x86_64": {
             "signature": signature,
-            "url": `https://r2.tikmatrix.com/tiktok-matrix_${config.package.version}_x64_en-US.msi.zip`
+            "url": `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.msi.zip`
         }
     }
 }
@@ -30,7 +30,7 @@ const response1 = await fetch('https://api.tikmatrix.com/update.json', {
 })
 console.log(`Response1: ${response1.status} ${response1.statusText}`)
 //update download url
-const downloadUrl = `https://r2.tikmatrix.com/tiktok-matrix_${config.package.version}_x64_en-US.msi`
+const downloadUrl = `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.msi`
 console.log(downloadUrl)
 //put https://api.tikmatrix.com/download
 const response2 = await fetch('https://api.tikmatrix.com/downloadUrl', {
