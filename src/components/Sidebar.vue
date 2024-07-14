@@ -12,7 +12,7 @@
             <span class="text-xl text-white font-bold">{{ $t('siteName') }}</span>
             <br>
             <span class="text-xs text-white font-sans">www.tikmatrix.com</span>
-            <span class="text-xs text-white ml-2">v{{ settings.version }}</span>
+            <span class="text-xs text-white ml-2">v{{ version }}</span>
           </div>
           <div class="ml-2">
             <select class="select select-info select-sm" v-model="locale">
@@ -188,6 +188,8 @@ import General from './General.vue'
 import Tools from './Tools.vue'
 import QuickActions from './QuickActions.vue';
 import { open } from '@tauri-apps/api/dialog';
+import { getVersion } from '@tauri-apps/api/app';
+
 export default {
   name: 'Sidebar',
   setup() {
@@ -219,9 +221,7 @@ export default {
         { name: 'dialogWatcher', icon: 'exclamation-circle' },
         { name: 'settings', icon: 'cogs' },
       ],
-      settings: {
-        version: '0.0.1',
-      },
+
       selection: [],
       newGroupName: '',
       showAddGroup: false,
@@ -455,11 +455,7 @@ export default {
       })
     },
 
-    get_settings() {
-      this.$service.get_settings().then(res => {
-        this.settings = res.data
-      })
-    },
+
     update_setting() {
       this.$service
         .update_settings(this.settings)
@@ -592,11 +588,11 @@ export default {
       this.script('scrape_fans', [targetUsername])
     }
   },
-  mounted() {
+  async mounted() {
     this.$i18n.locale = this.locale
     this.get_menus()
-    this.get_settings()
     this.get_groups()
+    this.version = await getVersion();
     this.$emitter.on('openDevice', (device) => {
       this.selection = [device.serial]
       this.refreshSelections()

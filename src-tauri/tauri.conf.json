@@ -6,8 +6,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "tiktok-matrix",
-    "version": "1.5.5"
+    "productName": "TikMatrix",
+    "version": "1.5.6"
   },
   "tauri": {
     "allowlist": {

@@ -354,8 +354,12 @@ export const i18n = createI18n({
       asia: 'Asia: com.ss.android.ugc.trill',
       tiktokPackagename: 'Tiktok Packagename',
       openTikMatrixApp: 'Open TikMatrix App',
+      trainStartTimeFormatError: 'Train Start Time Format Error',
+      publishStartTimeFormatError: 'Publish Start Time Format Error',
     },
     'zh-CN': {
+      publishStartTimeFormatError: '发布开始时间格式错误',
+      trainStartTimeFormatError: '养号开始时间格式错误',
       openTikMatrixApp: '打开 TikMatrix App',
       tiktokPackagename: 'Tiktok 包名',
       asia: '亚洲: com.ss.android.ugc.trill',

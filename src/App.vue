@@ -128,7 +128,6 @@ export default {
       selectedItem: {},
       agentRunning: true,
       page_title: '',
-      settings: {},
       admin_url: "https://admin.tikmatrix.com"
     }
   },
@@ -137,9 +136,7 @@ export default {
       invoke("stop_agent");
       this.agentRunning = false;
     },
-    get_settings() {
-      this.settings = invoke("get_settings");
-    },
+
     open_dir(name) {
       invoke("open_dir", {
         name
@@ -187,7 +184,6 @@ export default {
       }
     });
 
-    this.get_settings();
     // this.checkAuth()
     this.needLogin = false
     this.showDemoTip = import.meta.env.VITE_APP_MOCK === 'true'

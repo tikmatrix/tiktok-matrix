@@ -210,11 +210,11 @@ export default {
         .filter(Boolean)
         .join(',')
       if (this.mygroup.auto_train == 1 && !this.mygroup.train_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
-        alert('train_start_time format error')
+        this.$emitter.emit('showToast', this.$t('trainStartTimeFormatError'))
         return
       }
       if (this.mygroup.auto_publish == 1 && !this.mygroup.publish_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
-        alert('publish_start_time format error')
+        this.$emitter.emit('showToast', this.$t('publishStartTimeFormatError'))
         return
       }
       this.updateGroup(this.mygroup)

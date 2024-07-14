@@ -294,7 +294,12 @@ export default {
           // console.log(message)
           switch (this.message_index) {
             case 0:
-              this.name = message.data.replace(/[\x00]+$/g, '');;
+              this.name = message.data.replace(/[\x00]+$/g, '');
+              // limit max length 5, other with ...
+              if (this.name.length > 5) {
+                this.name = this.name.substring(0, 5) + '...'
+              }
+
               break
             case 1:
               this.width = message.data.split('x')[0]
