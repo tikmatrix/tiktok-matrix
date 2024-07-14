@@ -204,7 +204,7 @@ export default {
   data() {
     return {
       showSidebar: true,
-
+      settings: {},
       menuItems: [],
       fullMenuItems: [
         // { name: 'dashboard', icon: 'tachometer-alt' },
@@ -455,7 +455,11 @@ export default {
       })
     },
 
-
+    get_settings() {
+      this.$service.get_settings().then(res => {
+        this.settings = res.data
+      })
+    },
     update_setting() {
       this.$service
         .update_settings(this.settings)
@@ -591,6 +595,7 @@ export default {
   async mounted() {
     this.$i18n.locale = this.locale
     this.get_menus()
+    this.get_settings()
     this.get_groups()
     this.version = await getVersion();
     this.$emitter.on('openDevice', (device) => {
