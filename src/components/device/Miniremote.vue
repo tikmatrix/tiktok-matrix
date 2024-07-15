@@ -296,7 +296,7 @@ export default {
             case 0:
               this.name = message.data.replace(/[\x00]+$/g, '');
               // limit max length 5, other with ...
-              if (this.name.length > 5) {
+              if (!this.big && this.name.length > 5) {
                 this.name = this.name.substring(0, 5) + '...'
               }
 
