@@ -66,6 +66,21 @@ export default {
   },
   methods: {
     add() {
+      if (!this.account.username) {
+        alert(this.$t('usernameRequired'))
+        return
+      }
+
+      if (!this.account.username.startsWith('@')) {
+        alert(this.$t('usernameMustStartWithAt'))
+        return
+      }
+      //trim username
+      this.account.username = this.account.username.trim()
+      if (this.account.username === '@') {
+        alert(this.$t('usernameRequired'))
+        return
+      }
       this.$emit('add', this.account)
     },
     selectDevice(device) {

@@ -1,15 +1,15 @@
 <template>
-<div class="toast toast-top toast-center z-50" v-if="showToast">
+  <div class="toast toast-top toast-center z-50" v-if="showToast">
     <div class="alert alert-success">
       <span>{{ text }}</span>
     </div>
-</div>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'toast',
-  
+
   data() {
     return {
       showToast: false,

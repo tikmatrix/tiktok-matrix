@@ -20,7 +20,35 @@
         <label class="text-green-500 font-bold">{{ license.left_days }}</label> days.
       </label>
     </div>
+    <div class="flex items-center flex-col w-full">
+      <div class="flex items-center flex-row gap-2 max-w-lg w-full">
+        <div class="flex items-center flex-col w-full">
+          <label class="font-bold">USDT-TRC20</label>
+          <img src="../../assets/usdt.png" class="w-40 h-40" />
+        </div>
+        <div class="flex items-start flex-col w-full">
+          <label class="font-bold p-4">{{ $t('price') }}</label>
+          <label class="font-light text-sm pb-2">$0 / {{ $t('freeTrial') }}</label>
+          <label class="font-dark text-sm pb-2">$99 / {{ $t('computer') }} / {{ $t('month') }}</label>
+          <label class="font-dark text-sm pb-2">$599 / {{ $t('computer') }} / {{ $t('year') }}</label>
+          <a class="link link-primary text-xs float-right flex items-center  pb-2" href="https://t.me/tikmatrixcom"
+            target="_blank">
+            <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-4 w-4" />
+            {{ $t('telegramCustom') }}
+          </a>
+        </div>
+      </div>
+
+      <div class="flex items-center flex-row gap-2 max-w-lg w-full">
+        <input id="usdt" type="text" placeholder="usdt" class="input input-sm grow input-bordered" v-model="usdt"
+          readonly />
+        <MyButton @click="copyusdt" label="copy" />
+
+      </div>
+      <label class="label-text-alt text-red-500 font-bold">{{ $t('usdtTip') }}</label>
+    </div>
   </div>
+
 </template>
 <script>
 import MyButton from '../Button.vue'
@@ -36,11 +64,25 @@ export default {
         uid: '',
         key: '',
         status: '',
-        left_days: 0
+        left_days: 0,
       },
+      usdt: 'TDe4ZmkDBPYHVqWpX6jWjf3j45JdipB7Lx'
     }
   },
   methods: {
+    copyusdt() {
+      //copy uid to clipboard
+      var input = document.getElementById("usdt");
+      input.select(); // 选择文本
+      input.setSelectionRange(0, 99999); // 对于移动设备，确保能选择文本
+
+      try {
+        var successful = document.execCommand('copy'); // 执行复制操作
+        this.$emitter.emit('showToast', this.$t('copySuccess'))
+      } catch (err) {
+        console.log('Unable to copy', err);
+      }
+    },
     copyuid() {
       //copy uid to clipboard
       var input = document.getElementById("uid");

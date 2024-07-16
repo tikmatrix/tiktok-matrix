@@ -1,2 +1,2 @@
-修复自动登录的BUG
-Fix bugs in auto login
+修复bug
+Fix bugs

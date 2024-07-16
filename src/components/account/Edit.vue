@@ -63,6 +63,22 @@ export default {
   },
   methods: {
     update() {
+      if (!this.myaccount.username) {
+        alert(this.$t('usernameRequired'))
+        return
+      }
+
+      if (!this.myaccount.username.startsWith('@')) {
+        alert(this.$t('usernameMustStartWithAt'))
+        return
+      }
+      //trim username
+      this.myaccount.username = this.myaccount.username.trim()
+      if (this.myaccount.username === '@') {
+        alert(this.$t('usernameRequired'))
+        return
+      }
+      console.log(this.myaccount.username)
       this.$emit('update', this.myaccount)
     },
 

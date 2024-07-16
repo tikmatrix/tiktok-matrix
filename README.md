@@ -36,4 +36,4 @@ npm run tauri build
 ### USDT-TRC20
 
 `TDe4ZmkDBPYHVqWpX6jWjf3j45JdipB7Lx`
-![ustd](usdt.png)
+![ustd](src/assets/usdt.png)
