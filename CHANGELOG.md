@@ -1,2 +1,2 @@
-修复bug
-Fix bugs
+修复定时任务bug
+Fix the scheduled task bug
