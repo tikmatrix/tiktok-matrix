@@ -1,2 +1,2 @@
-修复定时任务bug
-Fix the scheduled task bug
+修复账号编辑的bug
+Fix the account edit bug

@@ -137,6 +137,9 @@ export default {
       this.currentAccount = account
       console.log(this.currentAccount)
       this.$refs.edit_dialog.showModal()
+      this.$refs.edit_dialog.addEventListener('close', () => {
+        this.currentAccount = null
+      })
     },
     updateAccount(account) {
       this.$service
