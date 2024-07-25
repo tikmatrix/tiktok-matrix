@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "run:tiktok-matrix:dev": "npm install && npm run install:tiktok-agent:dev && npm run tauri dev",
+    "mac:run:tiktok-matrix:dev": "npm install && npm run mac:install:tiktok-agent:dev && npm run tauri dev",
     "install:tiktok-agent:dev": "cd tiktok-agent && cargo build && npx shx cp -rf target/debug/*.exe ../src-tauri/bin/script/",
+    "mac:install:tiktok-agent:dev": "cd tiktok-agent && cargo build && npx shx cp -rf target/debug/tiktok-agent ../src-tauri/bin/script/ && npx shx cp -rf target/debug/script ../src-tauri/bin/script/",
     "install:tiktok-agent": "cd tiktok-agent && cargo build --release && npx shx cp -rf target/release/*.exe ../src-tauri/bin/script/",
+    "mac:install:tiktok-agent": "cd tiktok-agent && cargo build --release && npx shx cp -rf target/release/tiktok-agent ../src-tauri/bin/script/ && npx shx cp -rf target/release/script ../src-tauri/bin/script/",
     "update-version": "node ./scripts/update-version.js",
     "send-msg": "node ./scripts/send-msg.js",
     "copy:bots": "npx shx cp -rf tiktok-agent/bin/* src-tauri/bin/",

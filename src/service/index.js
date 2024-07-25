@@ -417,7 +417,6 @@ export function add_comment({ account_id, content, no, parent_no }) {
 }
 export function read_clipboard({ serial }) {
   return request({
-
     method: 'get',
     url: api.read_clipboard,
     params: { serial }

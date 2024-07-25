@@ -103,11 +103,13 @@
       </form>
       <h3 class="font-bold text-lg">{{ input_dialog_title }}</h3>
       <label class="input input-bordered flex items-center gap-2 my-4">
-        <input type="text" class="grow" placeholder="" v-model="input_dialog_text" v-on:keyup.enter="input_callback" />
+        <input id="input_dialog_text" type="text" class="grow" placeholder="" v-model="input_dialog_text"
+          v-on:keyup.enter="input_callback" />
       </label>
       <div class="modal-action">
         <form method="dialog">
           <button class="btn btn-primary" @click="input_callback">{{ $t('enter') }}</button>
+          <button class="btn btn-secondary" @click="readClipboard">{{ $t('readClipboard') }}</button>
         </form>
       </div>
     </div>
@@ -133,6 +135,27 @@ export default {
     }
   },
   methods: {
+    readClipboard() {
+      this.$service
+        .read_clipboard({
+          serial: this.serial
+        })
+        .then(res => {
+          this.input_dialog_text = res.data
+          var input = document.getElementById("input_dialog_text");
+          input.select(); // 选择文本
+          input.setSelectionRange(0, 99999); // 对于移动设备，确保能选择文本
+          try {
+            var successful = document.execCommand('copy'); // 执行复制操作
+            this.$emitter.emit('showToast', this.$t('copySuccess'))
+          } catch (err) {
+            console.log('Unable to copy', err);
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
     openDebugWindow() {
       localStorage.setItem('serial', this.serial);
       const webview = new WebviewWindow('Debug', {
