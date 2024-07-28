@@ -64,12 +64,14 @@
         "all": true,
         "show": true,
         "hide": true
+      },
+      "os": {
+        "all": true
       }
     },
     "bundle": {
       "resources": [
         "i18n/*.json",
-        "bin/platform-tools",
         "bin/apk",
         "bin/script",
         "bin/yt-dlp.exe"

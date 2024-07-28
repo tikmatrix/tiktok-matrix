@@ -15,17 +15,53 @@
       </button>
     </div>
   </div>
+  <dialog ref="update_agent_dialog" class="modal">
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <h3 class="font-bold text-lg">{{ $t('updateAgent') }}</h3>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn btn-primary" @click="update_agent">{{ $t('update') }}</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
 </template>
 
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
+import { listen } from '@tauri-apps/api/event';
+import axios from 'axios'
 export default {
   name: 'RunAgentTips',
   data() {
     return {
+      remote_version: {
+        version: '1.0.0',
+        windows_url: 'https://r2.tikmatrix.com/tiktok-agent.exe',
+        mac_url: 'https://r2.tikmatrix.com/tiktok-agent',
+      },
     }
   },
   methods: {
+    update_agent() {
+      console.log("update_agent")
+      invoke("update_agent");
+      listen("download-progress", (event) => {
+        console.log("download-progress", event)
+      })
+    },
+    check_agent_update() {
+      let local_version = this.$store.state.local_version;
+      axios.get('https://r2.tikmatrix.com/agentVersion.json').then((res) => {
+        this.remote_version = res;
+        if (local_version !== this.remote_version.version) {
+          this.$refs.update_agent_dialog.showModal()
+        }
+      })
+    },
     restart_agent() {
       console.log("restart_agent")
       invoke("stop_agent");

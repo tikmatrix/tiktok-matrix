@@ -1,25 +1,9 @@
 <template>
-  <template v-if="needLogin">
-    <Login />
-  </template>
-  <template v-if="!agentRunning">
-    <RunAgentTips />
-  </template>
-  <div class="flex flex-row items-start bg-base-300 h-screen w-screen" v-else>
-    <Sidebar />
-    <!-- <div class="flex-1 p-4 rounded-lg">
-      <div role="alert" class="alert alert-warning mb-1" v-show="showDemoTip">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-        <span class="font-bold">{{ $t('demoTip', { email: 'admin@niostack.com' }) }}</span>
-        <a class="link link-primary" href="https://t.me/+iGhozoBfAbI5YmE1">{{ $t('demoTip2') }}</a>
-      </div> -->
 
+  <div class="flex flex-row items-start bg-base-300 h-screen w-screen">
+    <Sidebar />
     <Toast />
     <ManageDevices />
-    <!-- </div> -->
   </div>
 
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
@@ -52,6 +36,31 @@
       <button>close</button>
     </form>
   </dialog>
+  <dialog ref="download_dialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('updateAgent') }}</h3>
+      <div class="modal-body">
+        <div class="flex flex-row justify-between text-center items-center">
+          <progress class="progress progress-success w-full" :value="download_progress.transfered"
+            :max="download_progress.filesize"></progress>
+          <span class="text-sm ml-1">{{ (download_progress.transfered / 1024 / 1024).toFixed(2) }}Mb</span> /
+          <span class="text-sm">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
+        </div>
+
+        <div class="flex justify-between">
+          <div class="text-md">
+            {{ $t('transferRate') }}:
+            <span class="text-sm">{{ (download_progress.transfer_rate / 1024).toFixed(2) }} KB/s</span>
+          </div>
+          <div class="text-md">
+            {{ $t('percentage') }}:
+            <span class="text-sm">{{ download_progress.percentage }} %</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </dialog>
 </template>
 <style>
 @import "vue-draggable-resizable/style.css";
@@ -82,11 +91,13 @@ import * as util from './utils'
 import Toast from './components/Toast.vue'
 import EditGroup from './components/group/EditGroup.vue'
 import { invoke } from "@tauri-apps/api/tauri";
-import { window } from "@tauri-apps/api"
+import { window as tauriWindow } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
 import { ask } from '@tauri-apps/api/dialog';
 import BuyLicense from './components/settings/BuyLicense.vue'
-
+import { listen } from '@tauri-apps/api/event';
+import axios from 'axios'
+import { os } from '@tauri-apps/api';
 export default {
   name: 'app',
   setup() {
@@ -122,19 +133,25 @@ export default {
   data() {
     return {
       device: null,
-      needLogin: true,
-      showDemoTip: false,
       isDark: false,
       selectedItem: {},
-      agentRunning: true,
       page_title: '',
-      admin_url: "https://admin.tikmatrix.com"
+      remote_version: {
+        version: '1.0.0',
+        windows_url: 'https://r2.tikmatrix.com/tiktok-agent.exe',
+        mac_url: 'https://r2.tikmatrix.com/tiktok-agent',
+      },
+      download_progress: {
+        filesize: 0,
+        transfered: 0,
+        transfer_rate: 0,
+        percentage: 0
+      }
     }
   },
   methods: {
     stop_agent() {
       invoke("stop_agent");
-      this.agentRunning = false;
     },
 
     open_dir(name) {
@@ -152,45 +169,104 @@ export default {
 
       })
     },
-    checkAuth() {
-      if (import.meta.env.VITE_APP_MOCK === 'true') {
-        this.needLogin = false
-        return
+
+    check_agent_update() {
+      let local_version = util.getData('local_version');
+      if (!local_version) {
+        local_version = '0.0.0'
       }
-      this.$service
-        .auth({
-          password: util.getCookie('password')
-        })
-        .then(res => {
-          if (res.data === 'success') {
-            this.needLogin = false
+      console.log("check_agent_update", local_version)
+      axios.get('https://r2.tikmatrix.com/agentVersion.json').then(async (res) => {
+        console.log("check_agent_update", res.data)
+        this.remote_version = res.data;
+        console.log("check_agent_update", this.remote_version.version, local_version)
+        if (local_version !== this.remote_version.version) {
+          invoke("stop_agent");
+          this.$refs.download_dialog.showModal()
+          console.log("update_agent")
+          let url = ""
+          //get platform
+          const osType = await os.type();
+          if (osType === 'Darwin') {
+            console.log('This is macOS');
+            url = this.remote_version.mac_url
+          } else if (osType === 'Windows_NT') {
+            console.log('This is Windows');
+            url = this.remote_version.windows_url
           } else {
-            this.needLogin = true
+            console.log('Unknown OS type');
+            return;
           }
+
+          const path = 'bin/script/' + url.split('/').pop()
+          console.log(url, path)
+          invoke('download_file', { url, path });
+          listen("DOWNLOAD_PROGRESS", (e) => {
+            this.download_progress = e.payload;
+            console.log(this.download_progress)
+            // handle progress
+          });
+          listen("DOWNLOAD_FINISHED", (e) => {
+            console.log("download finished")
+            util.setData('local_version', this.remote_version.version)
+            this.$refs.download_dialog.close()
+            invoke("start_agent");
+            window.location.reload();
+          })
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
+    },
+
+    async check_platform_tools() {
+      util.setData('platform_tools_installed', false)
+      let installed = util.getData('platform_tools_installed');
+      console.log("check_platform_tools", installed)
+      if (!installed) {
+        this.$refs.download_dialog.showModal()
+        console.log("install_platform_tools")
+        let url = ""
+        //get platform
+        const osType = await os.type();
+        if (osType === 'Darwin') {
+          console.log('This is macOS');
+          url = "https://r2.tikmatrix.com/platform-tools-latest-darwin.zip"
+        } else if (osType === 'Windows_NT') {
+          console.log('This is Windows');
+          url = "https://r2.tikmatrix.com/platform-tools-latest-windows.zip"
+        } else {
+          console.log('Unknown OS type');
+          return;
+        }
+
+        const path = 'bin/' + url.split('/').pop()
+        console.log(url, path)
+        invoke('download_file', { url, path });
+        listen("DOWNLOAD_PROGRESS", (e) => {
+          this.download_progress = e.payload;
+        });
+        listen("DOWNLOAD_FINISHED", (e) => {
+          console.log("download finished")
+          invoke("unzip_file", { zipPath: path, destDir: "bin" });
+          util.setData('platform_tools_installed', true)
+          this.$refs.download_dialog.close()
         })
-    },
-    logout() {
-      this.$service.logout()
-      this.needLogin = true
-    },
+      }
+    }
   },
   mounted() {
-    window.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
+    tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
       const yes = await ask("Are you sure?");
       console.log("result:" + yes);
       if (yes) {
         this.stop_agent();
-        window.getCurrent().close();
+        tauriWindow.getCurrent().close();
       }
     });
+    this.check_platform_tools();
+    this.check_agent_update();
 
-    // this.checkAuth()
-    this.needLogin = false
-    this.showDemoTip = import.meta.env.VITE_APP_MOCK === 'true'
-
-    this.$emitter.on('agentStatus', (status) => {
-      this.agentRunning = status
-    });
     this.$emitter.on('openDevice', (device) => {
       this.device = device
     });
@@ -199,14 +275,10 @@ export default {
     });
     this.$emitter.on('closePageDialog', (data) => {
       this.$refs.page_dialog.close()
-    })
+    });
     this.$emitter.on('menuSelected', (item) => {
       this.menu_selected(item)
-    })
-
-  },
-  unmounted() {
-    this.stop_agent()
+    });
   }
 }
 </script>

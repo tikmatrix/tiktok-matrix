@@ -233,7 +233,8 @@ export default {
       groupDevices: {
         0: [],
       },
-      locale: util.getData('locale') || 'en'
+      locale: util.getData('locale') || 'en',
+      version: '1.0.0',
     }
   },
 

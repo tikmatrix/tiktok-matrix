@@ -2,16 +2,127 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-use std::process::{Command, Stdio};
+use std::{
+    cmp::min,
+    fs::File,
+    io::{self, BufReader, Write},
+    path::Path,
+    process::{Command, Stdio},
+    time::Instant,
+};
 
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
+
+use futures_util::stream::StreamExt;
+use reqwest::Client;
+use serde::{Deserialize, Serialize};
+use tauri::{
+    http::header::{ACCEPT, USER_AGENT},
+    AppHandle, Manager,
+};
+use zip::read::ZipArchive;
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Progress {
+    pub filesize: u64,
+    pub transfered: u64,
+    pub transfer_rate: f64,
+    pub percentage: f64,
+}
+
+impl Progress {
+    pub fn emit_progress(&self, handle: &AppHandle) {
+        handle.emit_all("DOWNLOAD_PROGRESS", &self).ok();
+    }
+
+    pub fn emit_finished(&self, handle: &AppHandle) {
+        handle.emit_all("DOWNLOAD_FINISHED", &self).ok();
+    }
+}
 fn setup_env() {
     if cfg!(debug_assertions) {
         std::env::set_var("RUST_BACKTRACE", "1");
     }
 }
+#[tauri::command]
+async fn download_file(
+    url: String,
+    path: String,
+    app_handle: tauri::AppHandle,
+) -> Result<(), String> {
+    let client = Client::new();
+    let res = client
+        .get(&url)
+        .header(
+            USER_AGENT,
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
+        )
+        .header(ACCEPT, "application/octet-stream")
+        .send()
+        .await
+        .or(Err(format!("解析 `{}` 文件失败", &url)))?;
+    let total_size = res
+        .content_length()
+        .ok_or(format!("获取 `{}` 文件大小失败", &url))?;
 
+    let mut file = File::create(&path).or(Err(format!("创建 `{}` 文件失败", &path)))?;
+    let mut stream = res.bytes_stream();
+    let mut progress = Progress {
+        filesize: total_size,
+        transfered: 0,
+        transfer_rate: 0.0,
+        percentage: 0.0,
+    };
+
+    let start = Instant::now();
+    let mut downloaded_bytes = 0;
+    let mut last_update = Instant::now();
+    while let Some(item) = stream.next().await {
+        let chunk = item.or(Err(format!("下载 `{}` 文件失败", &path)))?;
+        file.write(&chunk)
+            .or(Err(format!("写入 `{}` 文件失败", &path)))?;
+        downloaded_bytes = min(downloaded_bytes + (chunk.len() as u64), total_size);
+
+        progress.transfered = downloaded_bytes;
+        progress.percentage = (progress.transfered * 100 / total_size) as f64;
+        progress.transfer_rate = (downloaded_bytes as f64) / (start.elapsed().as_secs() as f64)
+            + (start.elapsed().subsec_nanos() as f64 / 1_000_000_000.0).trunc();
+
+        if last_update.elapsed().as_millis() >= 100 {
+            progress.emit_progress(&app_handle);
+            last_update = std::time::Instant::now();
+        }
+    }
+
+    progress.emit_finished(&app_handle);
+
+    return Ok(());
+}
+
+#[tauri::command]
+fn unzip_file(zip_path: String, dest_dir: String) -> Result<(), String> {
+    let file = File::open(&zip_path).map_err(|e| e.to_string())?;
+    let mut archive = ZipArchive::new(BufReader::new(file)).map_err(|e| e.to_string())?;
+
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+        let outpath = Path::new(&dest_dir).join(file.name());
+
+        if (*file.name()).ends_with('/') {
+            std::fs::create_dir_all(&outpath).map_err(|e| e.to_string())?;
+        } else {
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    std::fs::create_dir_all(&p).map_err(|e| e.to_string())?;
+                }
+            }
+            let mut outfile = File::create(&outpath).map_err(|e| e.to_string())?;
+            io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+        }
+    }
+
+    Ok(())
+}
 #[tauri::command]
 fn start_agent() -> u32 {
     setup_env();
@@ -122,7 +233,13 @@ fn main() -> std::io::Result<()> {
     stop_agent();
     start_agent();
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![start_agent, stop_agent, open_dir])
+        .invoke_handler(tauri::generate_handler![
+            start_agent,
+            stop_agent,
+            open_dir,
+            download_file,
+            unzip_file
+        ])
         .setup(|_app| Ok(()))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

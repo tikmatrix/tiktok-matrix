@@ -33,3 +33,6 @@ export function setData(key, data) {
 export function getData(key) {
   return JSON.parse(localStorage.getItem(key))
 }
+export function getPlatform() {
+  return navigator.platform
+}
