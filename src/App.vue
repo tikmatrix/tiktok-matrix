@@ -99,6 +99,7 @@ import { listen } from '@tauri-apps/api/event';
 import axios from 'axios'
 import { os } from '@tauri-apps/api';
 import { appDataDir } from '@tauri-apps/api/path';
+import { exists, BaseDirectory } from '@tauri-apps/api/fs'
 export default {
   name: 'app',
   setup() {
@@ -269,22 +270,26 @@ export default {
         localversion = 0
       }
       console.log("localversion", localversion)
-      if (localversion !== remoteVersion) {
+      let url = downloadUrl
+      let work_path = await appDataDir();
+      console.log("work_path", work_path)
+
+      let name = url.split('/').pop()
+      let path = work_path + 'bin/' + url.split('/').pop()
+      let downloaded = await exists('bin/' + name, { dir: BaseDirectory.AppData })
+
+      console.log("downloaded", downloaded, "path", path)
+      if (!downloaded || localversion !== remoteVersion) {
         if (before) {
           before()
         }
         this.$refs.download_dialog.showModal()
-        console.log("download " + filename)
-        let url = downloadUrl
-        let work_path = appDataDir();
-
-        path = work_path + url.split('/').pop()
-        console.log(url, path)
+        console.log("download " + filename + " from " + downloadUrl + " to " + path)
         invoke('download_file', { url, path });
-        listen("DOWNLOAD_PROGRESS", (e) => {
+        const unlistenProgress = await listen("DOWNLOAD_PROGRESS", (e) => {
           this.download_progress = e.payload;
         });
-        listen("DOWNLOAD_FINISHED", (e) => {
+        const unlistenFinished = await listen("DOWNLOAD_FINISHED", (e) => {
           console.log("download finished")
           if (path.endsWith('.zip')) {
             invoke("unzip_file", { zipPath: path, destDir: work_path });
@@ -293,6 +298,8 @@ export default {
           util.setData(filename, remoteVersion)
           this.$refs.download_dialog.close()
           if (callback) {
+            unlistenProgress()
+            unlistenFinished()
             callback(true)
           }
         })
@@ -313,7 +320,6 @@ export default {
       }
     });
     this.check_update();
-
     this.$emitter.on('openDevice', (device) => {
       this.device = device
     });

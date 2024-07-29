@@ -41,7 +41,8 @@ impl Progress {
         handle.emit_all("DOWNLOAD_FINISHED", &self).ok();
     }
 }
-fn setup_env() {
+fn setup_env(working_dir: &str) {
+    std::env::set_var("TAURI_APP_WORK_DIR", working_dir);
     if cfg!(debug_assertions) {
         std::env::set_var("RUST_BACKTRACE", "1");
     }
@@ -184,12 +185,16 @@ fn start_agent(app: tauri::AppHandle) -> u32 {
         #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
     }
-    let child = command
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("failed to start agent");
-    log::info!("start tiktok-agent success");
-    child.id()
+    match command.stdout(Stdio::piped()).spawn() {
+        Ok(child) => {
+            log::info!("start tiktok-agent success");
+            child.id()
+        }
+        Err(e) => {
+            log::error!("start tiktok-agent failed: {}", e);
+            0
+        }
+    }
 }
 #[tauri::command]
 fn stop_agent() {
@@ -319,7 +324,7 @@ fn main() -> std::io::Result<()> {
         .setup(|app| {
             let work_dir = app.path_resolver().app_data_dir().unwrap();
             let work_dir = work_dir.to_str().unwrap();
-            setup_env();
+            setup_env(work_dir);
             init_log::init(work_dir);
             log::info!("work_dir: {}", work_dir);
             std::fs::create_dir_all(format!("{}/{}", work_dir, "bin"))?;

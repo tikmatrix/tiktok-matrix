@@ -189,7 +189,8 @@ import Tools from './Tools.vue'
 import QuickActions from './QuickActions.vue';
 import { open } from '@tauri-apps/api/dialog';
 import { getVersion } from '@tauri-apps/api/app';
-
+import { os } from '@tauri-apps/api';
+import { appDataDir } from '@tauri-apps/api/path';
 export default {
   name: 'Sidebar',
   setup() {
@@ -479,13 +480,14 @@ export default {
         console.log(res)
       })
     },
-    initDevice() {
+    async initDevice() {
+      let work_path = await appDataDir();
       this.$emitter.emit('showToast', this.$t('initStart'))
       this.adb_command(['uninstall', 'com.github.tikmatrix'])
       this.adb_command(['uninstall', 'com.github.tikmatrix.test'])
       setTimeout(() => {
-        this.adb_command(['install', '-r', '-t', '-g', 'bin/apk/com.github.tikmatrix.apk'])
-        this.adb_command(['install', '-r', '-t', '-g', 'bin/apk/com.github.tikmatrix.test.apk'])
+        this.adb_command(['install', '-r', '-t', '-g', work_path + 'bin/com.github.tikmatrix.apk'])
+        this.adb_command(['install', '-r', '-t', '-g', work_path + 'bin/com.github.tikmatrix.test.apk'])
         this.$emitter.emit('showToast', this.$t('initSuccess'))
       }, 3000)
 
