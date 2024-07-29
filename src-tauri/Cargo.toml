@@ -1,6 +1,6 @@
 [package]
 name = "TikMatrix"
-version = "0.0.5"
+version = "1.0.0"
 description = "TikTok Matrix System by tikmatrix.com"
 authors = ["niostack"]
 repository = ""
@@ -14,7 +14,8 @@ embed-resource = "2.4"
 
 [dependencies]
 reqwest = { version = "0.11", features = ["blocking", "multipart", "json"] }
-tauri = { version = "1.5", features = [ "os-all",
+tauri = { version = "1.5", features = [
+    "os-all",
     "window-all",
     "dialog-all",
     "updater",
@@ -24,7 +25,8 @@ tauri = { version = "1.5", features = [ "os-all",
 serde = { version = "1", features = ["derive"] }
 futures-util = "0.3.30"
 zip = "2.1.5"
-
+flexi_logger = "0.27"
+log = "0.4"
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

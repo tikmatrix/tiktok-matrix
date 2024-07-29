@@ -71,10 +71,7 @@
     },
     "bundle": {
       "resources": [
-        "i18n/*.json",
-        "bin/apk",
-        "bin/script",
-        "bin/yt-dlp.exe"
+        "i18n/*.json"
       ],
       "active": true,
       "targets": [

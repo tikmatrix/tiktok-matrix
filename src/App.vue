@@ -38,7 +38,7 @@
   </dialog>
   <dialog ref="download_dialog" class="modal">
     <div class="modal-box">
-      <h3 class="font-bold text-lg">{{ $t('updateAgent') }}</h3>
+      <h3 class="font-bold text-lg">{{ download_filename }}</h3>
       <div class="modal-body">
         <div class="flex flex-row justify-between text-center items-center">
           <progress class="progress progress-success w-full" :value="download_progress.transfered"
@@ -102,7 +102,6 @@ export default {
   name: 'app',
   setup() {
     const devices = inject('devices')
-
     return { devices: devices.list }
   },
   components: {
@@ -136,17 +135,14 @@ export default {
       isDark: false,
       selectedItem: {},
       page_title: '',
-      remote_version: {
-        version: '1.0.0',
-        windows_url: 'https://r2.tikmatrix.com/tiktok-agent.exe',
-        mac_url: 'https://r2.tikmatrix.com/tiktok-agent',
-      },
+      remote_version: {},
       download_progress: {
         filesize: 0,
         transfered: 0,
         transfer_rate: 0,
         percentage: 0
-      }
+      },
+      download_filename: '',
     }
   },
   methods: {
@@ -162,84 +158,123 @@ export default {
     menu_selected(item) {
       this.selectedItem = item
       this.$refs.page_dialog.showModal()
-      // console.log(this.$refs.page_dialog.open)
-      //listener
       this.$refs.page_dialog.addEventListener('close', () => {
         this.selectedItem = {}
 
       })
     },
-
-    check_agent_update() {
-      let local_version = util.getData('local_version');
-      if (!local_version) {
-        local_version = '0.0.0'
-      }
-      console.log("check_agent_update", local_version)
+    check_update() {
       axios.get('https://r2.tikmatrix.com/agentVersion.json').then(async (res) => {
-        console.log("check_agent_update", res.data)
         this.remote_version = res.data;
-        console.log("check_agent_update", this.remote_version.version, local_version)
-        if (local_version !== this.remote_version.version) {
-          invoke("stop_agent");
-          this.$refs.download_dialog.showModal()
-          console.log("update_agent")
-          let url = ""
-          //get platform
-          const osType = await os.type();
-          if (osType === 'Darwin') {
-            console.log('This is macOS');
-            url = this.remote_version.mac_url
-          } else if (osType === 'Windows_NT') {
-            console.log('This is Windows');
-            url = this.remote_version.windows_url
-          } else {
-            console.log('Unknown OS type');
-            return;
+        console.log("remote_version", this.remote_version)
+        this.check_platform_tools((updated) => {
+          if (updated) {
+            invoke("grant_adb_permission");
           }
-
-          const path = 'bin/script/' + url.split('/').pop()
-          console.log(url, path)
-          invoke('download_file', { url, path });
-          listen("DOWNLOAD_PROGRESS", (e) => {
-            this.download_progress = e.payload;
-            console.log(this.download_progress)
-            // handle progress
-          });
-          listen("DOWNLOAD_FINISHED", (e) => {
-            console.log("download finished")
-            util.setData('local_version', this.remote_version.version)
-            this.$refs.download_dialog.close()
-            invoke("start_agent");
-            window.location.reload();
+          this.check_apk(() => {
+            this.check_test_apk(() => {
+              this.check_scrcpy(() => {
+                this.check_script((updated) => {
+                  if (updated) {
+                    invoke("grant_script_permission");
+                  }
+                  this.check_agent_update()
+                })
+              })
+            })
           })
-        }
-      }).catch((err) => {
-        console.log(err)
+        })
       })
     },
 
-    async check_platform_tools() {
-      util.setData('platform_tools_installed', false)
-      let installed = util.getData('platform_tools_installed');
-      console.log("check_platform_tools", installed)
-      if (!installed) {
-        this.$refs.download_dialog.showModal()
-        console.log("install_platform_tools")
-        let url = ""
-        //get platform
-        const osType = await os.type();
-        if (osType === 'Darwin') {
-          console.log('This is macOS');
-          url = "https://r2.tikmatrix.com/platform-tools-latest-darwin.zip"
-        } else if (osType === 'Windows_NT') {
-          console.log('This is Windows');
-          url = "https://r2.tikmatrix.com/platform-tools-latest-windows.zip"
-        } else {
-          console.log('Unknown OS type');
-          return;
+
+
+
+    async check_platform_tools(callback) {
+      let url = ""
+      const osType = await os.type();
+      if (osType === 'Darwin') {
+        console.log('This is macOS');
+        url = this.remote_version.platform_tools_mac_url;
+      } else if (osType === 'Windows_NT') {
+        console.log('This is Windows');
+        url = this.remote_version.platform_tools_windows_url;
+      } else {
+        console.log('Unknown OS type');
+        return;
+      }
+      this.check_file_update('platform_tools(1/6)', this.remote_version.platform_tools_version, url, callback);
+    },
+
+    async check_apk(callback) {
+      let url = this.remote_version.apk_url
+      this.check_file_update('apk(2/6)', this.remote_version.apk_version, url, callback);
+    },
+
+    async check_test_apk(callback) {
+      let url = this.remote_version.test_apk_url
+      this.check_file_update('test_apk(3/6)', this.remote_version.test_apk_version, url, callback);
+    },
+
+    async check_scrcpy(callback) {
+      let url = this.remote_version.scrcpy_url
+      this.check_file_update('scrcpy(4/6)', this.remote_version.scrcpy_version, url, callback);
+    },
+    async check_script(callback) {
+      let url = ""
+      const osType = await os.type();
+      if (osType === 'Darwin') {
+        console.log('This is macOS');
+        url = this.remote_version.script_mac_url;
+      } else if (osType === 'Windows_NT') {
+        console.log('This is Windows');
+        url = this.remote_version.script_windows_url;
+      } else {
+        console.log('Unknown OS type');
+        return;
+      }
+      this.check_file_update('script(5/6)', this.remote_version.script_version, url, callback);
+    },
+    async check_agent_update() {
+      let url = ""
+      const osType = await os.type();
+      if (osType === 'Darwin') {
+        console.log('This is macOS');
+        url = this.remote_version.agent_mac_url;
+      } else if (osType === 'Windows_NT') {
+        console.log('This is Windows');
+        url = this.remote_version.agent_windows_url;
+      } else {
+        console.log('Unknown OS type');
+        return;
+      }
+      this.check_file_update('tiktok-agent(6/6)', this.remote_version.agent_version, url, (updated) => {
+        if (updated) {
+          invoke("grant_agent_permission");
+          invoke("start_agent");
+          window.location.reload();
         }
 
+      }, () => {
+        invoke("stop_agent");
+      });
+    },
+
+    check_file_update(filename, remoteVersion, downloadUrl, callback, before) {
+      this.download_filename = filename
+      console.log("check_file_update", filename, remoteVersion, downloadUrl)
+      let localversion = util.getData(filename);
+      if (!localversion) {
+        localversion = 0
+      }
+      console.log("localversion", localversion)
+      if (localversion !== remoteVersion) {
+        if (before) {
+          before()
+        }
+        this.$refs.download_dialog.showModal()
+        console.log("download " + filename)
+        let url = downloadUrl
         const path = 'bin/' + url.split('/').pop()
         console.log(url, path)
         invoke('download_file', { url, path });
@@ -248,12 +283,22 @@ export default {
         });
         listen("DOWNLOAD_FINISHED", (e) => {
           console.log("download finished")
-          invoke("unzip_file", { zipPath: path, destDir: "bin" });
-          util.setData('platform_tools_installed', true)
+          if (path.endsWith('.zip')) {
+            invoke("unzip_file", { zipPath: path, destDir: "bin" });
+          }
+
+          util.setData(filename, remoteVersion)
           this.$refs.download_dialog.close()
+          if (callback) {
+            callback(true)
+          }
         })
+      } else {
+        if (callback) {
+          callback(false)
+        }
       }
-    }
+    },
   },
   mounted() {
     tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
@@ -264,8 +309,7 @@ export default {
         tauriWindow.getCurrent().close();
       }
     });
-    this.check_platform_tools();
-    this.check_agent_update();
+    this.check_update();
 
     this.$emitter.on('openDevice', (device) => {
       this.device = device

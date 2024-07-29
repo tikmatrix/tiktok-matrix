@@ -22,6 +22,7 @@ use tauri::{
     AppHandle, Manager,
 };
 use zip::read::ZipArchive;
+mod init_log;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Progress {
     pub filesize: u64,
@@ -123,11 +124,53 @@ fn unzip_file(zip_path: String, dest_dir: String) -> Result<(), String> {
 
     Ok(())
 }
+
+#[tauri::command]
+fn grant_adb_permission() {
+    #[cfg(target_os = "macos")]
+    {
+        //chmod +x
+        let mut command = Command::new("chmod");
+        command
+            .args(&["+x", "bin/platform-tools/adb"])
+            .status()
+            .expect("failed to chmod");
+    }
+}
+#[tauri::command]
+fn grant_script_permission() {
+    #[cfg(target_os = "macos")]
+    {
+        //chmod +x
+        let mut command = Command::new("chmod");
+        command
+            .args(&["+x", "bin/script"])
+            .status()
+            .expect("failed to chmod");
+    }
+}
+#[tauri::command]
+fn grant_agent_permission() {
+    #[cfg(target_os = "macos")]
+    {
+        //chmod +x
+        let mut command = Command::new("chmod");
+        command
+            .args(&["+x", "bin/tiktok-agent"])
+            .status()
+            .expect("failed to chmod");
+    }
+}
 #[tauri::command]
 fn start_agent() -> u32 {
-    setup_env();
+    //check bin/tiktok-agent exist
+    let bin_path = Path::new("bin/tiktok-agent");
+    if !bin_path.exists() {
+        log::error!("bin/tiktok-agent not exist");
+        return 0;
+    }
 
-    let mut command = Command::new("bin/script/tiktok-agent");
+    let mut command = Command::new("bin/tiktok-agent");
     if !cfg!(debug_assertions) {
         #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
@@ -136,6 +179,7 @@ fn start_agent() -> u32 {
         .stdout(Stdio::piped())
         .spawn()
         .expect("failed to start agent");
+    log::info!("start tiktok-agent success");
     child.id()
 }
 #[tauri::command]
@@ -149,6 +193,7 @@ fn stop_agent() {
             .args(&["/F", "/IM", "adb.exe"])
             .status()
             .expect("failed to kill adb processes");
+        log::info!("stop adb success");
     }
 
     #[cfg(target_os = "macos")]
@@ -158,6 +203,7 @@ fn stop_agent() {
             .args(&["-f", "adb"])
             .status()
             .expect("failed to kill adb processes");
+        log::info!("stop adb success");
     }
 
     // Kill tiktok-agent process
@@ -169,6 +215,7 @@ fn stop_agent() {
             .args(&["/F", "/IM", "tiktok-agent.exe"])
             .status()
             .expect("failed to kill agent processes");
+        log::info!("stop tiktok-agent success");
     }
 
     #[cfg(target_os = "macos")]
@@ -178,6 +225,7 @@ fn stop_agent() {
             .args(&["-f", "tiktok-agent"])
             .status()
             .expect("failed to kill agent processes");
+        log::info!("stop tiktok-agent success");
     }
     #[cfg(target_os = "windows")]
     {
@@ -186,7 +234,9 @@ fn stop_agent() {
         command
             .args(&["/F", "/IM", "script.exe"])
             .status()
-            .expect("failed to kill train processes");
+            .expect("failed to kill script processes");
+
+        log::info!("stop script success");
     }
 
     #[cfg(target_os = "macos")]
@@ -195,7 +245,9 @@ fn stop_agent() {
         command
             .args(&["-f", "script"])
             .status()
-            .expect("failed to kill train processes");
+            .expect("failed to kill script processes");
+
+        log::info!("stop script success");
     }
 }
 //open_log_dir
@@ -222,6 +274,9 @@ fn open_dir(name: String) {
 }
 
 fn main() -> std::io::Result<()> {
+    setup_env();
+    init_log::init();
+    std::fs::create_dir_all("./bin")?;
     std::fs::create_dir_all("./logs")?;
     std::fs::create_dir_all("./tmp")?;
     std::fs::create_dir_all("./data")?;
@@ -234,6 +289,9 @@ fn main() -> std::io::Result<()> {
     start_agent();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            grant_adb_permission,
+            grant_script_permission,
+            grant_agent_permission,
             start_agent,
             stop_agent,
             open_dir,
