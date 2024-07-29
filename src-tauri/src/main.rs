@@ -23,6 +23,7 @@ use tauri::{
 };
 use zip::read::ZipArchive;
 mod init_log;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Progress {
     pub filesize: u64,
@@ -126,51 +127,59 @@ fn unzip_file(zip_path: String, dest_dir: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn grant_adb_permission() {
+fn grant_adb_permission(app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
+        let work_dir = app.path_resolver().app_data_dir().unwrap();
+        let work_dir = work_dir.to_str().unwrap();
         //chmod +x
         let mut command = Command::new("chmod");
         command
-            .args(&["+x", "bin/platform-tools/adb"])
+            .args(&["+x", &format!("{}/{}", work_dir, "bin/platform-tools/adb")])
             .status()
             .expect("failed to chmod");
     }
 }
 #[tauri::command]
-fn grant_script_permission() {
+fn grant_script_permission(app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
+        let work_dir = app.path_resolver().app_data_dir().unwrap();
+        let work_dir = work_dir.to_str().unwrap();
         //chmod +x
         let mut command = Command::new("chmod");
         command
-            .args(&["+x", "bin/script"])
+            .args(&["+x", &format!("{}/{}", work_dir, "bin/script")])
             .status()
             .expect("failed to chmod");
     }
 }
 #[tauri::command]
-fn grant_agent_permission() {
+fn grant_agent_permission(app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
+        let work_dir = app.path_resolver().app_data_dir().unwrap();
+        let work_dir = work_dir.to_str().unwrap();
         //chmod +x
         let mut command = Command::new("chmod");
         command
-            .args(&["+x", "bin/tiktok-agent"])
+            .args(&["+x", &format!("{}/{}", work_dir, "bin/tiktok-agent")])
             .status()
             .expect("failed to chmod");
     }
 }
 #[tauri::command]
-fn start_agent() -> u32 {
+fn start_agent(app: tauri::AppHandle) -> u32 {
     //check bin/tiktok-agent exist
-    let bin_path = Path::new("bin/tiktok-agent");
-    if !bin_path.exists() {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let work_dir = work_dir.to_str().unwrap();
+    let bin_path = format!("{}/{}", work_dir, "bin/tiktok-agent");
+    if !Path::new(&bin_path).exists() {
         log::error!("bin/tiktok-agent not exist");
         return 0;
     }
 
-    let mut command = Command::new("bin/tiktok-agent");
+    let mut command = Command::new(bin_path);
     if !cfg!(debug_assertions) {
         #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
@@ -252,14 +261,27 @@ fn stop_agent() {
 }
 //open_log_dir
 #[tauri::command]
-fn open_dir(name: String) {
+fn open_dir(name: String, app: tauri::AppHandle) {
     #[cfg(target_os = "windows")]
     {
         let mut command = Command::new("cmd");
         #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
         command
-            .args(&["/C", "start", &name])
+            .args(&[
+                "/C",
+                "start",
+                format!(
+                    "{}/{}",
+                    app.path_resolver()
+                        .app_data_dir()
+                        .unwrap()
+                        .to_str()
+                        .unwrap(),
+                    name
+                )
+                .as_str(),
+            ])
             .status()
             .expect("failed to open log dir");
     }
@@ -267,26 +289,22 @@ fn open_dir(name: String) {
     {
         let mut command = Command::new("open");
         command
-            .args(&[&name])
+            .args(&[format!(
+                "{}/{}",
+                app.path_resolver()
+                    .app_data_dir()
+                    .unwrap()
+                    .to_str()
+                    .unwrap(),
+                name
+            )
+            .as_str()])
             .status()
             .expect("failed to open log dir");
     }
 }
 
 fn main() -> std::io::Result<()> {
-    setup_env();
-    init_log::init();
-    std::fs::create_dir_all("./bin")?;
-    std::fs::create_dir_all("./logs")?;
-    std::fs::create_dir_all("./tmp")?;
-    std::fs::create_dir_all("./data")?;
-    std::fs::create_dir_all("./upload")?;
-    std::fs::create_dir_all("./download")?;
-    std::fs::create_dir_all("./upload/material")?;
-    std::fs::create_dir_all("./upload/avatar")?;
-    std::fs::create_dir_all("./upload/apk")?;
-    stop_agent();
-    start_agent();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             grant_adb_permission,
@@ -298,7 +316,25 @@ fn main() -> std::io::Result<()> {
             download_file,
             unzip_file
         ])
-        .setup(|_app| Ok(()))
+        .setup(|app| {
+            let work_dir = app.path_resolver().app_data_dir().unwrap();
+            let work_dir = work_dir.to_str().unwrap();
+            setup_env();
+            init_log::init(work_dir);
+            log::info!("work_dir: {}", work_dir);
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "bin"))?;
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "logs"))?;
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "tmp"))?;
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "data"))?;
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "upload"))?;
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "download"))?;
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/material"))?;
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/avatar"))?;
+            std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
+            stop_agent();
+            start_agent(app.app_handle());
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())

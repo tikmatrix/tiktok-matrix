@@ -98,6 +98,7 @@ import BuyLicense from './components/settings/BuyLicense.vue'
 import { listen } from '@tauri-apps/api/event';
 import axios from 'axios'
 import { os } from '@tauri-apps/api';
+import { appDataDir } from '@tauri-apps/api/path';
 export default {
   name: 'app',
   setup() {
@@ -260,7 +261,7 @@ export default {
       });
     },
 
-    check_file_update(filename, remoteVersion, downloadUrl, callback, before) {
+    async check_file_update(filename, remoteVersion, downloadUrl, callback, before) {
       this.download_filename = filename
       console.log("check_file_update", filename, remoteVersion, downloadUrl)
       let localversion = util.getData(filename);
@@ -275,7 +276,9 @@ export default {
         this.$refs.download_dialog.showModal()
         console.log("download " + filename)
         let url = downloadUrl
-        const path = 'bin/' + url.split('/').pop()
+        let work_path = appDataDir();
+
+        path = work_path + url.split('/').pop()
         console.log(url, path)
         invoke('download_file', { url, path });
         listen("DOWNLOAD_PROGRESS", (e) => {
@@ -284,7 +287,7 @@ export default {
         listen("DOWNLOAD_FINISHED", (e) => {
           console.log("download finished")
           if (path.endsWith('.zip')) {
-            invoke("unzip_file", { zipPath: path, destDir: "bin" });
+            invoke("unzip_file", { zipPath: path, destDir: work_path });
           }
 
           util.setData(filename, remoteVersion)
