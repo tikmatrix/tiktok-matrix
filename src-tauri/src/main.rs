@@ -136,7 +136,7 @@ fn grant_adb_permission(app: tauri::AppHandle) {
         //chmod +x
         let mut command = Command::new("chmod");
         command
-            .args(&["+x", &format!("{}/{}", work_dir, "bin/platform-tools/adb")])
+            .args(&["+x", &format!("{}/{}", work_dir, "platform-tools/adb")])
             .status()
             .expect("failed to chmod");
     }
@@ -336,6 +336,30 @@ fn main() -> std::io::Result<()> {
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/material"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/avatar"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
+            //迁移数据
+            #[cfg(target_os = "windows")]
+            if Path::new("data").exists() {
+                std::fs::copy(
+                    "data/settings.db",
+                    format!("{}/{}", work_dir, "data/settings.db"),
+                )?;
+                std::fs::rename("data/settings.db", "data/settings.db.bak")?;
+                std::fs::copy(
+                    "data/tiktok.db",
+                    format!("{}/{}", work_dir, "data/tiktok.db"),
+                )?;
+                std::fs::rename("data/tiktok.db", "data/tiktok.db.bak")?;
+                std::fs::copy(
+                    "data/tiktok.db-shm",
+                    format!("{}/{}", work_dir, "data/tiktok.db-shm"),
+                )?;
+                std::fs::rename("data/tiktok.db-shm", "data/tiktok.db-shm.bak")?;
+                std::fs::copy(
+                    "data/tiktok.db-wal",
+                    format!("{}/{}", work_dir, "data/tiktok.db-wal"),
+                )?;
+                std::fs::rename("data/tiktok.db-wal", "data/tiktok.db-wal.bak")?;
+            }
             stop_agent();
             start_agent(app.app_handle());
             Ok(())

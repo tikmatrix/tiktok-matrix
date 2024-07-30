@@ -1,8 +1,8 @@
 {
-    "agent_version": "1.0.4",
+    "agent_version": "1.0.9",
     "agent_windows_url": "https://r2.tikmatrix.com/tiktok-agent.exe",
     "agent_mac_url": "https://r2.tikmatrix.com/tiktok-agent",
-    "script_version": "1.0.4",
+    "script_version": "1.0.8",
     "script_windows_url": "https://r2.tikmatrix.com/script.exe",
     "script_mac_url": "https://r2.tikmatrix.com/script",
     "apk_version": "1.0.0",
@@ -11,7 +11,7 @@
     "test_apk_url": "https://r2.tikmatrix.com/com.github.tikmatrix.test.apk",
     "scrcpy_version": "2.3.1",
     "scrcpy_url": "https://r2.tikmatrix.com/scrcpy-server",
-    "platform_tools_version": "35.0.1.1",
+    "platform_tools_version": "35.0.1",
     "platform_tools_mac_url": "https://r2.tikmatrix.com/platform-tools-latest-darwin.zip",
     "platform_tools_windows_url": "https://r2.tikmatrix.com/platform-tools-latest-win.zip"
 }
