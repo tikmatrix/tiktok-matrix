@@ -13,5 +13,5 @@
     "scrcpy_url": "https://r2.tikmatrix.com/scrcpy-server",
     "platform_tools_version": "35.0.1",
     "platform_tools_mac_url": "https://r2.tikmatrix.com/platform-tools-latest-darwin.zip",
-    "platform_tools_windows_url": "https://r2.tikmatrix.com/platform-tools-latest-win.zip"
+    "platform_tools_windows_url": "https://r2.tikmatrix.com/platform-tools-latest-windows.zip"
 }

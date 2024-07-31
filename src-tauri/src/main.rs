@@ -175,10 +175,6 @@ fn start_agent(app: tauri::AppHandle) -> u32 {
     let work_dir = app.path_resolver().app_data_dir().unwrap();
     let work_dir = work_dir.to_str().unwrap();
     let bin_path = format!("{}/{}", work_dir, "bin/tiktok-agent");
-    if !Path::new(&bin_path).exists() {
-        log::error!("bin/tiktok-agent not exist");
-        return 0;
-    }
 
     let mut command = Command::new(bin_path);
     if !cfg!(debug_assertions) {
