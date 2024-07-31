@@ -1,11 +1,13 @@
 import axios from 'axios'
 import mock from '../mock'
-import * as util from '../utils'
+import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+import { appDataDir } from '@tauri-apps/api/path';
+const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
 export function post(config) {
   !config && (config = { headers: {} })
   !config.headers && (config.headers = {})
   !config.data && (config.data = {})
-  !config.baseURL && (config.baseURL = import.meta.env.VITE_API_URL)
+  config.baseURL = 'http://127.0.0.1:' + port
   const { method, url, data, headers } = config
   const mockMethod = method || 'get'
   if (import.meta.env.VITE_APP_MOCK === 'true') {
@@ -28,7 +30,7 @@ const request = function request(config) {
   !config.headers && (config.headers = {})
   !config.data && (config.data = {})
   !config.params && (config.params = {})
-  !config.baseURL && (config.baseURL = import.meta.env.VITE_API_URL)
+  config.baseURL = 'http://127.0.0.1:' + port
   const { method, url } = config
   const mockMethod = method || 'get'
   if (import.meta.env.VITE_APP_MOCK === 'true') {

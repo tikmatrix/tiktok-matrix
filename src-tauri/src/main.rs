@@ -128,7 +128,7 @@ fn unzip_file(zip_path: String, dest_dir: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn grant_adb_permission(app: tauri::AppHandle) {
+fn grant_adb_permission(_app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
         let work_dir = app.path_resolver().app_data_dir().unwrap();
@@ -142,7 +142,7 @@ fn grant_adb_permission(app: tauri::AppHandle) {
     }
 }
 #[tauri::command]
-fn grant_script_permission(app: tauri::AppHandle) {
+fn grant_script_permission(_app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
         let work_dir = app.path_resolver().app_data_dir().unwrap();
@@ -156,7 +156,7 @@ fn grant_script_permission(app: tauri::AppHandle) {
     }
 }
 #[tauri::command]
-fn grant_agent_permission(app: tauri::AppHandle) {
+fn grant_agent_permission(_app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
         let work_dir = app.path_resolver().app_data_dir().unwrap();
@@ -335,26 +335,34 @@ fn main() -> std::io::Result<()> {
             //迁移数据
             #[cfg(target_os = "windows")]
             if Path::new("data").exists() {
-                std::fs::copy(
-                    "data/settings.db",
-                    format!("{}/{}", work_dir, "data/settings.db"),
-                )?;
-                std::fs::rename("data/settings.db", "data/settings.db.bak")?;
-                std::fs::copy(
-                    "data/tiktok.db",
-                    format!("{}/{}", work_dir, "data/tiktok.db"),
-                )?;
-                std::fs::rename("data/tiktok.db", "data/tiktok.db.bak")?;
-                std::fs::copy(
-                    "data/tiktok.db-shm",
-                    format!("{}/{}", work_dir, "data/tiktok.db-shm"),
-                )?;
-                std::fs::rename("data/tiktok.db-shm", "data/tiktok.db-shm.bak")?;
-                std::fs::copy(
-                    "data/tiktok.db-wal",
-                    format!("{}/{}", work_dir, "data/tiktok.db-wal"),
-                )?;
-                std::fs::rename("data/tiktok.db-wal", "data/tiktok.db-wal.bak")?;
+                if Path::new("data/settings.db").exists() {
+                    std::fs::copy(
+                        "data/settings.db",
+                        format!("{}/{}", work_dir, "data/settings.db"),
+                    )?;
+                    std::fs::rename("data/settings.db", "data/settings.db.bak")?;
+                }
+                if Path::new("data/tiktok.db").exists() {
+                    std::fs::copy(
+                        "data/tiktok.db",
+                        format!("{}/{}", work_dir, "data/tiktok.db"),
+                    )?;
+                    std::fs::rename("data/tiktok.db", "data/tiktok.db.bak")?;
+                }
+                if Path::new("data/tiktok.db-shm").exists() {
+                    std::fs::copy(
+                        "data/tiktok.db-shm",
+                        format!("{}/{}", work_dir, "data/tiktok.db-shm"),
+                    )?;
+                    std::fs::rename("data/tiktok.db-shm", "data/tiktok.db-shm.bak")?;
+                }
+                if Path::new("data/tiktok.db-wal").exists() {
+                    std::fs::copy(
+                        "data/tiktok.db-wal",
+                        format!("{}/{}", work_dir, "data/tiktok.db-wal"),
+                    )?;
+                    std::fs::rename("data/tiktok.db-wal", "data/tiktok.db-wal.bak")?;
+                }
             }
             stop_agent();
             start_agent(app.app_handle());

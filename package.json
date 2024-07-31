@@ -5,12 +5,7 @@
   "type": "module",
   "scripts": {
     "run:tiktok-matrix:dev": "npm install && npm run tauri dev",
-    "build:tiktok-agent": "cd tiktok-agent && cargo build --release",
-    "upload:tiktok-agent": "npx wrangler r2 object put tikmatrix/tiktok-agent --file=tiktok-agent/target/release/tiktok-agent",
     "upload:core-version": "npx wrangler r2 object put tikmatrix/coreVersion.json --file=coreVersion.json",
-    "update-version": "node ./scripts/update-version.js",
-    "send-msg": "node ./scripts/send-msg.js",
-    "copy:bots": "npx shx cp -rf tiktok-agent/bin/* src-tauri/bin/",
     "dev": "vite --mode dev",
     "build": "vite build --mode prod",
     "preview": "vite preview --mode test",

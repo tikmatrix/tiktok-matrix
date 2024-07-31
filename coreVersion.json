@@ -1,8 +1,8 @@
 {
-    "agent_version": "1.0.9",
+    "agent_version": "1.0.3",
     "agent_windows_url": "https://r2.tikmatrix.com/tiktok-agent.exe",
     "agent_mac_url": "https://r2.tikmatrix.com/tiktok-agent",
-    "script_version": "1.0.8",
+    "script_version": "1.0.2",
     "script_windows_url": "https://r2.tikmatrix.com/script.exe",
     "script_mac_url": "https://r2.tikmatrix.com/script",
     "apk_version": "1.0.0",
