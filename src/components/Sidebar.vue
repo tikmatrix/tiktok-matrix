@@ -462,16 +462,7 @@ export default {
         this.settings = res.data
       })
     },
-    update_setting() {
-      this.$service
-        .update_settings(this.settings)
-        .then(res => {
-          console.log(res)
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    },
+
     setText(text) {
       this.$service.set_text({
         text: text,

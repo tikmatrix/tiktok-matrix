@@ -255,7 +255,7 @@ export default {
       this.touchSync('d', event)
     },
     connect() {
-      this.scrcpy = new WebSocket($config.apiUrl)
+      this.scrcpy = new WebSocket(this.$config.wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
         console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)

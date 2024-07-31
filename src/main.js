@@ -43,7 +43,7 @@ import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
 const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
 let config = {
-  wsUrl: 'http://127.0.0.1:' + wsPort,
+  wsUrl: 'ws://127.0.0.1:' + wsPort,
   apiUrl: 'http://127.0.0.1:' + port
 }
 
