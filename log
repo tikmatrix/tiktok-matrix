@@ -1,0 +1,621 @@
+thread 'main' panicked at C:\Users\Administrator\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-0.13.5\src\utils.rs:114:22:
+there is no reactor running, must be called from the context of a Tokio 1.x runtime
+stack backtrace:
+   0:     0x7ff7eccbf2dd - <unknown>
+   1:     0x7ff7ecce2a99 - <unknown>
+   2:     0x7ff7eccba4a1 - <unknown>
+   3:     0x7ff7eccbf0b6 - <unknown>
+   4:     0x7ff7eccc1228 - <unknown>
+   5:     0x7ff7eccc0ed9 - <unknown>
+   6:     0x7ff7eccc1822 - <unknown>
+   7:     0x7ff7eccc1666 - <unknown>
+   8:     0x7ff7eccbfc4f - <unknown>
+   9:     0x7ff7eccc12c6 - <unknown>
+  10:     0x7ff7ecec6144 - <unknown>
+  11:     0x7ff7ecec0d30 - <unknown>
+  12:     0x7ff7ecc86f3b - <unknown>
+  13:     0x7ff7ecc71417 - <unknown>
+  14:     0x7ff7ec620a57 - <unknown>
+  15:     0x7ff7ec517fef - <unknown>
+  16:     0x7ff7ec5124fc - <unknown>
+  17:     0x7ff7ec4fadf2 - <unknown>
+  18:     0x7ff7ec480aa1 - <unknown>
+  19:     0x7ff7ec4e83a5 - <unknown>
+  20:     0x7ff7ecc87bd8 - <unknown>
+  21:     0x7ff7ecc87acf - <unknown>
+  22:     0x7ff7ec4b3a05 - <unknown>
+  23:     0x7ff7ec4c68f6 - <unknown>
+  24:     0x7ff7ec468956 - <unknown>
+  25:     0x7ff7ec50e66a - <unknown>
+  26:     0x7ff7eccb1cfe - <unknown>
+  27:     0x7ff7ec4d090c - <unknown>
+  28:     0x7ff7ecea5b8c - <unknown>
+  29:     0x7ffe4c80257d - BaseThreadInitThunk
+  30:     0x7ffe4de4af28 - RtlUserThreadStart
+thread 'main' panicked at C:\Users\Administrator\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-0.13.5\src\utils.rs:114:22:
+there is no reactor running, must be called from the context of a Tokio 1.x runtime
+stack backtrace:
+   0:     0x7ff7eccbf2dd - <unknown>
+   1:     0x7ff7ecce2a99 - <unknown>
+   2:     0x7ff7eccba4a1 - <unknown>
+   3:     0x7ff7eccbf0b6 - <unknown>
+   4:     0x7ff7eccc1228 - <unknown>
+   5:     0x7ff7eccc0ed9 - <unknown>
+   6:     0x7ff7eccc1822 - <unknown>
+   7:     0x7ff7eccc1666 - <unknown>
+   8:     0x7ff7eccbfc4f - <unknown>
+   9:     0x7ff7eccc12c6 - <unknown>
+  10:     0x7ff7ecec6144 - <unknown>
+  11:     0x7ff7ecec0d30 - <unknown>
+  12:     0x7ff7ecc86f3b - <unknown>
+  13:     0x7ff7ecc71417 - <unknown>
+  14:     0x7ff7ec5566f9 - <unknown>
+  15:     0x7ff7ec512abf - <unknown>
+  16:     0x7ff7ec51287c - <unknown>
+  17:     0x7ff7ec4fab97 - <unknown>
+  18:     0x7ff7ec482611 - <unknown>
+  19:     0x7ff7ec4e9025 - <unknown>
+  20:     0x7ff7ecc87bd8 - <unknown>
+  21:     0x7ff7ecc87acf - <unknown>
+  22:     0x7ff7ec4b3a05 - <unknown>
+  23:     0x7ff7ec4c68f6 - <unknown>
+  24:     0x7ff7ec468956 - <unknown>
+  25:     0x7ff7ec50e66a - <unknown>
+  26:     0x7ff7eccb1cfe - <unknown>
+  27:     0x7ff7ec4d090c - <unknown>
+  28:     0x7ff7ecea5b8c - <unknown>
+  29:     0x7ffe4c80257d - BaseThreadInitThunk
+  30:     0x7ffe4de4af28 - RtlUserThreadStart
+thread 'main' panicked at C:\Users\Administrator\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-0.13.5\src\utils.rs:114:22:
+there is no reactor running, must be called from the context of a Tokio 1.x runtime
+stack backtrace:
+   0:     0x7ff7eccbf2dd - <unknown>
+   1:     0x7ff7ecce2a99 - <unknown>
+   2:     0x7ff7eccba4a1 - <unknown>
+   3:     0x7ff7eccbf0b6 - <unknown>
+   4:     0x7ff7eccc1228 - <unknown>
+   5:     0x7ff7eccc0ed9 - <unknown>
+   6:     0x7ff7eccc1822 - <unknown>
+   7:     0x7ff7eccc1666 - <unknown>
+   8:     0x7ff7eccbfc4f - <unknown>
+   9:     0x7ff7eccc12c6 - <unknown>
+  10:     0x7ff7ecec6144 - <unknown>
+  11:     0x7ff7ecec0d30 - <unknown>
+  12:     0x7ff7ecc86f3b - <unknown>
+  13:     0x7ff7ecc71417 - <unknown>
+  14:     0x7ff7ec67e709 - <unknown>
+  15:     0x7ff7ec514f4f - <unknown>
+  16:     0x7ff7ec5126bc - <unknown>
+  17:     0x7ff7ec4fa917 - <unknown>
+  18:     0x7ff7ec484a01 - <unknown>
+  19:     0x7ff7ec4e8535 - <unknown>
+  20:     0x7ff7ecc87bd8 - <unknown>
+  21:     0x7ff7ecc87acf - <unknown>
+  22:     0x7ff7ec4b3a05 - <unknown>
+  23:     0x7ff7ec4c68f6 - <unknown>
+  24:     0x7ff7ec468956 - <unknown>
+  25:     0x7ff7ec50e66a - <unknown>
+  26:     0x7ff7eccb1cfe - <unknown>
+  27:     0x7ff7ec4d090c - <unknown>
+  28:     0x7ff7ecea5b8c - <unknown>
+  29:     0x7ffe4c80257d - BaseThreadInitThunk
+  30:     0x7ffe4de4af28 - RtlUserThreadStart
+INFO [tiktok_agent::actor::script_actor] ScriptActor started
+thread 'main' panicked at C:\Users\Administrator\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-0.13.5\src\utils.rs:114:22:
+there is no reactor running, must be called from the context of a Tokio 1.x runtime
+stack backtrace:
+   0:     0x7ff7eccbf2dd - <unknown>
+   1:     0x7ff7ecce2a99 - <unknown>
+   2:     0x7ff7eccba4a1 - <unknown>
+   3:     0x7ff7eccbf0b6 - <unknown>
+   4:     0x7ff7eccc1228 - <unknown>
+   5:     0x7ff7eccc0ed9 - <unknown>
+   6:     0x7ff7eccc1822 - <unknown>
+   7:     0x7ff7eccc1666 - <unknown>
+   8:     0x7ff7eccbfc4f - <unknown>
+   9:     0x7ff7eccc12c6 - <unknown>
+  10:     0x7ff7ecec6144 - <unknown>
+  11:     0x7ff7ecec0d30 - <unknown>
+  12:     0x7ff7ecc86f3b - <unknown>
+  13:     0x7ff7ecc71417 - <unknown>
+  14:     0x7ff7ec67e969 - <unknown>
+  15:     0x7ff7ec5136ef - <unknown>
+  16:     0x7ff7ec5125dc - <unknown>
+  17:     0x7ff7ec4fa407 - <unknown>
+  18:     0x7ff7ec480491 - <unknown>
+  19:     0x7ff7ec4e8b75 - <unknown>
+  20:     0x7ff7ecc87bd8 - <unknown>
+  21:     0x7ff7ecc87acf - <unknown>
+  22:     0x7ff7ec4b3a05 - <unknown>
+  23:     0x7ff7ec4c68f6 - <unknown>
+  24:     0x7ff7ec468956 - <unknown>
+  25:     0x7ff7ec50e66a - <unknown>
+  26:     0x7ff7eccb1cfe - <unknown>
+  27:     0x7ff7ec4d090c - <unknown>
+  28:     0x7ff7ecea5b8c - <unknown>
+  29:     0x7ffe4c80257d - BaseThreadInitThunk
+  30:     0x7ffe4de4af28 - RtlUserThreadStart
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+thread 'INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+mainINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+' panicked at INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+C:\Users\Administrator\.cargo\registry\src\index.crates.io-6f17d22bba15001f\actix-0.13.5\src\utils.rsINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+:INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+114INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+:INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+22INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+:
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+there is no reactor running, must be called from the context of a Tokio 1.x runtimeINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+stack backtrace:
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccbf2ddINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+1INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ecce2a99INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+2INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccba4a1INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+3INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccbf0b6INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+4INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccc1228INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+5INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccc0ed9INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+6INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccc1822INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccc1666INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+8INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccbfc4fINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+9INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccc12c6INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+10INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ecec6144INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+11INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ecec0d30INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+12INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ecc86f3bINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+13INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ecc71417INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+14INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec67e4a9INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+15INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec515b7fINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+16INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec51295cINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+17INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec4fa6b7INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+18INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec47f641INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+19INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec4e8e95INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+20INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ecc87bd8INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+21INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ecc87acfINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+22INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec4b3a05INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+23INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec4c68f6INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+24INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec468956INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+25INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec50e66aINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+26INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7eccb1cfeINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+27INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ec4d090cINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+28INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ff7ecea5b8cINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+<unknown>INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+29INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ffe4c80257dINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+BaseThreadInitThunkINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+30INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+: INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+0xINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+7ffe4de4af28INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+ - INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+RtlUserThreadStartINFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+Error: Os { code: 10013, kind: PermissionDenied, message: "An attempt was made to access a socket in a way forbidden by its access permissions." }
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel
+INFO [tiktok_agent] script_actor receive error: receiving on a closed channel

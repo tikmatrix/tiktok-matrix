@@ -14,7 +14,7 @@ embed-resource = "2.4"
 
 [dependencies]
 reqwest = { version = "0.11", features = ["blocking", "multipart", "json"] }
-tauri = { version = "1.5", features = [ "path-all", "fs-all",
+tauri = { version = "1.5", features = [ "clipboard-all", "path-all", "fs-all",
     "os-all",
     "window-all",
     "dialog-all",
