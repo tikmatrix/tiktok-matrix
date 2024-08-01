@@ -166,7 +166,7 @@ export default {
       })
     },
     check_update() {
-      axios.get('https://r2.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
+      axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
         this.remote_version = res.data;
         console.log("remote_version", this.remote_version)
         this.check_platform_tools((updated) => {
@@ -196,10 +196,8 @@ export default {
       let url = ""
       const osType = await os.type();
       if (osType === 'Darwin') {
-        console.log('This is macOS');
         url = this.remote_version.platform_tools_mac_url;
       } else if (osType === 'Windows_NT') {
-        console.log('This is Windows');
         url = this.remote_version.platform_tools_windows_url;
       } else {
         console.log('Unknown OS type');

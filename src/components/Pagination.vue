@@ -63,7 +63,6 @@ export default {
       pageSize: 10,
       searchTerm: '',
       searchGroup: '',
-      showDemoTip: false
     }
   },
   computed: {
@@ -110,7 +109,6 @@ export default {
     }
   },
   mounted() {
-    this.showDemoTip = import.meta.env.VITE_APP_MOCK === 'true'
   }
 }
 </script>

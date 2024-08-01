@@ -1,4 +1,4 @@
-{
+const updateJson = {
     "agent_version": "1.0.0",
     "agent_windows_url": "https://r2.tikmatrix.com/tiktok-agent.exe",
     "agent_mac_url": "https://r2.tikmatrix.com/tiktok-agent",
@@ -15,3 +15,16 @@
     "platform_tools_mac_url": "https://r2.tikmatrix.com/platform-tools-latest-darwin.zip",
     "platform_tools_windows_url": "https://r2.tikmatrix.com/platform-tools-latest-windows.zip"
 }
+const updateJsonStr = JSON.stringify(updateJson, null, 2)
+console.log(updateJsonStr)
+const response1 = await fetch('https://api.tikmatrix.com/coreVersion.json', {
+    method: 'PUT',
+    headers: {
+        'Content-Type': 'text/plain',
+        'Content-Length': updateJsonStr.length,
+        'Authorization': 'Bearer ' + process.env.TIKMATRIX_API_KEY
+    },
+    body: updateJsonStr
+})
+console.log(`Response1: ${response1.status} ${response1.statusText}`)
+

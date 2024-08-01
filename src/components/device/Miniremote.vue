@@ -337,12 +337,7 @@ export default {
     },
     syncDisplay() {
       this.connect_count += 1
-      // if (import.meta.env.VITE_APP_MOCK === 'true') {
-      //   setTimeout(() => {
-      //     this.loading = false
-      //   }, 3000)
-      //   return
-      // }
+
       this.loading = true
       if (this.$refs.display == null) {
         console.log('display is null,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)

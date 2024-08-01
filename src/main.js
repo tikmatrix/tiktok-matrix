@@ -21,8 +21,6 @@ import { reactive } from 'vue'
 import mitt from 'mitt'
 import VueDragSelect from "@coleqiu/vue-drag-select";
 import VueDraggableResizable from 'vue-draggable-resizable'
-import * as util from './utils'
-
 
 const emitter = mitt()
 let devices = reactive({ list: [] })

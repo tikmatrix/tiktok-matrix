@@ -3,6 +3,7 @@
     <Pagination :items="accounts" :searchKeys="['email', 'username', 'device', 'device_index']" @refresh="get_accounts">
       <template v-slot:buttons>
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
+        <MyButton @click="$refs.batch_add_dialog.showModal()" label="batchAdd" icon="fa fa-add" />
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
@@ -66,6 +67,22 @@
         <button>close</button>
       </form>
     </dialog>
+    <dialog ref="batch_add_dialog" class="modal">
+      <div class="modal-box">
+        <div class="flex flex-col items-center gap-2 mb-2 w-full">
+          <textarea class="textarea textarea-success w-full h-32" :placeholder="$t('batchAddTips')" autocomplete="off"
+            v-model="batchAccounts">
+
+      </textarea>
+          <div class="mt-4 w-full flex justify-end align-middle text-center items-center">
+            <MyButton class="btn-primary" @click="batchAdd" label="save" />
+          </div>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
   </div>
 </template>
 <script>
@@ -74,6 +91,7 @@ import Edit from './Edit.vue'
 import Add from './Add.vue'
 import Pagination from '../Pagination.vue'
 import { inject } from 'vue'
+import { ask } from '@tauri-apps/api/dialog';
 export default {
   name: 'app',
   components: {
@@ -90,9 +108,55 @@ export default {
     return {
       accounts: [],
       currentAccount: {},
+      batchAccounts: '',
     }
   },
   methods: {
+    async batchAdd() {
+      if (this.batchAccounts.length === 0) {
+        return
+      }
+      //check format
+      let accounts = this.batchAccounts.split('\n').map(line => {
+        line = line.trim()
+        if (line.length === 0) {
+          return
+        }
+        if (!line.includes('##')) {
+          return
+        }
+        //must contains 3 ##
+        if (line.split('##').length !== 3) {
+          return
+        }
+
+        let [email, pwd, username, device] = line.split('##').map(v => v.trim())
+        return {
+          email,
+          pwd,
+          fans: 0,
+          device,
+          username
+        }
+      })
+
+      accounts = accounts.filter(account => account)
+      const yes = await ask('Batch Add', `Are you sure to add these ${accounts.length} accounts?`)
+      if (!yes) {
+        return
+      }
+      for (let account of accounts) {
+        await this.$service
+          .add_account({
+            email: account.email,
+            pwd: account.pwd,
+            fans: account.fans,
+            device: account.device,
+            username: account.username
+          })
+      }
+
+    },
     show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial)
       this.$emitter.emit('openDevice', mydevice)

@@ -369,8 +369,12 @@ export const i18n = createI18n({
       transferRate: 'Transfer Rate',
       percentage: 'Percentage',
       pasteSuccess: 'Paste Success',
+      batchAdd: 'Batch Add',
+      batchAddTips: 'Email##Password##Username##Device\nExample: email1##123##test##1\nOne account per line',
     },
     'zh-CN': {
+      batchAddTips: '邮箱##密码##用户名##设备号\n例如: email1##123##test##1\n每行一个帐号',
+      batchAdd: '批量添加',
       pasteSuccess: '粘贴成功',
       percentage: '百分比',
       transferRate: '传输速率',
