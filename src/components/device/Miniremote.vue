@@ -298,6 +298,8 @@ export default {
               // limit max length 5, other with ...
               if (!this.big && this.name.length > 5) {
                 this.name = this.name.substring(0, 5) + '...'
+              } else if (this.big && this.name.length > 10) {
+                this.name = this.name.substring(0, 10) + '...'
               }
 
               break

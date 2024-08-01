@@ -226,10 +226,8 @@ export default {
       let url = ""
       const osType = await os.type();
       if (osType === 'Darwin') {
-        console.log('This is macOS');
         url = this.remote_version.script_mac_url;
       } else if (osType === 'Windows_NT') {
-        console.log('This is Windows');
         url = this.remote_version.script_windows_url;
       } else {
         console.log('Unknown OS type');
@@ -241,10 +239,8 @@ export default {
       let url = ""
       const osType = await os.type();
       if (osType === 'Darwin') {
-        console.log('This is macOS');
         url = this.remote_version.agent_mac_url;
       } else if (osType === 'Windows_NT') {
-        console.log('This is Windows');
         url = this.remote_version.agent_windows_url;
       } else {
         console.log('Unknown OS type');
@@ -254,7 +250,9 @@ export default {
         if (updated) {
           invoke("grant_agent_permission");
           invoke("start_agent");
-          window.location.reload();
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000)
         }
 
       }, () => {
