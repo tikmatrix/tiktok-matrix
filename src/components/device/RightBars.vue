@@ -109,8 +109,6 @@
       <div class="modal-action">
         <form method="dialog">
           <button class="btn btn-primary" @click="input_callback">{{ $t('enter') }}</button>
-          <button class="btn btn-secondary" @click="copyFromPhone">{{ $t('copyFromPhone') }}</button>
-          <button class="btn btn-secondary" @click="pasteToPhone">{{ $t('pasteToPhone') }}</button>
         </form>
       </div>
     </div>
@@ -118,7 +116,6 @@
 </template>
 <script>
 import { WebviewWindow } from '@tauri-apps/api/window'
-import { readText, writeText } from '@tauri-apps/api/clipboard';
 export default {
   name: 'RightBars',
   props: {
@@ -137,20 +134,7 @@ export default {
     }
   },
   methods: {
-    async copyFromPhone() {
-      this.$service
-        .read_clipboard({
-          serial: this.serial
-        })
-        .then(async res => {
-          await writeText(res.data)
-          this.$emitter.emit('showToast', this.$t('copySuccess'))
-        })
-    },
-    async pasteToPhone() {
-      this.input_dialog_text = await readText()
-      this.post_input_dialog()
-    },
+
     openDebugWindow() {
       localStorage.setItem('serial', this.serial);
       const webview = new WebviewWindow('Debug', {

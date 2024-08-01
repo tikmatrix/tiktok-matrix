@@ -189,7 +189,7 @@ import Tools from './Tools.vue'
 import QuickActions from './QuickActions.vue';
 import { open } from '@tauri-apps/api/dialog';
 import { getVersion } from '@tauri-apps/api/app';
-import { os } from '@tauri-apps/api';
+import { readText, writeText } from '@tauri-apps/api/clipboard';
 import { appDataDir } from '@tauri-apps/api/path';
 export default {
   name: 'Sidebar',
@@ -584,7 +584,35 @@ export default {
         return
       }
       this.script('scrape_fans', [targetUsername])
-    }
+    },
+    async copyFromPhone() {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+
+      if (this.selection.length > 1) {
+        this.$emitter.emit('showToast', this.$t('onlyOneDeviceSelected'))
+        return
+      }
+      this.$service
+        .read_clipboard({
+          serial: this.selection[0],
+        })
+        .then(async res => {
+          await writeText(res.data)
+          this.$emitter.emit('showToast', this.$t('copySuccess'))
+        })
+    },
+    async pasteToPhone() {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+      const text = await readText()
+      this.setText(text)
+      this.$emitter.emit('showToast', this.$t('pasteSuccess'))
+    },
   },
   async mounted() {
     this.$i18n.locale = this.locale
@@ -649,6 +677,16 @@ export default {
     this.$emitter.on('send_screen_mode', (mode) => {
       this.send_screen_mode(mode)
     });
+    document.addEventListener('copy', () => {
+      console.log('复制事件被触发');
+      this.copyFromPhone()
+    });
+
+    document.addEventListener('paste', () => {
+      console.log('粘贴事件被触发');
+      this.pasteToPhone()
+    });
+
   }
 }
 </script>

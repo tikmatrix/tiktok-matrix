@@ -368,8 +368,10 @@ export const i18n = createI18n({
       updateAgent: 'Update Agent',
       transferRate: 'Transfer Rate',
       percentage: 'Percentage',
+      pasteSuccess: 'Paste Success',
     },
     'zh-CN': {
+      pasteSuccess: '粘贴成功',
       percentage: '百分比',
       transferRate: '传输速率',
       updateAgent: '更新Agent',

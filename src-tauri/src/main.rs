@@ -128,7 +128,7 @@ fn unzip_file(zip_path: String, dest_dir: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn grant_adb_permission(_app: tauri::AppHandle) {
+fn grant_adb_permission(app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
         let work_dir = app.path_resolver().app_data_dir().unwrap();
@@ -142,7 +142,7 @@ fn grant_adb_permission(_app: tauri::AppHandle) {
     }
 }
 #[tauri::command]
-fn grant_script_permission(_app: tauri::AppHandle) {
+fn grant_script_permission(app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
         let work_dir = app.path_resolver().app_data_dir().unwrap();
@@ -156,7 +156,7 @@ fn grant_script_permission(_app: tauri::AppHandle) {
     }
 }
 #[tauri::command]
-fn grant_agent_permission(_app: tauri::AppHandle) {
+fn grant_agent_permission(app: tauri::AppHandle) {
     #[cfg(target_os = "macos")]
     {
         let work_dir = app.path_resolver().app_data_dir().unwrap();
