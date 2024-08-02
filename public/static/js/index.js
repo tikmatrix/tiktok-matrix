@@ -1,6 +1,7 @@
 window.LOCAL_URL = '/'; // http://localhost:17310/';
 window.LOCAL_VERSION = '0.0.3'
-
+import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
 
 window.vm = new Vue({
   el: '#app',
@@ -447,7 +448,7 @@ window.vm = new Vue({
     },
     getCurrentActivity() {
       return $.ajax({
-        url: 'http://127.0.0.1:8090/api/device/activity?serial=' + this.serial,
+        url: `http://127.0.0.1:{port}/api/device/activity?serial={this.serial}`,
         type: 'GET',
         cache: false
       })
@@ -460,8 +461,7 @@ window.vm = new Vue({
     dumpHierarchy: function () { // v2
       this.dumping = true
       return $.ajax({
-        url: 'http://127.0.0.1:8090/api/device/hierarchy?serial=' + this.serial,
-        // url: 'http://' + this.serial + '/hierarchy',
+        url: `http://127.0.0.1:{port}/api/device/hierarchy?serial={this.serial}`,
         type: 'GET',
         cache: false
       })
@@ -646,7 +646,7 @@ window.vm = new Vue({
         dtd.reject();
       }
       // var url = 'http://' + this.serial + '/screenshot/0';
-      var url = 'http://127.0.0.1:8090/api/device/screenshot?serial=' + this.serial;
+      var url = `http://127.0.0.1:{port}/api/device/screenshot?serial={this.serial}`;
       img.src = url;
       return dtd;
     },

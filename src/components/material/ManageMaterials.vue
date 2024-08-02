@@ -224,7 +224,7 @@ export default {
     },
     fission() {
 
-      let events = new EventSource("http://127.0.0.1:8090/api/video/output");
+      let events = new EventSource(`{this.$config.wsUrl}/api/video/output`);
       events.onmessage = (event) => {
         if (event.data === "connected" || event.data === "ping") {
           return

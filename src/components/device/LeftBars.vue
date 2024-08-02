@@ -103,7 +103,7 @@ export default {
   data() {
     return {
       settings: {
-        proxy_url: 'http://127.0.0.1:8090'
+        proxy_url: 'http://127.0.0.1:7890'
       },
       group: {
         like_probable: 0,
