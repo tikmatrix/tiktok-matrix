@@ -3,7 +3,7 @@
     <div class="flex items-center flex-row gap-2 max-w-lg w-full">
       <span class="font-bold">{{ $t('uid') }}: </span>
       <input id="uid" type="text" placeholder="uid" class="input input-sm grow input-bordered" v-model="license.uid"
-        readonly />
+        readonly disabled />
       <MyButton @click="copyuid" label="copy" />
     </div>
     <div class="flex items-center flex-row gap-2 max-w-lg w-full">
@@ -40,8 +40,9 @@
       </div>
 
       <div class="flex items-center flex-row gap-2 max-w-lg w-full">
+        <label class="font-bold text-right col-span-1">{{ $t('address') }}:</label>
         <input id="usdt" type="text" placeholder="usdt" class="input input-sm grow input-bordered" v-model="usdt"
-          readonly />
+          readonly disabled />
         <MyButton @click="copyusdt" label="copy" />
 
       </div>
@@ -52,6 +53,7 @@
 </template>
 <script>
 import MyButton from '../Button.vue'
+import { writeText } from '@tauri-apps/api/clipboard';
 export default {
   name: 'app',
   components: {
@@ -70,32 +72,13 @@ export default {
     }
   },
   methods: {
-    copyusdt() {
-      //copy uid to clipboard
-      var input = document.getElementById("usdt");
-      input.select(); // 选择文本
-      input.setSelectionRange(0, 99999); // 对于移动设备，确保能选择文本
-
-      try {
-        var successful = document.execCommand('copy'); // 执行复制操作
-        this.$emitter.emit('showToast', this.$t('copySuccess'))
-      } catch (err) {
-        console.log('Unable to copy', err);
-      }
+    async copyusdt() {
+      await writeText(this.usdt)
+      this.$emitter.emit('showToast', this.$t('copySuccess'))
     },
-    copyuid() {
-      //copy uid to clipboard
-      var input = document.getElementById("uid");
-      input.select(); // 选择文本
-      input.setSelectionRange(0, 99999); // 对于移动设备，确保能选择文本
-
-      try {
-        var successful = document.execCommand('copy'); // 执行复制操作
-        this.$emitter.emit('showToast', this.$t('copySuccess'))
-      } catch (err) {
-        console.log('Unable to copy', err);
-      }
-
+    async copyuid() {
+      await writeText(this.license.uid)
+      this.$emitter.emit('showToast', this.$t('copySuccess'))
     },
     get_license() {
       this.$service.get_license().then(res => {
