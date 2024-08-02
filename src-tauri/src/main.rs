@@ -332,6 +332,9 @@ fn main() -> std::io::Result<()> {
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/material"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/avatar"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
+            std::fs::write(format!("{}/port.txt", work_dir), "8090")?;
+            std::fs::write(format!("{}/wsport.txt", work_dir), "8092")?;
+
             //迁移数据
             #[cfg(target_os = "windows")]
             if Path::new("data").exists() {
