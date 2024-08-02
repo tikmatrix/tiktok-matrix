@@ -32,7 +32,7 @@ jobs:
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
         run: |
-          npm run update-version
+          node scripts/update-version.js
       # - name: commit
       #   run: |
       #     git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -62,4 +62,4 @@ jobs:
           TAG: ${{ github.ref }}
           URL: ${{ steps.create_release.outputs.url }}
         run: |
-          npm run send-msg
+          node scripts/send-msg.js
