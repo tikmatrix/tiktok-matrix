@@ -126,7 +126,7 @@ export default {
           return
         }
         //must contains 3 ##
-        if (line.split('##').length !== 3) {
+        if (line.split('##').length !== 4) {
           return
         }
 
@@ -141,7 +141,11 @@ export default {
       })
 
       accounts = accounts.filter(account => account)
-      const yes = await ask('Batch Add', `Are you sure to add these ${accounts.length} accounts?`)
+      if (accounts.length === 0) {
+        alert('Invalid format')
+        return
+      }
+      const yes = await ask(`${this.$t('batchAddConfirm', { count: accounts.length })}`, this.$t('confirm'))
       if (!yes) {
         return
       }
@@ -155,7 +159,9 @@ export default {
             username: account.username
           })
       }
+      this.$refs.batch_add_dialog.close()
 
+      this.get_accounts()
     },
     show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial)

@@ -587,12 +587,12 @@ export default {
     },
     async copyFromPhone() {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        // this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
       }
 
       if (this.selection.length > 1) {
-        this.$emitter.emit('showToast', this.$t('onlyOneDeviceSelected'))
+        // this.$emitter.emit('showToast', this.$t('onlyOneDeviceSelected'))
         return
       }
       this.$service
@@ -606,7 +606,7 @@ export default {
     },
     async pasteToPhone() {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        // this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
       }
       const text = await readText()

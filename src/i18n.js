@@ -371,8 +371,10 @@ export const i18n = createI18n({
       pasteSuccess: 'Paste Success',
       batchAdd: 'Batch Add',
       batchAddTips: 'Email##Password##Username##Device\nExample: email1##123##test##1\nOne account per line',
+      batchAddConfirm: 'Are you sure you want to add these {count} accounts?',
     },
     'zh-CN': {
+      batchAddConfirm: '是否确定要添加这些 {count} 个帐号?',
       batchAddTips: '邮箱##密码##用户名##设备号\n例如: email1##123##test##1\n每行一个帐号',
       batchAdd: '批量添加',
       pasteSuccess: '粘贴成功',
