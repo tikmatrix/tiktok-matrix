@@ -16,6 +16,7 @@
                 <th>{{ $t('username') }}</th>
                 <!-- <th>{{ $t('fans') }}</th> -->
                 <th>{{ $t('device') }}</th>
+                <th>{{ $t('status') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
             </thead>
@@ -35,7 +36,10 @@
                   </a>
                   <span v-else class="text text-red-500">{{ $t('offline') }}</span>
                 </td>
-
+                <td>
+                  <span v-if="account.logined == 1" class="text text-green-500">{{ $t('logined') }}</span>
+                  <span v-else class="text text-red-500">{{ $t('unlogined') }}</span>
+                </td>
                 <td>
                   <div class="space-x-4">
                     <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -121,7 +125,8 @@ export default {
         return
       }
       let content = this.accounts.map(account => {
-        return `${account.email}##${account.pwd}##${account.username}##${account.device}`
+        account.device_index = this.devices.find(device => device.serial === account.device)?.index
+        return `${account.email}##${account.pwd}##${account.username}##${account.device_index}`
       }).join('\n')
       await writeTextFile('download/accounts.txt', content, { dir: BaseDirectory.AppData });
       invoke("open_dir", {
@@ -147,18 +152,22 @@ export default {
         }
 
         let [email, pwd, username, device] = line.split('##').map(v => v.trim())
+        let serial = this.devices.find(d => d.index === parseInt(device))?.serial
+        if (!serial) {
+          return
+        }
         return {
           email,
           pwd,
           fans: 0,
-          device,
+          serial,
           username
         }
       })
 
       accounts = accounts.filter(account => account)
       if (accounts.length === 0) {
-        alert('Invalid format')
+        alert('No valid accounts found')
         return
       }
       const yes = await ask(`${this.$t('batchAddConfirm', { count: accounts.length })}`, this.$t('confirm'))
@@ -171,8 +180,9 @@ export default {
             email: account.email,
             pwd: account.pwd,
             fans: account.fans,
-            device: account.device,
-            username: account.username
+            device: account.serial,
+            username: account.username,
+            logined: 0
           })
       }
       this.$refs.batch_add_dialog.close()
@@ -208,7 +218,8 @@ export default {
           pwd: account.pwd,
           fans: account.fans,
           device: account.device,
-          username: account.username
+          username: account.username,
+          logined: account.logined
         })
         .then(() => {
           this.showAddAccount = false
@@ -235,7 +246,8 @@ export default {
           pwd: account.pwd,
           fans: account.fans,
           device: account.device,
-          username: account.username
+          username: account.username,
+          logined: account.logined
         })
         .then(() => {
           this.get_accounts()

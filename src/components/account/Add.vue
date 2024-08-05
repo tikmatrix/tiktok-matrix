@@ -17,6 +17,22 @@
     </div>
 
 
+
+    <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
+      <label class="font-bold text-right col-span-1">{{ $t('status') }}:</label>
+      <div class="col-span-2 flex items-center gap-4">
+        <div class="flex items-center">
+          <input type="radio" id="logined" value="1" v-model="account.logined" class="form-radio text-blue-500 h-4 w-4">
+          <label for="logined" class="ml-2">{{ $t('logined') }}</label>
+        </div>
+        <div class="flex items-center">
+          <input type="radio" id="unlogined" value="0" v-model="account.logined"
+            class="form-radio text-blue-500 h-4 w-4">
+          <label for="unlogined" class="ml-2">{{ $t('unlogined') }}</label>
+        </div>
+
+      </div>
+    </div>
     <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
       <label class="font-bold text-right col-span-1">{{ $t('device') }}:</label>
       <div class="relative col-span-2">
@@ -60,6 +76,7 @@ export default {
         username: '@',
         fans: 0,
         device: '',
+        logined: 0,
       },
       showDeviceList: false,
     }
@@ -81,6 +98,7 @@ export default {
         alert(this.$t('usernameRequired'))
         return
       }
+      this.account.logined = parseInt(this.account.logined)
       this.$emit('add', this.account)
     },
     selectDevice(device) {
