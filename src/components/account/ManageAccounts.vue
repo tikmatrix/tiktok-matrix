@@ -4,6 +4,7 @@
       <template v-slot:buttons>
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="$refs.batch_add_dialog.showModal()" label="batchAdd" icon="fa fa-add" />
+        <MyButton @click="export_accounts" label="export" icon="fa fa-upload" />
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
@@ -92,6 +93,8 @@ import Add from './Add.vue'
 import Pagination from '../Pagination.vue'
 import { inject } from 'vue'
 import { ask } from '@tauri-apps/api/dialog';
+import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
+import { invoke } from "@tauri-apps/api/tauri";
 export default {
   name: 'app',
   components: {
@@ -112,6 +115,19 @@ export default {
     }
   },
   methods: {
+    async export_accounts() {
+      const yes = await ask(this.$t('exportConfirm'), this.$t('confirm'))
+      if (!yes) {
+        return
+      }
+      let content = this.accounts.map(account => {
+        return `${account.email}##${account.pwd}##${account.username}##${account.device}`
+      }).join('\n')
+      await writeTextFile('download/accounts.txt', content, { dir: BaseDirectory.AppData });
+      invoke("open_dir", {
+        name: "download"
+      });
+    },
     async batchAdd() {
       if (this.batchAccounts.length === 0) {
         return

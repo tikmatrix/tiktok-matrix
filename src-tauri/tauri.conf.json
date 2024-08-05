@@ -71,8 +71,9 @@
       "fs": {
         "all": true,
         "scope": [
-          "$APPDATA/bin/*",
-          "$APPDATA/*"
+          "**",
+          "**/*",
+          "/**/*"
         ]
       },
       "path": {

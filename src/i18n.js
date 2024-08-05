@@ -373,8 +373,12 @@ export const i18n = createI18n({
       batchAddTips: 'Email##Password##Username##Device\nExample: email1##123##test##1\nOne account per line',
       batchAddConfirm: 'Are you sure you want to add these {count} accounts?',
       address: 'Address',
+      export: 'Export',
+      exportConfirm: 'Are you sure you want to export accounts?',
     },
     'zh-CN': {
+      exportConfirm: '是否确定导出帐号',
+      export: '导出',
       address: '地址',
       batchAddConfirm: '是否确定要添加这些 {count} 个帐号?',
       batchAddTips: '邮箱##密码##用户名##设备号\n例如: email1##123##test##1\n每行一个帐号',
