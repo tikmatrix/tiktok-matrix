@@ -1,0 +1,94 @@
+name: Release
+run-name: ${{ github.actor }} is building Release 🚀
+on:
+  push:
+    tags:
+      - 'test*'
+permissions:
+  contents: write
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest' # for Arm based macs (M1 and above).
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest' # for Intel based macs.
+            args: '--target x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
+    runs-on: ${{ matrix.platform }}
+    steps:  
+      - name: Checkout main repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
+        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
+
+      - name: install frontend dependencies
+        run: yarn install # change this to npm, pnpm or bun depending on which one you use.
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5QjJyVXB3OE1DSFBmMDJ1a2NMNGxVZDZ2U1pHaWplRldvRms1NXNPeTlYUUFBQkFBQUFBQUFBQUFBQUlBQUFBQXFRbnAxVGNmK2lheVl1ZTFYTmVtSTNiU1lPMVdrZUxEQlErUFdWc0ZOdS9ZUkJaQ2RTajhXWEFUaWlTMDU2WHU0WnVPQ2xPck5GbXZlcnpIYXRWWUNSZkhmVFNEaXpiZ1NQSVJFOW5xdVlHeURVS1JSOXBjQTU3WVBXRXlrS1VOOUNoMjY0MlY4aE09Cg=="
+          TAURI_KEY_PASSWORD: "123456"
+        with:
+          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          releaseName: 'App v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+      # - name: build
+      #   run: |
+      #     npm install
+      #     .\build.ps1
+      # - name: update version
+      #   env:
+      #     TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+      #   run: |
+      #     node scripts/update-version.js
+      # - name: release
+      #   id: create_release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: ./src-tauri/target/release/bundle/msi/*
+      #     body_path: ./CHANGELOG.md
+      # - name: upload to r2
+      #   uses: ryand56/r2-upload-action@v1.2.3
+      #   with:
+      #     r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+      #     r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+      #     r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      #     r2-bucket: tikmatrix
+      #     source-dir: ./src-tauri/target/release/bundle/msi
+      #     destination-dir: ./
+      # - name: telegram bot
+      #   env:
+      #     CHAT_ID: -1002080383068
+      #     TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      #     TAG: ${{ github.ref }}
+      #     URL: ${{ steps.create_release.outputs.url }}
+      #   run: |
+      #     node scripts/send-msg.js
