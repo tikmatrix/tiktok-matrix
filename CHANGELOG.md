@@ -1,2 +1,3 @@
-新增功能：自动匹配帐号，手机上已经登陆的帐号可以一键采集到系统中，不需要手动添加
-New feature: Automatically match accounts. Accounts already logged in on the phone can be collected into the system with one click, without the need for manual addition.
+修复复制手机剪切板的问题(FIX: copy mobile clipboard)
+增加一键重置设备索引(ADD: reset device index)
+优化匹配账号功能,更新账号的登录状态(UPDATE: update account login status)

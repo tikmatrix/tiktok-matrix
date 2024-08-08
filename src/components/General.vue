@@ -101,7 +101,7 @@ export default {
             ip_3: util.getData('ip_3') || 1,
             ip_4: util.getData('ip_4') || 2,
             ip_5: util.getData('ip_5') || 254,
-            port: util.getData('port') || 5555,
+            port: util.getData('scan_port') || 5555,
             proxy_host: util.getData('proxy_host') || '127.0.0.1',
             proxy_port: util.getData('proxy_port') || 8080,
             scaning: false
@@ -130,7 +130,7 @@ export default {
             util.setData('ip_3', this.ip_3)
             util.setData('ip_4', this.ip_4)
             util.setData('ip_5', this.ip_5)
-            util.setData('port', this.port)
+            util.setData('scan_port', this.port)
             this.$service.scan_tcp({
                 start_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_4}`,
                 end_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_5}`,

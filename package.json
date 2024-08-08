@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "run:tiktok-matrix:dev": "npm install && npm run tauri dev",
     "dev": "vite --mode dev",
     "build": "vite build --mode prod",
     "preview": "vite preview --mode test",
