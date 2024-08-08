@@ -378,8 +378,10 @@ export const i18n = createI18n({
       logined: 'Logined',
       unlogined: 'Unlogined',
       batchAddFailTips: 'No valid accounts found',
+      resetIndex: 'Reset Index',
     },
     'zh-CN': {
+      resetIndex: '重置索引',
       batchAddFailTips: '未找到有效帐号',
       logined: '已登录',
       unlogined: '未登录',

@@ -65,6 +65,7 @@ const api = {
   move_to_group: '/api/device/move_to_group',
   set_text: '/api/device/set_text',
   capture_video: '/api/video/capture_video',
-  fission_video: '/api/video/fission_video'
+  fission_video: '/api/video/fission_video',
+  reset_all_index: '/api/device/reset_all_index'
 }
 export default api

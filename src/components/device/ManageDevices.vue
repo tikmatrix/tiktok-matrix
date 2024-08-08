@@ -1,9 +1,11 @@
 <template>
   <div class="w-full h-screen overflow-y-auto">
     <Pagination ref="device_panel" :items="devices" :searchKeys="['serial', 'account']" @refresh="refreshPage">
+      <template v-slot:buttons>
+        <MyButton @click="$service.reset_all_index" label="resetIndex" icon="fa fa-refresh" />
+      </template>
       <template v-slot:default="slotProps">
         <div class="flex flex-wrap gap-2 p-4">
-
           <div class="flex flex-wrap gap-2 flex-1">
             <div v-for="(device, _index) in devices" :key="device.serial">
               <Miniremote :device="device" :key="device.key" />

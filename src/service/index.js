@@ -646,3 +646,11 @@ export function message_now(data) {
     url: api.message_now
   })
 }
+//reset_all_index
+export function reset_all_index(data) {
+  return request({
+    method: 'get',
+    data,
+    url: api.reset_all_index
+  })
+}
