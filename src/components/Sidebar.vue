@@ -586,6 +586,9 @@ export default {
       this.script('scrape_fans', [targetUsername])
     },
     async copyFromPhone() {
+      if (!document.hasFocus()) {
+        return
+      }
       if (this.selection.length == 0) {
         // this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
@@ -605,6 +608,10 @@ export default {
         })
     },
     async pasteToPhone() {
+      //check visibility
+      if (!document.hasFocus()) {
+        return
+      }
       if (this.selection.length == 0) {
         // this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return

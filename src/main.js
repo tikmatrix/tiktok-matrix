@@ -40,6 +40,8 @@ setInterval(getDevices, 10000)
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
 const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
+localStorage.setItem('port', port);
+localStorage.setItem('wsPort', wsPort);
 let config = {
   wsUrl: 'ws://127.0.0.1:' + wsPort,
   apiUrl: 'http://127.0.0.1:' + port

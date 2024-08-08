@@ -1,7 +1,5 @@
 window.LOCAL_URL = '/'; // http://localhost:17310/';
 window.LOCAL_VERSION = '0.0.3'
-import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
-const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
 
 window.vm = new Vue({
   el: '#app',
@@ -22,6 +20,7 @@ window.vm = new Vue({
     originNodes: [],
     autoCopy: true,
     useXPathOnly: false,
+    port: localStorage.port || '8090',
     platform: localStorage.platform || 'Android',
     serial: localStorage.serial || '',
     activity: localStorage.activity || "",
@@ -447,8 +446,9 @@ window.vm = new Vue({
       return this.dumpHierarchy();
     },
     getCurrentActivity() {
+      console.log("getCurrentActivity:" + `http://127.0.0.1:${this.port}/api/device/activity?serial=${this.serial}`)
       return $.ajax({
-        url: `http://127.0.0.1:{port}/api/device/activity?serial={this.serial}`,
+        url: `http://127.0.0.1:${this.port}/api/device/activity?serial=${this.serial}`,
         type: 'GET',
         cache: false
       })
@@ -456,12 +456,15 @@ window.vm = new Vue({
           console.log(activity)
           localStorage.setItem("activity", activity);
           this.activity = activity;
+        }).fail((ret) => {
+          console.log(ret)
         })
     },
     dumpHierarchy: function () { // v2
       this.dumping = true
+      console.log("dumpHierarchy:" + `http://127.0.0.1:${this.port}/api/device/hierarchy?serial=${this.serial}`)
       return $.ajax({
-        url: `http://127.0.0.1:{port}/api/device/hierarchy?serial={this.serial}`,
+        url: `http://127.0.0.1:${this.port}/api/device/hierarchy?serial=${this.serial}`,
         type: 'GET',
         cache: false
       })
@@ -646,7 +649,7 @@ window.vm = new Vue({
         dtd.reject();
       }
       // var url = 'http://' + this.serial + '/screenshot/0';
-      var url = `http://127.0.0.1:{port}/api/device/screenshot?serial={this.serial}`;
+      var url = `http://127.0.0.1:${this.port}/api/device/screenshot?serial=${this.serial}`;
       img.src = url;
       return dtd;
     },

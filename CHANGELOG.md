@@ -1,3 +1,2 @@
-帐号列表增加登陆状态字段（Add login status field）
-修复批量添加帐号的时候设备无效的问题（Fix the device is offline error when adding accounts in batches）
-增加到导出帐号的功能（Add export accounts functionality）
+新增功能：自动匹配帐号，手机上已经登陆的帐号可以一键采集到系统中，不需要手动添加
+New feature: Automatically match accounts. Accounts already logged in on the phone can be collected into the system with one click, without the need for manual addition.

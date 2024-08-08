@@ -15,12 +15,15 @@ TikMatrix 是一个群控安卓真实手机（非云控，非协议），基于a
 
 ## Development
 
+### Requirements
+
+1. Node.js 18.x or higher
+2. Rust 1.67.x or higher
+
 ```shell
 npm install --global @tauri-apps/cli
-npm install --global shx
 npm install
 npm run tauri dev
-npm run tauri build
 ```
 
 ## Thanks to
