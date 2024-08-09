@@ -545,6 +545,26 @@ export default {
           console.log(err)
         })
     },
+    share(postUrl) {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+
+      this.$service
+        .share_now({
+          serials: this.selection,
+          post_url: postUrl
+        })
+        .then(res => {
+          console.log(res)
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
     stop_task() {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
@@ -678,6 +698,9 @@ export default {
     });
     this.$emitter.on('message', () => {
       this.message();
+    });
+    this.$emitter.on('share', (postUrl) => {
+      this.share(postUrl);
     });
     this.$emitter.on('stop_task', () => {
       this.stop_task();

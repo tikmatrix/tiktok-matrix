@@ -3,7 +3,7 @@
     <Pagination :items="post_comments" :searchKeys="['name']" @refresh="get_post_comments">
       <template v-slot:buttons>
         <MyButton onclick="add_post_comment_dialog.showModal()" label="add" icon="fa fa-add" />
-        <MyButton onclick="confirm_modal.showModal()" label="clearAll" />
+        <MyButton @click="clearAll" label="clearAll" />
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
@@ -65,19 +65,7 @@
         </div>
       </div>
     </dialog>
-    <dialog id="confirm_modal" class="modal">
-      <div class="modal-box">
-        <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        </form>
-        <h3 class="font-bold text-lg">{{ $t('confirmClearAll') }}</h3>
-        <div class="modal-action">
-          <form method="dialog">
-            <button class="btn btn-primary" @click="delete_all">{{ $t('confirm') }}</button>
-          </form>
-        </div>
-      </div>
-    </dialog>
+
     <dialog ref="add_dialog" class="modal">
       <div class="modal-box">
         <Add :post_comment="current_post_comment || default_post_comment" @add="add_post_comment_topic" />
@@ -92,6 +80,7 @@
 import MyButton from '../Button.vue'
 import Add from './Add.vue'
 import Pagination from '../Pagination.vue'
+import { ask } from '@tauri-apps/api/dialog';
 
 export default {
   name: 'app',
@@ -109,15 +98,18 @@ export default {
     }
   },
   methods: {
-    delete_all() {
-      this.$service
-        .delete_all_post_comments()
-        .then(() => {
-          this.get_post_comments()
-        })
-        .catch(err => {
-          console.log(err)
-        })
+    async clearAll() {
+      const yes = await ask(this.$t('confirmClearAll'), this.$t('confirm'));
+      if (yes) {
+        this.$service
+          .delete_all_post_comments()
+          .then(() => {
+            this.get_post_comments()
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      }
     },
     get_post_comments() {
 

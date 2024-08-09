@@ -100,6 +100,12 @@ export function get_message_jobs() {
     url: api.message_job
   })
 }
+export function get_share_jobs() {
+  return request({
+    method: 'get',
+    url: api.share_job
+  })
+}
 export function add_account(account) {
   return request({
     method: 'post',
@@ -186,10 +192,25 @@ export function delete_message_job({ id }) {
     params: { id }
   })
 }
+export function delete_share_job({ id }) {
+  return request({
+    method: 'delete',
+    url: api.share_job,
+    params: { id }
+  })
+}
 export function update_message_job(data) {
   return request({
     method: 'put',
     url: api.message_job,
+    data
+  })
+}
+
+export function update_share_job(data) {
+  return request({
+    method: 'put',
+    url: api.share_job,
     data
   })
 }
@@ -344,6 +365,12 @@ export function count_message_job_by_status() {
     url: api.count_message_job_by_status
   })
 }
+export function count_share_job_by_status() {
+  return request({
+    method: 'get',
+    url: api.count_share_job_by_status
+  })
+}
 export function count_online_device() {
   return request({
     method: 'get',
@@ -379,6 +406,12 @@ export function retry_all_failed_message_job() {
   return request({
     method: 'get',
     url: api.retry_all_failed_message_job
+  })
+}
+export function retry_all_failed_share_job() {
+  return request({
+    method: 'get',
+    url: api.retry_all_failed_share_job
   })
 }
 export function add_post_comment({ post_url }) {
@@ -450,6 +483,12 @@ export function delete_all_message_jobs() {
   return request({
     method: 'delete',
     url: api.delete_all_message_jobs
+  })
+}
+export function delete_all_share_jobs() {
+  return request({
+    method: 'delete',
+    url: api.delete_all_share_jobs
   })
 }
 export function delete_all_post_comments() {
@@ -644,6 +683,13 @@ export function message_now(data) {
     method: 'post',
     data,
     url: api.message_now
+  })
+}
+export function share_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.share_now
   })
 }
 //reset_all_index

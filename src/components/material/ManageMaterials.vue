@@ -64,19 +64,7 @@
         <Detail :material="currentMaterial" v-if="currentMaterial && $refs.detail_modal.open" />
       </div>
     </dialog>
-    <dialog id="confirm_modal" class="modal">
-      <div class="modal-box">
-        <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        </form>
-        <h3 class="font-bold text-lg">{{ $t('confirmClearAll') }}</h3>
-        <div class="modal-action">
-          <form method="dialog">
-            <button class="btn btn-primary" @click="delete_all">{{ $t('confirm') }}</button>
-          </form>
-        </div>
-      </div>
-    </dialog>
+
   </div>
   <!-- upload progress dialog -->
   <dialog ref="upload_dialog" class="modal">

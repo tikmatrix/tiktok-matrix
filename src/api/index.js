@@ -9,10 +9,12 @@ const api = {
   material_count: '/api/material/count',
   publish_job: '/api/publish_job',
   message_job: '/api/message_job',
+  share_job: '/api/share_job',
   train_job: '/api/train_job',
   train_now: '/api/train_now',
   publish_now: '/api/publish_now',
   message_now: '/api/message_now',
+  share_now: '/api/share_now',
   init: '/api/device/init',
   index: '/api/device/index',
   group: '/api/group',
@@ -25,12 +27,14 @@ const api = {
   count_train_job_by_status: '/api/train_job/count_by_status',
   count_publish_job_by_status: '/api/publish_job/count_by_status',
   count_message_job_by_status: '/api/message_job/count_by_status',
+  count_share_job_by_status: '/api/share_job/count_by_status',
   count_online_device: '/api/device/count_online',
   count_all_account: '/api/account/count_all',
   count_account_by_group_id: '/api/account/count_account_by_group_id',
   retry_all_failed_train_job: '/api/train_job/retry_all',
   retry_all_failed_publish_job: '/api/publish_job/retry_all',
   retry_all_failed_message_job: '/api/message_job/retry_all',
+  retry_all_failed_share_job: '/api/share_job/retry_all',
   post_comment: '/api/post_comment',
   post_comment_topic: '/api/post_comment_topic',
   gen_topic_comments: '/api/gen_topic_comments',
@@ -40,6 +44,7 @@ const api = {
   delete_all_train_jobs: '/api/train_job/delete_all',
   delete_all_publish_jobs: '/api/publish_job/delete_all',
   delete_all_message_jobs: '/api/message_job/delete_all',
+  delete_all_share_jobs: '/api/share_job/delete_all',
   delete_all_post_comments: '/api/post_comment/delete_all',
   proxy: '/agent/api/proxy',
   proxy_rule: '/agent/api/proxy_rule',
@@ -66,6 +71,8 @@ const api = {
   set_text: '/api/device/set_text',
   capture_video: '/api/video/capture_video',
   fission_video: '/api/video/fission_video',
-  reset_all_index: '/api/device/reset_all_index'
+  reset_all_index: '/api/device/reset_all_index',
+
+
 }
 export default api

@@ -4,7 +4,7 @@
       @refresh="get_message_jobs">
       <template v-slot:buttons>
         <MyButton @click="retry_all_failed" label="retryAllFaied" />
-        <MyButton onclick="confirm_modal.showModal()" label="clearAll" />
+        <MyButton @click="clearAll" label="clearAll" />
         <select v-model="searchStatus" class="select select-sm select-bordered max-w-xs ml-2">
           <option value="">{{ $t('allStatus') }}</option>
           <option value="0">{{ $t('waiting') }}</option>
@@ -72,19 +72,7 @@
       </template>
     </Pagination>
 
-    <dialog id="confirm_modal" class="modal">
-      <div class="modal-box">
-        <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        </form>
-        <h3 class="font-bold text-lg">{{ $t('confirmClearAll') }}</h3>
-        <div class="modal-action">
-          <form method="dialog">
-            <button class="btn btn-primary" @click="delete_all">{{ $t('confirm') }}</button>
-          </form>
-        </div>
-      </div>
-    </dialog>
+
   </div>
 </template>
 <script>
@@ -92,6 +80,7 @@ import Modal from '../Modal.vue'
 import MyButton from '../Button.vue'
 import Pagination from '../Pagination.vue'
 import { inject } from 'vue'
+import { ask } from '@tauri-apps/api/dialog';
 export default {
   name: 'app',
   components: {
@@ -121,15 +110,18 @@ export default {
     }
   },
   methods: {
-    delete_all() {
-      this.$service
-        .delete_all_message_jobs()
-        .then(() => {
-          this.get_message_jobs()
-        })
-        .catch(err => {
-          console.log(err)
-        })
+    async clearAll() {
+      const yes = await ask(this.$t('confirmClearAll'), this.$t('confirm'));
+      if (yes) {
+        this.$service
+          .delete_all_message_jobs()
+          .then(() => {
+            this.get_message_jobs()
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      }
     },
 
     show_device(serial) {
