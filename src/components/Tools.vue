@@ -47,22 +47,19 @@
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('train')">
-        <font-awesome-icon icon="fa-solid fa-graduation-cap" class="h-3 w-3" />{{ $t('startTrain') }}
+        <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('startTrain') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('publish')">
-        <font-awesome-icon icon="fa-solid fa-add" class="h-3 w-3" />{{ $t('startPublish') }}
+        <font-awesome-icon icon="paper-plane" class="h-3 w-3" />{{ $t('startPublish') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('message')">
-        <font-awesome-icon icon="fa-solid fa-paper-plane" class="h-3 w-3" />{{ $t('message') }}
+        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('message') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('stop_task')">
-        <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-pink-500" />{{ $t('stopTask') }}</button>
+
     <dialog ref="scrapeUsersDialog" class="modal">
         <div class="modal-box">
             <h3 class="font-bold text-lg">{{ $t('scrapeTitle') }}</h3>

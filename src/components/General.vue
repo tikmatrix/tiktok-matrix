@@ -1,8 +1,23 @@
 <template>
-    <button v-for="(item, index) in menuItems" :key="index"
+    <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('menuSelected', item)">
-        <font-awesome-icon :icon="item.icon" class="h-3 w-3" />{{ $t(`${item.name}`) }}
+        @click="$emitter.emit('menuSelected', { name: 'accounts' })">
+        <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('menuSelected', { name: 'packageNameSettings' })">
+        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('packageNameSettings') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('menuSelected', { name: 'registerSettings' })">
+        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('registerSettings') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('menuSelected', { name: 'messageSettings' })">
+        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('messageSettings') }}
     </button>
 
     <button
@@ -11,16 +26,7 @@
         <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-white" />
         {{ $t('setFastInput') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="open_dir('logs')">
-        <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3" />{{ $t('logs') }}
-    </button>
-    <!-- <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('show-hidden-devices')">
-        <font-awesome-icon icon="fa-solid fa-eye" class="h-3 w-3" />{{ $t('showHiddenDevices') }}
-    </button> -->
+
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
@@ -42,6 +48,11 @@
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.github.tikmatrix/.MainActivity'] })">
         {{ $t('openTikMatrixApp') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="open_dir('logs')">
+        <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3" />{{ $t('openLogs') }}
     </button>
     <dialog ref="scan_dialog" class="modal">
         <div class="modal-box">

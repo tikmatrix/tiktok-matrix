@@ -72,6 +72,7 @@
           <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
           <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
           <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
+          <a ref="tasks" role="tab" class="tab" @click="selectTab('tasks')">{{ $t('tasks') }}</a>
         </div>
         <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'general'">
           <General :menuItems="menuItems" />
@@ -81,6 +82,9 @@
         </div>
         <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tktools'">
           <Tools :settings="settings" />
+        </div>
+        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tasks'">
+          <Tasks :settings="settings" />
         </div>
         <div class="flex flex-col">
           <span class="font-sans p-2 bg-base-200 rounded-md font-bold">{{ $t('groups') }}</span>
@@ -186,8 +190,9 @@ import { inject } from 'vue'
 import * as util from '../utils'
 import General from './General.vue'
 import Tools from './Tools.vue'
+import Tasks from './Tasks.vue'
 import QuickActions from './QuickActions.vue';
-import { open } from '@tauri-apps/api/dialog';
+import { open, ask } from '@tauri-apps/api/dialog';
 import { getVersion } from '@tauri-apps/api/app';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
 import { appDataDir } from '@tauri-apps/api/path';
@@ -199,6 +204,7 @@ export default {
   },
   components: {
     General,
+    Tasks,
     Tools,
     QuickActions
   },
@@ -208,19 +214,6 @@ export default {
       settings: {},
       menuItems: [],
       fullMenuItems: [
-        // { name: 'dashboard', icon: 'tachometer-alt' },
-        { name: 'accounts', icon: 'user' },
-        { name: 'analytics', icon: 'chart-bar' },
-        { name: 'comments', icon: 'comment' },
-        // { name: 'proxys', icon: 'globe' },
-        { name: 'postBots', icon: 'upload' },
-        { name: 'editBots', icon: 'video' },
-        { name: 'musics', icon: 'music' },
-        { name: 'publishJobs', icon: 'robot' },
-        { name: 'trainJobs', icon: 'sync-alt' },
-        { name: 'messageJobs', icon: 'envelope' },
-        { name: 'dialogWatcher', icon: 'exclamation-circle' },
-        { name: 'settings', icon: 'cogs' },
       ],
 
       selection: [],
@@ -278,14 +271,19 @@ export default {
 
         })
     },
-    deleteGroup(id) {
-      this.$service
-        .delete_group({
-          id: id
-        })
-        .then(() => {
-          this.get_groups()
-        })
+    async deleteGroup(id) {
+      const yes = await ask(this.$t('deleteGroupConfirm'), this.$t('confirm'));
+      console.log("result:" + yes);
+      if (yes) {
+        this.$service
+          .delete_group({
+            id: id
+          })
+          .then(() => {
+            this.get_groups()
+          })
+      }
+
     },
     moveToGroup(src_id, dst_id) {
       let serials = []
@@ -404,17 +402,26 @@ export default {
         case 'general':
           this.$refs.general.classList.add('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
+          this.$refs.tasks.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
           break
         case 'tktools':
           this.$refs.general.classList.remove('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
+          this.$refs.tasks.classList.remove('tab-active')
           this.$refs.tktools.classList.add('tab-active')
           break
         case 'quickActions':
           this.$refs.general.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
+          this.$refs.tasks.classList.remove('tab-active')
           this.$refs.quickActions.classList.add('tab-active')
+          break
+        case 'tasks':
+          this.$refs.general.classList.remove('tab-active')
+          this.$refs.tktools.classList.remove('tab-active')
+          this.$refs.quickActions.classList.remove('tab-active')
+          this.$refs.tasks.classList.add('tab-active')
           break
       }
     },

@@ -26,7 +26,9 @@
       <ManageTrainJobs v-if="selectedItem.name === 'trainJobs' && $refs.page_dialog.open" />
       <ManageMessageJobs v-if="selectedItem.name === 'messageJobs' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
-      <ManageSettings v-if="selectedItem.name === 'settings' && $refs.page_dialog.open" />
+      <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
+      <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
+      <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
       <ManagePostBots v-if="selectedItem.name === 'postBots' && $refs.page_dialog.open" />
       <ManageEditBots v-if="selectedItem.name === 'editBots' && $refs.page_dialog.open" />
       <BuyLicense v-if="selectedItem.name === 'buyLicense' && $refs.page_dialog.open" />
@@ -78,7 +80,9 @@ import ManageDialog from './components/dialog/ManageDialog.vue'
 import ManageTrainJobs from './components/trainJob/ManageTrainJobs.vue'
 import ManageGroups from './components/group/ManageGroups.vue'
 import ManageMusics from './components/music/ManageMusics.vue'
-import ManageSettings from './components/settings/ManageSettings.vue'
+import RegisterSettings from './components/settings/RegisterSettings.vue'
+import PackageNameSettings from './components/settings/PackageNameSettings.vue'
+import MessageSettings from './components/settings/MessageSettings.vue'
 import ManageComments from './components/comment/ManageComments.vue'
 import ManageProxys from './components/proxy/ManageProxys.vue'
 import ManagePostBots from './components/virtualHost/ManagePostBots.vue'
@@ -121,7 +125,9 @@ export default {
     ManageTrainJobs,
     ManageGroups,
     ManageMusics,
-    ManageSettings,
+    RegisterSettings,
+    PackageNameSettings,
+    MessageSettings,
     ManageComments,
     ManageProxys,
     ManagePostBots,
@@ -308,8 +314,7 @@ export default {
   },
   mounted() {
     tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
-      const yes = await ask("Are you sure?");
-      console.log("result:" + yes);
+      const yes = await ask(this.$t('exitConfirm'), this.$t('confirm'));
       if (yes) {
         this.stop_agent();
         tauriWindow.getCurrent().close();
