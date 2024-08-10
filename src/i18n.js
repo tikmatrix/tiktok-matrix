@@ -296,7 +296,7 @@ export const i18n = createI18n({
       publish: 'Publish',
       stopTask: 'Stop Task',
       comment: 'Comment',
-      quickActions: 'Quick Actions',
+      quickActions: 'Shortcut',
       uploadToGallery: 'Upload To Gallery',
       openIpChecker: 'Open IP Checker',
       initApp: 'Init TikMatrix App',
@@ -390,9 +390,13 @@ export const i18n = createI18n({
       startShare: 'Start Share',
       shareTitle: 'Repost Target Posts To Selected Accounts',
       postUrlRequired: 'Post Url Required',
-      targetUsernameRequired: 'Target Username Required'
+      targetUsernameRequired: 'Target Username Required',
+      trainSettings: 'Train Settings',
+      publishSettings: 'Publish Settings'
     },
     'zh-CN': {
+      publishSettings: '发布设置',
+      trainSettings: '养号设置',
       targetUsernameRequired: '目标用户名必填',
       postUrlRequired: '帖子链接必填',
       shareTitle: '转发目标帖子到选择的账号',

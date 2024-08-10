@@ -33,7 +33,10 @@
       <ManagePostBots v-if="selectedItem.name === 'postBots' && $refs.page_dialog.open" />
       <ManageEditBots v-if="selectedItem.name === 'editBots' && $refs.page_dialog.open" />
       <BuyLicense v-if="selectedItem.name === 'buyLicense' && $refs.page_dialog.open" />
-      <EditGroup :group="selectedItem.group" v-if="selectedItem.name === 'editGroup' && $refs.page_dialog.open" />
+      <TrainSettings :group="selectedItem.group"
+        v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" />
+      <PublishSettings :group="selectedItem.group"
+        v-if="selectedItem.name === 'publishSettings' && $refs.page_dialog.open" />
     </div>
     <form method="dialog" class="modal-backdrop">
       <button>close</button>
@@ -92,10 +95,11 @@ import ManageEditBots from './components/virtualHost/ManageEditBots.vue'
 import Login from './components/Login.vue'
 import RunAgentTips from './components/RunAgentTips.vue'
 import Miniremote from './components/device/Miniremote.vue'
+import TrainSettings from './components/group/TrainSettings.vue'
+import PublishSettings from './components/group/PublishSettings.vue'
 import { inject } from 'vue'
 import * as util from './utils'
 import Toast from './components/Toast.vue'
-import EditGroup from './components/group/EditGroup.vue'
 import { invoke } from "@tauri-apps/api/tauri";
 import { window as tauriWindow } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
@@ -137,8 +141,9 @@ export default {
     ManageEditBots,
     Miniremote,
     Toast,
-    EditGroup,
-    BuyLicense
+    BuyLicense,
+    TrainSettings,
+    PublishSettings
   },
   data() {
     return {

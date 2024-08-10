@@ -90,48 +90,64 @@
           <span class="font-sans p-2 bg-base-200 rounded-md font-bold">{{ $t('groups') }}</span>
           <button
             class="btn btn-sm bg-transparent hover:bg-transparent border-1 border-success text-black-500 hover:text-blue-700 p-0 mt-1 block"
-            @click="showAddGroup = !showAddGroup">
+            @click="addGroup">
             <font-awesome-icon icon="fa-solid fa-plus" class="h-4 w-4 text-blue-500" />
             <span class="text-xs text-blue-500">{{ $t('addGroup') }}</span>
           </button>
-          <input v-if="showAddGroup" class="input input-sm input-bordered w-full max-w-xs mt-2" type="text"
-            v-model="newGroupName" v-on:keyup.enter="addGroup" />
-          <div class="flex flex-row form-control items-center" v-for="(item, index) in groups" :key="item.id">
-            <label class="label cursor-pointer">
-              <input type="checkbox" class="checkbox checkbox-sm" @change="selectAll(item.id)"
-                :checked="isSelectAll(item.id)" />
-              <span class="label-text text-blue-500  text-xs">{{ item.name }}({{ groupDevices[item.id].length }})</span>
-            </label>
-            <div class="tooltip" :data-tip="$t('editGroup')">
+          <input ref="groupNameInput" v-if="showAddGroup" class="input input-sm input-bordered w-full max-w-xs mt-2"
+            type="text" v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
+          <div class="border border-base-300 bg-base-500 rounded-md mt-2 shadow-lg" v-for="(item, index) in groups"
+            :key="item.id">
+            <div class="flex flex-row form-control items-center">
+              <label class="label cursor-pointer">
+                <input type="checkbox" class="checkbox checkbox-sm" @change="selectAll(item.id)"
+                  :checked="isSelectAll(item.id)" />
+                <span class="label-text text-blue-500  text-xs">{{ item.name }}({{ groupDevices[item.id].length
+                  }})</span>
+              </label>
               <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer ml-2"
-                @click="$emitter.emit('menuSelected', { name: 'editGroup', group: item })"></font-awesome-icon>
-            </div>
-            <div class="tooltip" :data-tip="$t('uploadVideo')">
-              <font-awesome-icon icon="fa-solid fa-film" class="text-blue-500 cursor-pointer ml-2"
-                @click="$emitter.emit('menuSelected', { name: 'materials', group: item })"></font-awesome-icon>
+                @click="renameGroup(item)"></font-awesome-icon>
+
+              <div class="tooltip" :data-tip="$t('uploadVideo')">
+                <font-awesome-icon icon="fa-solid fa-film" class="text-blue-500 cursor-pointer ml-2"
+                  @click="$emitter.emit('menuSelected', { name: 'materials', group: item })"></font-awesome-icon>
+              </div>
+
+              <div class="tooltip" :data-tip="$t('deleteGroup')">
+                <font-awesome-icon icon="fa-solid fa-trash" class="text-red-500 cursor-pointer ml-2"
+                  @click="deleteGroup(item.id)"></font-awesome-icon>
+              </div>
+
+              <span class="label-text text-xs text-right flex-1 mr-2">{{ $t('selected') }}
+                {{ selections[item.id].length }}
+                {{ $t('units') }}
+              </span>
+              <!-- <div class="tooltip" :data-tip="$t('moveToGroup')">
+                <details :ref="'moveToGroupMenu_' + item.id" class="dropdown dropdown-top">
+                  <summary class="btn btn-xs bg-transparent hover:bg-transparent border-0">
+                    <font-awesome-icon icon="fa-solid fa-share" class="text-blue-500"></font-awesome-icon>
+                  </summary>
+                  <ul class="dropdown-content z-[10] menu menu-sm p-2 shadow bg-base-200 rounded-box w-52">
+                    <li v-for="(subitem, index) in groups" :key="subitem.id"><a
+                        @click="moveToGroup(item.id, subitem.id)">{{
+                          subitem.name }}</a>
+                    </li>
+                  </ul>
+                </details>
+              </div> -->
             </div>
 
-            <div class="tooltip" :data-tip="$t('deleteGroup')">
-              <font-awesome-icon icon="fa-solid fa-trash" class="text-red-500 cursor-pointer ml-2"
-                @click="deleteGroup(item.id)"></font-awesome-icon>
-            </div>
-
-            <span class="label-text text-xs text-right flex-1">{{ $t('selected') }}
-              {{ selections[item.id].length }}
-              {{ $t('units') }}
-            </span>
-            <div class="tooltip" :data-tip="$t('moveToGroup')">
-              <details :ref="'moveToGroupMenu_' + item.id" class="dropdown dropdown-top">
-                <summary class="btn btn-xs bg-transparent hover:bg-transparent border-0">
-                  <font-awesome-icon icon="fa-solid fa-share" class="text-blue-500"></font-awesome-icon>
-                </summary>
-                <ul class="dropdown-content z-[10] menu menu-sm p-2 shadow bg-base-200 rounded-box w-52">
-                  <li v-for="(subitem, index) in groups" :key="subitem.id"><a
-                      @click="moveToGroup(item.id, subitem.id)">{{
-                        subitem.name }}</a>
-                  </li>
-                </ul>
-              </details>
+            <div class="flex flex-row form-control items-center">
+              <button
+                class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+                @click="$emitter.emit('menuSelected', { name: 'trainSettings', group: item })">
+                <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
+              </button>
+              <button
+                class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+                @click="$emitter.emit('menuSelected', { name: 'publishSettings', group: item })">
+                <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
+              </button>
             </div>
           </div>
 
@@ -219,6 +235,7 @@ export default {
       selection: [],
       newGroupName: '',
       showAddGroup: false,
+      updateGroup: null,
       groups: [],
       selections: {
         0: [],
@@ -242,34 +259,85 @@ export default {
     }
   },
   methods: {
-    addGroup() {
-      this.$service
-        .add_group({
-          name: this.newGroupName,
-          auto_train: 0,
-          auto_publish: 0,
-          publish_start_time: '',
-          train_start_time: '',
-          title: '',
-          comment: '',
-          publish_type: 0,
-          product_link: '',
-          floow_probable: 0,
-          like_probable: 0,
-          collect_probable: 0,
-          comment_probable: 0,
-          train_duration: 0,
-          min_duration: 10,
-          max_duration: 30,
-          topic: '',
-          image_count: 2
-        })
-        .then(() => {
-          this.newGroupName = ''
-          this.showAddGroup = false
-          this.get_groups()
+    renameGroup(item) {
+      if (this.showAddGroup) {
+        this.showAddGroup = false
+        return
+      }
+      this.updateGroup = item
+      this.showAddGroup = true
+      this.newGroupName = item.name
 
-        })
+    },
+    addGroup() {
+      if (this.showAddGroup) {
+        this.showAddGroup = false
+        return
+      }
+      this.updateGroup = null
+      this.showAddGroup = true
+      this.newGroupName = ''
+    },
+    saveGroup() {
+      if (this.updateGroup) {
+        const group = this.updateGroup
+        this.$service
+          .update_group({
+            id: group.id,
+            name: this.newGroupName,
+            auto_train: Number(group.auto_train),
+            auto_publish: Number(group.auto_publish),
+            publish_start_time: group.publish_start_time,
+            train_start_time: group.train_start_time,
+            title: group.title,
+            publish_type: Number(group.publish_type),
+            product_link: group.product_link,
+            floow_probable: Number(group.floow_probable),
+            like_probable: Number(group.like_probable),
+            collect_probable: Number(group.collect_probable),
+            comment_probable: Number(group.comment_probable),
+            train_duration: Number(group.train_duration),
+            min_duration: Number(group.min_duration),
+            max_duration: Number(group.max_duration),
+            topic: group.topic,
+            comment: group.comment,
+            image_count: Number(group.image_count),
+          })
+          .then(() => {
+            this.newGroupName = ''
+            this.showAddGroup = false
+            this.get_groups()
+          })
+      } else {
+        this.$service
+          .add_group({
+            name: this.newGroupName,
+            auto_train: 0,
+            auto_publish: 0,
+            publish_start_time: '',
+            train_start_time: '',
+            title: '',
+            comment: '',
+            publish_type: 0,
+            product_link: '',
+            floow_probable: 0,
+            like_probable: 0,
+            collect_probable: 0,
+            comment_probable: 0,
+            train_duration: 0,
+            min_duration: 10,
+            max_duration: 30,
+            topic: '',
+            image_count: 2
+          })
+          .then(() => {
+            this.newGroupName = ''
+            this.showAddGroup = false
+            this.get_groups()
+
+          })
+      }
+
     },
     async deleteGroup(id) {
       const yes = await ask(this.$t('deleteGroupConfirm'), this.$t('confirm'));
@@ -317,6 +385,11 @@ export default {
         .then(res => {
           this.groups = res.data
           this.refreshSelections()
+        }).catch(err => {
+          console.log(err)
+          setTimeout(() => {
+            this.get_groups()
+          }, 3000)
         })
     },
     async uploadFiles() {
@@ -461,12 +534,22 @@ export default {
     get_menus() {
       this.$service.get_menus().then(res => {
         this.menuItems = this.fullMenuItems.filter(item => res.data.includes(item.name))
+      }).catch(err => {
+        console.log(err)
+        setTimeout(() => {
+          this.get_menus()
+        }, 3000)
       })
     },
 
     get_settings() {
       this.$service.get_settings().then(res => {
         this.settings = res.data
+      }).catch(err => {
+        console.log(err)
+        setTimeout(() => {
+          this.get_settings()
+        }, 3000)
       })
     },
 
@@ -650,9 +733,7 @@ export default {
   },
   async mounted() {
     this.$i18n.locale = this.locale
-    this.get_menus()
-    this.get_settings()
-    this.get_groups()
+
     this.version = await getVersion();
     this.$emitter.on('openDevice', (device) => {
       this.selection = [device.serial]
@@ -723,6 +804,9 @@ export default {
       console.log('粘贴事件被触发');
       this.pasteToPhone()
     });
+    this.get_menus()
+    this.get_settings()
+    this.get_groups()
 
   }
 }
