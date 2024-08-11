@@ -14,8 +14,8 @@
                 <th>{{ $t('source') }}</th>
                 <th>{{ $t('status') }}</th>
                 <th>{{ $t('preview') }}</th>
+                <th>{{ $t('title') }}</th>
                 <th>{{ $t('md5') }}</th>
-                <th>{{ $t('createTime') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
             </thead>
@@ -39,12 +39,20 @@
                   </div>
                 </td>
                 <td>
-                  <span class="text-sm">{{ material.md5 }}</span>
+                  <span class="text-sm">{{ material.title?.substring(0, 10) + (material.title?.length > 10 ? '...' : '')
+                    +
+                    (material.title?.length > 20 ? '...' : '')
+                    }}</span>
                 </td>
-                <td>{{ material.create_time }}</td>
+                <td>
+                  <span class="text-xs">{{ material.md5.substring(0,
+                    4) + '...' + material.md5.substring(material.md5.length - 4) }}</span>
+                </td>
                 <td>
                   <!-- <button class="btn btn-sm btn-success" @click="show_fission_video_dialog(material)">{{ $t('fission')
                     }}</button> -->
+                  <button class="btn btn-sm btn-success" @click="showEditTitle(material)">{{ $t('editTitle')
+                    }}</button>
                   <button class="bg-red-500 hover:bg-red-700 text-white btn btn-sm" @click="delete_material(material)">
                     {{ $t('delete') }}
                   </button>
@@ -61,7 +69,7 @@
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <Detail :material="currentMaterial" v-if="currentMaterial && $refs.detail_modal.open" />
+        <Detail :material="currentMaterial" />
       </div>
     </dialog>
 
@@ -149,6 +157,23 @@
       </div>
     </div>
   </dialog>
+  <dialog ref="edit_title_dialog" class="modal">
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <h3 class="font-bold text-lg">{{ $t('editTitle') }}</h3>
+      <label class="input input-bordered flex items-center gap-2 my-4">
+        <input type="text" class="grow" placeholder="" v-model="currentMaterial.title"
+          @keyup.enter="editTitle(currentMaterial)" />
+      </label>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn btn-primary" @click="editTitle(currentMaterial)">{{ $t('save') }}</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
 </template>
 <script>
 import Detail from './Detail.vue'
@@ -174,7 +199,10 @@ export default {
   data() {
     return {
       materials: [],
-      currentMaterial: null,
+      currentMaterial: {
+        name: '',
+        title: ''
+      },
       upload_progress: 10,
       max_upload_progress: 100,
       new_video_url: null,
@@ -188,6 +216,21 @@ export default {
     }
   },
   methods: {
+    showEditTitle(material) {
+      this.currentMaterial = material
+      this.$refs.edit_title_dialog.showModal()
+    },
+    editTitle(material) {
+      this.$service
+        .edit_title({
+          id: material.id,
+          title: material.title
+        })
+        .then(() => {
+          this.$refs.edit_title_dialog.close()
+          this.get_materials()
+        })
+    },
     async selectVideos() {
       const filePath = await open({
         multiple: true, // 是否允许多选文件
@@ -289,7 +332,7 @@ export default {
         })
     },
     get_materials() {
-      this.currentMaterial = null
+      // this.currentMaterial = null
       this.$service
         .get_materials({
           group_id: this.group.id
@@ -306,9 +349,9 @@ export default {
       this.currentMaterial = material
       this.$refs.detail_modal.showModal()
       //listener
-      this.$refs.detail_modal.addEventListener('close', () => {
-        this.currentMaterial = null
-      })
+      // this.$refs.detail_modal.addEventListener('close', () => {
+      //   this.currentMaterial = null
+      // })
     },
     delete_material(material) {
       this.$service

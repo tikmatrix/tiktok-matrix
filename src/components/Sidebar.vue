@@ -108,10 +108,10 @@
               <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer ml-2"
                 @click="renameGroup(item)"></font-awesome-icon>
 
-              <div class="tooltip" :data-tip="$t('uploadVideo')">
+              <!-- <div class="tooltip" :data-tip="$t('uploadVideo')">
                 <font-awesome-icon icon="fa-solid fa-film" class="text-blue-500 cursor-pointer ml-2"
                   @click="$emitter.emit('menuSelected', { name: 'materials', group: item })"></font-awesome-icon>
-              </div>
+              </div> -->
 
               <div class="tooltip" :data-tip="$t('deleteGroup')">
                 <font-awesome-icon icon="fa-solid fa-trash" class="text-red-500 cursor-pointer ml-2"
@@ -147,6 +147,11 @@
                 class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
                 @click="$emitter.emit('menuSelected', { name: 'publishSettings', group: item })">
                 <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
+              </button>
+              <button
+                class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+                @click="$emitter.emit('menuSelected', { name: 'materials', group: item })">
+                <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
               </button>
             </div>
           </div>

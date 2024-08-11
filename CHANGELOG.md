@@ -1,2 +1,2 @@
-增加分享/转发帖子功能
-Add share/repost posts functionality
+增加单个视频标题配置,如果没有配置默认使用分组标题配置
+Add single video title configuration, if not configured, use group title configuration by default.

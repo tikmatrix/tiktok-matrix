@@ -72,6 +72,7 @@ const api = {
   capture_video: '/api/video/capture_video',
   fission_video: '/api/video/fission_video',
   reset_all_index: '/api/device/reset_all_index',
+  edit_title: '/api/material/update_title'
 
 
 }

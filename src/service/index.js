@@ -700,3 +700,10 @@ export function reset_all_index(data) {
     url: api.reset_all_index
   })
 }
+export function edit_title(data) {
+  return request({
+    method: 'put',
+    data,
+    url: api.edit_title
+  })
+}
