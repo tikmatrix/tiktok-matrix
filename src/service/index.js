@@ -106,6 +106,12 @@ export function get_share_jobs() {
     url: api.share_job
   })
 }
+export function get_follow_jobs() {
+  return request({
+    method: 'get',
+    url: api.follow_job
+  })
+}
 export function add_account(account) {
   return request({
     method: 'post',
@@ -199,6 +205,13 @@ export function delete_share_job({ id }) {
     params: { id }
   })
 }
+export function delete_follow_job({ id }) {
+  return request({
+    method: 'delete',
+    url: api.follow_job,
+    params: { id }
+  })
+}
 export function update_message_job(data) {
   return request({
     method: 'put',
@@ -211,6 +224,14 @@ export function update_share_job(data) {
   return request({
     method: 'put',
     url: api.share_job,
+    data
+  })
+}
+
+export function update_follow_job(data) {
+  return request({
+    method: 'put',
+    url: api.follow_job,
     data
   })
 }
@@ -371,6 +392,12 @@ export function count_share_job_by_status() {
     url: api.count_share_job_by_status
   })
 }
+export function count_follow_job_by_status() {
+  return request({
+    method: 'get',
+    url: api.count_follow_job_by_status
+  })
+}
 export function count_online_device() {
   return request({
     method: 'get',
@@ -412,6 +439,12 @@ export function retry_all_failed_share_job() {
   return request({
     method: 'get',
     url: api.retry_all_failed_share_job
+  })
+}
+export function retry_all_failed_follow_job() {
+  return request({
+    method: 'get',
+    url: api.retry_all_failed_follow_job
   })
 }
 export function add_post_comment({ post_url }) {
@@ -489,6 +522,12 @@ export function delete_all_share_jobs() {
   return request({
     method: 'delete',
     url: api.delete_all_share_jobs
+  })
+}
+export function delete_all_follow_jobs() {
+  return request({
+    method: 'delete',
+    url: api.delete_all_follow_jobs
   })
 }
 export function delete_all_post_comments() {
@@ -690,6 +729,13 @@ export function share_now(data) {
     method: 'post',
     data,
     url: api.share_now
+  })
+}
+export function follow_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.follow_now
   })
 }
 //reset_all_index

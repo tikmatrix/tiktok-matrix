@@ -1,2 +1,2 @@
-增加单个视频标题配置,如果没有配置默认使用分组标题配置
-Add single video title configuration, if not configured, use group title configuration by default.
+增加批量关注功能, 可以控制矩阵账号关注目标用户
+Add batch follow feature, you can control the target user of the matrix account

@@ -26,6 +26,7 @@
       <ManageTrainJobs v-if="selectedItem.name === 'trainJobs' && $refs.page_dialog.open" />
       <ManageMessageJobs v-if="selectedItem.name === 'messageJobs' && $refs.page_dialog.open" />
       <ManageShareJobs v-if="selectedItem.name === 'shareJobs' && $refs.page_dialog.open" />
+      <ManageFollowJobs v-if="selectedItem.name === 'followJobs' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
       <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
       <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
@@ -81,6 +82,7 @@ import ManageMaterials from './components/material/ManageMaterials.vue'
 import ManagePublishJobs from './components/publishJob/ManagePublishJobs.vue'
 import ManageMessageJobs from './components/messageJob/ManageMessageJobs.vue'
 import ManageShareJobs from './components/shareJob/ManageShareJobs.vue'
+import ManageFollowJobs from './components/followJob/ManageFollowJobs.vue'
 import ManageDialog from './components/dialog/ManageDialog.vue'
 import ManageTrainJobs from './components/trainJob/ManageTrainJobs.vue'
 import ManageGroups from './components/group/ManageGroups.vue'
@@ -128,6 +130,7 @@ export default {
     ManagePublishJobs,
     ManageMessageJobs,
     ManageShareJobs,
+    ManageFollowJobs,
     ManageDialog,
     ManageTrainJobs,
     ManageGroups,

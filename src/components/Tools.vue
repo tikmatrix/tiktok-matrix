@@ -64,6 +64,11 @@
         @click="$refs.shareDialog.showModal">
         <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3" />{{ $t('startShare') }}
     </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$refs.followDialog.showModal">
+        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3" />{{ $t('startFollow') }}
+    </button>
 
     <dialog ref="scrapeUsersDialog" class="modal">
         <div class="modal-box">
@@ -98,6 +103,22 @@
             <button>close</button>
         </form>
     </dialog>
+    <dialog ref="followDialog" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">{{ $t('followTitle') }}</h3>
+            <div class="flex flex-row items-center p-2">
+                <input class="input input-bordered input-sm" type="text" v-model="tartget_username"
+                    :placeholder="$t('targetUsername')" />
+            </div>
+            <button class="btn btn-sm btn-success ml-2" @click="startFollow">{{
+                $t('startFollow') }}</button>
+
+        </div>
+
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 </template>
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
@@ -115,6 +136,18 @@ export default {
             invoke("open_dir", {
                 name
             });
+        },
+        startFollow() {
+            if (this.tartget_username == '') {
+                alert(this.$t('targetUsernameRequired'))
+                return;
+            }
+            if (!this.tartget_username.startsWith('@')) {
+                this.tartget_username = '@' + this.tartget_username
+            }
+
+            this.$emitter.emit('follow', this.tartget_username)
+            this.$refs.followDialog.close()
         },
 
         startScrape() {

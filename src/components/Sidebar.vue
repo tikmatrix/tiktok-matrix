@@ -700,6 +700,27 @@ export default {
       }
       this.script('scrape_fans', [targetUsername])
     },
+    follow(targetUsername) {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+
+      this.$service
+        .follow_now({
+          serials: this.selection,
+          target_username: targetUsername
+        })
+        .then(res => {
+          console.log(res)
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+
     async copyFromPhone() {
       if (!document.hasFocus()) {
         return
@@ -796,6 +817,9 @@ export default {
     });
     this.$emitter.on('scrape_fans', (targetUsername) => {
       this.scrape_fans(targetUsername)
+    });
+    this.$emitter.on('follow', (targetUsername) => {
+      this.follow(targetUsername)
     });
     this.$emitter.on('send_screen_mode', (mode) => {
       this.send_screen_mode(mode)
