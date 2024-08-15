@@ -1,2 +1,2 @@
-增加批量关注功能, 可以控制矩阵账号关注目标用户
-Add batch follow feature, you can control the target user of the matrix account
+增加在发布视频的时候添加商品链接的功能
+New feature preview: Add the function of adding product links when publishing videos

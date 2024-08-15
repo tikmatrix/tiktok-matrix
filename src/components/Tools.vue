@@ -51,8 +51,13 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('publish')">
+        @click="$emitter.emit('publish', false)">
         <font-awesome-icon icon="paper-plane" class="h-3 w-3" />{{ $t('startPublish') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="startPublish">
+        <font-awesome-icon icon="paper-plane" class="h-3 w-3" />{{ $t('startPublishBeta') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
@@ -122,6 +127,7 @@
 </template>
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
+import { ask } from '@tauri-apps/api/dialog';
 export default {
     name: 'Tools',
     props: ['settings'],
@@ -136,6 +142,12 @@ export default {
             invoke("open_dir", {
                 name
             });
+        },
+        async startPublish() {
+            const yes = await ask(this.$t('addProductLinkConfirm'), this.$t('confirm'));
+            if (yes) {
+                this.$emitter.emit('publish', true)
+            }
         },
         startFollow() {
             if (this.tartget_username == '') {

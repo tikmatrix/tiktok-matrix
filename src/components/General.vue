@@ -34,11 +34,11 @@
         <font-awesome-icon icon="fa-solid fa-link" class="h-3 w-3 text-white" />
         {{ $t('setProxy') }}
     </button>
-    <button
+    <!-- <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.scan_dialog.show()">
         <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
-    </button>
+    </button> -->
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('initDevice')">
@@ -54,29 +54,12 @@
         @click="open_dir('logs')">
         <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3" />{{ $t('openLogs') }}
     </button>
-    <dialog ref="scan_dialog" class="modal">
-        <div class="modal-box">
-            <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
-            <div class="flex flex-row items-center">
-                <input class="input input-bordered input-sm w-20" type="number" v-model="ip_1" />
-                <span class="font-bold p-1">.</span>
-                <input class="input input-bordered input-sm w-20" type="number" v-model="ip_2" />
-                <span class="font-bold p-1">.</span>
-                <input class="input input-bordered input-sm w-20" type="number" v-model="ip_3" />
-                <span class="font-bold p-1">.</span>
-                <input class="input input-bordered input-sm w-20" type="number" v-model="ip_4" />
-                <span class="font-bold p-2">-</span>
-                <input class="input input-bordered input-sm w-20" type="number" v-model="ip_5" />
-            </div>
-            <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
-            <input class="input input-bordered input-sm w-24" type="number" v-model="port" />
-            <MyButton @click="scan" label="startScan" :showLoading="scaning" />
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('downloadOcr')">
+        <font-awesome-icon icon="fa fa-download" class="h-3 w-3" />{{ $t('downloadOcr') }}
+    </button>
 
-        </div>
-        <form method="dialog" class="modal-backdrop">
-            <button>close</button>
-        </form>
-    </dialog>
     <dialog ref="proxy_dialog" class="modal">
         <div class="modal-box">
             <h3 class="font-bold text-lg">{{ $t('proxyServer') }}</h3>

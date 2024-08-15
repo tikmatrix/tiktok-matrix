@@ -596,7 +596,7 @@ export default {
           console.log(err)
         })
     },
-    publish() {
+    publish(addProductLink) {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
@@ -604,6 +604,7 @@ export default {
       this.$service
         .publish_now({
           serials: this.selection,
+          add_product_link: addProductLink ? 1 : 0
         })
         .then(res => {
           console.log(res)
@@ -800,8 +801,8 @@ export default {
     this.$emitter.on('train', () => {
       this.train();
     });
-    this.$emitter.on('publish', () => {
-      this.publish();
+    this.$emitter.on('publish', (addProductLink) => {
+      this.publish(addProductLink);
     });
     this.$emitter.on('message', () => {
       this.message();

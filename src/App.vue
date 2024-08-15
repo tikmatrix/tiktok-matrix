@@ -206,7 +206,37 @@ export default {
       })
     },
 
+    async download_ocr() {
+      let filename = 'PaddleOCR'
+      this.download_filename = 'PaddleOCR'
+      let url = "https://r2.tikmatrix.com/PaddleOCR-json.zip"
+      let work_path = await appDataDir();
+      console.log("work_path", work_path)
+      let name = url.split('/').pop()
+      let path = work_path + 'bin/' + url.split('/').pop()
+      let downloaded = await exists('bin/' + name, { dir: BaseDirectory.AppData })
+      console.log("downloaded", downloaded, "path", path)
+      if (downloaded) {
+        alert("Already downloaded")
+        return;
+      }
+      this.$refs.download_dialog.showModal()
+      console.log("download " + filename + " from " + url + " to " + path)
+      invoke('download_file', { url, path });
+      const unlistenProgress = await listen("DOWNLOAD_PROGRESS", (e) => {
+        this.download_progress = e.payload;
+      });
+      const unlistenFinished = await listen("DOWNLOAD_FINISHED", (e) => {
+        console.log("download finished")
+        if (path.endsWith('.zip')) {
+          invoke("unzip_file", { zipPath: path, destDir: work_path });
+        }
 
+        this.$refs.download_dialog.close()
+        unlistenProgress()
+        unlistenFinished()
+      })
+    },
 
 
     async check_platform_tools(callback) {
@@ -343,6 +373,9 @@ export default {
     });
     this.$emitter.on('menuSelected', (item) => {
       this.menu_selected(item)
+    });
+    this.$emitter.on('downloadOcr', () => {
+      this.download_ocr()
     });
   }
 }
