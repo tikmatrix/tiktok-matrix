@@ -699,7 +699,19 @@ export default {
         this.$emitter.emit('showToast', this.$t('onlyOneDeviceSelected'))
         return
       }
-      this.script('scrape_fans', [targetUsername])
+      this.$service
+        .scrape_now({
+          serial: this.selection[0],
+          target_username: targetUsername
+        })
+        .then(res => {
+          console.log(res)
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+
+        })
+        .catch(err => {
+          console.log(err)
+        })
     },
     follow(targetUsername) {
       if (this.selection.length == 0) {

@@ -403,8 +403,12 @@ export const i18n = createI18n({
       downloadOcr: 'Download OCR',
       startPublishBeta: 'Start Publish(Beta)',
       addProductLinkConfirm: 'Do you want to add this product link? This is a beta feature, if you do not need it, please click No, if you need please click Yes, and make sure you have at least 1 item in your shelf',
+      scrapeFansJobs: 'Scrape Fans Jobs',
+      progress: 'Progress',
     },
     'zh-CN': {
+      progress: '进度',
+      scrapeFansJobs: '采集粉丝任务',
       startPublishBeta: '开始发布(测试版)',
       addProductLinkConfirm: '是否需要添加该商品链接? 这是一个内测功能,如果你不需要请点击No, 如果需要请点击Yes,并确保你的橱窗中已经添加了至少1个商品',
       downloadOcr: '下载OCR',

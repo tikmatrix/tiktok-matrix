@@ -112,6 +112,12 @@ export function get_follow_jobs() {
     url: api.follow_job
   })
 }
+export function get_scrape_jobs() {
+  return request({
+    method: 'get',
+    url: api.scrape_job
+  })
+}
 export function add_account(account) {
   return request({
     method: 'post',
@@ -212,6 +218,13 @@ export function delete_follow_job({ id }) {
     params: { id }
   })
 }
+export function delete_scrape_job({ id }) {
+  return request({
+    method: 'delete',
+    url: api.scrape_job,
+    params: { id }
+  })
+}
 export function update_message_job(data) {
   return request({
     method: 'put',
@@ -232,6 +245,14 @@ export function update_follow_job(data) {
   return request({
     method: 'put',
     url: api.follow_job,
+    data
+  })
+}
+
+export function update_scrape_job(data) {
+  return request({
+    method: 'put',
+    url: api.scrape_job,
     data
   })
 }
@@ -398,6 +419,12 @@ export function count_follow_job_by_status() {
     url: api.count_follow_job_by_status
   })
 }
+export function count_scrape_job_by_status() {
+  return request({
+    method: 'get',
+    url: api.count_scrape_job_by_status
+  })
+}
 export function count_online_device() {
   return request({
     method: 'get',
@@ -445,6 +472,12 @@ export function retry_all_failed_follow_job() {
   return request({
     method: 'get',
     url: api.retry_all_failed_follow_job
+  })
+}
+export function retry_all_failed_scrape_job() {
+  return request({
+    method: 'get',
+    url: api.retry_all_failed_scrape_job
   })
 }
 export function add_post_comment({ post_url }) {
@@ -528,6 +561,12 @@ export function delete_all_follow_jobs() {
   return request({
     method: 'delete',
     url: api.delete_all_follow_jobs
+  })
+}
+export function delete_all_scrape_jobs() {
+  return request({
+    method: 'delete',
+    url: api.delete_all_scrape_jobs
   })
 }
 export function delete_all_post_comments() {
@@ -736,6 +775,13 @@ export function follow_now(data) {
     method: 'post',
     data,
     url: api.follow_now
+  })
+}
+export function scrape_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.scrape_now
   })
 }
 //reset_all_index

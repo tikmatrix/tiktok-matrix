@@ -26,6 +26,11 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('menuSelected', { name: 'scrapeFansJobs' })">
+        <font-awesome-icon icon="fas fa-spider" class="h-3 w-3" />{{ $t('scrapeFansJobs') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('stop_task')">
         <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-pink-500" />{{ $t('stopTask') }}
     </button>

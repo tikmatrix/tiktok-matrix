@@ -84,8 +84,7 @@
             </div>
             <button class="btn btn-sm btn-success ml-2" @click="startScrape">{{
                 $t('startScrape') }}</button>
-            <button class="btn btn-sm btn-success ml-2" @click="open_dir('download')">{{ $t('openDownloadDir')
-                }}</button>
+
 
         </div>
 
@@ -166,6 +165,9 @@ export default {
             if (this.tartget_username == '') {
                 alert(this.$t('targetUsernameRequired'))
                 return;
+            }
+            if (!this.tartget_username.startsWith('@')) {
+                this.tartget_username = '@' + this.tartget_username
             }
 
             this.$emitter.emit('scrape_fans', this.tartget_username)
