@@ -1,2 +1,2 @@
-增加在发布视频的时候添加商品链接的功能
-New feature preview: Add the function of adding product links when publishing videos
+增加采集粉丝任务管理,显示采集数量进度，任务状态
+Add scrape fans task management, display scrape quantity progress, task status
