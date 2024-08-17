@@ -114,6 +114,7 @@ import axios from 'axios'
 import { os } from '@tauri-apps/api';
 import { appDataDir } from '@tauri-apps/api/path';
 import { exists, BaseDirectory } from '@tauri-apps/api/fs'
+
 export default {
   name: 'app',
   setup() {

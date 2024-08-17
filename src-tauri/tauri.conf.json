@@ -86,6 +86,9 @@
       },
       "globalShortcut": {
         "all": true
+      },
+      "notification": {
+        "all": true
       }
     },
     "bundle": {
