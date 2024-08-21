@@ -20,6 +20,8 @@ TikMatrix 是一个群控安卓真实手机（非云控，非协议），基于a
 1. Node.js 18.x or higher
 2. Rust 1.67.x or higher
 
+### Install
+
 ```shell
 npm install --global @tauri-apps/cli
 npm install
@@ -29,14 +31,3 @@ npm run tauri dev
 ## Thanks to
 
 * <https://github.com/Genymobile/scrcpy>
-
-## Donate
-
-### Paypal
-
-[paypal.me/yaohp](https://paypal.me/yaohp)
-
-### USDT-TRC20
-
-`TDe4ZmkDBPYHVqWpX6jWjf3j45JdipB7Lx`
-![ustd](src/assets/usdt.png)

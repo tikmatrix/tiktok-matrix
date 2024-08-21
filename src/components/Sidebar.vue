@@ -62,7 +62,7 @@
             {{ $t('telegram') }}
           </a>
           <a class="link link-primary text-xs float-right flex items-center mr-1"
-            href="https://www.tikmatrix.com/docs/intro" target="_blank">
+            href="https://tikmatrix.com/docs/intro" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4" />
             {{ $t('document') }}
           </a>
@@ -72,22 +72,34 @@
           <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
           <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
           <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
-          <a ref="tasks" role="tab" class="tab" @click="selectTab('tasks')">{{ $t('tasks') }}</a>
+          <a ref="instools" role="tab" class="tab" @click="selectTab('instools')">{{ $t('instools') }}</a>
+          <!-- <a ref="tasks" role="tab" class="tab" @click="selectTab('tasks')">{{ $t('tasks') }}</a> -->
         </div>
-        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'general'">
-          <General :menuItems="menuItems" />
-        </div>
-        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'quickActions'">
-          <QuickActions :settings="settings" />
-        </div>
-        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tktools'">
-          <Tools :settings="settings" />
-        </div>
-        <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tasks'">
+        <div class="border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
+          <div class="flex flex-row flex-wrap" v-if="selectedTab === 'general'">
+            <General :menuItems="menuItems" />
+          </div>
+          <div class="flex flex-row flex-wrap" v-if="selectedTab === 'quickActions'">
+            <QuickActions :settings="settings" />
+          </div>
+          <div class="flex flex-row flex-wrap" v-if="selectedTab === 'tktools'">
+            <TKTools :settings="settings" />
+          </div>
+          <div class="flex flex-row flex-wrap" v-if="selectedTab === 'instools'">
+            <InsTools :settings="settings" />
+          </div>
+          <!-- <div class="flex flex-row flex-wrap mt-2" v-if="selectedTab === 'tasks'">
           <Tasks :settings="settings" />
+        </div> -->
         </div>
         <div class="flex flex-col">
-          <span class="font-sans p-2 bg-base-200 rounded-md font-bold">{{ $t('groups') }}</span>
+          <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('tasks') }}</span>
+          <div class="flex flex-row flex-wrap border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
+            <Tasks :settings="settings" />
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('groups') }}</span>
           <button
             class="btn btn-sm bg-transparent hover:bg-transparent border-1 border-success text-black-500 hover:text-blue-700 p-0 mt-1 block"
             @click="addGroup">
@@ -210,7 +222,8 @@
 import { inject } from 'vue'
 import * as util from '../utils'
 import General from './General.vue'
-import Tools from './Tools.vue'
+import TKTools from './TKTools.vue'
+import InsTools from './InsTools.vue'
 import Tasks from './Tasks.vue'
 import QuickActions from './QuickActions.vue';
 import { open, ask } from '@tauri-apps/api/dialog';
@@ -226,7 +239,8 @@ export default {
   components: {
     General,
     Tasks,
-    Tools,
+    TKTools,
+    InsTools,
     QuickActions
   },
   data() {
@@ -392,9 +406,7 @@ export default {
           this.refreshSelections()
         }).catch(err => {
           console.log(err)
-          setTimeout(() => {
-            this.get_groups()
-          }, 3000)
+
         })
     },
     async uploadFiles() {
@@ -480,26 +492,26 @@ export default {
         case 'general':
           this.$refs.general.classList.add('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.tasks.classList.remove('tab-active')
+          this.$refs.instools.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
           break
         case 'tktools':
           this.$refs.general.classList.remove('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.tasks.classList.remove('tab-active')
+          this.$refs.instools.classList.remove('tab-active')
           this.$refs.tktools.classList.add('tab-active')
           break
         case 'quickActions':
           this.$refs.general.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
-          this.$refs.tasks.classList.remove('tab-active')
+          this.$refs.instools.classList.remove('tab-active')
           this.$refs.quickActions.classList.add('tab-active')
           break
-        case 'tasks':
+        case 'instools':
           this.$refs.general.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.tasks.classList.add('tab-active')
+          this.$refs.instools.classList.add('tab-active')
           break
       }
     },
@@ -542,8 +554,8 @@ export default {
       }).catch(err => {
         console.log(err)
         setTimeout(() => {
-          this.get_menus()
-        }, 3000)
+          window.location.reload();
+        }, 1000)
       })
     },
 
@@ -552,9 +564,7 @@ export default {
         this.settings = res.data
       }).catch(err => {
         console.log(err)
-        setTimeout(() => {
-          this.get_settings()
-        }, 3000)
+
       })
     },
 

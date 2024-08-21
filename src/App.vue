@@ -282,7 +282,9 @@ export default {
         console.log('Unknown OS type');
         return;
       }
-      this.check_file_update('script(5/6)', this.remote_version.script_version, url, callback);
+      this.check_file_update('script(5/6)', this.remote_version.script_version, url, callback, () => {
+        invoke("stop_agent");
+      });
     },
     async check_agent_update() {
       let url = ""
