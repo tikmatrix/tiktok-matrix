@@ -25,6 +25,12 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$refs.uninstall_dialog.showModal()">
+        <font-awesome-icon icon="fa-brands fa-android" class="h-3 w-3 text-white" />
+        {{ $t('uninstallApk') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="uploadVideo">
         <font-awesome-icon icon="fa fa-upload" class="h-3 w-3 text-white" />
         {{ $t('uploadToGallery') }}
@@ -71,7 +77,20 @@
         <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />
         {{ $t('enableTCP') }}
     </button>
+    <dialog ref="uninstall_dialog" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">{{ $t('inputPackageName') }}</h3>
+            <div class="flex flex-row items-center p-2">
+                <input class="input input-bordered input-sm" type="text" v-model="uninstall_package" />
+            </div>
+            <button class="btn btn-sm btn-success ml-2" @click="uninstallApk">{{
+                $t('confirm') }}</button>
 
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 </template>
 <script>
 export default {
@@ -84,6 +103,10 @@ export default {
         uploadVideo() {
             this.$emitter.emit('uploadFiles', {})
         },
+        uninstallApk() {
+            this.$refs.uninstall_dialog.close()
+            $emitter.emit('adbEventData', { args: ['shell', 'pm', 'uninstall', uninstall_package] })
+        }
     }
 }
 </script>

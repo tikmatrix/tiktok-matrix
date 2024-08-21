@@ -408,8 +408,10 @@ export const i18n = createI18n({
       instools: 'InsTools',
       openInstagram: 'Open Instagram',
       stopInstagram: 'Stop Instagram',
+      inputPackageName: 'Input Package Name',
     },
     'zh-CN': {
+      inputPackageName: '输入包名',
       stopInstagram: '停止Instagram',
       openInstagram: '打开Instagram',
       instools: 'Ins工具箱',
