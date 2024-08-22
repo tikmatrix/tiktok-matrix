@@ -588,13 +588,14 @@ export default {
       }, 3000)
 
     },
-    train() {
+    train(platform) {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
       }
       this.$service
         .train_now({
+          platform: platform,
           serials: this.selection,
         })
         .then(res => {
@@ -820,8 +821,8 @@ export default {
       }
       this.$emitter.emit('syncEventData', new_data)
     });
-    this.$emitter.on('train', () => {
-      this.train();
+    this.$emitter.on('train', (platform) => {
+      this.train(platform);
     });
     this.$emitter.on('publish', (addProductLink) => {
       this.publish(addProductLink);

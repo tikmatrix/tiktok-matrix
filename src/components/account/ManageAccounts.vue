@@ -12,6 +12,7 @@
             <thead>
               <tr>
                 <th>{{ $t('id') }}</th>
+                <th>{{ $t('platform') }}</th>
                 <th>{{ $t('email') }}</th>
                 <th>{{ $t('username') }}</th>
                 <!-- <th>{{ $t('fans') }}</th> -->
@@ -23,10 +24,14 @@
             <tbody>
               <tr v-for="(account, _index) in slotProps.items">
                 <td>{{ account.id }}</td>
+                <td>{{ account.platform }}</td>
                 <td>{{ account.email }}</td>
                 <td>
-                  <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">{{
-                    account.username }}</a>
+                  <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank"
+                    v-if="account.platform === 'tiktok'">{{
+                      account.username }}</a>
+                  <a class="link link-primary" :href="`https://www.instagram.com/${account.username}`" target="_blank"
+                    v-if="account.platform === 'instagram'">{{ account.username }}</a>
                 </td>
                 <!-- <td>{{ account.fans }}</td> -->
 
@@ -58,20 +63,13 @@
     </Pagination>
     <dialog ref="edit_dialog" class="modal">
       <div class="modal-box">
-        <Edit :account="currentAccount" @update="updateAccount" v-if="currentAccount" />
+        <Edit :account="currentAccount" @update="updateAccount" @add="addAccount" v-if="currentAccount" />
       </div>
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
       </form>
     </dialog>
-    <dialog ref="add_dialog" class="modal">
-      <div class="modal-box">
-        <Add @add="addAccount" />
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
+
     <dialog ref="batch_add_dialog" class="modal">
       <div class="modal-box">
         <div class="flex flex-col items-center gap-2 mb-2 w-full">
@@ -93,7 +91,6 @@
 <script>
 import MyButton from '../Button.vue'
 import Edit from './Edit.vue'
-import Add from './Add.vue'
 import Pagination from '../Pagination.vue'
 import { inject } from 'vue'
 import { ask } from '@tauri-apps/api/dialog';
@@ -104,7 +101,6 @@ export default {
   components: {
     MyButton,
     Edit,
-    Add,
     Pagination,
   },
   setup() {
@@ -209,22 +205,23 @@ export default {
         })
     },
     add_account() {
-      this.$refs.add_dialog.showModal()
+      this.currentAccount = {
+        email: '',
+        pwd: '',
+        username: '',
+        fans: 0,
+        device: '',
+        logined: 0,
+        platform: 'tiktok',
+      }
+      this.$refs.edit_dialog.showModal()
     },
     addAccount(account) {
       this.$service
-        .add_account({
-          email: account.email,
-          pwd: account.pwd,
-          fans: account.fans,
-          device: account.device,
-          username: account.username,
-          logined: account.logined
-        })
+        .add_account(account)
         .then(() => {
-          this.showAddAccount = false
           this.get_accounts()
-          this.$refs.add_dialog.close()
+          this.$refs.edit_dialog.close()
         })
         .catch(err => {
           console.log(err)
@@ -240,15 +237,7 @@ export default {
     },
     updateAccount(account) {
       this.$service
-        .update_account({
-          id: account.id,
-          email: account.email,
-          pwd: account.pwd,
-          fans: account.fans,
-          device: account.device,
-          username: account.username,
-          logined: account.logined
-        })
+        .update_account(account)
         .then(() => {
           this.get_accounts()
           this.$refs.edit_dialog.close()

@@ -36,7 +36,7 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        disabled @click="$emitter.emit('scriptEventData', { name: 'match_account', args: [] })">
+        @click="$emitter.emit('scriptEventData', { name: 'ins_match_account', args: [] })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('matchAccount') }}
     </button>
     <button
@@ -46,7 +46,7 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        disabled @click="$emitter.emit('train')">
+        @click="$emitter.emit('train', 'instagram')">
         <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('startTrain') }}
     </button>
     <button

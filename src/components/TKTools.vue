@@ -46,7 +46,7 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('train')">
+        @click="$emitter.emit('train', 'tiktok')">
         <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('startTrain') }}
     </button>
     <button

@@ -1,21 +1,37 @@
 <template>
   <div class="bg-base-100 flex flex-col items-start p-4 min-h-96">
-    <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
+    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
+      <label class="font-bold text-right col-span-1">{{ $t('platform') }}:</label>
+      <div class="col-span-2 flex items-center gap-4">
+        <div class="flex items-center">
+          <input type="radio" id="tiktok" value="tiktok" v-model="myaccount.platform"
+            class="form-radio text-blue-500 h-4 w-4">
+          <label for="tiktok" class="ml-2">{{ $t('tiktok') }}</label>
+        </div>
+        <div class="flex items-center">
+          <input type="radio" id="instagram" value="instagram" v-model="myaccount.platform"
+            class="form-radio text-blue-500 h-4 w-4">
+          <label for="instagram" class="ml-2">{{ $t('instagram') }}</label>
+        </div>
+
+      </div>
+    </div>
+    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
       <label class="font-bold text-right col-span-1">{{ $t('email') }}:</label>
       <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="myaccount.email" />
     </div>
-    <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
+    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
       <label class="font-bold text-right">{{ $t('password') }}:</label>
-      <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.pwd" />
+      <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="myaccount.pwd" />
     </div>
-    <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
+    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
       <div class="text-right">
         <label class="font-bold text-red-500">*</label>
         <label class="font-bold">{{ $t('username') }}:</label>
       </div>
-      <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.username" />
+      <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="myaccount.username" />
     </div>
-    <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
+    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
       <label class="font-bold text-right col-span-1">{{ $t('status') }}:</label>
       <div class="col-span-2 flex items-center gap-4">
         <div class="flex items-center">
@@ -30,7 +46,7 @@
 
       </div>
     </div>
-    <div class="grid grid-cols-3 w-full items-center gap-2 mb-2">
+    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
       <label class="font-bold text-right col-span-1">{{ $t('device') }}:</label>
       <div class="relative col-span-2">
         <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.device_index"
@@ -49,8 +65,8 @@
     <div class="mt-4 w-full flex justify-end">
       <button
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        @click="update">
-        {{ $t('update') }}
+        @click="save">
+        {{ $t('save') }}
       </button>
     </div>
   </div>
@@ -76,24 +92,18 @@ export default {
     }
   },
   methods: {
-    update() {
+    save() {
       if (!this.myaccount.username) {
         alert(this.$t('usernameRequired'))
         return
       }
-
-      if (!this.myaccount.username.startsWith('@')) {
-        alert(this.$t('usernameMustStartWithAt'))
-        return
-      }
-      //trim username
       this.myaccount.username = this.myaccount.username.trim()
-      if (this.myaccount.username === '@') {
-        alert(this.$t('usernameRequired'))
-        return
-      }
       this.myaccount.logined = parseInt(this.myaccount.logined)
-      this.$emit('update', this.myaccount)
+      if (this.myaccount.id) {
+        this.$emit('update', this.myaccount)
+      } else {
+        this.$emit('add', this.myaccount)
+      }
     },
 
     selectDevice(device) {
