@@ -12,12 +12,12 @@
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
         {{ $t('stopTiktok') }}
     </button>
-    <!-- <button
+    <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'pm', 'clear', settings.packagename] })">
+        @click="logout">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
-        {{ $t('clearTiktok') }}
-    </button> -->
+        {{ $t('logout') }}
+    </button>
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
@@ -137,6 +137,12 @@ export default {
         }
     },
     methods: {
+        async logout() {
+            let yes = await ask(this.$t('logoutConfirm'), this.$t('confirm'));
+            if (yes) {
+                this.$emitter.emit('adbEventData', { args: ['shell', 'pm', 'clear', this.settings.packagename] })
+            }
+        },
         open_dir(name) {
             invoke("open_dir", {
                 name

@@ -143,11 +143,11 @@ export default {
           return
         }
         //must contains 3 ##
-        if (line.split('##').length !== 4) {
+        if (line.split('##').length !== 5) {
           return
         }
 
-        let [email, pwd, username, device] = line.split('##').map(v => v.trim())
+        let [platform, email, pwd, username, device] = line.split('##').map(v => v.trim())
         let serial = this.devices.find(d => d.index === parseInt(device))?.serial
         if (!serial) {
           return
@@ -157,7 +157,8 @@ export default {
           pwd,
           fans: 0,
           serial,
-          username
+          username,
+          platform
         }
       })
 
@@ -178,7 +179,8 @@ export default {
             fans: account.fans,
             device: account.serial,
             username: account.username,
-            logined: 0
+            logined: 0,
+            platform: account.platform
           })
       }
       this.$refs.batch_add_dialog.close()

@@ -763,6 +763,9 @@ export default {
           serial: this.selection[0],
         })
         .then(async res => {
+          if (!res.data) {
+            return
+          }
           await writeText(res.data)
           this.$emitter.emit('showToast', this.$t('copySuccess'))
         })
