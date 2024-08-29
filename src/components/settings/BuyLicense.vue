@@ -6,7 +6,7 @@
         readonly disabled />
       <MyButton @click="copyuid" label="copy" />
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-lg w-full">
+    <div class="flex items-center flex-row gap-2  w-full">
       <span class="font-bold">{{ $t('license') }}: </span>
       <input type="text" placeholder="license key" class="input input-sm grow input-bordered" v-model="license.key" />
       <MyButton @click="add_license" label="save" :showLoading="loading" />
@@ -19,9 +19,9 @@
         <label class="text-green-500 font-bold">{{ license.left_days }}</label> days.
       </label>
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-lg w-full">
-      <span class="font-bold">{{ $t('network') }}: </span>
-      <select class="select select-sm select-bordered" v-model="current_network">
+    <div class="flex items-center flex-row gap-2 w-full">
+      <span class="font-bold">{{ $t('depositNetwork') }}: </span>
+      <select class="select select-sm select-bordered " v-model="current_network">
         <option>TRC20</option>
         <option>ERC20</option>
         <option>Arbitrum One</option>
@@ -55,10 +55,15 @@
       </div>
 
       <div class="flex items-center flex-row gap-2 w-full">
-        <label class="font-bold text-right col-span-1">{{ $t('address') }}:</label>
+        <label class="font-bold text-right col-span-1">{{ $t('depositAddress') }}:</label>
         <input type="text" class="input input-sm grow input-bordered" v-model="payinfo.address" readonly disabled />
         <MyButton @click="copy_address" label="copy" />
 
+      </div>
+      <div class="flex items-center flex-row gap-2 w-full" v-if="payinfo.comment">
+        <label class="font-bold text-right col-span-1">{{ $t('depositComment') }}:</label>
+        <input type="text" class="input input-sm grow input-bordered" v-model="payinfo.comment" readonly disabled />
+        <MyButton @click="copy_comment" label="copy" />
       </div>
       <label class="label-text-alt text-red-500 font-bold">{{ $t('usdtTip') }}</label>
     </div>
@@ -145,11 +150,10 @@ export default {
     }
   },
   methods: {
-    // change_network() {
-    //   alert(this.payinfo.network + ' ' + this.payinfo.address)
-    //   this.payinfo = this.payList.find(item => item.network === this.payinfo.network)
-    //   alert(this.payinfo.network + ' ' + this.payinfo.address)
-    // },
+    async copy_comment() {
+      await writeText(this.payinfo.comment)
+      this.$emitter.emit('showToast', this.$t('copySuccess'))
+    },
     async copy_address() {
       await writeText(this.payinfo.address)
       this.$emitter.emit('showToast', this.$t('copySuccess'))
