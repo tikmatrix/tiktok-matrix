@@ -26,6 +26,7 @@
     "mitt": "^3.0.1",
     "node-telegram-bot-api": "^0.66.0",
     "odometer_countup": "^1.0.4",
+    "tiktok-matrix": "file:",
     "vue": "^3.3.4",
     "vue-axios": "^3.5.2",
     "vue-clipboard3": "^2.0.0",
