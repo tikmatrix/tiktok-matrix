@@ -577,6 +577,14 @@ export default {
       })
     },
     async initDevice() {
+      const yes = await ask(this.$t('initDeviceConfirm'), this.$t('confirm'));
+      if (!yes) {
+        return
+      }
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
       let work_path = await appDataDir();
       this.$emitter.emit('showToast', this.$t('initStart'))
       this.adb_command(['uninstall', 'com.github.tikmatrix'])

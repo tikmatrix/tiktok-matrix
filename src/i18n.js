@@ -417,8 +417,12 @@ export const i18n = createI18n({
       depositAddress: 'Deposit Address',
       depositComment: 'Deposit Comment',
       networkTips: 'Please select the appropriate network for your coin recharge, different networks have different fees!',
+      detecting_devices: 'Detecting devices...',
+      initDeviceConfirm: 'Initialize the device will reinstall the 2 TikMatrix App, are you sure to initialize?',
     },
     'zh-CN': {
+      initDeviceConfirm: '初始化设备将重新安装2个TikMatrix App, 确定要初始化吗?',
+      detecting_devices: '正在检测设备...',
       networkTips: '请自己选择适合你的充币网络, 不同网络的手续费不同!',
       depositNetwork: '充币网络',
       depositAddress: '充币地址',

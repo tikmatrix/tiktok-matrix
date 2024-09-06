@@ -2,7 +2,7 @@
 
   <div class="flex flex-row items-start bg-base-300 h-screen w-screen">
     <Sidebar />
-    <Toast />
+    <!-- <Toast /> -->
     <ManageDevices />
   </div>
 
@@ -103,11 +103,11 @@ import TrainSettings from './components/group/TrainSettings.vue'
 import PublishSettings from './components/group/PublishSettings.vue'
 import { inject } from 'vue'
 import * as util from './utils'
-import Toast from './components/Toast.vue'
+// import Toast from './components/Toast.vue'
 import { invoke } from "@tauri-apps/api/tauri";
 import { window as tauriWindow } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
-import { ask } from '@tauri-apps/api/dialog';
+import { ask, message } from '@tauri-apps/api/dialog';
 import BuyLicense from './components/settings/BuyLicense.vue'
 import { listen } from '@tauri-apps/api/event';
 import axios from 'axios'
@@ -147,7 +147,7 @@ export default {
     ManagePostBots,
     ManageEditBots,
     Miniremote,
-    Toast,
+    // Toast,
     BuyLicense,
     TrainSettings,
     PublishSettings
@@ -366,6 +366,9 @@ export default {
         this.stop_agent();
         tauriWindow.getCurrent().close();
       }
+    });
+    this.$emitter.on('showToast', async (text) => {
+      await message(text);
     });
     this.check_update();
     this.$emitter.on('openDevice', (device) => {

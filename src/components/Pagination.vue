@@ -2,7 +2,8 @@
   <div class="bg-base-100">
     <div class="w-full flex items-center p-4">
       <span class="font-bold p-2 text-sm">{{ $t('total') }}: {{ filteredItems.length }}</span>
-      <div class="join">
+
+      <div class="join" v-if="pageCount > 1">
         <button class="join-item btn btn-sm" @click="prevPage" :disabled="currentPage === 1">{{ $t('previous')
           }}</button>
         <button class="join-item btn btn-disabled btn-sm">{{ currentPage }} / {{ pageCount }}</button>
@@ -14,7 +15,7 @@
         <option v-for="size in [5, 10, 20, 50, 100]" :key="size" :value="size">{{ size }}</option>
       </select> -->
 
-      <div class="relative ml-2">
+      <div class="relative ml-2" v-if="searchTerm">
         <font-awesome-icon :icon="['fas', 'search']" class="absolute left-3 top-1/2 transform -translate-y-1/2" />
         <input type="search" v-model="searchTerm" :placeholder="$t('enterTips')"
           class="input input-bordered w-full max-w-xs pl-8 input-sm" />
@@ -55,12 +56,15 @@ export default {
     searchKeys: {
       type: Array,
       required: true
+    },
+    pageSize: {
+      type: Number,
+      default: 10
     }
   },
   data() {
     return {
       currentPage: 1,
-      pageSize: 10,
       searchTerm: '',
       searchGroup: '',
     }

@@ -18,14 +18,19 @@
                   @focus="(event) => event.target.select()" @blur="updateIndex" />
               </details>
 
+
               <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-green-500' : ' text-red-500')" v-if="big"> -
                 {{
                   $t(task_status) }}</span>
             </div>
             <div class="justify-center items-center text-center">
               <span :class="'mr-2 ' + (big ? 'text-sm font-bold' : 'text-xs')">{{ name }} </span>
+              <span class="text-xs font-sans font-bold mr-1">{{ device.connect_type == 0 ? 'USB' :
+                'TCP'
+                }}</span>
               <span class="text-xs font-sans" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
             </div>
+
           </div>
           <button
             class="btn bg-transparent hover:bg-transparent hover:text-red-500 text-gray-700 float-right border-0 p-4"
