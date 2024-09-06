@@ -139,7 +139,7 @@ export default {
       input_dialog_text: '',
       input_callback: null,
       message_index: 0,
-      name: 'UNKNOWN',
+      name: '...',
       width: this.big ? 320 : 120,
       height: this.big ? 580 : 250,
       connect_count: 0,

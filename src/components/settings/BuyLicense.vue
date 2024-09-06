@@ -1,5 +1,21 @@
 <template>
   <div class="flex flex-col items-start p-12 w-full">
+    <!-- GitHub认证部分 -->
+    <div class="flex flex-col items-start w-full mb-6">
+      <h2 class="text-xl font-bold mb-4">{{ $t('githubAuth') }}</h2>
+      <div v-if="!githubAuthStatus" class="flex items-center flex-row gap-2 w-full">
+        <span class="font-bold">{{ $t('githubAuthStatus') }}: </span>
+        <span class="text-red-500">{{ $t('notAuthorized') }}</span>
+        <MyButton @click="startGitHubAuth" :label="$t('authorizeWithGithub')" icon="fab fa-github" />
+      </div>
+      <div v-else class="flex items-center flex-row gap-2 w-full">
+        <span class="font-bold">{{ $t('githubAuthStatus') }}: </span>
+        <span class="text-green-500">{{ $t('authorized') }}</span>
+        <span>{{ $t('freeTrialActivated') }}</span>
+      </div>
+    </div>
+
+    <!-- 现有的许可证信息 -->
     <div class="flex items-center flex-row gap-2 max-w-lg w-full">
       <span class="font-bold">{{ $t('uid') }}: </span>
       <input id="uid" type="text" placeholder="uid" class="input input-sm grow input-bordered" v-model="license.uid"
@@ -9,16 +25,17 @@
     <div class="flex items-center flex-row gap-2  w-full">
       <span class="font-bold">{{ $t('license') }}: </span>
       <input type="text" placeholder="license key" class="input input-sm grow input-bordered" v-model="license.key" />
+      <div class="flex">
+        <label class="text-red-500 font-bold" v-if="license.status != 'pass'">{{ $t(`${license.status}`)
+          }}</label>
+        <label class="font-bold" v-if="license.status == 'pass'">
+          {{ $t('left_days') }}:
+          <label class="text-green-500 font-bold">{{ license.left_days }}</label>
+        </label>
+      </div>
       <MyButton @click="add_license" label="save" :showLoading="loading" />
     </div>
-    <div class="label">
-      <label class="label-text-alt text-red-500 font-bold" v-if="license.status != 'pass'">{{ license.status
-        }}</label>
-      <label class="label-text-alt" v-if="license.status == 'pass'">
-        Left:
-        <label class="text-green-500 font-bold">{{ license.left_days }}</label> days.
-      </label>
-    </div>
+
     <div class="flex items-center flex-row gap-2 w-full">
       <span class="font-bold">{{ $t('depositNetwork') }}: </span>
       <select class="select select-sm select-bordered " v-model="current_network">
@@ -73,10 +90,14 @@
 <script>
 import MyButton from '../Button.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
+import { open } from '@tauri-apps/api/shell';
+import { invoke } from "@tauri-apps/api/tauri";
 import qrcode_trc20 from '../../assets/usdt-trc20.png'
 import qrcode_eth from '../../assets/usdt-eth.png'
 import qrcode_solana from '../../assets/usdt-solana.png'
 import qrcode_ton from '../../assets/usdt-ton.png'
+import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+
 
 export default {
   name: 'app',
@@ -86,6 +107,7 @@ export default {
   data() {
     return {
       loading: true,
+      githubAuthStatus: false,
       license: {
         uid: '',
         key: '',
@@ -166,6 +188,10 @@ export default {
       this.$service.get_license().then(res => {
         this.license = res.data
         this.loading = false
+        // 检查是否通过GitHub认证获得了免费试用
+        if (res.data.github_authorized) {
+          this.githubAuthStatus = true;
+        }
       })
     },
     add_license() {
@@ -178,6 +204,38 @@ export default {
           this.license = res.data
           this.loading = false
         })
+    },
+    async startGitHubAuth() {
+      try {
+        // 打开GitHub授权页面
+        await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${this.$config.apiUrl}/github_auth_callback&scope=user%20public_repo`);
+        await this.loopCheckGithubAuth();
+      } catch (error) {
+        console.error('GitHub认证错误:', error);
+        this.$emitter.emit('showToast', this.$t('githubAuthErrorMessage'));
+      }
+    },
+    async loopCheckGithubAuth() {
+      const checkInterval = 3000; // 每秒检查一次
+      const maxAttempts = 60; // 最多检查60次，相当于60秒
+      let attempts = 0;
+
+      const checkAuth = async () => {
+        attempts++;
+        try {
+          this.get_license()
+        } catch (error) {
+          console.error('检查GitHub认证状态时出错:', error);
+        }
+
+        if (attempts < maxAttempts) {
+          setTimeout(checkAuth, checkInterval);
+        } else {
+          this.$emitter.emit('showToast', this.$t('githubAuthTimeoutMessage'));
+        }
+      };
+
+      checkAuth();
     }
   },
   mounted() {

@@ -14,22 +14,20 @@
           </div>
         </div>
 
-        <div v-if="slotProps.items.length == 0" class="p-4">
-          <div class="flex flex-col items-center justify-center">
-            <div class="relative w-64 h-64">
-              <div class="absolute inset-0 border-4 border-gray-300 rounded-full"></div>
-              <div class="absolute inset-0 border-4 border-blue-500 rounded-full animate-ping"></div>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <i class="fas fa-mobile-alt text-5xl text-gray-600"></i>
-              </div>
-              <div class="absolute top-1/2 left-1/2 w-1 h-32 bg-blue-500 origin-bottom animate-radar"></div>
-            </div>
-            <span class="mt-4 text-lg font-semibold text-gray-700">{{ $t('detecting_devices') }}</span>
-          </div>
-        </div>
+
       </template>
     </Pagination>
-
+    <div v-if="devices.length == 0" class="w-full h-full bg-gray-100 flex flex-col items-center justify-center">
+      <div class="relative w-64 h-64">
+        <div class="absolute inset-0 border-4 border-gray-300 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-blue-500 rounded-full animate-ping"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <i class="fas fa-mobile-alt text-5xl text-gray-600"></i>
+        </div>
+        <div class="absolute top-1/2 left-1/2 w-1 h-32 bg-blue-500 origin-bottom animate-radar"></div>
+      </div>
+      <span class="mt-4 text-lg font-semibold text-gray-700">{{ $t('detecting_devices') }}</span>
+    </div>
   </div>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box">
