@@ -28,6 +28,17 @@ npm install
 npm run tauri dev
 ```
 
-## Thanks to
+## FAQ
 
-* <https://github.com/Genymobile/scrcpy>
+1. 手动安装app
+
+```shell
+adb -s <device_id> install -r -t -g ../bin/com.github.tikmatrix.apk
+adb -s <device_id> install -r -t -g ../bin/com.github.tikmatrix.test.apk
+```
+
+2. 手动启动UIAutomator
+
+```shell
+adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.tikmatrix.stub.Stub com.github.tikmatrix.test/androidx.test.runner.AndroidJUnitRunner
+```
