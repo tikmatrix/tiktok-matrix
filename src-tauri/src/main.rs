@@ -181,7 +181,7 @@ fn start_agent(app: tauri::AppHandle) -> u32 {
         #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
     }
-    match command.stdout(Stdio::piped()).spawn() {
+    let child = match command.stdout(Stdio::piped()).spawn() {
         Ok(child) => {
             log::info!("start tiktok-agent success");
             child.id()
@@ -190,7 +190,11 @@ fn start_agent(app: tauri::AppHandle) -> u32 {
             log::error!("start tiktok-agent failed: {}", e);
             0
         }
-    }
+    };
+    //reload app
+    let result = app.emit_all("reload", ());
+    log::info!("reload result: {:?}", result);
+    child
 }
 #[tauri::command]
 fn stop_agent() {

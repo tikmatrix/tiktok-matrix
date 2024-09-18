@@ -166,6 +166,7 @@ export default {
         percentage: 0
       },
       download_filename: '',
+      is_updating: false,
     }
   },
   methods: {
@@ -187,6 +188,7 @@ export default {
       })
     },
     check_update() {
+      this.is_updating = true
       axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
         this.remote_version = res.data;
         console.log("remote_version", this.remote_version)
@@ -208,6 +210,7 @@ export default {
           })
         })
       })
+
     },
 
     async download_ocr() {
@@ -295,17 +298,15 @@ export default {
         url = this.remote_version.agent_windows_url;
       } else {
         console.log('Unknown OS type');
+        this.is_updating = false
         return;
       }
       this.check_file_update('tiktok-agent(6/6)', this.remote_version.agent_version, url, (updated) => {
+        this.is_updating = false
         if (updated) {
           invoke("grant_agent_permission");
           invoke("start_agent");
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000)
         }
-
       }, () => {
         invoke("stop_agent");
       });
@@ -370,7 +371,7 @@ export default {
     this.$emitter.on('showToast', async (text) => {
       await message(text);
     });
-    this.check_update();
+
     this.$emitter.on('openDevice', (device) => {
       this.device = device
     });
@@ -386,6 +387,13 @@ export default {
     this.$emitter.on('downloadOcr', () => {
       this.download_ocr()
     });
+    listen("reload", async () => {
+      if (this.is_updating) {
+        return;
+      }
+      window.location.reload();
+    });
+    this.check_update();
   }
 }
 </script>

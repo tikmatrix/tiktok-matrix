@@ -553,9 +553,7 @@ export default {
         this.menuItems = this.fullMenuItems.filter(item => res.data.includes(item.name))
       }).catch(err => {
         console.log(err)
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000)
+
       })
     },
 
