@@ -388,12 +388,7 @@ export default {
     this.$emitter.on('updateService', () => {
       this.check_update()
     });
-    listen("reload", async () => {
-      if (this.is_updating) {
-        return;
-      }
-      window.location.reload();
-    });
+
   }
 }
 </script>

@@ -192,8 +192,6 @@ fn start_agent(app: tauri::AppHandle) -> u32 {
         }
     };
     //reload app
-    let result = app.emit_all("reload", ());
-    log::info!("reload result: {:?}", result);
     child
 }
 #[tauri::command]
@@ -339,38 +337,6 @@ fn main() -> std::io::Result<()> {
             std::fs::write(format!("{}/port.txt", work_dir), "8090")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "8092")?;
 
-            //迁移数据
-            #[cfg(target_os = "windows")]
-            if Path::new("data").exists() {
-                if Path::new("data/settings.db").exists() {
-                    std::fs::copy(
-                        "data/settings.db",
-                        format!("{}/{}", work_dir, "data/settings.db"),
-                    )?;
-                    std::fs::rename("data/settings.db", "data/settings.db.bak")?;
-                }
-                if Path::new("data/tiktok.db").exists() {
-                    std::fs::copy(
-                        "data/tiktok.db",
-                        format!("{}/{}", work_dir, "data/tiktok.db"),
-                    )?;
-                    std::fs::rename("data/tiktok.db", "data/tiktok.db.bak")?;
-                }
-                if Path::new("data/tiktok.db-shm").exists() {
-                    std::fs::copy(
-                        "data/tiktok.db-shm",
-                        format!("{}/{}", work_dir, "data/tiktok.db-shm"),
-                    )?;
-                    std::fs::rename("data/tiktok.db-shm", "data/tiktok.db-shm.bak")?;
-                }
-                if Path::new("data/tiktok.db-wal").exists() {
-                    std::fs::copy(
-                        "data/tiktok.db-wal",
-                        format!("{}/{}", work_dir, "data/tiktok.db-wal"),
-                    )?;
-                    std::fs::rename("data/tiktok.db-wal", "data/tiktok.db-wal.bak")?;
-                }
-            }
             stop_agent();
             start_agent(app.app_handle());
             Ok(())

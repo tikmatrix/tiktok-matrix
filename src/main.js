@@ -22,8 +22,10 @@ import mitt from 'mitt'
 import VueDragSelect from "@coleqiu/vue-drag-select";
 import VueDraggableResizable from 'vue-draggable-resizable'
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+
 const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
 const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
+
 const emitter = mitt()
 let devices = reactive({ list: [] })
 async function getDevices() {
@@ -39,12 +41,24 @@ async function getDevices() {
 }
 getDevices() //get devices on page load
 setInterval(getDevices, 10000)
-localStorage.setItem('port', port);
-localStorage.setItem('wsPort', wsPort);
+
 let config = {
-  wsUrl: 'ws://127.0.0.1:' + wsPort,
-  apiUrl: 'http://127.0.0.1:' + port
+  wsUrl: '',
+  apiUrl: ''
 }
+
+async function updatePorts() {
+  const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+  const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
+  localStorage.setItem('port', port);
+  localStorage.setItem('wsPort', wsPort);
+  console.log(port, wsPort)
+  config.wsUrl = 'ws://127.0.0.1:' + wsPort;
+  config.apiUrl = 'http://127.0.0.1:' + port;
+}
+
+updatePorts(); // update ports on page load
+setInterval(updatePorts, 3000); // update ports every 3 seconds
 
 const app = createApp(App)
 app.use(VueAxios, axios)
