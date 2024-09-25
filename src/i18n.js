@@ -429,9 +429,13 @@ export const i18n = createI18n({
       githubAuthFailureMessage: 'GitHub authorization failed. Please try again.',
       githubAuthErrorMessage: 'An error occurred during GitHub authorization.',
       left_days: 'Left Days',
-      unlicensed: 'Unlicensed'
+      unlicensed: 'Unlicensed',
+      updateService: 'Update Service',
+      updateServiceSuccess: 'Update Service Success'
     },
     'zh-CN': {
+      updateServiceSuccess: '更新服务成功',
+      updateService: '更新服务',
       unlicensed: '未授权',
       left_days: '剩余天数',
       githubAuth: 'GitHub 认证',

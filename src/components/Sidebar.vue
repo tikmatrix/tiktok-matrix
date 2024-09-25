@@ -590,7 +590,6 @@ export default {
       setTimeout(() => {
         this.adb_command(['install', '-r', '-t', '-g', work_path + 'bin/com.github.tikmatrix.apk'])
         this.adb_command(['install', '-r', '-t', '-g', work_path + 'bin/com.github.tikmatrix.test.apk'])
-        this.$emitter.emit('showToast', this.$t('initSuccess'))
       }, 3000)
 
     },
@@ -605,12 +604,7 @@ export default {
           serials: this.selection,
         })
         .then(res => {
-          console.log(res)
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     publish(addProductLink) {
@@ -624,12 +618,8 @@ export default {
           add_product_link: addProductLink ? 1 : 0
         })
         .then(res => {
-          console.log(res)
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     message() {
@@ -643,12 +633,8 @@ export default {
           serials: this.selection,
         })
         .then(res => {
-          console.log(res)
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     share(postUrl) {
@@ -663,12 +649,7 @@ export default {
           post_url: postUrl
         })
         .then(res => {
-          console.log(res)
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     stop_task() {
@@ -682,9 +663,6 @@ export default {
         })
         .then(res => {
           this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     send_keycode(keycode) {
@@ -722,12 +700,8 @@ export default {
           target_username: targetUsername
         })
         .then(res => {
-          console.log(res)
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     follow(targetUsername) {
@@ -742,12 +716,8 @@ export default {
           target_username: targetUsername
         })
         .then(res => {
-          console.log(res)
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
 
@@ -858,12 +828,10 @@ export default {
       this.send_screen_mode(mode)
     });
     document.addEventListener('copy', () => {
-      console.log('复制事件被触发');
       this.copyFromPhone()
     });
 
     document.addEventListener('paste', () => {
-      console.log('粘贴事件被触发');
       this.pasteToPhone()
     });
     this.get_menus()

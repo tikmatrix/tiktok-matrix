@@ -2,7 +2,6 @@
 
   <div class="flex flex-row items-start bg-base-300 h-screen w-screen">
     <Sidebar />
-    <!-- <Toast /> -->
     <ManageDevices />
   </div>
 
@@ -103,7 +102,6 @@ import TrainSettings from './components/group/TrainSettings.vue'
 import PublishSettings from './components/group/PublishSettings.vue'
 import { inject } from 'vue'
 import * as util from './utils'
-// import Toast from './components/Toast.vue'
 import { invoke } from "@tauri-apps/api/tauri";
 import { window as tauriWindow } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
@@ -147,7 +145,6 @@ export default {
     ManagePostBots,
     ManageEditBots,
     Miniremote,
-    // Toast,
     BuyLicense,
     TrainSettings,
     PublishSettings
@@ -301,12 +298,13 @@ export default {
         this.is_updating = false
         return;
       }
-      this.check_file_update('tiktok-agent(6/6)', this.remote_version.agent_version, url, (updated) => {
+      this.check_file_update('tiktok-agent(6/6)', this.remote_version.agent_version, url, async (updated) => {
         this.is_updating = false
         if (updated) {
           invoke("grant_agent_permission");
           invoke("start_agent");
         }
+        await message(this.$t('updateServiceSuccess'));
       }, () => {
         invoke("stop_agent");
       });
@@ -387,13 +385,15 @@ export default {
     this.$emitter.on('downloadOcr', () => {
       this.download_ocr()
     });
+    this.$emitter.on('updateService', () => {
+      this.check_update()
+    });
     listen("reload", async () => {
       if (this.is_updating) {
         return;
       }
       window.location.reload();
     });
-    this.check_update();
   }
 }
 </script>

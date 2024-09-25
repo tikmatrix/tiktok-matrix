@@ -59,7 +59,11 @@
         @click="$emitter.emit('downloadOcr')">
         <font-awesome-icon icon="fa fa-download" class="h-3 w-3" />{{ $t('downloadOcr') }}
     </button>
-
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('updateService')">
+        <font-awesome-icon icon="fa fa-cloud-arrow-down" class="h-3 w-3" />{{ $t('updateService') }}
+    </button>
     <dialog ref="proxy_dialog" class="modal">
         <div class="modal-box">
             <h3 class="font-bold text-lg">{{ $t('proxyServer') }}</h3>
