@@ -431,9 +431,13 @@ export const i18n = createI18n({
       left_days: 'Left Days',
       unlicensed: 'Unlicensed',
       updateService: 'Update Service',
-      updateServiceSuccess: 'Update Service Success'
+      updateServiceSuccess: 'Update Service Success',
+      installJobs: 'Install Jobs',
+      apkPath: 'APK Path'
     },
     'zh-CN': {
+      apkPath: 'APK 路径',
+      installJobs: '安装任务',
       updateServiceSuccess: '更新服务成功',
       updateService: '更新服务',
       unlicensed: '未授权',

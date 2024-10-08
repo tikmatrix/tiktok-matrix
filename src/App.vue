@@ -25,6 +25,7 @@
       <ManageTrainJobs v-if="selectedItem.name === 'trainJobs' && $refs.page_dialog.open" />
       <ManageMessageJobs v-if="selectedItem.name === 'messageJobs' && $refs.page_dialog.open" />
       <ManageShareJobs v-if="selectedItem.name === 'shareJobs' && $refs.page_dialog.open" />
+      <ManageInstallJobs v-if="selectedItem.name === 'installJobs' && $refs.page_dialog.open" />
       <ManageFollowJobs v-if="selectedItem.name === 'followJobs' && $refs.page_dialog.open" />
       <ManageScrapeJobs v-if="selectedItem.name === 'scrapeFansJobs' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
@@ -79,13 +80,14 @@ import ManageDevices from './components/device/ManageDevices.vue'
 import ManageAccounts from './components/account/ManageAccounts.vue'
 import ManageAnalytics from './components/analytics/ManageAnalytics.vue'
 import ManageMaterials from './components/material/ManageMaterials.vue'
-import ManagePublishJobs from './components/publishJob/ManagePublishJobs.vue'
-import ManageMessageJobs from './components/messageJob/ManageMessageJobs.vue'
-import ManageShareJobs from './components/shareJob/ManageShareJobs.vue'
-import ManageFollowJobs from './components/followJob/ManageFollowJobs.vue'
-import ManageScrapeJobs from './components/scrapeJob/ManageScrapeJobs.vue'
+import ManagePublishJobs from './components/jobs/ManagePublishJobs.vue'
+import ManageMessageJobs from './components/jobs/ManageMessageJobs.vue'
+import ManageShareJobs from './components/jobs/ManageShareJobs.vue'
+import ManageFollowJobs from './components/jobs/ManageFollowJobs.vue'
+import ManageScrapeJobs from './components/jobs/ManageScrapeJobs.vue'
+import ManageInstallJobs from './components/jobs/ManageInstallJobs.vue'
 import ManageDialog from './components/dialog/ManageDialog.vue'
-import ManageTrainJobs from './components/trainJob/ManageTrainJobs.vue'
+import ManageTrainJobs from './components/jobs/ManageTrainJobs.vue'
 import ManageGroups from './components/group/ManageGroups.vue'
 import ManageMusics from './components/music/ManageMusics.vue'
 import RegisterSettings from './components/settings/RegisterSettings.vue'
@@ -131,6 +133,7 @@ export default {
     ManagePublishJobs,
     ManageMessageJobs,
     ManageShareJobs,
+    ManageInstallJobs,
     ManageFollowJobs,
     ManageScrapeJobs,
     ManageDialog,

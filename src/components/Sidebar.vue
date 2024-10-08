@@ -432,6 +432,10 @@ export default {
         })
     },
     async selectApkFile() {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
       const filePath = await open({
         multiple: false, // 是否允许多选文件
         directory: false, // 是否选择目录
@@ -442,15 +446,12 @@ export default {
 
       console.log('Selected file path:', filePath);
       this.$service
-        .install({
-          file: filePath,
+        .install_now({
+          apk_path: filePath,
           serials: this.selection
         })
         .then(res => {
           console.log(res)
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     adb_command(args) {
@@ -833,6 +834,11 @@ export default {
 
     document.addEventListener('paste', () => {
       this.pasteToPhone()
+    });
+    this.$emitter.on('reload_sidebar', () => {
+      this.get_menus()
+      this.get_settings()
+      this.get_groups()
     });
     this.get_menus()
     this.get_settings()

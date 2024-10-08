@@ -799,3 +799,45 @@ export function edit_title(data) {
     url: api.edit_title
   })
 }
+export function install_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.install_now
+  })
+}
+export function get_install_jobs() {
+  return request({
+    method: 'get',
+    url: api.install_job
+  })
+}
+export function delete_install_job({ id }) {
+  return request({
+    method: 'delete',
+    params: { id },
+    url: api.install_job
+  })
+}
+export function update_install_job(data) {
+  return request({
+    method: 'put',
+    data,
+    url: api.install_job
+  })
+}
+export function retry_all_failed_install_job() {
+  return request({
+    method: 'get',
+    url: api.retry_all_failed_install_job
+  })
+}
+export function delete_all_install_jobs() {
+  return request({
+    method: 'delete',
+    url: api.delete_all_install_jobs
+  })
+}
+
+
+

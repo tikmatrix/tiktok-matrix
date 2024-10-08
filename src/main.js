@@ -48,11 +48,21 @@ let config = {
 }
 
 async function updatePorts() {
+  const oldPort = localStorage.getItem('port');
+  const oldWsPort = localStorage.getItem('wsPort');
+
   const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
   const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
+
+  if (port !== oldPort || wsPort !== oldWsPort) {
+    console.log('Ports have changed:', { oldPort, oldWsPort, newPort: port, newWsPort: wsPort });
+    emitter.emit('updateService')
+    emitter.emit('reload_sidebar')
+  }
+
   localStorage.setItem('port', port);
   localStorage.setItem('wsPort', wsPort);
-  console.log(port, wsPort)
+  console.log(port, wsPort);
   config.wsUrl = 'ws://127.0.0.1:' + wsPort;
   config.apiUrl = 'http://127.0.0.1:' + port;
 }

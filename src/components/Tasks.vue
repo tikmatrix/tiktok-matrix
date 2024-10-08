@@ -31,6 +31,11 @@
     </button>
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="$emitter.emit('menuSelected', { name: 'installJobs' })">
+        <font-awesome-icon icon="fa fa-download" class="h-3 w-3" />{{ $t('installJobs') }}
+    </button>
+    <button
+        class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('stop_task')">
         <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-pink-500" />{{ $t('stopTask') }}
     </button>
