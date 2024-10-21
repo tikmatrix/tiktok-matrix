@@ -433,9 +433,11 @@ export const i18n = createI18n({
       updateService: 'Update Service',
       updateServiceSuccess: 'Update Service Success',
       installJobs: 'Install Jobs',
-      apkPath: 'APK Path'
+      apkPath: 'APK Path',
+      sort: 'Sort',
     },
     'zh-CN': {
+      sort: '排序',
       apkPath: 'APK 路径',
       installJobs: '安装任务',
       updateServiceSuccess: '更新服务成功',

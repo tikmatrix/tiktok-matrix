@@ -2,7 +2,7 @@
   <div class="w-full">
     <Pagination :items="materials" :searchKeys="['name']" @refresh="get_materials">
       <template v-slot:buttons>
-        <MyButton @click="selectVideos" label="upload" icon="fa fa-add" />
+        <MyButton @click="selectMaterials" label="upload" icon="fa fa-add" />
         <MyButton @click="$refs.add_video_dialog.showModal()" label="capture" icon="fa fa-add" />
       </template>
       <template v-slot:default="slotProps">
@@ -14,6 +14,7 @@
                 <th>{{ $t('source') }}</th>
                 <th>{{ $t('status') }}</th>
                 <th>{{ $t('preview') }}</th>
+                <th>{{ $t('sort') }}</th>
                 <th>{{ $t('title') }}</th>
                 <th>{{ $t('md5') }}</th>
                 <th>{{ $t('actions') }}</th>
@@ -39,10 +40,12 @@
                   </div>
                 </td>
                 <td>
-                  <span class="text-sm">{{ material.title?.substring(0, 10) + (material.title?.length > 10 ? '...' : '')
-                    +
-                    (material.title?.length > 20 ? '...' : '')
-                    }}</span>
+                  <span class="text-sm">{{ material.no }}</span>
+                </td>
+                <td>
+                  <span class="text-sm">{{ material.title ? material.title.substring(0, 10) + (material.title.length >
+                    10 ? '...' : '')
+                    + (material.title.length > 20 ? '...' : '') : '' }}</span>
                 </td>
                 <td>
                   <span class="text-xs">{{ material.md5.substring(0,
@@ -231,17 +234,25 @@ export default {
           this.get_materials()
         })
     },
-    async selectVideos() {
+    async selectMaterials() {
+      const content_type = this.group.content_type;
+      const image_count = this.group.image_count;
+      let filters = [];
+      if (content_type == 0) {
+        filters = [ // 视频
+          { name: 'Video Files', extensions: ['mp4'] },
+        ]
+      } else if (content_type == 1) {
+        filters = [ // 图片
+          { name: 'Image Files', extensions: ['jpg', 'png'] },
+        ]
+      }
       const filePath = await open({
         multiple: true, // 是否允许多选文件
         directory: false, // 是否选择目录
-        filters: [ // 文件过滤器
-          { name: 'Video Files', extensions: ['mp4', 'jpg', 'png'] },
-        ]
+        filters: filters
       });
 
-      console.log('Selected file path:', filePath);
-      // 将 filePath 用于其他操作
       this.$service
         .upload_videos({
           files: filePath,

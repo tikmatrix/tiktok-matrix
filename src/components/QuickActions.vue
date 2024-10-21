@@ -105,7 +105,7 @@ export default {
         },
         uninstallApk() {
             this.$refs.uninstall_dialog.close()
-            $emitter.emit('adbEventData', { args: ['shell', 'pm', 'uninstall', uninstall_package] })
+            this.$emitter.emit('adbEventData', { args: ['shell', 'pm', 'uninstall', this.uninstall_package] })
         }
     }
 }

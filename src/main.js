@@ -53,7 +53,9 @@ async function updatePorts() {
 
   const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
   const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
-
+  if (port == '8090') {
+    return
+  }
   if (port !== oldPort || wsPort !== oldWsPort) {
     console.log('Ports have changed:', { oldPort, oldWsPort, newPort: port, newWsPort: wsPort });
     emitter.emit('updateService')

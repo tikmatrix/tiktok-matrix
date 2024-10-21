@@ -2,8 +2,9 @@ import axios from 'axios'
 import mock from '../mock'
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { appDataDir } from '@tauri-apps/api/path';
-const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-export function post(config) {
+
+export async function post(config) {
+  const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
   !config && (config = { headers: {} })
   !config.headers && (config.headers = {})
   !config.data && (config.data = {})
@@ -25,11 +26,12 @@ export function post(config) {
   })
 }
 
-const request = function request(config) {
+const request = async function request(config) {
   !config && (config = { headers: {} })
   !config.headers && (config.headers = {})
   !config.data && (config.data = {})
   !config.params && (config.params = {})
+  const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
   config.baseURL = 'http://127.0.0.1:' + port
   const { method, url } = config
   const mockMethod = method || 'get'
