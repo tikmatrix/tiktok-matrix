@@ -63,7 +63,7 @@
           <label class="font-light text-sm pb-2">$0 / {{ $t('freeTrial') }}</label>
           <label class="font-dark text-sm pb-2">$99 / {{ $t('computer') }} / {{ $t('month') }}</label>
           <label class="font-dark text-sm pb-2">$599 / {{ $t('computer') }} / {{ $t('year') }}</label>
-          <a class="link link-primary text-xs float-right flex items-center  pb-2" href="https://t.me/tikmatrixcom"
+          <a class="link link-primary text-xs float-right flex items-center  pb-2" href="https://t.me/+iGhozoBfAbI5YmE1"
             target="_blank">
             <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-4 w-4" />
             {{ $t('telegramCustom') }}

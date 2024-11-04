@@ -51,16 +51,16 @@
             {{ $t('buyLicense') }}
           </a>
 
-          <a class="link link-primary text-xs float-right flex items-center mr-1"
+          <!-- <a class="link link-primary text-xs float-right flex items-center mr-1"
             href="https://chat.whatsapp.com/G15tFqXqbRGADnggV5OEvg" target="_blank">
             <font-awesome-icon icon="fab fa-whatsapp" class="text-blue-500 h-4 w-4" />
             {{ $t('whatsapp') }}
-          </a>
-          <a class="link link-primary text-xs float-right flex items-center mr-1" href="https://t.me/+iGhozoBfAbI5YmE1"
+          </a> -->
+          <!-- <a class="link link-primary text-xs float-right flex items-center mr-1" href="https://t.me/+iGhozoBfAbI5YmE1"
             target="_blank">
             <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-4 w-4" />
             {{ $t('telegram') }}
-          </a>
+          </a> -->
           <a class="link link-primary text-xs float-right flex items-center mr-1"
             href="https://tikmatrix.com/docs/intro" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4" />
