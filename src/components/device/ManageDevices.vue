@@ -1,6 +1,6 @@
 <template>
   <div class="w-full h-screen overflow-y-auto">
-    <Pagination ref="device_panel" :items="devices" :pageSize="30" @refresh="refreshPage">
+    <Pagination ref="device_panel" :items="devices" :pageSize="200" @refresh="refreshPage">
       <template v-slot:buttons>
         <MyButton @click="$service.reset_all_index" label="resetIndex" icon="fa fa-refresh" />
         <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired" />

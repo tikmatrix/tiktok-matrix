@@ -337,8 +337,8 @@ fn main() -> std::io::Result<()> {
             std::fs::write(format!("{}/port.txt", work_dir), "8090")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "8092")?;
 
-            stop_agent();
-            start_agent(app.app_handle());
+            // stop_agent();
+            // start_agent(app.app_handle());
             Ok(())
         })
         .run(tauri::generate_context!())

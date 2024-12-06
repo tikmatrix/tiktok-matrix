@@ -305,8 +305,8 @@ export default {
         this.is_updating = false
         if (updated) {
           invoke("grant_agent_permission");
-          invoke("start_agent");
         }
+        invoke("start_agent");
         await message(this.$t('updateServiceSuccess'));
       }, () => {
         invoke("stop_agent");
@@ -362,9 +362,16 @@ export default {
     },
   },
   mounted() {
+    const hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate')
+    console.log('hasCheckedUpdate:', hasCheckedUpdate)
+    if (!hasCheckedUpdate) {
+      this.check_update()
+      localStorage.setItem('hasCheckedUpdate', 1)
+    }
     tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
       const yes = await ask(this.$t('exitConfirm'), this.$t('confirm'));
       if (yes) {
+        localStorage.removeItem('hasCheckedUpdate')
         this.stop_agent();
         tauriWindow.getCurrent().close();
       }

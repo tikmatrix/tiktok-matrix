@@ -55,7 +55,7 @@ export default {
     },
     searchKeys: {
       type: Array,
-      required: true
+      required: false
     },
     pageSize: {
       type: Number,

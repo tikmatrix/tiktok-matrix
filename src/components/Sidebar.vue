@@ -43,7 +43,11 @@
       <div class="p-4">
         <div class="flex flex-row p-2 bg-base-300 rounded-md">
           <div class="flex-1">
-
+            <a class="link link-primary text-xs float-right flex items-center mr-1"
+              :href="'http://127.0.0.1:' + port + '/api/device'" target="_blank">
+              <font-awesome-icon icon="fa-solid fa-globe" class="text-blue-500 h-4 w-4 mr-1" />
+              http://127.0.0.1:{{ port }}
+            </a>
           </div>
           <a class="link link-primary text-xs float-right flex items-center mr-1"
             @click="$emitter.emit('menuSelected', { name: 'buyLicense' })">
@@ -265,6 +269,7 @@ export default {
       },
       locale: util.getData('locale') || 'en',
       version: '1.0.0',
+      port: -1
     }
   },
 
@@ -414,7 +419,7 @@ export default {
         multiple: true, // 是否允许多选文件
         directory: false, // 是否选择目录
         filters: [ // 文件过滤器
-          { name: 'Video Files', extensions: ['mp4', 'jpg', 'png'] },
+          { name: 'Upload Files', extensions: ['mp4', 'jpg', 'png', 'jpeg'] },
         ]
       });
 
@@ -839,10 +844,13 @@ export default {
       this.get_menus()
       this.get_settings()
       this.get_groups()
+      this.port = localStorage.getItem('port');
+      console.log('reload_sidebar port:', this.port)
     });
     this.get_menus()
     this.get_settings()
     this.get_groups()
+    this.port = localStorage.getItem('port');
 
   }
 }

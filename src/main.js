@@ -23,8 +23,6 @@ import VueDragSelect from "@coleqiu/vue-drag-select";
 import VueDraggableResizable from 'vue-draggable-resizable'
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 
-const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
 
 const emitter = mitt()
 let devices = reactive({ list: [] })
@@ -48,6 +46,7 @@ let config = {
 }
 
 async function updatePorts() {
+
   const oldPort = localStorage.getItem('port');
   const oldWsPort = localStorage.getItem('wsPort');
 
@@ -56,19 +55,18 @@ async function updatePorts() {
   if (port == '8090') {
     return
   }
-  if (port !== oldPort || wsPort !== oldWsPort) {
-    console.log('Ports have changed:', { oldPort, oldWsPort, newPort: port, newWsPort: wsPort });
-    emitter.emit('updateService')
-    emitter.emit('reload_sidebar')
-  }
 
   localStorage.setItem('port', port);
   localStorage.setItem('wsPort', wsPort);
-  console.log(port, wsPort);
   config.wsUrl = 'ws://127.0.0.1:' + wsPort;
   config.apiUrl = 'http://127.0.0.1:' + port;
-}
+  if (port !== oldPort || wsPort !== oldWsPort) {
+    console.log('Ports have changed:', { oldPort, oldWsPort, newPort: port, newWsPort: wsPort });
+    emitter.emit('reload_sidebar')
+  }
 
+}
+emitter.emit('updateService')
 updatePorts(); // update ports on page load
 setInterval(updatePorts, 3000); // update ports every 3 seconds
 
