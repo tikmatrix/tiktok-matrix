@@ -435,8 +435,13 @@ export const i18n = createI18n({
       installJobs: 'Install Jobs',
       apkPath: 'APK Path',
       sort: 'Sort',
+      emailsFile: 'Emails File',
+      emailsFileTips: 'Emails file in txt format with one email per line',
     },
     'zh-CN': {
+      passwordTips: '请输入密码',
+      emailsFileTips: '每行一个用于注册账号的邮箱的txt文件格式',
+      emailsFile: '邮箱文件',
       sort: '排序',
       apkPath: 'APK 路径',
       installJobs: '安装任务',
