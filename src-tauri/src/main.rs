@@ -171,6 +171,8 @@ fn grant_agent_permission(app: tauri::AppHandle) {
 }
 #[tauri::command]
 fn start_agent(app: tauri::AppHandle) -> u32 {
+    //stop agent
+    stop_agent();
     //check bin/tiktok-agent exist
     let work_dir = app.path_resolver().app_data_dir().unwrap();
     let work_dir = work_dir.to_str().unwrap();
@@ -336,9 +338,6 @@ fn main() -> std::io::Result<()> {
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
             std::fs::write(format!("{}/port.txt", work_dir), "8090")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "8092")?;
-
-            // stop_agent();
-            // start_agent(app.app_handle());
             Ok(())
         })
         .run(tauri::generate_context!())

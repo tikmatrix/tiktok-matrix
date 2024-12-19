@@ -10,9 +10,10 @@
           <font-awesome-icon icon="fa-brands fa-tiktok" class="text-white h-8 w-8 mr-2" />
           <div>
             <span class="text-xl text-white font-bold">{{ $t('siteName') }}</span>
-            <br>
-            <span class="text-xs text-white font-sans">www.tikmatrix.com</span>
             <span class="text-xs text-white ml-2">v{{ version }}</span>
+            <br>
+            <span class="text-xs text-white font-sans">{{ $t('siteUrl') }}</span>
+
           </div>
           <div class="ml-2">
             <select class="select select-info select-sm" v-model="locale">
@@ -65,8 +66,8 @@
             <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-4 w-4" />
             {{ $t('telegram') }}
           </a> -->
-          <a class="link link-primary text-xs float-right flex items-center mr-1"
-            href="https://tikmatrix.com/docs/intro" target="_blank">
+          <a class="link link-primary text-xs float-right flex items-center mr-1" :href="$t('siteUrl') + '/docs/intro'"
+            target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4" />
             {{ $t('document') }}
           </a>

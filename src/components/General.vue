@@ -2,22 +2,22 @@
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'accounts' })">
-        <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
+        <font-awesome-icon icon="user" class="h-3 w-3 mr-1" />{{ $t('accounts') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'packageNameSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('packageNameSettings') }}
+        <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('packageNameSettings') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'registerSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('registerSettings') }}
+        <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('registerSettings') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'messageSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('messageSettings') }}
+        <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('messageSettings') }}
     </button>
 
     <button
@@ -37,32 +37,32 @@
     <!-- <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.scan_dialog.show()">
-        <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
+        <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3 mr-1" />{{ $t('scanTCPDevice') }}
     </button> -->
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('initDevice')">
-        <font-awesome-icon icon="fa-solid fa-arrows-rotate" class="h-3 w-3" />{{ $t('initApp') }}
+        <font-awesome-icon icon="fa fa-mobile" class="h-3 w-3 mr-1" />{{ $t('initApp') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.github.tikmatrix/.MainActivity'] })">
-        {{ $t('openTikMatrixApp') }}
+        <font-awesome-icon icon="fa fa-mobile" class="h-3 w-3 mr-1" />{{ $t('openApp') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="open_dir('logs')">
-        <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3" />{{ $t('openLogs') }}
+        <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3 mr-1" />{{ $t('openLogs') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('downloadOcr')">
-        <font-awesome-icon icon="fa fa-download" class="h-3 w-3" />{{ $t('downloadOcr') }}
+        <font-awesome-icon icon="fa fa-download" class="h-3 w-3 mr-1" />{{ $t('downloadOcr') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('updateService')">
-        <font-awesome-icon icon="fa fa-cloud-arrow-down" class="h-3 w-3" />{{ $t('updateService') }}
+        <font-awesome-icon icon="fa fa-cloud-arrow-down" class="h-3 w-3 mr-1" />{{ $t('updateService') }}
     </button>
     <dialog ref="proxy_dialog" class="modal">
         <div class="modal-box">

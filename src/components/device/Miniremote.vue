@@ -263,7 +263,7 @@ export default {
       this.scrcpy = new WebSocket(this.$config.wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
+        // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
         let max_size = this.big ? 1080 : 540
         this.scrcpy.send(`${this.device.serial}`)
         // max size

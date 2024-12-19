@@ -31,7 +31,6 @@ async function getDevices() {
     for (let i = 0; i < res.data.length; i++) {
       if (res.data[i].index == 0) {
         res.data[i].index = i + 1
-        console.log(res.data[i])
       }
     }
     devices.list.splice(0, devices.list.length, ...res.data)

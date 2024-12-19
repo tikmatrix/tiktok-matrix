@@ -43,6 +43,24 @@ adb -s <device_id> install -r -t -g ../bin/com.github.tikmatrix.test.apk
 adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.tikmatrix.stub.Stub com.github.tikmatrix.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
+3. 自定义软件名称
+
+* src/src-tauri/tauri.conf.json
+
+```shell
+"package": {
+    "productName": "TikMatrix",
+    "version": "1.8.1"
+  }
+```
+
+* src/i18n.js
+
+```shell
+ siteName: 'TikMatrix',
+ siteUrl: 'https://www.tikmatrix.com',
+```
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=tikmatrix/tiktok-matrix&type=Date)](https://star-history.com/#tikmatrix/tiktok-matrix&Date)
