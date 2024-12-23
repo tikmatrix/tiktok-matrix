@@ -14,7 +14,6 @@
     <div class="modal-box w-11/12 max-w-5xl">
       <h3 class="font-bold text-lg">{{ page_title }}</h3>
       <ManageDashboard v-if="selectedItem.name === 'dashboard' && $refs.page_dialog.open" />
-      <ManageGroups v-if="selectedItem.name === 'groups' && $refs.page_dialog.open" />
       <ManageAccounts v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
       <ManageAnalytics v-if="selectedItem.name === 'analytics' && $refs.page_dialog.open" />
       <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
@@ -88,7 +87,6 @@ import ManageScrapeJobs from './components/jobs/ManageScrapeJobs.vue'
 import ManageInstallJobs from './components/jobs/ManageInstallJobs.vue'
 import ManageDialog from './components/dialog/ManageDialog.vue'
 import ManageTrainJobs from './components/jobs/ManageTrainJobs.vue'
-import ManageGroups from './components/group/ManageGroups.vue'
 import ManageMusics from './components/music/ManageMusics.vue'
 import RegisterSettings from './components/settings/RegisterSettings.vue'
 import PackageNameSettings from './components/settings/PackageNameSettings.vue'
@@ -138,7 +136,6 @@ export default {
     ManageScrapeJobs,
     ManageDialog,
     ManageTrainJobs,
-    ManageGroups,
     ManageMusics,
     RegisterSettings,
     PackageNameSettings,

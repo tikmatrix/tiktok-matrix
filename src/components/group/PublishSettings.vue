@@ -42,7 +42,44 @@
           </div>
         </div>
       </div>
+      <!-- add sound start -->
+      <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
+        <label class="font-bold text-right col-span-2">{{ $t('addSound') }}:</label>
+        <div class="col-span-6 flex items-center gap-4">
+          <div class="flex items-center">
+            <input type="radio" id="disable" value="0" v-model="mygroup.add_sound"
+              class="form-radio text-blue-500 h-4 w-4">
+            <label for="disable" class="ml-2">{{ $t('disable') }}</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" id="enable" value="1" v-model="mygroup.add_sound"
+              class="form-radio text-blue-500 h-4 w-4">
+            <label for="enable" class="ml-2">{{ $t('enable') }}</label>
+          </div>
+          <!-- add sound tips -->
 
+          <div role="alert" class="alert col-span-5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              class="stroke-info shrink-0 w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ $t('addSoundTips') }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-4 w-full items-center gap-2 mb-2" v-if="mygroup.add_sound == 1">
+        <label class="font-bold text-right col-span-1">{{ $t('soundVolume') }}:</label>
+        <div class="flex items-center col-span-3">
+          <label class="ml-2 text-right">{{ $t('originSound') }}: </label>
+          <input type="range" min="0" max="100" value="25" class="range range-xs range-success w-32" step="25"
+            v-model="mygroup.origin_sound_volume" />
+          <label class="ml-2 text-right">{{ $t('addSound') }}: </label>
+          <input type="range" min="0" max="100" value="25" class="range range-xs range-success w-32" step="25"
+            v-model="mygroup.add_sound_volume" />
+        </div>
+      </div>
+      <!-- add sound end-->
       <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-1">{{ $t('titles') }}:</label>
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32" :placeholder="$t('titlesTips')"
@@ -86,6 +123,7 @@ export default {
   data() {
     return {
       mygroup: {
+        add_sound: 0,
         auto_train: 0,
         auto_publish: 0,
         image_count: 2,
@@ -145,6 +183,9 @@ export default {
           topic: group.topic,
           comment: group.comment,
           image_count: Number(group.image_count),
+          add_sound: Number(group.add_sound),
+          origin_sound_volume: Number(group.origin_sound_volume),
+          add_sound_volume: Number(group.add_sound_volume),
         })
         .then(() => {
           this.$emitter.emit('closePageDialog', {})
