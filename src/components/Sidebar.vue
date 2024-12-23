@@ -316,7 +316,6 @@ export default {
             train_start_time: group.train_start_time,
             title: group.title,
             publish_type: Number(group.publish_type),
-            product_link: group.product_link,
             floow_probable: Number(group.floow_probable),
             like_probable: Number(group.like_probable),
             collect_probable: Number(group.collect_probable),
@@ -327,6 +326,10 @@ export default {
             topic: group.topic,
             comment: group.comment,
             image_count: Number(group.image_count),
+            add_sound: Number(group.add_sound),
+            origin_sound_volume: Number(group.origin_sound_volume),
+            add_sound_volume: Number(group.add_sound_volume),
+            add_product_link: Number(group.add_product_link),
           })
           .then(() => {
             this.newGroupName = ''
@@ -344,7 +347,6 @@ export default {
             title: '',
             comment: '',
             publish_type: 0,
-            product_link: '',
             floow_probable: 0,
             like_probable: 0,
             collect_probable: 0,
@@ -353,7 +355,11 @@ export default {
             min_duration: 10,
             max_duration: 30,
             topic: '',
-            image_count: 2
+            image_count: 2,
+            add_sound: 0,
+            origin_sound_volume: 0,
+            add_sound_volume: 0,
+            add_product_link: 0,
           })
           .then(() => {
             this.newGroupName = ''
@@ -614,7 +620,7 @@ export default {
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })
     },
-    publish(addProductLink) {
+    publish() {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
@@ -622,11 +628,9 @@ export default {
       this.$service
         .publish_now({
           serials: this.selection,
-          add_product_link: addProductLink ? 1 : 0
         })
         .then(res => {
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-
         })
     },
     message() {
@@ -810,8 +814,8 @@ export default {
     this.$emitter.on('train', (platform) => {
       this.train(platform);
     });
-    this.$emitter.on('publish', (addProductLink) => {
-      this.publish(addProductLink);
+    this.$emitter.on('publish', () => {
+      this.publish();
     });
     this.$emitter.on('message', () => {
       this.message();

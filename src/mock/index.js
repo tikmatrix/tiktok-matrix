@@ -18,7 +18,6 @@ for (let i = 1; i <= 3; i++) {
     auto_train: Math.round(Math.random()), // 生成0或1的随机整数
     auto_publish: Math.round(Math.random()), // 生成0或1的随机整数
     publish_type: Math.round(Math.random()) + 1, // 生成0或1的随机整数
-    product_link: 'https://vm.tiktok.com/ZGe2xRC8t/'
   })
 }
 let musics = []
@@ -69,7 +68,6 @@ for (let i = 1; i <= 100; i++) {
     title: 'title',
     device: 'device' + i,
     publish_type: 1,
-    product_link: 'https://vm.tiktok.com/ZGe2xRC8t/',
     group_id: Math.floor(Math.random() * 10) + 1 // 生成1到10之间的随机整数
   })
 }

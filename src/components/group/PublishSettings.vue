@@ -80,15 +80,36 @@
         </div>
       </div>
       <!-- add sound end-->
+      <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
+        <label class="font-bold text-right col-span-2">{{ $t('addProductLink') }}:</label>
+        <div class="col-span-6 flex items-center gap-4">
+          <div class="flex items-center">
+            <input type="radio" id="disable" value="0" v-model="mygroup.add_product_link"
+              class="form-radio text-blue-500 h-4 w-4">
+            <label for="disable" class="ml-2">{{ $t('disable') }}</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" id="enable" value="1" v-model="mygroup.add_product_link"
+              class="form-radio text-blue-500 h-4 w-4">
+            <label for="enable" class="ml-2">{{ $t('enable') }}</label>
+          </div>
+
+          <div role="alert" class="alert col-span-5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              class="stroke-info shrink-0 w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ $t('addProductLinkTips') }}</span>
+          </div>
+        </div>
+      </div>
       <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-1">{{ $t('titles') }}:</label>
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32" :placeholder="$t('titlesTips')"
           autocomplete="off" v-model="mygroup.title"> </textarea>
       </div>
-      <!-- <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-            <label class="font-bold text-right col-span-1">{{ $t('productLink') }}</label>
-            <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="mygroup.product_link" />
-        </div> -->
+
     </div>
     <!-- other fields... -->
     <div class="mt-8 w-full flex justify-end">
@@ -172,7 +193,6 @@ export default {
           train_start_time: group.train_start_time,
           title: group.title,
           publish_type: Number(group.publish_type),
-          product_link: group.product_link,
           floow_probable: Number(group.floow_probable),
           like_probable: Number(group.like_probable),
           collect_probable: Number(group.collect_probable),
@@ -186,6 +206,7 @@ export default {
           add_sound: Number(group.add_sound),
           origin_sound_volume: Number(group.origin_sound_volume),
           add_sound_volume: Number(group.add_sound_volume),
+          add_product_link: Number(group.add_product_link),
         })
         .then(() => {
           this.$emitter.emit('closePageDialog', {})

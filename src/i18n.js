@@ -441,8 +441,12 @@ export const i18n = createI18n({
       soundVolume: 'Sound Volume',
       originSound: 'Origin Sound',
       addSoundTips: 'Add music recommended by TikTok',
+      addProductLinkTips: 'Enabling this will automatically add the first product link in the showcase when publishing',
+      addProductLink: 'Add Product Link',
     },
     'zh-CN': {
+      addProductLink: '添加商品链接',
+      addProductLinkTips: '启用后将自动在发布时添加橱窗中的第一个商品链接',
       addSoundTips: '添加TikTok推荐的音乐',
       originSound: '原声',
       soundVolume: '声音音量',
