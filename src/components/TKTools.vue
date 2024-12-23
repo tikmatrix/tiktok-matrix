@@ -3,72 +3,72 @@
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-white" />
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 mr-1 text-white" />
         {{ $t('openTiktok') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 mr-1 text-yellow-500" />
         {{ $t('stopTiktok') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="logout">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 mr-1 text-pink-500" />
         {{ $t('logout') }}
     </button>
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('scriptEventData', { name: 'register', args: ['1'] })">
-        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('startRegister') }}
+        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startRegister') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.scrapeUsersDialog.showModal">
-        <font-awesome-icon icon="fas fa-spider" class="h-3 w-3" />{{ $t('scrapeFans') }}
+        <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />{{ $t('scrapeFans') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('scriptEventData', { name: 'profile', args: [] })">
-        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('startFillProfile') }}
+        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startFillProfile') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('scriptEventData', { name: 'match_account', args: [] })">
-        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('matchAccount') }}
+        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('matchAccount') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('scriptEventData', { name: 'login', args: [] })">
-        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />{{ $t('startLogin') }}
+        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startLogin') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('train', 'tiktok')">
-        <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('startTrain') }}
+        <font-awesome-icon icon="random" class="h-3 w-3 mr-1" />{{ $t('startTrain') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('publish')">
-        <font-awesome-icon icon="paper-plane" class="h-3 w-3" />{{ $t('startPublish') }}
+        <font-awesome-icon icon="paper-plane" class="h-3 w-3 mr-1" />{{ $t('startPublish') }}
     </button>
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('message')">
-        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('startMessage') }}
+        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3 mr-1" />{{ $t('startMessage') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.shareDialog.showModal">
-        <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3" />{{ $t('startShare') }}
+        <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3 mr-1" />{{ $t('startShare') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.followDialog.showModal">
-        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3" />{{ $t('startFollow') }}
+        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startFollow') }}
     </button>
 
     <dialog ref="scrapeUsersDialog" class="modal">

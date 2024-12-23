@@ -158,17 +158,17 @@
               <button
                 class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
                 @click="$emitter.emit('menuSelected', { name: 'trainSettings', group: item })">
-                <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
+                <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('trainSettings') }}
               </button>
               <button
                 class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
                 @click="$emitter.emit('menuSelected', { name: 'publishSettings', group: item })">
-                <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
+                <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('publishSettings') }}
               </button>
               <button
                 class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
                 @click="$emitter.emit('menuSelected', { name: 'materials', group: item })">
-                <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
+                <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3 mr-1" />{{ $t('materials') }}
               </button>
             </div>
           </div>

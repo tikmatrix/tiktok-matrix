@@ -2,42 +2,42 @@
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'trainJobs' })">
-        <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('trainJobs') }}
+        <font-awesome-icon icon="random" class="h-3 w-3 mr-1" />{{ $t('trainJobs') }}
     </button>
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'publishJobs' })">
-        <font-awesome-icon icon="paper-plane" class="h-3 w-3" />{{ $t('publishJobs') }}
+        <font-awesome-icon icon="paper-plane" class="h-3 w-3 mr-1" />{{ $t('publishJobs') }}
     </button>
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'messageJobs' })">
-        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('messageJobs') }}
+        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3 mr-1" />{{ $t('messageJobs') }}
     </button>
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'shareJobs' })">
-        <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3" />{{ $t('shareJobs') }}
+        <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3 mr-1" />{{ $t('shareJobs') }}
     </button>
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'followJobs' })">
-        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3" />{{ $t('followJobs') }}
+        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('followJobs') }}
     </button>
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'scrapeFansJobs' })">
-        <font-awesome-icon icon="fas fa-spider" class="h-3 w-3" />{{ $t('scrapeFansJobs') }}
+        <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />{{ $t('scrapeFansJobs') }}
     </button>
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('menuSelected', { name: 'installJobs' })">
-        <font-awesome-icon icon="fa fa-download" class="h-3 w-3" />{{ $t('installJobs') }}
+        <font-awesome-icon icon="fa fa-download" class="h-3 w-3 mr-1" />{{ $t('installJobs') }}
     </button>
     <button
         class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('stop_task')">
-        <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-pink-500" />{{ $t('stopTask') }}
+        <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 mr-1 text-pink-500" />{{ $t('stopTask') }}
     </button>
 
 </template>
