@@ -96,6 +96,11 @@
 export default {
     name: 'Tools',
     props: ['settings'],
+    data() {
+        return {
+            uninstall_package: '',
+        }
+    },
     methods: {
         app_install() {
             this.$emitter.emit('installApks', {})
