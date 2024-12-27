@@ -412,7 +412,7 @@ export default {
 
       // 添加播放事件监听器
       video.addEventListener('play', () => {
-        console.log('Video started playing.currentTime: ' + video.currentTime);
+        // console.log('Video started playing.currentTime: ' + video.currentTime);
         //set progress to newest
         video.currentTime = 999999
         video.playbackRate = 2;
@@ -420,7 +420,7 @@ export default {
 
       // 添加暂停事件监听器
       video.addEventListener('pause', () => {
-        console.log('Video paused');
+        // console.log('Video paused');
       });
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {

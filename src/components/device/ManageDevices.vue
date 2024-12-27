@@ -4,6 +4,13 @@
       <template v-slot:buttons>
         <MyButton @click="$service.reset_all_index" label="resetIndex" icon="fa fa-refresh" />
         <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired" />
+        <div class="form-control">
+          <label class="label cursor-pointer">
+            <span class="label-text text-xs font-bold">{{ $t('autoWakeUp') }}</span>
+            <input type="checkbox" class="toggle toggle-success" v-model="settings.uiautomator_status" true-value="1"
+              false-value="0" @change="update_settings" />
+          </label>
+        </div>
       </template>
       <template v-slot:default="slotProps">
         <div class="flex flex-wrap gap-2 p-4">
@@ -134,6 +141,11 @@ export default {
         this.scaning = false
       })
     },
+    update_settings() {
+      this.$service.update_settings(this.settings).then(res => {
+        console.log(res)
+      })
+    }
 
 
   },
@@ -152,6 +164,9 @@ export default {
     //     }
     //   }
     // });
+    this.$emitter.on('reload_sidebar', () => {
+      this.get_settings()
+    });
   },
   unmounted() {
   }
