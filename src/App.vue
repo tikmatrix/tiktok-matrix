@@ -368,11 +368,12 @@ export default {
     tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
       const yes = await ask(this.$t('exitConfirm'), this.$t('confirm'));
       if (yes) {
-        localStorage.removeItem('hasCheckedUpdate')
         this.stop_agent();
         tauriWindow.getCurrent().close();
       }
     });
+
+
     this.$emitter.on('showToast', async (text) => {
       await message(text);
     });
@@ -395,7 +396,6 @@ export default {
     this.$emitter.on('updateService', () => {
       this.check_update()
     });
-
   }
 }
 </script>

@@ -327,6 +327,11 @@ fn main() -> std::io::Result<()> {
             setup_env(work_dir);
             init_log::init(work_dir);
             log::info!("work_dir: {}", work_dir);
+            let window = app.get_window("main").expect("Failed to get main window");
+            window
+                .eval("localStorage.removeItem('hasCheckedUpdate');")
+                .expect("Failed to execute JavaScript");
+            log::info!("remove hasCheckedUpdate");
             std::fs::create_dir_all(format!("{}/{}", work_dir, "bin"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "logs"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "tmp"))?;
@@ -340,6 +345,7 @@ fn main() -> std::io::Result<()> {
             std::fs::write(format!("{}/wsport.txt", work_dir), "8092")?;
             Ok(())
         })
+        //listen to the tauri update event
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())

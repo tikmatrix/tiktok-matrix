@@ -65,7 +65,6 @@ async function updatePorts() {
   }
 
 }
-emitter.emit('updateService')
 updatePorts(); // update ports on page load
 setInterval(updatePorts, 3000); // update ports every 3 seconds
 
