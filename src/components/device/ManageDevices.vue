@@ -24,7 +24,7 @@
 
       </template>
     </Pagination>
-    <div v-if="devices.length == 0" class="w-full h-full bg-gray-100 flex flex-col items-center justify-center">
+    <div v-if="devices.length == 0" class="w-full h-full bg-base-100 flex flex-col items-center justify-center">
       <div class="relative w-64 h-64">
         <div class="absolute inset-0 border-4 border-gray-300 rounded-full"></div>
         <div class="absolute inset-0 border-4 border-blue-500 rounded-full animate-ping"></div>
