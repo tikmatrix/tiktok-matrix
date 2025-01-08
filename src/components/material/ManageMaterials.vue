@@ -184,6 +184,7 @@ import MyButton from '../Button.vue'
 import Pagination from '../Pagination.vue'
 import * as util from '../../utils'
 import { open } from '@tauri-apps/api/dialog';
+import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 export default {
   name: 'app',
   components: {
@@ -264,9 +265,9 @@ export default {
         })
 
     },
-    fission() {
-
-      let events = new EventSource(`{this.$config.wsUrl}/api/video/output`);
+    async fission() {
+      const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+      let events = new EventSource(`http://127.0.0.1:${port}/api/video/output`);
       events.onmessage = (event) => {
         if (event.data === "connected" || event.data === "ping") {
           return
@@ -298,18 +299,26 @@ export default {
       this.$refs.fission_video_dialog.showModal()
       this.fissionOutput = null
     },
-    capture() {
+    async capture() {
+      const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
       this.downloadOutput = null
       if (this.new_video_url) {
         if (this.download_proxy) {
           util.setData('download_proxy', this.download_proxy)
         }
-        let events = new EventSource("http://127.0.0.1:8090/api/video/output");
+        let events = new EventSource(`http://127.0.0.1:${port}/api/video/output`);
         events.onmessage = (event) => {
           if (event.data === "connected" || event.data === "ping") {
             return
           }
           this.downloadOutput = event.data
+          if (this.downloadOutput === "start") {
+
+          } else if (this.downloadOutput === "error") {
+
+          } else if (this.downloadOutput === "success") {
+            this.get_materials()
+          }
         }
         events.onerror = (event) => {
           console.log(event)

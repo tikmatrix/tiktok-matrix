@@ -54,11 +54,7 @@
         @click="open_dir('logs')">
         <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3 mr-1" />{{ $t('openLogs') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('downloadOcr')">
-        <font-awesome-icon icon="fa fa-download" class="h-3 w-3 mr-1" />{{ $t('downloadOcr') }}
-    </button>
+
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('updateService')">

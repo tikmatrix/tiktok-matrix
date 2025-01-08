@@ -189,61 +189,28 @@ export default {
       axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
         this.remote_version = res.data;
         console.log("remote_version", this.remote_version)
-        this.check_platform_tools((updated) => {
-          if (updated) {
-            invoke("grant_adb_permission");
-          }
-          this.check_apk(() => {
-            this.check_test_apk(() => {
-              this.check_scrcpy(() => {
-                this.check_script((updated) => {
-                  if (updated) {
-                    invoke("grant_script_permission");
-                  }
-                  this.check_agent_update()
-                })
-              })
-            })
-          })
-        })
+        await this.check_platform_tools();
+        await this.check_yt_dlp();
+        await this.check_ocr();
+        await this.check_apk();
+        await this.check_test_apk();
+        await this.check_scrcpy();
+        await this.check_script();
+        await this.check_agent();
+        await message(this.$t('updateServiceSuccess'));
       })
 
     },
+    async check_yt_dlp() {
+      let url = "https://r2.tikmatrix.com/yt-dlp.exe"
+      await this.check_file_update('yt-dlp(2/6)', "v1.0", url);
+    },
 
-    async download_ocr() {
-      let filename = 'PaddleOCR'
-      this.download_filename = 'PaddleOCR'
+    async check_ocr() {
       let url = "https://r2.tikmatrix.com/PaddleOCR-json.zip"
-      let work_path = await appDataDir();
-      console.log("work_path", work_path)
-      let name = url.split('/').pop()
-      let path = work_path + 'bin/' + url.split('/').pop()
-      let downloaded = await exists('bin/' + name, { dir: BaseDirectory.AppData })
-      console.log("downloaded", downloaded, "path", path)
-      if (downloaded) {
-        alert("Already downloaded")
-        return;
-      }
-      this.$refs.download_dialog.showModal()
-      console.log("download " + filename + " from " + url + " to " + path)
-      invoke('download_file', { url, path });
-      const unlistenProgress = await listen("DOWNLOAD_PROGRESS", (e) => {
-        this.download_progress = e.payload;
-      });
-      const unlistenFinished = await listen("DOWNLOAD_FINISHED", (e) => {
-        console.log("download finished")
-        if (path.endsWith('.zip')) {
-          invoke("unzip_file", { zipPath: path, destDir: work_path });
-        }
-
-        this.$refs.download_dialog.close()
-        unlistenProgress()
-        unlistenFinished()
-      })
+      await this.check_file_update('PaddleOCR(2/6)', "v1.0", url);
     },
-
-
-    async check_platform_tools(callback) {
+    async check_platform_tools() {
       let url = ""
       const osType = await os.type();
       if (osType === 'Darwin') {
@@ -254,24 +221,28 @@ export default {
         console.log('Unknown OS type');
         return;
       }
-      this.check_file_update('platform_tools(1/6)', this.remote_version.platform_tools_version, url, callback);
+      await this.check_file_update('platform_tools(1/6)', this.remote_version.platform_tools_version, url, (updated) => {
+        if (updated) {
+          invoke("grant_adb_permission");
+        }
+      });
     },
 
-    async check_apk(callback) {
+    async check_apk() {
       let url = this.remote_version.apk_url
-      this.check_file_update('apk(2/6)', this.remote_version.apk_version, url, callback);
+      await this.check_file_update('apk(2/6)', this.remote_version.apk_version, url);
     },
 
-    async check_test_apk(callback) {
+    async check_test_apk() {
       let url = this.remote_version.test_apk_url
-      this.check_file_update('test_apk(3/6)', this.remote_version.test_apk_version, url, callback);
+      await this.check_file_update('test_apk(3/6)', this.remote_version.test_apk_version, url);
     },
 
-    async check_scrcpy(callback) {
+    async check_scrcpy() {
       let url = this.remote_version.scrcpy_url
-      this.check_file_update('scrcpy(4/6)', this.remote_version.scrcpy_version, url, callback);
+      await this.check_file_update('scrcpy(4/6)', this.remote_version.scrcpy_version, url);
     },
-    async check_script(callback) {
+    async check_script() {
       let url = ""
       const osType = await os.type();
       if (osType === 'Darwin') {
@@ -282,11 +253,15 @@ export default {
         console.log('Unknown OS type');
         return;
       }
-      this.check_file_update('script(5/6)', this.remote_version.script_version, url, callback, () => {
+      await this.check_file_update('script(5/6)', this.remote_version.script_version, url, (updated) => {
+        if (updated) {
+          invoke("grant_script_permission");
+        }
+      }, () => {
         invoke("stop_agent");
       });
     },
-    async check_agent_update() {
+    async check_agent() {
       let url = ""
       const osType = await os.type();
       if (osType === 'Darwin') {
@@ -298,19 +273,19 @@ export default {
         this.is_updating = false
         return;
       }
-      this.check_file_update('tiktok-agent(6/6)', this.remote_version.agent_version, url, async (updated) => {
+      await this.check_file_update('tiktok-agent(6/6)', this.remote_version.agent_version, url, async (updated) => {
         this.is_updating = false
         if (updated) {
           invoke("grant_agent_permission");
         }
         invoke("start_agent");
-        await message(this.$t('updateServiceSuccess'));
+
       }, () => {
         invoke("stop_agent");
       });
     },
 
-    async check_file_update(filename, remoteVersion, downloadUrl, callback, before) {
+    async check_file_update(filename, remoteVersion, downloadUrl, after, before) {
       this.download_filename = filename
       console.log("check_file_update", filename, remoteVersion, downloadUrl)
       let localversion = util.getData(filename);
@@ -345,15 +320,15 @@ export default {
 
           util.setData(filename, remoteVersion)
           this.$refs.download_dialog.close()
-          if (callback) {
+          if (after) {
             unlistenProgress()
             unlistenFinished()
-            callback(true)
+            after(true)
           }
         })
       } else {
-        if (callback) {
-          callback(false)
+        if (after) {
+          after(false)
         }
       }
     },
@@ -390,9 +365,7 @@ export default {
     this.$emitter.on('menuSelected', (item) => {
       this.menu_selected(item)
     });
-    this.$emitter.on('downloadOcr', () => {
-      this.download_ocr()
-    });
+
     this.$emitter.on('updateService', () => {
       this.check_update()
     });
