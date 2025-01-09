@@ -35,12 +35,12 @@
         <font-awesome-icon icon="fa fa-upload" class="h-3 w-3 text-white" />
         {{ $t('uploadToGallery') }}
     </button>
-    <!-- <button
+    <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'rm', '-rf', '/storage/emulated/0/DCIM/*'] })">
+        @click="clearGallery">
         <font-awesome-icon icon="fa fa-eraser" class="h-3 w-3 text-white" />
         {{ $t('clearGallery') }}
-    </button> -->
+    </button>
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
@@ -111,6 +111,9 @@ export default {
         uninstallApk() {
             this.$refs.uninstall_dialog.close()
             this.$emitter.emit('adbEventData', { args: ['shell', 'pm', 'uninstall', this.uninstall_package] })
+        },
+        clearGallery() {
+            this.$emitter.emit('clearGallery', {})
         }
     }
 }

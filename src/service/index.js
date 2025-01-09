@@ -838,6 +838,13 @@ export function delete_all_install_jobs() {
     url: api.delete_all_install_jobs
   })
 }
+export function clear_gallery(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.clear_gallery
+  })
+}
 
 
 

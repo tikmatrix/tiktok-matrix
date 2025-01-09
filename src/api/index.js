@@ -86,7 +86,8 @@ const api = {
   install_now: '/api/install_now',
   install_job: '/api/install_job',
   retry_all_failed_install_job: '/api/install_job/retry_all',
-  delete_all_install_jobs: '/api/install_job/delete_all'
+  delete_all_install_jobs: '/api/install_job/delete_all',
+  clear_gallery: '/api/clear_gallery',
 
 
 }

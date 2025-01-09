@@ -731,6 +731,19 @@ export default {
 
         })
     },
+    clearGallery() {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+      this.$service
+        .clear_gallery({
+          serials: this.selection,
+        })
+        .then(res => {
+          this.$emitter.emit('showToast', `${this.$t('commandSendSuccess')}`)
+        })
+    },
 
     async copyFromPhone() {
       if (!document.hasFocus()) {
@@ -837,6 +850,9 @@ export default {
     });
     this.$emitter.on('send_screen_mode', (mode) => {
       this.send_screen_mode(mode)
+    });
+    this.$emitter.on('clearGallery', () => {
+      this.clearGallery()
     });
     document.addEventListener('copy', () => {
       this.copyFromPhone()
