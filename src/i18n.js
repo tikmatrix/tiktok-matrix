@@ -443,8 +443,10 @@ export const i18n = createI18n({
       addProductLinkTips: 'Enabling this will automatically add the first product link in the showcase when publishing',
       addProductLink: 'Add Product Link',
       autoWakeUp: 'Auto Wake Up Phone Agent',
+      checkUpdate: 'Check Update',
     },
     'zh-CN': {
+      checkUpdate: '检查更新',
       autoWakeUp: '自动唤醒手机agent',
       addProductLink: '添加商品链接',
       addProductLinkTips: '启用后将自动在发布时添加橱窗中的第一个商品链接',

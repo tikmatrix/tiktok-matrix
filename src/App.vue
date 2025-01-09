@@ -43,6 +43,16 @@
       <button>close</button>
     </form>
   </dialog>
+  <dialog ref="check_update_dialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('checkUpdate') }}</h3>
+      <div class="modal-body">
+        <div class="flex flex-row justify-between text-center items-center">
+          <progress class="progress w-full"></progress>
+        </div>
+      </div>
+    </div>
+  </dialog>
   <dialog ref="download_dialog" class="modal">
     <div class="modal-box">
       <h3 class="font-bold text-lg">{{ download_filename }}</h3>
@@ -186,7 +196,9 @@ export default {
     },
     check_update() {
       this.is_updating = true
+      this.$refs.check_update_dialog.showModal()
       axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
+        this.$refs.check_update_dialog.close()
         this.remote_version = res.data;
         console.log("remote_version", this.remote_version)
         await this.check_platform_tools();

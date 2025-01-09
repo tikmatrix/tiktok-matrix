@@ -159,7 +159,7 @@ export default {
           train_start_time: group.train_start_time,
           title: group.title,
           publish_type: Number(group.publish_type),
-          product_link: group.product_link,
+          add_product_link: group.add_product_link,
           floow_probable: Number(group.floow_probable),
           like_probable: Number(group.like_probable),
           collect_probable: Number(group.collect_probable),
@@ -170,6 +170,9 @@ export default {
           topic: group.topic,
           comment: group.comment,
           image_count: Number(group.image_count),
+          add_sound: group.add_sound,
+          origin_sound_volume: group.origin_sound_volume,
+          add_sound_volume: group.add_sound_volume,
         })
         .then(() => {
           this.$emitter.emit('closePageDialog', {})
