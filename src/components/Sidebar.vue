@@ -43,13 +43,7 @@
       </div>
       <div class="p-4">
         <div class="flex flex-row p-2 bg-base-300 rounded-md">
-          <div class="flex-1">
-            <a class="link link-primary text-xs float-right flex items-center mr-1"
-              :href="'http://127.0.0.1:' + port + '/api/device'" target="_blank">
-              <font-awesome-icon icon="fa-solid fa-globe" class="text-blue-500 h-4 w-4 mr-1" />
-              http://127.0.0.1:{{ port }}
-            </a>
-          </div>
+
           <a class="link link-primary text-xs float-right flex items-center mr-1"
             @click="$emitter.emit('menuSelected', { name: 'buyLicense' })">
             <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4 mr-1" />
@@ -70,6 +64,11 @@
             target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4" />
             {{ $t('document') }}
+          </a>
+          <a class="link link-primary text-xs float-right flex items-center mr-1"
+            :href="'http://127.0.0.1:' + port + '/swagger-ui/'" target="_blank">
+            <font-awesome-icon icon="fa-solid fa-globe" class="text-blue-500 h-4 w-4 mr-1" />
+            API Doc
           </a>
         </div>
 
