@@ -236,6 +236,7 @@ export default {
         await this.check_scrcpy();
         await this.check_script();
         await this.check_agent();
+        this.$refs.download_dialog.close()
         await message(this.$t('updateServiceSuccess'));
         await invoke("start_agent");
       })
