@@ -183,12 +183,10 @@ export default {
     }
   },
   methods: {
-    stop_agent() {
-      invoke("stop_agent");
-    },
 
-    open_dir(name) {
-      invoke("open_dir", {
+
+    async open_dir(name) {
+      await invoke("open_dir", {
         name
       });
     },
@@ -214,7 +212,7 @@ export default {
           const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
           if (yes) {
             await installUpdate()
-            invoke("stop_agent");
+            await invoke("stop_agent");
             await relaunch()
           }
         } else {
@@ -229,6 +227,7 @@ export default {
         this.$refs.check_update_dialog.close()
         this.remote_version = res.data;
         console.log("remote_version", this.remote_version)
+        await invoke("stop_agent");
         await this.check_platform_tools();
         await this.check_yt_dlp();
         await this.check_ocr();
@@ -238,6 +237,7 @@ export default {
         await this.check_script();
         await this.check_agent();
         await message(this.$t('updateServiceSuccess'));
+        await invoke("start_agent");
       })
 
     },
@@ -261,9 +261,9 @@ export default {
         console.log('Unknown OS type');
         return;
       }
-      await this.check_file_update('platform_tools(1/6)', this.remote_version.platform_tools_version, url, (updated) => {
+      await this.check_file_update('platform_tools(1/6)', this.remote_version.platform_tools_version, url, async (updated) => {
         if (updated) {
-          invoke("grant_adb_permission");
+          await invoke("grant_adb_permission");
         }
       });
     },
@@ -293,14 +293,13 @@ export default {
         console.log('Unknown OS type');
         return;
       }
-      await this.check_file_update('script(5/6)', this.remote_version.script_version, url, (updated) => {
+      await this.check_file_update('script(5/6)', this.remote_version.script_version, url, async (updated) => {
         if (updated) {
-          invoke("grant_script_permission");
+          await invoke("grant_script_permission");
         }
-      }, () => {
-        invoke("stop_agent");
       });
     },
+
     async check_agent() {
       let url = ""
       const osType = await os.type();
@@ -316,12 +315,8 @@ export default {
       await this.check_file_update('tiktok-agent(6/6)', this.remote_version.agent_version, url, async (updated) => {
         this.is_updating = false
         if (updated) {
-          invoke("grant_agent_permission");
+          await invoke("grant_agent_permission");
         }
-        invoke("start_agent");
-
-      }, () => {
-        invoke("stop_agent");
       });
     },
 
@@ -348,14 +343,14 @@ export default {
         }
         this.$refs.download_dialog.showModal()
         console.log("download " + filename + " from " + downloadUrl + " to " + path)
-        invoke('download_file', { url, path });
-        const unlistenProgress = await listen("DOWNLOAD_PROGRESS", (e) => {
+        await invoke('download_file', { url, path });
+        const unlistenProgress = await listen("DOWNLOAD_PROGRESS", async (e) => {
           this.download_progress = e.payload;
         });
-        const unlistenFinished = await listen("DOWNLOAD_FINISHED", (e) => {
+        const unlistenFinished = await listen("DOWNLOAD_FINISHED", async (e) => {
           console.log("download finished")
           if (path.endsWith('.zip')) {
-            invoke("unzip_file", { zipPath: path, destDir: work_path });
+            await invoke("unzip_file", { zipPath: path, destDir: work_path });
           }
 
           util.setData(filename, remoteVersion)
@@ -374,8 +369,6 @@ export default {
     },
   },
   mounted() {
-
-
     const hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate')
     console.log('hasCheckedUpdate:', hasCheckedUpdate)
     if (!hasCheckedUpdate) {
@@ -385,7 +378,7 @@ export default {
     tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
       const yes = await ask(this.$t('exitConfirm'), this.$t('confirm'));
       if (yes) {
-        this.stop_agent();
+        await invoke("stop_agent");
         tauriWindow.getCurrent().close();
       }
     });
