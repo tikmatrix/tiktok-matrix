@@ -197,7 +197,7 @@
             </div>
           </div>
           <drag-select v-model="selection">
-            <drag-select-option v-for="(item, index) in devices" :value="item.serial" :key="item.serial">
+            <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="item.real_serial">
               {{ index + 1 }}
             </drag-select-option>
           </drag-select>
@@ -391,7 +391,10 @@ export default {
       if (serials.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         for (let i = 0; i < this.groups.length; i++) {
-          this.$refs['moveToGroupMenu_' + this.groups[i].id][0].removeAttribute('open')
+          let view = this.$refs['moveToGroupMenu_' + this.groups[i].id];
+          if (view) {
+            view[0].removeAttribute('open')
+          }
         }
         this.$refs.moveToGroupMenu.removeAttribute('open')
         return
@@ -399,10 +402,13 @@ export default {
       this.$service.move_to_group({ serials: serials, dst_id: dst_id }).then(res => {
         this.$refs.moveToGroupMenu.removeAttribute('open')
         for (let i = 0; i < this.groups.length; i++) {
-          this.$refs['moveToGroupMenu_' + this.groups[i].id][0].removeAttribute('open')
+          let view = this.$refs['moveToGroupMenu_' + this.groups[i].id];
+          if (view) {
+            view[0].removeAttribute('open')
+          }
         }
         this.devices.map(device => {
-          if (serials.includes(device.serial)) {
+          if (serials.includes(device.real_serial)) {
             device.group_id = dst_id
           }
         })
@@ -534,9 +540,9 @@ export default {
 
       if (!this.isSelectAll(id)) {
         if (id == 0) {
-          this.selection = this.devices.map(device => device.serial)
+          this.selection = this.devices.map(device => device.real_serial)
         } else {
-          this.selection = this.devices.filter(device => device.group_id === id).map(device => device.serial)
+          this.selection = this.devices.filter(device => device.group_id === id).map(device => device.real_serial)
         }
       } else {
         this.selection = []
@@ -551,12 +557,12 @@ export default {
         // this.selectedAlls[this.groups[i].id] = false
         this.groupDevices[this.groups[i].id] = this.devices.filter(device => device.group_id === this.groups[i].id)
       }
-      this.selections[0] = this.devices.filter(device => this.selection.includes(device.serial)).map(device => device.serial)
+      this.selections[0] = this.devices.filter(device => this.selection.includes(device.real_serial)).map(device => device.real_serial)
       // this.selectedAlls[0] = this.selections[0].length > 0
       for (let i = 0; i < this.groups.length; i++) {
         let group_id = this.groups[i].id
         this.selections[group_id] = this.devices.filter(device => device.group_id === group_id)
-          .filter(device => this.selection.includes(device.serial)).map(device => device.serial)
+          .filter(device => this.selection.includes(device.real_serial)).map(device => device.real_serial)
         // this.selectedAlls[group_id] = this.selections[group_id].length > 0
       }
     },
@@ -788,7 +794,7 @@ export default {
 
     this.version = await getVersion();
     this.$emitter.on('openDevice', (device) => {
-      this.selection = [device.serial]
+      this.selection = [device.real_serial]
       this.refreshSelections()
     });
     this.$emitter.on('closeDevice', (device) => {

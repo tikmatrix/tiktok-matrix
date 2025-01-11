@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full h-screen overflow-y-auto">
+  <div class="w-full min-h-screen">
     <Pagination ref="device_panel" :items="devices" :pageSize="200" @refresh="refreshPage">
       <template v-slot:buttons>
-        <MyButton @click="$service.reset_all_index" label="resetIndex" icon="fa fa-refresh" />
+        <!-- <MyButton @click="$service.reset_all_index" label="resetIndex" icon="fa fa-refresh" /> -->
         <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired" />
         <div class="form-control">
           <label class="label cursor-pointer">
@@ -20,11 +20,9 @@
             </div>
           </div>
         </div>
-
-
       </template>
     </Pagination>
-    <div v-if="devices.length == 0" class="w-full h-full bg-base-100 flex flex-col items-center justify-center">
+    <div v-if="devices.length == 0" class="w-full min-h-screen bg-base-100 flex flex-col items-center justify-center">
       <div class="relative w-64 h-64">
         <div class="absolute inset-0 border-4 border-gray-300 rounded-full"></div>
         <div class="absolute inset-0 border-4 border-blue-500 rounded-full animate-ping"></div>
@@ -99,12 +97,23 @@ export default {
       scaning: false
     }
   },
-
+  watch: {
+    mydevices: {
+      handler: function () {
+        this.sortByIndex();
+      },
+      deep: true
+    }
+  },
   methods: {
     refreshPage() {
       window.location.reload();
     },
-
+    sortByIndex() {
+      this.mydevices.sort((a, b) => {
+        return a.index - b.index
+      })
+    },
     get_groups() {
       this.$service
         .get_groups()
@@ -156,14 +165,6 @@ export default {
       this.mydevices[i].key = i
     }
     this.get_settings()
-    // this.$emitter.on('refreshDevice', (data) => {
-    //   // console.log("receive refreshDevice: ", data)
-    //   for (let i = 0; i < this.mydevices.length; i++) {
-    //     if (this.mydevices[i].serial == data) {
-    //       this.mydevices[i].key = Date.now()
-    //     }
-    //   }
-    // });
     this.$emitter.on('reload_sidebar', () => {
       this.get_settings()
     });

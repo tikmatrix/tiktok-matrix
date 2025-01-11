@@ -5,6 +5,11 @@ import { appDataDir } from '@tauri-apps/api/path';
 
 export async function post(config) {
   const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+  if (port === "8090") {
+    console.log("port is 8090, wait for agent to start")
+    let res = { code: 200, data: [] }
+    return res;
+  }
   !config && (config = { headers: {} })
   !config.headers && (config.headers = {})
   !config.data && (config.data = {})
@@ -32,6 +37,11 @@ const request = async function request(config) {
   !config.data && (config.data = {})
   !config.params && (config.params = {})
   const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+  if (port === "8090") {
+    console.log("port is 8090, wait for agent to start")
+    let res = { code: 200, data: [] }
+    return res;
+  }
   config.baseURL = 'http://127.0.0.1:' + port
   const { method, url } = config
   const mockMethod = method || 'get'

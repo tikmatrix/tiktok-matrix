@@ -14,7 +14,7 @@
                 </summary>
                 <input
                   class="input input-sm input-bordered border-2 dropdown-content z-10 shadow bg-white w-20 border-green-500"
-                  v-model="device.index" type="number" @keyup.enter="updateIndex"
+                  v-model="temp_index" type="number" @keyup.enter="updateIndex"
                   @focus="(event) => event.target.select()" @blur="updateIndex" />
               </details>
 
@@ -143,19 +143,21 @@ export default {
       width: this.big ? 320 : 120,
       height: this.big ? 580 : 250,
       connect_count: 0,
+      temp_index: this.device.index,
     }
   },
   methods: {
     updateIndex() {
       this.$refs.edit_index_input.removeAttribute('open')
-      this.$service.index({ serial: this.device.serial, index: this.device.index }).then(res => {
+      this.$service.index({ serial: this.device.real_serial, index: this.temp_index }).then(res => {
         this.$emitter.emit('showToast', this.$t('indexUpdated'))
+        this.device.index = this.temp_index
       })
     },
     get_task_status() {
       this.$service
         .get_task_status({
-          serial: this.device.serial
+          serial: this.device.real_serial
         })
         .then(res => {
           this.task_status = res.data
@@ -379,7 +381,8 @@ export default {
         this.jmuxer.destroy()
         this.jmuxer = null
       }
-    }
+    },
+
   },
   mounted() {
     // console.log('miniremote mounted,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
@@ -441,6 +444,7 @@ export default {
       }, 1000)
     }
     this.syncDisplay()
+
   },
   unmounted() {
     this.closeScrcpy()

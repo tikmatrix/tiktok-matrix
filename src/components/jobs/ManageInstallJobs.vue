@@ -129,7 +129,7 @@ export default {
         .then(res => {
           this.jobs = res.data
           this.jobs.forEach(job => {
-            job.device_index = this.devices.find(device => device.serial === job.serial)?.index
+            job.device_index = this.devices.find(device => device.serial === job.serial || device.real_serial === job.device)?.index
           })
           this.get_groups()
         })

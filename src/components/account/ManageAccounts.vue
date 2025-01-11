@@ -121,7 +121,7 @@ export default {
         return
       }
       let content = this.accounts.map(account => {
-        account.device_index = this.devices.find(device => device.serial === account.device)?.index
+        account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.index
         return `${account.email}##${account.pwd}##${account.username}##${account.device_index}`
       }).join('\n')
       await writeTextFile('download/accounts.txt', content, { dir: BaseDirectory.AppData });
@@ -199,7 +199,7 @@ export default {
         .then(res => {
           this.accounts = res.data
           this.accounts.forEach(account => {
-            account.device_index = this.devices.find(device => device.serial === account.device)?.index
+            account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.index
           })
         })
         .catch(err => {
