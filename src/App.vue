@@ -122,6 +122,12 @@ import axios from 'axios'
 import { os } from '@tauri-apps/api';
 import { appDataDir } from '@tauri-apps/api/path';
 import { exists, BaseDirectory } from '@tauri-apps/api/fs'
+import {
+  checkUpdate,
+  installUpdate,
+  onUpdaterEvent,
+} from '@tauri-apps/api/updater'
+import { relaunch } from '@tauri-apps/api/process'
 
 export default {
   name: 'app',
@@ -194,7 +200,29 @@ export default {
 
       })
     },
-    check_update() {
+    async check_update() {
+      try {
+        const unlisten = await onUpdaterEvent(({ error, status }) => {
+          // This will log all updater events, including status updates and errors.
+          console.log('Updater event', error, status)
+        })
+        const { shouldUpdate, manifest } = await checkUpdate()
+        if (shouldUpdate) {
+          console.log(
+            `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
+          )
+          const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
+          if (yes) {
+            await installUpdate()
+            invoke("stop_agent");
+            await relaunch()
+          }
+        } else {
+          console.log('No update available')
+        }
+      } catch (error) {
+        console.error(error)
+      }
       this.is_updating = true
       this.$refs.check_update_dialog.showModal()
       axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
@@ -346,6 +374,8 @@ export default {
     },
   },
   mounted() {
+
+
     const hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate')
     console.log('hasCheckedUpdate:', hasCheckedUpdate)
     if (!hasCheckedUpdate) {

@@ -5,11 +5,11 @@ console.log(config.package.version)
 const signaturePath = `src-tauri/target/release/bundle/msi/TikMatrix_${config.package.version}_x64_en-US.msi.zip.sig`
 const signature = fs.readFileSync(signaturePath, 'utf-8')
 console.log(signature)
-const changelogPath = "CHANGELOG.md"
-const changelog = fs.readFileSync(changelogPath, 'utf-8')
+// const changelogPath = "CHANGELOG.md"
+// const changelog = fs.readFileSync(changelogPath, 'utf-8')
 const updateJson = {
     "version": `v${config.package.version}`,
-    "notes": `v${config.package.version} is released! ${changelog}`,
+    "notes": `v${config.package.version} is released! Please update to the new version.`,
     "pub_date": new Date().toISOString(),
     "platforms": {
         "windows-x86_64": {

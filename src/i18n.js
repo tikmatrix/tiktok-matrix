@@ -444,8 +444,10 @@ export const i18n = createI18n({
       addProductLink: 'Add Product Link',
       autoWakeUp: 'Auto Wake Up Phone Agent',
       checkUpdate: 'Check Update',
+      updateConfirm: 'Are you sure you want to update?',
     },
     'zh-CN': {
+      updateConfirm: '确定要更新吗?',
       checkUpdate: '检查更新',
       autoWakeUp: '自动唤醒手机agent',
       addProductLink: '添加商品链接',

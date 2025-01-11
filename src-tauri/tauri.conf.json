@@ -121,7 +121,7 @@
     ],
     "updater": {
       "active": true,
-      "dialog": true,
+      "dialog": false,
       "endpoints": [
         "https://api.tikmatrix.com/update.json"
       ],
