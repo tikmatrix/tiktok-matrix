@@ -57,19 +57,22 @@
     <div class="modal-box">
       <h3 class="font-bold text-lg">{{ download_filename }}</h3>
       <div class="modal-body">
-        <div class="flex flex-row justify-between text-center items-center">
+        <div class="flex flex-row justify-between text-center items-center" v-if="download_progress.filesize > 0">
           <progress class="progress progress-success w-full" :value="download_progress.transfered"
             :max="download_progress.filesize"></progress>
           <span class="text-sm ml-1">{{ (download_progress.transfered / 1024 / 1024).toFixed(2) }}Mb</span> /
           <span class="text-sm">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
         </div>
+        <div class="flex flex-row justify-between text-center items-center" v-else>
+          <progress class="progress w-full"></progress>
+        </div>
 
         <div class="flex justify-between">
-          <div class="text-md">
+          <div class="text-md" v-if="download_progress.transfer_rate > 0">
             {{ $t('transferRate') }}:
             <span class="text-sm">{{ (download_progress.transfer_rate / 1024).toFixed(2) }} KB/s</span>
           </div>
-          <div class="text-md">
+          <div class="text-md" v-if="download_progress.percentage > 0">
             {{ $t('percentage') }}:
             <span class="text-sm">{{ download_progress.percentage }} %</span>
           </div>
@@ -179,17 +182,10 @@ export default {
         percentage: 0
       },
       download_filename: '',
-      is_updating: false,
     }
   },
   methods: {
 
-
-    async open_dir(name) {
-      await invoke("open_dir", {
-        name
-      });
-    },
     menu_selected(item) {
       this.selectedItem = item
       this.$refs.page_dialog.showModal()
@@ -221,10 +217,16 @@ export default {
       } catch (error) {
         console.error(error)
       }
-      this.is_updating = true
       this.$refs.check_update_dialog.showModal()
       axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
         this.$refs.check_update_dialog.close()
+        this.$refs.download_dialog.showModal()
+        const unlistenProgress = await listen("DOWNLOAD_PROGRESS", async (e) => {
+          this.download_progress = e.payload;
+        });
+        const unlistenFinished = await listen("DOWNLOAD_FINISHED", async (e) => {
+          console.log("download finished")
+        })
         this.remote_version = res.data;
         console.log("remote_version", this.remote_version)
         await invoke("stop_agent");
@@ -237,21 +239,29 @@ export default {
         await this.check_script();
         await this.check_agent();
         this.$refs.download_dialog.close()
-        await message(this.$t('updateServiceSuccess'));
         await invoke("start_agent");
+        await message(this.$t('updateServiceSuccess'));
       })
 
     },
     async check_yt_dlp() {
       let url = "https://r2.tikmatrix.com/yt-dlp.exe"
-      await this.check_file_update('yt-dlp(2/6)', "v1.0", url);
+      await this.check_file_update('yt-dlp', "v1.0", url);
     },
 
     async check_ocr() {
+      let work_path = await appDataDir();
       let url = "https://r2.tikmatrix.com/PaddleOCR-json.zip"
-      await this.check_file_update('PaddleOCR(2/6)', "v1.0", url);
+      let path = await this.check_file_update('PaddleOCR', "v1.0", url);
+      //check paddle file exists
+      let adb_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData })
+      if (!adb_exists) {
+        this.download_filename = 'unzip PaddleOCR-json.zip'
+        await invoke("unzip_file", { zipPath: path, destDir: work_path });
+      }
     },
     async check_platform_tools() {
+      let work_path = await appDataDir();
       let url = ""
       const osType = await os.type();
       if (osType === 'Darwin') {
@@ -262,26 +272,29 @@ export default {
         console.log('Unknown OS type');
         return;
       }
-      await this.check_file_update('platform_tools(1/6)', this.remote_version.platform_tools_version, url, async (updated) => {
-        if (updated) {
-          await invoke("grant_adb_permission");
-        }
-      });
+      let path = await this.check_file_update('platform_tools', this.remote_version.platform_tools_version, url);
+      //check adb file exists
+      let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData })
+      if (!adb_exists) {
+        this.download_filename = 'unzip platform-tools-latest-windows.zip'
+        await invoke("unzip_file", { zipPath: path, destDir: work_path });
+        await invoke("grant_adb_permission");
+      }
     },
 
     async check_apk() {
       let url = this.remote_version.apk_url
-      await this.check_file_update('apk(2/6)', this.remote_version.apk_version, url);
+      await this.check_file_update('apk', this.remote_version.apk_version, url);
     },
 
     async check_test_apk() {
       let url = this.remote_version.test_apk_url
-      await this.check_file_update('test_apk(3/6)', this.remote_version.test_apk_version, url);
+      await this.check_file_update('test_apk', this.remote_version.test_apk_version, url);
     },
 
     async check_scrcpy() {
       let url = this.remote_version.scrcpy_url
-      await this.check_file_update('scrcpy(4/6)', this.remote_version.scrcpy_version, url);
+      await this.check_file_update('scrcpy', this.remote_version.scrcpy_version, url);
     },
     async check_script() {
       let url = ""
@@ -294,11 +307,8 @@ export default {
         console.log('Unknown OS type');
         return;
       }
-      await this.check_file_update('script(5/6)', this.remote_version.script_version, url, async (updated) => {
-        if (updated) {
-          await invoke("grant_script_permission");
-        }
-      });
+      await this.check_file_update('script', this.remote_version.script_version, url);
+      await invoke("grant_script_permission");
     },
 
     async check_agent() {
@@ -310,63 +320,32 @@ export default {
         url = this.remote_version.agent_windows_url;
       } else {
         console.log('Unknown OS type');
-        this.is_updating = false
         return;
       }
-      await this.check_file_update('tiktok-agent(6/6)', this.remote_version.agent_version, url, async (updated) => {
-        this.is_updating = false
-        if (updated) {
-          await invoke("grant_agent_permission");
-        }
-      });
+      await this.check_file_update('tiktok-agent', this.remote_version.agent_version, url);
+      await invoke("grant_agent_permission");
     },
 
-    async check_file_update(filename, remoteVersion, downloadUrl, after, before) {
-      this.download_filename = filename
-      console.log("check_file_update", filename, remoteVersion, downloadUrl)
+    async check_file_update(filename, remoteVersion, downloadUrl) {
+      this.download_filename = `download ${filename}`
       let localversion = util.getData(filename);
       if (!localversion) {
         localversion = 0
       }
-      console.log("localversion", localversion)
       let url = downloadUrl
       let work_path = await appDataDir();
-      console.log("work_path", work_path)
-
       let name = url.split('/').pop()
       let path = work_path + 'bin/' + url.split('/').pop()
       let downloaded = await exists('bin/' + name, { dir: BaseDirectory.AppData })
-
-      console.log("downloaded", downloaded, "path", path)
+      console.log(`check_file_update: ${filename} localversion: ${localversion} remoteVersion: ${remoteVersion}`)
       if (!downloaded || localversion !== remoteVersion) {
-        if (before) {
-          before()
-        }
-        this.$refs.download_dialog.showModal()
-        console.log("download " + filename + " from " + downloadUrl + " to " + path)
+        console.log("downloading " + filename + " from " + downloadUrl + " to " + path)
         await invoke('download_file', { url, path });
-        const unlistenProgress = await listen("DOWNLOAD_PROGRESS", async (e) => {
-          this.download_progress = e.payload;
-        });
-        const unlistenFinished = await listen("DOWNLOAD_FINISHED", async (e) => {
-          console.log("download finished")
-          if (path.endsWith('.zip')) {
-            await invoke("unzip_file", { zipPath: path, destDir: work_path });
-          }
-
-          util.setData(filename, remoteVersion)
-          this.$refs.download_dialog.close()
-          if (after) {
-            unlistenProgress()
-            unlistenFinished()
-            after(true)
-          }
-        })
       } else {
-        if (after) {
-          after(false)
-        }
+        console.log(filename + " no need to update")
       }
+      util.setData(filename, remoteVersion)
+      return path;
     },
   },
   mounted() {
