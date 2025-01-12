@@ -20,7 +20,7 @@ window.vm = new Vue({
     originNodes: [],
     autoCopy: true,
     useXPathOnly: false,
-    port: localStorage.port || '8090',
+    port: localStorage.port || '0',
     platform: localStorage.platform || 'Android',
     serial: localStorage.serial || '',
     activity: localStorage.activity || "",

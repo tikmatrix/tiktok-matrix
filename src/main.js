@@ -51,7 +51,7 @@ async function updatePorts() {
 
   const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
   const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
-  if (port == '8090') {
+  if (port == '0') {
     return
   }
 
@@ -60,7 +60,7 @@ async function updatePorts() {
   config.wsUrl = 'ws://127.0.0.1:' + wsPort;
   config.apiUrl = 'http://127.0.0.1:' + port;
   if (port !== oldPort || wsPort !== oldWsPort) {
-    console.log('Ports have changed:', { oldPort, oldWsPort, newPort: port, newWsPort: wsPort });
+    console.log(`Port changed to ${port} and wsPort changed to ${wsPort}`);
     emitter.emit('reload_sidebar')
   }
 

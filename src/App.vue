@@ -43,16 +43,7 @@
       <button>close</button>
     </form>
   </dialog>
-  <dialog ref="check_update_dialog" class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">{{ $t('checkUpdate') }}</h3>
-      <div class="modal-body">
-        <div class="flex flex-row justify-between text-center items-center">
-          <progress class="progress w-full"></progress>
-        </div>
-      </div>
-    </div>
-  </dialog>
+
   <dialog ref="download_dialog" class="modal">
     <div class="modal-box">
       <h3 class="font-bold text-lg">{{ download_filename }}</h3>
@@ -64,7 +55,7 @@
           <span class="text-sm">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
         </div>
         <div class="flex flex-row justify-between text-center items-center" v-else>
-          <progress class="progress w-full"></progress>
+          <progress class="progress progress-success w-full"></progress>
         </div>
 
         <div class="flex justify-between">
@@ -130,7 +121,7 @@ import {
   installUpdate,
   onUpdaterEvent,
 } from '@tauri-apps/api/updater'
-import { relaunch } from '@tauri-apps/api/process'
+import { exit, relaunch } from '@tauri-apps/api/process'
 
 export default {
   name: 'app',
@@ -210,6 +201,7 @@ export default {
             await installUpdate()
             await invoke("stop_agent");
             await relaunch()
+            return;
           }
         } else {
           console.log('No update available')
@@ -217,18 +209,22 @@ export default {
       } catch (error) {
         console.error(error)
       }
-      this.$refs.check_update_dialog.showModal()
+      this.download_filename = 'Checking update'
+      this.$refs.download_dialog.showModal()
       axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
-        this.$refs.check_update_dialog.close()
-        this.$refs.download_dialog.showModal()
         const unlistenProgress = await listen("DOWNLOAD_PROGRESS", async (e) => {
           this.download_progress = e.payload;
         });
         const unlistenFinished = await listen("DOWNLOAD_FINISHED", async (e) => {
           console.log("download finished")
+          this.download_progress = {
+            filesize: 0,
+            transfered: 0,
+            transfer_rate: 0,
+            percentage: 0
+          }
         })
         this.remote_version = res.data;
-        console.log("remote_version", this.remote_version)
         await invoke("stop_agent");
         await this.check_platform_tools();
         await this.check_yt_dlp();
@@ -238,9 +234,12 @@ export default {
         await this.check_scrcpy();
         await this.check_script();
         await this.check_agent();
-        this.$refs.download_dialog.close()
-        await invoke("start_agent");
-        await message(this.$t('updateServiceSuccess'));
+        this.$refs.download_dialog.close();
+        let result = await invoke("start_agent");
+        if (result.indexOf('pid') === -1) {
+          await message(result, { title: 'Error', type: 'error' });
+          tauriWindow.getCurrent().close();
+        }
       })
 
     },
@@ -256,7 +255,7 @@ export default {
       //check paddle file exists
       let adb_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData })
       if (!adb_exists) {
-        this.download_filename = 'unzip PaddleOCR-json.zip'
+        this.download_filename = 'Uziping PaddleOCR-json.zip'
         await invoke("unzip_file", { zipPath: path, destDir: work_path });
       }
     },
@@ -276,7 +275,7 @@ export default {
       //check adb file exists
       let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData })
       if (!adb_exists) {
-        this.download_filename = 'unzip platform-tools-latest-windows.zip'
+        this.download_filename = 'Uziping platform-tools-latest-windows.zip'
         await invoke("unzip_file", { zipPath: path, destDir: work_path });
         await invoke("grant_adb_permission");
       }
@@ -327,7 +326,7 @@ export default {
     },
 
     async check_file_update(filename, remoteVersion, downloadUrl) {
-      this.download_filename = `download ${filename}`
+      this.download_filename = `Downloading ${filename}`
       let localversion = util.getData(filename);
       if (!localversion) {
         localversion = 0

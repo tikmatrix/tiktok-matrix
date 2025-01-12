@@ -170,7 +170,7 @@ fn grant_agent_permission(app: tauri::AppHandle) {
     }
 }
 #[tauri::command]
-fn start_agent(app: tauri::AppHandle) -> u32 {
+fn start_agent(app: tauri::AppHandle) -> String {
     //stop agent
     stop_agent();
     //check bin/tiktok-agent exist
@@ -183,18 +183,18 @@ fn start_agent(app: tauri::AppHandle) -> u32 {
         #[cfg(target_os = "windows")]
         command.creation_flags(0x08000000);
     }
-    let child = match command.stdout(Stdio::piped()).spawn() {
+    match command.stdout(Stdio::piped()).spawn() {
         Ok(child) => {
-            log::info!("start tiktok-agent success");
-            child.id()
+            let result = format!("start tiktok-agent success, pid: {}", child.id());
+            log::info!("{}", result);
+            result
         }
         Err(e) => {
-            log::error!("start tiktok-agent failed: {}", e);
-            0
+            let result = format!("failed to start tiktok-agent: {}", e);
+            log::error!("{}", result);
+            result
         }
-    };
-    //reload app
-    child
+    }
 }
 #[tauri::command]
 fn stop_agent() {
@@ -341,8 +341,8 @@ fn main() -> std::io::Result<()> {
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/material"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/avatar"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
-            std::fs::write(format!("{}/port.txt", work_dir), "8090")?;
-            std::fs::write(format!("{}/wsport.txt", work_dir), "8092")?;
+            std::fs::write(format!("{}/port.txt", work_dir), "0")?;
+            std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
             Ok(())
         })
         //listen to the tauri update event
