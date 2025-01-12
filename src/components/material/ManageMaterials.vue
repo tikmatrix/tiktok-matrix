@@ -31,11 +31,10 @@
                 <td @click="show_material(material)">
                   <div class="cursor-pointer border rounded items-center text-center flex align-middle">
                     <template v-if="material.name.endsWith('.mp4') || material.name.endsWith('.webm')">
-                      <video :src="`${$config.apiUrl}/${material.name}`"
-                        class="w-[100px] h-[100px] max-w-none flex-1"></video>
+                      <video :src="`${apiUrl}/${material.name}`" class="w-[100px] h-[100px] max-w-none flex-1"></video>
                     </template>
                     <template v-else>
-                      <img :src="`${$config.apiUrl}/${material.name}`" class="w-[100px] h-[100px] max-w-none flex-1" />
+                      <img :src="`${apiUrl}/${material.name}`" class="w-[100px] h-[100px] max-w-none flex-1" />
                     </template>
                   </div>
                 </td>
@@ -72,7 +71,7 @@
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <Detail :material="currentMaterial" />
+        <Detail :material="currentMaterial" :apiUrl="apiUrl" />
       </div>
     </dialog>
 
@@ -185,6 +184,7 @@ import Pagination from '../Pagination.vue'
 import * as util from '../../utils'
 import { open } from '@tauri-apps/api/dialog';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+import api from '../../api';
 export default {
   name: 'app',
   components: {
@@ -216,7 +216,8 @@ export default {
       dynamic_scale: true,
       smart_frame_cut: true,
       adjust_frame_rate: true,
-      adjust_bit_rate: true
+      adjust_bit_rate: true,
+      apiUrl: ''
     }
   },
   methods: {
@@ -352,7 +353,6 @@ export default {
         })
     },
     get_materials() {
-      // this.currentMaterial = null
       this.$service
         .get_materials({
           group_id: this.group.id
@@ -365,13 +365,8 @@ export default {
         })
     },
     show_material(material) {
-      console.log(material)
       this.currentMaterial = material
       this.$refs.detail_modal.showModal()
-      //listener
-      // this.$refs.detail_modal.addEventListener('close', () => {
-      //   this.currentMaterial = null
-      // })
     },
     delete_material(material) {
       this.$service
@@ -387,7 +382,9 @@ export default {
     },
 
   },
-  mounted() {
+  async mounted() {
+    const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+    this.apiUrl = 'http://127.0.0.1:' + port;
     this.get_materials()
   }
 }

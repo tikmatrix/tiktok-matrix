@@ -103,7 +103,7 @@ import JMuxer from 'jmuxer'
 import LeftBars from './LeftBars.vue';
 import RightBars from './RightBars.vue';
 import BottomBar from './BottomBar.vue';
-import { height } from '@fortawesome/free-brands-svg-icons/fa42Group';
+import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 export default {
   name: 'Miniremote',
   components: {
@@ -261,8 +261,10 @@ export default {
       this.touch = true
       this.touchSync('d', event)
     },
-    connect() {
-      this.scrcpy = new WebSocket(this.$config.wsUrl)
+    async connect() {
+      const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
+      const wsUrl = `ws://127.0.0.1:${wsPort}`
+      this.scrcpy = new WebSocket(wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
         // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)

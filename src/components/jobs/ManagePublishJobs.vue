@@ -39,16 +39,7 @@
                   <div class="badge badge-success" v-else-if="publish_job.status == '2'">{{ $t('success') }}</div>
                   <div class="badge badge-error" v-else-if="publish_job.status == '3'">{{ $t('failed') }}</div>
                 </td>
-                <!-- <td>{{ publish_job.remark }}</td> -->
-                <!-- <td>
-                  <template v-if="publish_job.material.endsWith('.mp4') || publish_job.material.endsWith('.webm')">
-                    <video :src="`${$config.apiUrl}/${publish_job.material}`"
-                      class="w-[100px] h-[100px] max-w-none"></video>
-                  </template>
-<template v-else>
-                    <img :src="`${$config.apiUrl}/${publish_job.material}`" class="w-[100px] h-[100px] max-w-none" />
-                  </template>
-</td> -->
+
                 <td>
                   <a class="link link-primary" :href="`https://www.tiktok.com/${publish_job.username}`"
                     target="_blank">{{

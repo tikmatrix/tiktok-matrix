@@ -208,7 +208,9 @@ export default {
     async startGitHubAuth() {
       try {
         // 打开GitHub授权页面
-        await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${this.$config.apiUrl}/github_auth_callback&scope=user%20public_repo`);
+        const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+        const apiUrl = 'http://127.0.0.1:' + port;
+        await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${apiUrl}/github_auth_callback&scope=user%20public_repo`);
         await this.loopCheckGithubAuth();
       } catch (error) {
         console.error('GitHub认证错误:', error);

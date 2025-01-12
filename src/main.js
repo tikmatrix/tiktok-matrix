@@ -21,7 +21,6 @@ import { reactive } from 'vue'
 import mitt from 'mitt'
 import VueDragSelect from "@coleqiu/vue-drag-select";
 import VueDraggableResizable from 'vue-draggable-resizable'
-import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 
 
 const emitter = mitt()
@@ -36,37 +35,8 @@ async function getDevices() {
     devices.list.splice(0, devices.list.length, ...res.data)
   })
 }
-getDevices() //get devices on page load
+getDevices()
 setInterval(getDevices, 10000)
-
-let config = {
-  wsUrl: '',
-  apiUrl: ''
-}
-
-async function updatePorts() {
-
-  const oldPort = localStorage.getItem('port');
-  const oldWsPort = localStorage.getItem('wsPort');
-
-  const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-  const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
-  if (port == '0') {
-    return
-  }
-
-  localStorage.setItem('port', port);
-  localStorage.setItem('wsPort', wsPort);
-  config.wsUrl = 'ws://127.0.0.1:' + wsPort;
-  config.apiUrl = 'http://127.0.0.1:' + port;
-  if (port !== oldPort || wsPort !== oldWsPort) {
-    console.log(`Port changed to ${port} and wsPort changed to ${wsPort}`);
-    emitter.emit('reload_sidebar')
-  }
-
-}
-updatePorts(); // update ports on page load
-setInterval(updatePorts, 3000); // update ports every 3 seconds
 
 const app = createApp(App)
 app.use(VueAxios, axios)
@@ -76,7 +46,6 @@ app.provide('axios', app.config.globalProperties.axios) // provide 'axios'
 app.provide('devices', devices) // provide 'devices
 app.config.globalProperties.$service = service
 app.config.globalProperties.$emitter = emitter
-app.config.globalProperties.$config = config
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.component('VueDatePicker', VueDatePicker)
 app.component("vue-draggable-resizable", VueDraggableResizable)

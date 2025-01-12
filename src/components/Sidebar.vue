@@ -234,6 +234,7 @@ import { open, ask } from '@tauri-apps/api/dialog';
 import { getVersion } from '@tauri-apps/api/app';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
 import { appDataDir } from '@tauri-apps/api/path';
+import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 export default {
   name: 'Sidebar',
   setup() {
@@ -866,17 +867,17 @@ export default {
     document.addEventListener('paste', () => {
       this.pasteToPhone()
     });
-    this.$emitter.on('reload_sidebar', () => {
+    this.$emitter.on('reload_sidebar', async () => {
       this.get_menus()
       this.get_settings()
       this.get_groups()
-      this.port = localStorage.getItem('port');
+      this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
       console.log('reload_sidebar port:', this.port)
     });
     this.get_menus()
     this.get_settings()
     this.get_groups()
-    this.port = localStorage.getItem('port');
+    this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
 
   }
 }
