@@ -95,6 +95,11 @@
       <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 text-blue-500" />
       <span class="text-xs block font-normal">{{ $t('debug') }}</span>
     </button>
+    <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
+      @click="showLogs">
+      <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 text-blue-500" />
+      <span class="text-xs block font-normal">{{ $t('logs') }}</span>
+    </button>
   </div>
   <dialog ref="input_dialog" class="modal">
     <div class="modal-box">
@@ -113,13 +118,32 @@
       </div>
     </div>
   </dialog>
+  <dialog ref="log_dialog" class="modal">
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <h3 class="font-bold text-lg">logs/{{ real_serial }}.log</h3>
+      <pre class="text-xs">{{ logs }}</pre>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 </template>
 <script>
 import { WebviewWindow } from '@tauri-apps/api/window'
+import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 export default {
   name: 'RightBars',
   props: {
     serial: {
+      type: String,
+      default: () => {
+        return ''
+      }
+    },
+    real_serial: {
       type: String,
       default: () => {
         return ''
@@ -131,12 +155,21 @@ export default {
       input_dialog_text: '',
       input_dialog_title: '',
       input_callback: () => { },
+      logs: ''
     }
   },
   methods: {
+    async showLogs() {
+      const logs = await readTextFile(`logs/${this.real_serial}.log`, { dir: BaseDirectory.AppData });
+      //show tail 100 lines
+      this.logs = logs.split('\n').slice(-100).join('\n')
+      this.$refs.log_dialog.showModal()
 
-    openDebugWindow() {
+    },
+    async openDebugWindow() {
       localStorage.setItem('serial', this.serial);
+      const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+      localStorage.setItem('port', port);
       const webview = new WebviewWindow('Debug', {
         title: 'Debug Tools',
         url: 'debug.html',

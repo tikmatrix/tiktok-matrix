@@ -65,7 +65,7 @@
             </div>
             <!-- <BottomBar v-if="big" @send_keycode="send_keycode" /> -->
           </div>
-          <RightBars v-if="big" :serial="device.serial" />
+          <RightBars v-if="big" :serial="device.serial" :real_serial="device.real_serial" />
         </div>
 
       </div>
@@ -405,7 +405,7 @@ export default {
         }
       });
       this.$emitter.on('syncEventData', (data) => {
-        if (!data.devices.includes(this.device.serial)) {
+        if (!data.devices.includes(this.device.real_serial)) {
           return
         }
         if (this.scrcpy) {
