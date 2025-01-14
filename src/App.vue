@@ -29,6 +29,7 @@
       <ManageScrapeJobs v-if="selectedItem.name === 'scrapeFansJobs' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
       <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
+      <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
       <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
       <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
       <ManagePostBots v-if="selectedItem.name === 'postBots' && $refs.page_dialog.open" />
@@ -93,6 +94,7 @@ import ManageDialog from './components/dialog/ManageDialog.vue'
 import ManageTrainJobs from './components/jobs/ManageTrainJobs.vue'
 import ManageMusics from './components/music/ManageMusics.vue'
 import RegisterSettings from './components/settings/RegisterSettings.vue'
+import ProfileSettings from './components/settings/ProfileSettings.vue'
 import PackageNameSettings from './components/settings/PackageNameSettings.vue'
 import MessageSettings from './components/settings/MessageSettings.vue'
 import ManageComments from './components/comment/ManageComments.vue'
@@ -147,6 +149,7 @@ export default {
     ManageTrainJobs,
     ManageMusics,
     RegisterSettings,
+    ProfileSettings,
     PackageNameSettings,
     MessageSettings,
     ManageComments,

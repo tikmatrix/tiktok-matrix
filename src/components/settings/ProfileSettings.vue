@@ -1,21 +1,31 @@
 <template>
   <div class="flex flex-col items-start p-12">
 
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <div class="tooltip tooltip-right" :data-tip="$t('emailsFileTips')">
-        <span class="font-bold">{{ $t('emailsFile') }}: </span>
-        <font-awesome-icon :icon="['fas', 'circle-exclamation']" />
-      </div>
-      <input type="text" placeholder="example: C:/Users/Administrator/Desktop/emails.txt"
-        class="input input-sm grow input-bordered" v-model="settings.emails_file" />
-      <button class="btn btn-sm btn-info ml-2" @click="selectEmails">{{ $t('select') }}</button>
-    </div>
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <span class="font-bold">{{ $t('password') }}: </span>
-      <input class="input input-bordered w-full max-w-xs" :placeholder="$t('passwordTips')" v-model="settings.password">
-      </input>
-    </div>
 
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+      <span class="font-bold">{{ $t('nicknames') }}: </span>
+      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('nicknamesTips')" autocomplete="off"
+        v-model="settings.nicknames"> </textarea>
+
+    </div>
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+      <span class="font-bold">{{ $t('usernames') }}: </span>
+      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('usernamesTips')" autocomplete="off"
+        v-model="settings.usernames"> </textarea>
+
+    </div>
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+      <span class="font-bold">{{ $t('bios') }}: </span>
+      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('biosTips')" autocomplete="off"
+        v-model="settings.bios"> </textarea>
+
+    </div>
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+      <span class="font-bold">{{ $t('avatarsPath') }}: </span>
+      <input type="text" placeholder="example: C:/Users/Administrator/Desktop/avatars"
+        class="input input-sm grow input-bordered" v-model="settings.avatars_path" />
+      <button class="btn btn-sm btn-info ml-2" @click="selectAvatars">{{ $t('select') }}</button>
+    </div>
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
@@ -89,7 +99,7 @@ export default {
     },
     set_settings() {
       this.$service.update_settings(this.settings).then(res => {
-        this.$emitter.emit('scriptEventData', { name: 'register', args: ['1'] })
+        this.$emitter.emit('scriptEventData', { name: 'profile', args: [] })
       })
     },
     copyuid() {

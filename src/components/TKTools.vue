@@ -21,7 +21,7 @@
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('scriptEventData', { name: 'register', args: ['1'] })">
+        @click="startRegister">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startRegister') }}
     </button>
     <button
@@ -31,7 +31,7 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('scriptEventData', { name: 'profile', args: [] })">
+        @click="startFillProfile">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startFillProfile') }}
     </button>
     <button
@@ -57,7 +57,7 @@
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('message')">
+        @click="startMessage">
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3 mr-1" />{{ $t('startMessage') }}
     </button>
     <button
@@ -133,6 +133,16 @@ export default {
         }
     },
     methods: {
+        async startMessage() {
+            this.$emitter.emit('menuSelected', { name: 'messageSettings' });
+        },
+        async startFillProfile() {
+            this.$emitter.emit('menuSelected', { name: 'profileSettings' });
+
+        },
+        async startRegister() {
+            this.$emitter.emit('menuSelected', { name: 'registerSettings' });
+        },
         async logout() {
             let yes = await ask(this.$t('logoutConfirm'), this.$t('confirm'));
             if (yes) {

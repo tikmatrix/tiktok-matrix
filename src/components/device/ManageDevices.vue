@@ -51,7 +51,7 @@
       <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
       <input class="input input-bordered input-sm w-24" type="number" v-model="port" />
       <MyButton @click="scan" label="startScan" :showLoading="scaning" />
-
+      <span class="label-text ml-2">{{ scanResult }}</span>
     </div>
     <form method="dialog" class="modal-backdrop">
       <button>close</button>
@@ -94,7 +94,8 @@ export default {
       port: util.getData('scan_port') || 5555,
       proxy_host: util.getData('proxy_host') || '127.0.0.1',
       proxy_port: util.getData('proxy_port') || 8080,
-      scaning: false
+      scaning: false,
+      scanResult: ''
     }
   },
   watch: {
@@ -133,7 +134,7 @@ export default {
       })
     },
 
-    scan() {
+    async scan() {
       this.scaning = true
       util.setData('ip_1', this.ip_1)
       util.setData('ip_2', this.ip_2)
@@ -146,8 +147,8 @@ export default {
         end_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_5}`,
         port: this.port
       }).then((res) => {
-        console.log(res)
         this.scaning = false
+        this.scanResult = `${res.data} ${this.$t('deviceFound')}`
       })
     },
     update_settings() {

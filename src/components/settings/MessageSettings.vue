@@ -2,7 +2,6 @@
   <div class="flex flex-col items-start p-12">
 
 
-    <div class="divider">{{ $t('messageSettings') }}</div>
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('messageContent') }}: </span>
@@ -17,9 +16,9 @@
       <button class="btn btn-sm btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
 
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-full w-full">
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
-      <MyButton @click="set_settings" label="save" :loading-time="2000" />
+      <button class="btn btn-success" @click="set_settings">{{ $t('startScript') }}</button>
     </div>
 
   </div>
@@ -78,7 +77,7 @@ export default {
     },
     set_settings() {
       this.$service.update_settings(this.settings).then(res => {
-        console.log(res)
+        this.$emitter.emit('message')
       })
     },
     copyuid() {

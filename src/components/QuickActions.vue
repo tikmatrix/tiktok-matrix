@@ -71,12 +71,7 @@
         <font-awesome-icon icon="fa fa-mobile" class="h-3 w-3" />
         {{ $t('showSimInfo') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        :data-tip="$t('enableTCP')" @click="$emitter.emit('adbEventData', { args: ['tcpip', '5555'] })">
-        <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />
-        {{ $t('enableTCP') }}
-    </button>
+
     <dialog ref="uninstall_dialog" class="modal">
         <div class="modal-box">
             <h3 class="font-bold text-lg">{{ $t('inputPackageName') }}</h3>

@@ -9,16 +9,8 @@
         @click="$emitter.emit('menuSelected', { name: 'packageNameSettings' })">
         <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('packageNameSettings') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('menuSelected', { name: 'registerSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('registerSettings') }}
-    </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('menuSelected', { name: 'messageSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('messageSettings') }}
-    </button>
+
+
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
@@ -26,7 +18,12 @@
         <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-white" />
         {{ $t('enableFastInput') }}
     </button>
-
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        :data-tip="$t('enableTCP')" @click="$emitter.emit('adbEventData', { args: ['tcpip', '5555'] })">
+        <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />
+        {{ $t('enableTCP') }}
+    </button>
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
@@ -34,11 +31,7 @@
         <font-awesome-icon icon="fa-solid fa-link" class="h-3 w-3 text-white" />
         {{ $t('setProxy') }}
     </button>
-    <!-- <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$refs.scan_dialog.show()">
-        <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3 mr-1" />{{ $t('scanTCPDevice') }}
-    </button> -->
+
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('initDevice')">
