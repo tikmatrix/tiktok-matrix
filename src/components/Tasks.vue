@@ -55,7 +55,7 @@ export default {
         }
     },
     methods: {
-        async countTasks() {
+        countTasks() {
             this.$service.count_task_by_status().then((res) => {
                 for (let item of res.data) {
                     if (item.status == 0) {
@@ -73,9 +73,10 @@ export default {
         }
 
     },
-    async mounted() {
+    mounted() {
         this.countTasks();
-        setInterval(this.countTasks(), 10000);
+
+        setInterval(this.countTasks, 10000);
         this.$emitter.on('reload_tasks', async () => {
             this.countTasks();
         });
