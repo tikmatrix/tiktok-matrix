@@ -340,6 +340,7 @@ export default {
       console.log(`check_file_update: ${filename} localversion: ${localversion} remoteVersion: ${remoteVersion}`)
       if (!downloaded || localversion !== remoteVersion) {
         console.log("downloading " + filename + " from " + downloadUrl + " to " + path)
+        url = url + '?t=' + new Date().getTime()
         await invoke('download_file', { url, path });
       } else {
         console.log(filename + " no need to update")
