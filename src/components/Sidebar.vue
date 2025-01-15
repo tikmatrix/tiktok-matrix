@@ -485,21 +485,20 @@ export default {
           console.log(err)
         })
     },
-    script(name, args = []) {
+    script(name, args = {}) {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
       }
       this.$service
-        .script({
-          name: name,
+        .run_task_now({
+          script_name: name,
           serials: this.selection,
-          args: args
+          script_args: JSON.stringify(args)
         })
         .then(res => {
-          console.log(res)
-          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
-
+          this.$emitter.emit('reload_tasks', {})
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })
         .catch(err => {
           console.log(err)
@@ -623,6 +622,7 @@ export default {
           serials: this.selection,
         })
         .then(res => {
+          this.$emitter.emit('reload_tasks', {})
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })
     },
@@ -636,6 +636,7 @@ export default {
           serials: this.selection,
         })
         .then(res => {
+          this.$emitter.emit('reload_tasks', {})
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })
     },
@@ -650,6 +651,7 @@ export default {
           serials: this.selection,
         })
         .then(res => {
+          this.$emitter.emit('reload_tasks', {})
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
         })
@@ -666,6 +668,7 @@ export default {
           post_url: postUrl
         })
         .then(res => {
+          this.$emitter.emit('reload_tasks', {})
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })
     },
@@ -717,6 +720,7 @@ export default {
           target_username: targetUsername
         })
         .then(res => {
+          this.$emitter.emit('reload_tasks', {})
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
         })
@@ -733,6 +737,7 @@ export default {
           target_username: targetUsername
         })
         .then(res => {
+          this.$emitter.emit('reload_tasks', {})
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
         })

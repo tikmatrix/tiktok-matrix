@@ -20,13 +20,7 @@
       <ManageComments v-if="selectedItem.name === 'comments' && $refs.page_dialog.open" />
       <ManageProxys v-if="selectedItem.name === 'proxys' && $refs.page_dialog.open" />
       <ManageMusics v-if="selectedItem.name === 'musics' && $refs.page_dialog.open" />
-      <ManagePublishJobs v-if="selectedItem.name === 'publishJobs' && $refs.page_dialog.open" />
-      <ManageTrainJobs v-if="selectedItem.name === 'trainJobs' && $refs.page_dialog.open" />
-      <ManageMessageJobs v-if="selectedItem.name === 'messageJobs' && $refs.page_dialog.open" />
-      <ManageShareJobs v-if="selectedItem.name === 'shareJobs' && $refs.page_dialog.open" />
-      <ManageInstallJobs v-if="selectedItem.name === 'installJobs' && $refs.page_dialog.open" />
-      <ManageFollowJobs v-if="selectedItem.name === 'followJobs' && $refs.page_dialog.open" />
-      <ManageScrapeJobs v-if="selectedItem.name === 'scrapeFansJobs' && $refs.page_dialog.open" />
+      <ManageTasks v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
       <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
       <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
@@ -84,14 +78,8 @@ import ManageDevices from './components/device/ManageDevices.vue'
 import ManageAccounts from './components/account/ManageAccounts.vue'
 import ManageAnalytics from './components/analytics/ManageAnalytics.vue'
 import ManageMaterials from './components/material/ManageMaterials.vue'
-import ManagePublishJobs from './components/jobs/ManagePublishJobs.vue'
-import ManageMessageJobs from './components/jobs/ManageMessageJobs.vue'
-import ManageShareJobs from './components/jobs/ManageShareJobs.vue'
-import ManageFollowJobs from './components/jobs/ManageFollowJobs.vue'
-import ManageScrapeJobs from './components/jobs/ManageScrapeJobs.vue'
-import ManageInstallJobs from './components/jobs/ManageInstallJobs.vue'
+import ManageTasks from './components/jobs/ManageTasks.vue'
 import ManageDialog from './components/dialog/ManageDialog.vue'
-import ManageTrainJobs from './components/jobs/ManageTrainJobs.vue'
 import ManageMusics from './components/music/ManageMusics.vue'
 import RegisterSettings from './components/settings/RegisterSettings.vue'
 import ProfileSettings from './components/settings/ProfileSettings.vue'
@@ -139,14 +127,8 @@ export default {
     ManageAccounts,
     ManageAnalytics,
     ManageMaterials,
-    ManagePublishJobs,
-    ManageMessageJobs,
-    ManageShareJobs,
-    ManageInstallJobs,
-    ManageFollowJobs,
-    ManageScrapeJobs,
+    ManageTasks,
     ManageDialog,
-    ManageTrainJobs,
     ManageMusics,
     RegisterSettings,
     ProfileSettings,

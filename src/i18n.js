@@ -447,8 +447,14 @@ export const i18n = createI18n({
       updateConfirm: 'Are you sure you want to update?',
       deviceFound: 'devices found! Please wait...',
       startScript: 'Start Script',
+      scriptName: 'Script Name',
+      scriptArgs: 'Script Args',
+      openDownloadDir: 'Open Download Dir'
     },
     'zh-CN': {
+      openDownloadDir: '打开下载目录',
+      scriptName: '脚本名称',
+      scriptArgs: '脚本参数',
       startScript: '开始脚本',
       deviceFound: '个设备已找到! 请稍等...',
       updateConfirm: '确定要更新吗?',

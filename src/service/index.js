@@ -88,36 +88,7 @@ export function get_accounts() {
     url: api.account
   })
 }
-export function get_publish_jobs() {
-  return request({
-    method: 'get',
-    url: api.publish_job
-  })
-}
-export function get_message_jobs() {
-  return request({
-    method: 'get',
-    url: api.message_job
-  })
-}
-export function get_share_jobs() {
-  return request({
-    method: 'get',
-    url: api.share_job
-  })
-}
-export function get_follow_jobs() {
-  return request({
-    method: 'get',
-    url: api.follow_job
-  })
-}
-export function get_scrape_jobs() {
-  return request({
-    method: 'get',
-    url: api.scrape_job
-  })
-}
+
 export function add_account(account) {
   return request({
     method: 'post',
@@ -163,99 +134,27 @@ export function test_speed({ name }) {
   })
 }
 
-export function get_train_jobs() {
+export function get_tasks() {
   return request({
     method: 'get',
-    url: api.train_job
+    url: api.task
   })
 }
-export function delete_train_job({ id }) {
+export function delete_task({ id }) {
   return request({
     method: 'delete',
-    url: api.train_job,
+    url: api.task,
     params: { id }
   })
 }
-export function update_train_job({ id, status }) {
+export function update_task({ id, status }) {
   return request({
     method: 'put',
-    url: api.train_job,
+    url: api.task,
     data: { id, status }
   })
 }
-export function delete_publish_job({ id }) {
-  return request({
-    method: 'delete',
-    url: api.publish_job,
-    params: { id }
-  })
-}
-export function update_publish_job({ id, status, publish_type }) {
-  return request({
-    method: 'put',
-    url: api.publish_job,
-    data: { id, status, publish_type }
-  })
-}
-export function delete_message_job({ id }) {
-  return request({
-    method: 'delete',
-    url: api.message_job,
-    params: { id }
-  })
-}
-export function delete_share_job({ id }) {
-  return request({
-    method: 'delete',
-    url: api.share_job,
-    params: { id }
-  })
-}
-export function delete_follow_job({ id }) {
-  return request({
-    method: 'delete',
-    url: api.follow_job,
-    params: { id }
-  })
-}
-export function delete_scrape_job({ id }) {
-  return request({
-    method: 'delete',
-    url: api.scrape_job,
-    params: { id }
-  })
-}
-export function update_message_job(data) {
-  return request({
-    method: 'put',
-    url: api.message_job,
-    data
-  })
-}
 
-export function update_share_job(data) {
-  return request({
-    method: 'put',
-    url: api.share_job,
-    data
-  })
-}
-
-export function update_follow_job(data) {
-  return request({
-    method: 'put',
-    url: api.follow_job,
-    data
-  })
-}
-
-export function update_scrape_job(data) {
-  return request({
-    method: 'put',
-    url: api.scrape_job,
-    data
-  })
-}
 
 //repair
 export function init({ serial, init }) {
@@ -389,42 +288,13 @@ export function add_license({ key }) {
   })
 }
 
-export function count_train_job_by_status() {
+export function count_task_by_status() {
   return request({
     method: 'get',
-    url: api.count_train_job_by_status
+    url: api.count_task_by_status
   })
 }
-export function count_publish_job_by_status() {
-  return request({
-    method: 'get',
-    url: api.count_publish_job_by_status
-  })
-}
-export function count_message_job_by_status() {
-  return request({
-    method: 'get',
-    url: api.count_message_job_by_status
-  })
-}
-export function count_share_job_by_status() {
-  return request({
-    method: 'get',
-    url: api.count_share_job_by_status
-  })
-}
-export function count_follow_job_by_status() {
-  return request({
-    method: 'get',
-    url: api.count_follow_job_by_status
-  })
-}
-export function count_scrape_job_by_status() {
-  return request({
-    method: 'get',
-    url: api.count_scrape_job_by_status
-  })
-}
+
 export function count_online_device() {
   return request({
     method: 'get',
@@ -444,42 +314,13 @@ export function count_account_by_group_id({ group_id }) {
     params: { group_id }
   })
 }
-export function retry_all_failed_train_job() {
+export function retry_all_failed_tasks() {
   return request({
     method: 'get',
-    url: api.retry_all_failed_train_job
+    url: api.retry_all_failed_tasks
   })
 }
-export function retry_all_failed_publish_job() {
-  return request({
-    method: 'get',
-    url: api.retry_all_failed_publish_job
-  })
-}
-export function retry_all_failed_message_job() {
-  return request({
-    method: 'get',
-    url: api.retry_all_failed_message_job
-  })
-}
-export function retry_all_failed_share_job() {
-  return request({
-    method: 'get',
-    url: api.retry_all_failed_share_job
-  })
-}
-export function retry_all_failed_follow_job() {
-  return request({
-    method: 'get',
-    url: api.retry_all_failed_follow_job
-  })
-}
-export function retry_all_failed_scrape_job() {
-  return request({
-    method: 'get',
-    url: api.retry_all_failed_scrape_job
-  })
-}
+
 export function add_post_comment({ post_url }) {
   return request({
     method: 'post',
@@ -533,42 +374,13 @@ export function delete_all_materials() {
     url: api.delete_all_materials
   })
 }
-export function delete_all_train_jobs() {
+export function delete_all_tasks() {
   return request({
     method: 'delete',
-    url: api.delete_all_train_jobs
+    url: api.delete_all_tasks
   })
 }
-export function delete_all_publish_jobs() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_publish_jobs
-  })
-}
-export function delete_all_message_jobs() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_message_jobs
-  })
-}
-export function delete_all_share_jobs() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_share_jobs
-  })
-}
-export function delete_all_follow_jobs() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_follow_jobs
-  })
-}
-export function delete_all_scrape_jobs() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_scrape_jobs
-  })
-}
+
 export function delete_all_post_comments() {
   return request({
     method: 'delete',
@@ -748,6 +560,13 @@ export function train_now(data) {
     url: api.train_now
   })
 }
+export function run_task_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.run_task_now
+  })
+}
 export function publish_now(data) {
   return request({
     method: 'post',
@@ -806,38 +625,7 @@ export function install_now(data) {
     url: api.install_now
   })
 }
-export function get_install_jobs() {
-  return request({
-    method: 'get',
-    url: api.install_job
-  })
-}
-export function delete_install_job({ id }) {
-  return request({
-    method: 'delete',
-    params: { id },
-    url: api.install_job
-  })
-}
-export function update_install_job(data) {
-  return request({
-    method: 'put',
-    data,
-    url: api.install_job
-  })
-}
-export function retry_all_failed_install_job() {
-  return request({
-    method: 'get',
-    url: api.retry_all_failed_install_job
-  })
-}
-export function delete_all_install_jobs() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_install_jobs
-  })
-}
+
 export function clear_gallery(data) {
   return request({
     method: 'post',

@@ -36,12 +36,12 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('scriptEventData', { name: 'match_account', args: [] })">
+        @click="$emitter.emit('scriptEventData', { name: 'match_account', args: {} })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('matchAccount') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('scriptEventData', { name: 'login', args: [] })">
+        @click="$emitter.emit('scriptEventData', { name: 'login', args: {} })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startLogin') }}
     </button>
     <button
@@ -80,7 +80,8 @@
             </div>
             <button class="btn btn-sm btn-success ml-2" @click="startScrape">{{
                 $t('startScrape') }}</button>
-
+            <button class="btn btn-sm btn-success ml-2" @click="open_dir('download')">{{ $t('openDownloadDir')
+                }}</button>
 
         </div>
 
@@ -133,6 +134,11 @@ export default {
         }
     },
     methods: {
+        open_dir(name) {
+            invoke("open_dir", {
+                name
+            });
+        },
         async startMessage() {
             this.$emitter.emit('menuSelected', { name: 'messageSettings' });
         },
