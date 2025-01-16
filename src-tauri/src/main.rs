@@ -169,33 +169,7 @@ fn grant_agent_permission(app: tauri::AppHandle) {
             .expect("failed to chmod");
     }
 }
-#[tauri::command]
-fn start_agent(app: tauri::AppHandle) -> String {
-    //stop agent
-    stop_agent();
-    //check bin/tiktok-agent exist
-    let work_dir = app.path_resolver().app_data_dir().unwrap();
-    let work_dir = work_dir.to_str().unwrap();
-    let bin_path = format!("{}/{}", work_dir, "bin/tiktok-agent");
 
-    let mut command = Command::new(bin_path);
-    if !cfg!(debug_assertions) {
-        #[cfg(target_os = "windows")]
-        command.creation_flags(0x08000000);
-    }
-    match command.stdout(Stdio::piped()).spawn() {
-        Ok(child) => {
-            let result = format!("start tiktok-agent success, pid: {}", child.id());
-            log::info!("{}", result);
-            result
-        }
-        Err(e) => {
-            let result = format!("failed to start tiktok-agent: {}", e);
-            log::error!("{}", result);
-            result
-        }
-    }
-}
 #[tauri::command]
 fn stop_agent() {
     // Kill adb process
@@ -287,7 +261,6 @@ fn main() -> std::io::Result<()> {
             grant_adb_permission,
             grant_script_permission,
             grant_agent_permission,
-            start_agent,
             stop_agent,
             open_dir,
             download_file,

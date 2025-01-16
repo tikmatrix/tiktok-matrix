@@ -90,7 +90,6 @@ import ManageProxys from './components/proxy/ManageProxys.vue'
 import ManagePostBots from './components/virtualHost/ManagePostBots.vue'
 import ManageEditBots from './components/virtualHost/ManageEditBots.vue'
 import Login from './components/Login.vue'
-import RunAgentTips from './components/RunAgentTips.vue'
 import Miniremote from './components/device/Miniremote.vue'
 import TrainSettings from './components/group/TrainSettings.vue'
 import PublishSettings from './components/group/PublishSettings.vue'
@@ -112,6 +111,7 @@ import {
   onUpdaterEvent,
 } from '@tauri-apps/api/updater'
 import { exit, relaunch } from '@tauri-apps/api/process'
+import { Command } from '@tauri-apps/api/shell'
 export default {
   name: 'app',
   setup() {
@@ -120,7 +120,6 @@ export default {
   },
   components: {
     Login,
-    RunAgentTips,
     Sidebar,
     ManageDashboard,
     ManageDevices,
@@ -219,28 +218,31 @@ export default {
         await this.check_script();
         await this.check_agent();
         this.download_filename = 'Starting agent';
-        let result = await invoke("start_agent");
-
-        if (result.indexOf('pid') === -1) {
-          await message(result, { title: 'Error', type: 'error' });
+        try {
+          const command = new Command('start-agent', [])
+          const child = await command.spawn();
+          console.log('pid:', child.pid);
+        } catch (e) {
+          console.error(e);
+          let error = e.toString();
+          await message(error, { title: 'Agent Start Error', type: 'error' });
           tauriWindow.getCurrent().close();
-        } else {
-          console.log('agent started')
-          // wait for agent startup by listening to port
-          for (let i = 0; i < 5; i++) {
-            await new Promise(r => setTimeout(r, 1000));
-            const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-            if (port > 0) {
-              this.$emitter.emit('reload_sidebar')
-              break;
-            }
-            if (i === 4) {
-              await message('Agent start failed', { title: 'Error', type: 'error' });
-              tauriWindow.getCurrent().close();
-            }
-          }
-          this.$refs.download_dialog.close();
         }
+        console.log('agent started')
+        // wait for agent startup by listening to port
+        for (let i = 0; i < 5; i++) {
+          await new Promise(r => setTimeout(r, 1000));
+          const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+          if (port > 0) {
+            this.$emitter.emit('reload_sidebar')
+            break;
+          }
+          if (i === 4) {
+            await message('Agent Start Timeout, Please Restart!', { title: 'Error', type: 'error' });
+            tauriWindow.getCurrent().close();
+          }
+        }
+        this.$refs.download_dialog.close();
       })
 
     },
