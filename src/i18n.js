@@ -449,9 +449,11 @@ export const i18n = createI18n({
       startScript: 'Start Script',
       scriptName: 'Script Name',
       scriptArgs: 'Script Args',
-      openDownloadDir: 'Open Download Dir'
+      openDownloadDir: 'Open Download Dir',
+      tutorial: 'Tutorial',
     },
     'zh-CN': {
+      tutorial: '教程',
       openDownloadDir: '打开下载目录',
       scriptName: '脚本名称',
       scriptArgs: '脚本参数',

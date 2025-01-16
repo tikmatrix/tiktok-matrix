@@ -14,7 +14,12 @@ embed-resource = "2.4"
 
 [dependencies]
 reqwest = { version = "0.11", features = ["blocking", "multipart", "json"] }
-tauri = { version = "1.5", features = [ "notification-all", "global-shortcut-all", "clipboard-all", "path-all", "fs-all",
+tauri = { version = "1.5", features = [ "protocol-asset",
+    "notification-all",
+    "global-shortcut-all",
+    "clipboard-all",
+    "path-all",
+    "fs-all",
     "os-all",
     "window-all",
     "dialog-all",
@@ -27,6 +32,7 @@ futures-util = "0.3.30"
 zip = "2.1.5"
 flexi_logger = "0.27"
 log = "0.4"
+showfile = "0.1.1"
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

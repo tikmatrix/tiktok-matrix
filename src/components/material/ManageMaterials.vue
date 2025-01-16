@@ -31,10 +31,10 @@
                 <td @click="show_material(material)">
                   <div class="cursor-pointer border rounded items-center text-center flex align-middle">
                     <template v-if="material.name.endsWith('.mp4') || material.name.endsWith('.webm')">
-                      <video :src="`${apiUrl}/${material.name}`" class="w-[100px] h-[100px] max-w-none flex-1"></video>
+                      <video :src="material.name" class="w-[100px] h-[100px] max-w-none flex-1"></video>
                     </template>
                     <template v-else>
-                      <img :src="`${apiUrl}/${material.name}`" class="w-[100px] h-[100px] max-w-none flex-1" />
+                      <img :src="material.name" class="w-[100px] h-[100px] max-w-none flex-1" />
                     </template>
                   </div>
                 </td>
@@ -71,7 +71,7 @@
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <Detail :material="currentMaterial" :apiUrl="apiUrl" />
+        <Detail :material="currentMaterial" />
       </div>
     </dialog>
 
@@ -184,7 +184,8 @@ import Pagination from '../Pagination.vue'
 import * as util from '../../utils'
 import { open } from '@tauri-apps/api/dialog';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
-import api from '../../api';
+import { appDataDir, join } from '@tauri-apps/api/path';
+import { convertFileSrc } from '@tauri-apps/api/tauri';
 export default {
   name: 'app',
   components: {
@@ -217,10 +218,10 @@ export default {
       smart_frame_cut: true,
       adjust_frame_rate: true,
       adjust_bit_rate: true,
-      apiUrl: ''
     }
   },
   methods: {
+
     showEditTitle(material) {
       this.currentMaterial = material
       this.$refs.edit_title_dialog.showModal()
@@ -352,17 +353,19 @@ export default {
           console.log(err)
         })
     },
-    get_materials() {
+    async get_materials() {
       this.$service
         .get_materials({
           group_id: this.group.id
         })
-        .then(res => {
+        .then(async res => {
           this.materials = res.data
+          let work_path = await appDataDir();
+          for (let i = 0; i < this.materials.length; i++) {
+            this.materials[i].name = convertFileSrc(await join(work_path, "upload", this.materials[i].name));
+          }
         })
-        .catch(err => {
-          console.log(err)
-        })
+
     },
     show_material(material) {
       this.currentMaterial = material
@@ -383,8 +386,6 @@ export default {
 
   },
   async mounted() {
-    const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-    this.apiUrl = 'http://127.0.0.1:' + port;
     this.get_materials()
   }
 }

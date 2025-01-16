@@ -55,7 +55,7 @@ async fn download_file(
 ) -> Result<(), String> {
     let client = Client::new();
     let res = client
-        .get(&url)
+        .get(format!("{}?t={}", url, Instant::now().elapsed().as_secs()).as_str())
         .header(
             USER_AGENT,
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
@@ -68,7 +68,7 @@ async fn download_file(
         .content_length()
         .ok_or(format!("获取 `{}` 文件大小失败", &url))?;
 
-    let mut file = File::create(&path).or(Err(format!("创建 `{}` 文件失败", &path)))?;
+    let mut file: File = File::create(&path).or(Err(format!("创建 `{}` 文件失败", &path)))?;
     let mut stream = res.bytes_stream();
     let mut progress = Progress {
         filesize: total_size,
@@ -267,46 +267,18 @@ fn stop_agent() {
 //open_log_dir
 #[tauri::command]
 fn open_dir(name: String, app: tauri::AppHandle) {
-    #[cfg(target_os = "windows")]
-    {
-        let mut command = Command::new("cmd");
-        #[cfg(target_os = "windows")]
-        command.creation_flags(0x08000000);
-        command
-            .args(&[
-                "/C",
-                "start",
-                format!(
-                    "{}/{}",
-                    app.path_resolver()
-                        .app_data_dir()
-                        .unwrap()
-                        .to_str()
-                        .unwrap(),
-                    name
-                )
-                .as_str(),
-            ])
-            .status()
-            .expect("failed to open log dir");
-    }
-    #[cfg(target_os = "macos")]
-    {
-        let mut command = Command::new("open");
-        command
-            .args(&[format!(
-                "{}/{}",
-                app.path_resolver()
-                    .app_data_dir()
-                    .unwrap()
-                    .to_str()
-                    .unwrap(),
-                name
-            )
-            .as_str()])
-            .status()
-            .expect("failed to open log dir");
-    }
+    let path = format!(
+        "{}{}{}",
+        app.path_resolver()
+            .app_data_dir()
+            .unwrap()
+            .to_str()
+            .unwrap(),
+        std::path::MAIN_SEPARATOR,
+        name
+    );
+    log::info!("open_dir: {}", path);
+    showfile::show_path_in_file_manager(path);
 }
 
 fn main() -> std::io::Result<()> {

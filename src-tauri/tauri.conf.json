@@ -12,6 +12,13 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "protocol": {
+        "all": false,
+        "asset": true,
+        "assetScope": [
+          "$APPDATA/upload/**"
+        ]
+      },
       "window": {
         "all": true,
         "create": true,
