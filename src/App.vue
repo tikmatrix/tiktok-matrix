@@ -175,6 +175,8 @@ export default {
       })
     },
     async check_update() {
+      this.download_filename = 'Checking update'
+      this.$refs.download_dialog.showModal()
       try {
         const unlisten = await onUpdaterEvent(({ error, status }) => {
           // This will log all updater events, including status updates and errors.
@@ -198,8 +200,7 @@ export default {
       } catch (error) {
         console.error(error)
       }
-      this.download_filename = 'Checking update'
-      this.$refs.download_dialog.showModal()
+
       axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
         const unlistenProgress = await listen("DOWNLOAD_PROGRESS", async (e) => {
           this.download_progress = e.payload;
@@ -241,6 +242,7 @@ export default {
           const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
           if (port > 0) {
             this.$emitter.emit('reload_sidebar')
+            this.$emitter.emit('reload_tasks')
             break;
           }
           if (i === 4) {

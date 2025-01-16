@@ -37,11 +37,7 @@
             @click="$emitter.emit('closeDevice', this.device)" v-if="big">
             <font-awesome-icon icon="fa fa-times" class="h-4 w-4" />
           </button>
-          <!-- <span
-            class="bg-transparent hover:bg-transparent hover:text-red-500 text-gray-700 float-right border-0 pl-1 pr-1 pt-0 pb-0 cursor-pointer tooltip"
-            :data-tip="$t('hideTips')" @click="$emitter.emit('hideDevice', this.device)" v-if="!big">
-            <font-awesome-icon icon="fa fa-eye" class="h-4 w-4" />
-          </span> -->
+
         </div>
 
         <div class="flex flex-row flex-1 ">

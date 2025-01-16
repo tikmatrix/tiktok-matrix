@@ -75,7 +75,6 @@ export default {
     },
     mounted() {
         this.countTasks();
-
         setInterval(this.countTasks, 10000);
         this.$emitter.on('reload_tasks', async () => {
             this.countTasks();
