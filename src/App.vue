@@ -112,6 +112,7 @@ import {
 } from '@tauri-apps/api/updater'
 import { exit, relaunch } from '@tauri-apps/api/process'
 import { Command } from '@tauri-apps/api/shell'
+import { getAll } from '@tauri-apps/api/window';
 export default {
   name: 'app',
   setup() {
@@ -159,7 +160,12 @@ export default {
     }
   },
   methods: {
+    async shutdown() {
+      await invoke("kill_process", { name: "tiktok-agent" });
+      await invoke("kill_process", { name: "script" });
+      await invoke("kill_process", { name: "adb" });
 
+    },
     menu_selected(item) {
       this.selectedItem = item
       this.$refs.page_dialog.showModal()
@@ -182,7 +188,7 @@ export default {
           const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
           if (yes) {
             await installUpdate()
-            await invoke("stop_agent");
+            await this.shutdown()
             await relaunch()
             return;
           }
@@ -208,7 +214,7 @@ export default {
           }
         })
         this.remote_version = res.data;
-        await invoke("stop_agent");
+        await this.shutdown()
         await this.check_platform_tools();
         await this.check_yt_dlp();
         await this.check_ocr();
@@ -280,7 +286,7 @@ export default {
       if (!adb_exists) {
         this.download_filename = 'Uziping platform-tools-latest-windows.zip'
         await invoke("unzip_file", { zipPath: path, destDir: work_path });
-        await invoke("grant_adb_permission");
+        await invoke("grant_permission", { path: "platform-tools/adb" });
       }
     },
 
@@ -310,7 +316,7 @@ export default {
         return;
       }
       await this.check_file_update('script', this.remote_version.script_version, url);
-      await invoke("grant_script_permission");
+      await invoke("grant_permission", { path: "bin/script" });
     },
 
     async check_agent() {
@@ -325,7 +331,7 @@ export default {
         return;
       }
       await this.check_file_update('tiktok-agent', this.remote_version.agent_version, url);
-      await invoke("grant_agent_permission");
+      await invoke("grant_permission", { path: "bin/tiktok-agent" });
     },
 
     async check_file_update(filename, remoteVersion, downloadUrl) {
@@ -361,8 +367,11 @@ export default {
     tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
       const yes = await ask(this.$t('exitConfirm'), this.$t('confirm'));
       if (yes) {
-        await invoke("stop_agent");
-        tauriWindow.getCurrent().close();
+        await this.shutdown()
+        getAll().forEach((win) => {
+          win.close();
+        });
+        // tauriWindow.getCurrent().close();
       }
     });
 

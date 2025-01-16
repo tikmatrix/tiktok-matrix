@@ -7,7 +7,7 @@ use std::{
     fs::File,
     io::{self, BufReader, Write},
     path::Path,
-    process::{Command, Stdio},
+    process::Command,
     time::Instant,
 };
 
@@ -128,116 +128,53 @@ fn unzip_file(zip_path: String, dest_dir: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn grant_adb_permission(app: tauri::AppHandle) {
+fn grant_permission(app: tauri::AppHandle, path: String) {
+    //exec chmod +x only os is macos
     #[cfg(target_os = "macos")]
     {
         let work_dir = app.path_resolver().app_data_dir().unwrap();
         let work_dir = work_dir.to_str().unwrap();
+        let path = format!("{}/{}", work_dir, path);
         //chmod +x
         let mut command = Command::new("chmod");
         command
-            .args(&["+x", &format!("{}/{}", work_dir, "platform-tools/adb")])
+            .args(&["+x", path])
             .status()
             .expect("failed to chmod");
+        log::info!("grant_permission: {}", path);
     }
-}
-#[tauri::command]
-fn grant_script_permission(app: tauri::AppHandle) {
-    #[cfg(target_os = "macos")]
+    #[cfg(target_os = "windows")]
     {
         let work_dir = app.path_resolver().app_data_dir().unwrap();
         let work_dir = work_dir.to_str().unwrap();
-        //chmod +x
-        let mut command = Command::new("chmod");
-        command
-            .args(&["+x", &format!("{}/{}", work_dir, "bin/script")])
-            .status()
-            .expect("failed to chmod");
+        let path = format!("{}/{}", work_dir, path);
+        log::info!("no need grant_permission: {}", path);
     }
 }
 #[tauri::command]
-fn grant_agent_permission(app: tauri::AppHandle) {
-    #[cfg(target_os = "macos")]
-    {
-        let work_dir = app.path_resolver().app_data_dir().unwrap();
-        let work_dir = work_dir.to_str().unwrap();
-        //chmod +x
-        let mut command = Command::new("chmod");
-        command
-            .args(&["+x", &format!("{}/{}", work_dir, "bin/tiktok-agent")])
-            .status()
-            .expect("failed to chmod");
-    }
-}
-
-#[tauri::command]
-fn stop_agent() {
-    // Kill adb process
+fn kill_process(name: String) {
     #[cfg(target_os = "windows")]
     {
         let mut command = Command::new("taskkill");
         command.creation_flags(0x08000000);
         command
-            .args(&["/F", "/IM", "adb.exe"])
+            .args(&["/F", "/IM", format!("{}.exe", name).as_str()])
             .status()
-            .expect("failed to kill adb processes");
-        log::info!("stop adb success");
+            .expect("failed to kill processes");
+        log::info!("kill process:{} success", name);
     }
 
     #[cfg(target_os = "macos")]
     {
         let mut command = Command::new("pkill");
         command
-            .args(&["-f", "adb"])
+            .args(&["-f", name.as_str()])
             .status()
-            .expect("failed to kill adb processes");
-        log::info!("stop adb success");
-    }
-
-    // Kill tiktok-agent process
-    #[cfg(target_os = "windows")]
-    {
-        let mut command = Command::new("taskkill");
-        command.creation_flags(0x08000000);
-        command
-            .args(&["/F", "/IM", "tiktok-agent.exe"])
-            .status()
-            .expect("failed to kill agent processes");
-        log::info!("stop tiktok-agent success");
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        let mut command = Command::new("pkill");
-        command
-            .args(&["-f", "tiktok-agent"])
-            .status()
-            .expect("failed to kill agent processes");
-        log::info!("stop tiktok-agent success");
-    }
-    #[cfg(target_os = "windows")]
-    {
-        let mut command = Command::new("taskkill");
-        command.creation_flags(0x08000000);
-        command
-            .args(&["/F", "/IM", "script.exe"])
-            .status()
-            .expect("failed to kill script processes");
-
-        log::info!("stop script success");
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        let mut command = Command::new("pkill");
-        command
-            .args(&["-f", "script"])
-            .status()
-            .expect("failed to kill script processes");
-
-        log::info!("stop script success");
+            .expect("failed to kill processes");
+        log::info!("kill process:{} success", name);
     }
 }
+
 //open_log_dir
 #[tauri::command]
 fn open_dir(name: String, app: tauri::AppHandle) {
@@ -258,10 +195,8 @@ fn open_dir(name: String, app: tauri::AppHandle) {
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            grant_adb_permission,
-            grant_script_permission,
-            grant_agent_permission,
-            stop_agent,
+            grant_permission,
+            kill_process,
             open_dir,
             download_file,
             unzip_file
