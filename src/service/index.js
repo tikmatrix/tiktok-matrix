@@ -58,16 +58,7 @@ export function upload_videos(data) {
     data
   })
 }
-export function upload_to_virtualHost(formData) {
-  return post({
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
-    url: api.upload_to_virtualHost,
 
-    data: formData
-  })
-}
 export function upload_video(data) {
   return post({
     url: api.upload_video,
@@ -407,75 +398,7 @@ export function get_analytics() {
     url: api.analytics
   })
 }
-export function get_virtualHosts() {
-  return request({
-    method: 'get',
-    url: api.virtualHosts
-  })
-}
-export function add_or_update_virtualHost(virtualHosts) {
-  return request({
-    method: 'post',
-    url: api.virtualHosts,
-    data: virtualHosts
-  })
-}
-export function init_virtualHost({ ids }) {
-  return request({
-    method: 'get',
-    params: { ids },
-    url: api.init_virtualHost
-  })
-}
-export function delete_virtualHost({ id }) {
-  return request({
-    method: 'delete',
-    params: { id },
-    url: api.virtualHosts
-  })
-}
-export function get_post_bot_status({ id }) {
-  return request({
-    method: 'get',
-    params: { id },
-    url: api.get_post_bot_status
-  })
-}
-export function start_post_bot({ ids }) {
-  return request({
-    method: 'get',
-    params: { ids },
-    url: api.start_post_bot
-  })
-}
-export function stop_post_bot({ ids }) {
-  return request({
-    method: 'get',
-    params: { ids },
-    url: api.stop_post_bot
-  })
-}
-export function start_edit_bot({ ids }) {
-  return request({
-    method: 'get',
-    params: { ids },
-    url: api.start_edit_bot
-  })
-}
-export function stop_edit_bot({ ids }) {
-  return request({
-    method: 'get',
-    params: { ids },
-    url: api.stop_edit_bot
-  })
-}
-export function clear_edit_bot({ id, dir }) {
-  return request({
-    method: 'get',
-    params: { id, dir },
-    url: api.clear_edit_bot
-  })
-}
+
 export function adb_command(adbCommandRequest) {
   return request({
     method: 'post',
@@ -539,20 +462,7 @@ export function set_text(data) {
     url: api.set_text
   })
 }
-export function capture_video(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.capture_video
-  })
-}
-export function fission_video(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.fission_video
-  })
-}
+
 export function train_now(data) {
   return request({
     method: 'post',

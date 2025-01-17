@@ -19,7 +19,6 @@
       <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
       <ManageComments v-if="selectedItem.name === 'comments' && $refs.page_dialog.open" />
       <ManageProxys v-if="selectedItem.name === 'proxys' && $refs.page_dialog.open" />
-      <ManageMusics v-if="selectedItem.name === 'musics' && $refs.page_dialog.open" />
       <ManageTasks v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
       <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
@@ -80,15 +79,11 @@ import ManageAnalytics from './components/analytics/ManageAnalytics.vue'
 import ManageMaterials from './components/material/ManageMaterials.vue'
 import ManageTasks from './components/jobs/ManageTasks.vue'
 import ManageDialog from './components/dialog/ManageDialog.vue'
-import ManageMusics from './components/music/ManageMusics.vue'
 import RegisterSettings from './components/settings/RegisterSettings.vue'
 import ProfileSettings from './components/settings/ProfileSettings.vue'
 import PackageNameSettings from './components/settings/PackageNameSettings.vue'
 import MessageSettings from './components/settings/MessageSettings.vue'
 import ManageComments from './components/comment/ManageComments.vue'
-import ManageProxys from './components/proxy/ManageProxys.vue'
-import ManagePostBots from './components/virtualHost/ManagePostBots.vue'
-import ManageEditBots from './components/virtualHost/ManageEditBots.vue'
 import Login from './components/Login.vue'
 import Miniremote from './components/device/Miniremote.vue'
 import TrainSettings from './components/group/TrainSettings.vue'
@@ -129,15 +124,11 @@ export default {
     ManageMaterials,
     ManageTasks,
     ManageDialog,
-    ManageMusics,
     RegisterSettings,
     ProfileSettings,
     PackageNameSettings,
     MessageSettings,
     ManageComments,
-    ManageProxys,
-    ManagePostBots,
-    ManageEditBots,
     Miniremote,
     BuyLicense,
     TrainSettings,

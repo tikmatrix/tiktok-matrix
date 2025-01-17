@@ -23,7 +23,6 @@ const api = {
   task_status: '/api/device/task_status',
   get_license: '/api/get_license',
   add_license: '/api/add_license',
-
   count_online_device: '/api/device/count_online',
   count_all_account: '/api/account/count_all',
   count_account_by_group_id: '/api/account/count_account_by_group_id',
@@ -40,19 +39,8 @@ const api = {
   delete_all_materials: '/api/material/delete_all',
   delete_all_post_comments: '/api/post_comment/delete_all',
   proxy: '/agent/api/proxy',
-  proxy_rule: '/agent/api/proxy_rule',
-  proxy_delay: '/agent/api/proxy/delay',
   get_ip: '/api/get_ip',
   analytics: '/api/data_analysis',
-  virtualHosts: '/api/virtual_hosts',
-  get_post_bot_status: '/api/virtual_hosts/get_post_bot_status',
-  start_post_bot: '/api/virtual_hosts/start_post_bot',
-  stop_post_bot: '/api/virtual_hosts/stop_post_bot',
-  start_edit_bot: '/api/virtual_hosts/start_edit_bot',
-  stop_edit_bot: '/api/virtual_hosts/stop_edit_bot',
-  init_virtualHost: '/api/virtual_hosts/init',
-  upload_to_virtualHost: '/api/virtual_hosts/upload_video',
-  clear_edit_bot: '/api/virtual_hosts/clear_edit_bot',
   adb_command: '/agent/api/adb_command',
   script: '/agent/api/script',
   scan_tcp: '/agent/api/tcp_scan',
@@ -62,13 +50,9 @@ const api = {
   get_group_by_id: '/api/group/get_by_id',
   move_to_group: '/api/device/move_to_group',
   set_text: '/api/device/set_text',
-  capture_video: '/api/video/capture_video',
-  fission_video: '/api/video/fission_video',
   reset_all_index: '/api/device/reset_all_index',
   edit_title: '/api/material/update_title',
   install_now: '/api/install_now',
   clear_gallery: '/api/clear_gallery',
-
-
 }
 export default api
