@@ -101,29 +101,6 @@ export function delete_account({ id }) {
     params: { id }
   })
 }
-export function get_proxys() {
-  return request({
-
-    method: 'get',
-    url: api.proxy
-  })
-}
-export function add_proxys({ urls }) {
-  return request({
-
-    method: 'post',
-    url: api.proxy,
-    data: { urls }
-  })
-}
-export function test_speed({ name }) {
-  return request({
-
-    method: 'get',
-    url: api.proxy_delay,
-    params: { name }
-  })
-}
 
 export function get_tasks() {
   return request({
@@ -312,40 +289,7 @@ export function retry_all_failed_tasks() {
   })
 }
 
-export function add_post_comment({ post_url }) {
-  return request({
-    method: 'post',
-    url: api.post_comment,
-    data: { post_url }
-  })
-}
-export function get_post_comments() {
-  return request({
-    method: 'get',
-    url: api.post_comment
-  })
-}
-export function gen_topic_comments({ content, account_count }) {
-  return request({
-    method: 'post',
-    url: api.gen_topic_comments,
-    data: { content, account_count }
-  })
-}
-export function add_post_comment_topic(post_comment_topic) {
-  return request({
-    method: 'post',
-    url: api.post_comment_topic,
-    data: post_comment_topic
-  })
-}
-export function add_comment({ account_id, content, no, parent_no }) {
-  return request({
-    method: 'post',
-    url: api.comment,
-    data: { account_id, content, no, parent_no }
-  })
-}
+
 export function read_clipboard({ serial }) {
   return request({
     method: 'get',
@@ -353,12 +297,7 @@ export function read_clipboard({ serial }) {
     params: { serial }
   })
 }
-export function count_comment_job_by_status() {
-  return request({
-    method: 'get',
-    url: api.count_comment_job_by_status
-  })
-}
+
 export function delete_all_materials() {
   return request({
     method: 'delete',
@@ -372,12 +311,7 @@ export function delete_all_tasks() {
   })
 }
 
-export function delete_all_post_comments() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_post_comments
-  })
-}
+
 export function get_ip({ serial }) {
   return request({
     method: 'get',
@@ -385,13 +319,7 @@ export function get_ip({ serial }) {
     params: { serial }
   })
 }
-export function enable_proxy_rule({ serial, ip }) {
-  return request({
-    method: 'put',
-    url: api.proxy_rule,
-    data: { serial, ip }
-  })
-}
+
 export function get_analytics() {
   return request({
     method: 'get',
