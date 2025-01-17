@@ -17,16 +17,12 @@
       <ManageAccounts v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
       <ManageAnalytics v-if="selectedItem.name === 'analytics' && $refs.page_dialog.open" />
       <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
-      <ManageComments v-if="selectedItem.name === 'comments' && $refs.page_dialog.open" />
-      <ManageProxys v-if="selectedItem.name === 'proxys' && $refs.page_dialog.open" />
       <ManageTasks v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
       <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
       <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
       <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
       <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
-      <ManagePostBots v-if="selectedItem.name === 'postBots' && $refs.page_dialog.open" />
-      <ManageEditBots v-if="selectedItem.name === 'editBots' && $refs.page_dialog.open" />
       <BuyLicense v-if="selectedItem.name === 'buyLicense' && $refs.page_dialog.open" />
       <TrainSettings :group="selectedItem.group"
         v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" />
@@ -83,7 +79,6 @@ import RegisterSettings from './components/settings/RegisterSettings.vue'
 import ProfileSettings from './components/settings/ProfileSettings.vue'
 import PackageNameSettings from './components/settings/PackageNameSettings.vue'
 import MessageSettings from './components/settings/MessageSettings.vue'
-import ManageComments from './components/comment/ManageComments.vue'
 import Login from './components/Login.vue'
 import Miniremote from './components/device/Miniremote.vue'
 import TrainSettings from './components/group/TrainSettings.vue'
@@ -128,7 +123,6 @@ export default {
     ProfileSettings,
     PackageNameSettings,
     MessageSettings,
-    ManageComments,
     Miniremote,
     BuyLicense,
     TrainSettings,
@@ -208,7 +202,6 @@ export default {
         this.remote_version = res.data;
         await this.shutdown()
         await this.check_platform_tools();
-        await this.check_yt_dlp();
         await this.check_ocr();
         await this.check_apk();
         await this.check_test_apk();
@@ -245,10 +238,7 @@ export default {
       })
 
     },
-    async check_yt_dlp() {
-      let url = "https://r2.tikmatrix.com/yt-dlp.exe"
-      await this.check_file_update('yt-dlp', "v1.0", url);
-    },
+
 
     async check_ocr() {
       let work_path = await appDataDir();
