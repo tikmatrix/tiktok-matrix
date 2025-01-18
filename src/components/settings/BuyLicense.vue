@@ -3,7 +3,7 @@
     <!-- GitHub认证部分 -->
     <div class="flex flex-col items-start w-full mb-6">
       <h2 class="text-xl font-bold mb-4">{{ $t('githubAuth') }}</h2>
-      <div v-if="!githubAuthStatus" class="flex items-center flex-row gap-2 w-full">
+      <div v-if="!license.github_authorized" class="flex items-center flex-row gap-2 w-full">
         <span class="font-bold">{{ $t('githubAuthStatus') }}: </span>
         <span class="text-red-500">{{ $t('notAuthorized') }}</span>
         <MyButton @click="startGitHubAuth" :label="$t('authorizeWithGithub')" icon="fab fa-github" />
@@ -104,16 +104,14 @@ export default {
   components: {
     MyButton
   },
+  props: {
+    license: Object
+  },
   data() {
     return {
-      loading: true,
+      loading: false,
       githubAuthStatus: false,
-      license: {
-        uid: '',
-        key: '',
-        status: '',
-        left_days: 0,
-      },
+
       payList: [
         {
           network: 'TRC20',
@@ -184,16 +182,7 @@ export default {
       await writeText(this.license.uid)
       this.$emitter.emit('showToast', this.$t('copySuccess'))
     },
-    get_license() {
-      this.$service.get_license().then(res => {
-        this.license = res.data
-        this.loading = false
-        // 检查是否通过GitHub认证获得了免费试用
-        if (res.data.github_authorized) {
-          this.githubAuthStatus = true;
-        }
-      })
-    },
+
     add_license() {
       this.loading = true
       this.$service
@@ -201,7 +190,7 @@ export default {
           key: this.license.key
         })
         .then(res => {
-          this.license = res.data
+          this.$emitter.emit('reload_license', []);
           this.loading = false
         })
     },
@@ -211,37 +200,15 @@ export default {
         const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
         const apiUrl = 'http://127.0.0.1:' + port;
         await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${apiUrl}/github_auth_callback&scope=user%20public_repo`);
-        await this.loopCheckGithubAuth();
+        this.$emitter.emit('reload_license', []);
       } catch (error) {
         console.error('GitHub认证错误:', error);
         this.$emitter.emit('showToast', this.$t('githubAuthErrorMessage'));
       }
     },
-    async loopCheckGithubAuth() {
-      const checkInterval = 3000; // 每秒检查一次
-      const maxAttempts = 60; // 最多检查60次，相当于60秒
-      let attempts = 0;
 
-      const checkAuth = async () => {
-        attempts++;
-        try {
-          this.get_license()
-        } catch (error) {
-          console.error('检查GitHub认证状态时出错:', error);
-        }
-
-        if (attempts < maxAttempts) {
-          setTimeout(checkAuth, checkInterval);
-        } else {
-          this.$emitter.emit('showToast', this.$t('githubAuthTimeoutMessage'));
-        }
-      };
-
-      checkAuth();
-    }
   },
   mounted() {
-    this.get_license()
   }
 }
 </script>

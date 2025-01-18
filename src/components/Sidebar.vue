@@ -36,9 +36,14 @@
       </div>
       <div class="p-4">
         <div class="flex flex-row p-2 bg-base-300 rounded-md">
-
           <a class="link link-primary text-xs float-right flex items-center mr-1"
-            @click="$emitter.emit('menuSelected', { name: 'buyLicense' })">
+            @click="$emitter.emit('menuSelected', { name: 'buyLicense' })" v-if="license.status == 'pass'">
+            <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4 mr-1" />
+            {{ $t('left_days') }}:
+            <label class="text-green-500 font-bold">{{ license.left_days }}</label>
+          </a>
+          <a class="link link-primary text-xs float-right flex items-center mr-1"
+            @click="$emitter.emit('menuSelected', { name: 'buyLicense' })" v-else>
             <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4 mr-1" />
             {{ $t('buyLicense') }}
           </a>
@@ -210,6 +215,9 @@ export default {
     TKTools,
     InsTools,
     QuickActions
+  },
+  props: {
+    license: Object
   },
   data() {
     return {

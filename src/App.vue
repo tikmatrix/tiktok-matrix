@@ -1,7 +1,7 @@
 <template>
 
   <div class="flex flex-row items-start bg-base-300 h-screen w-screen">
-    <Sidebar />
+    <Sidebar :license="license" />
     <ManageDevices />
   </div>
 
@@ -23,7 +23,7 @@
       <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
       <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
       <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
-      <BuyLicense v-if="selectedItem.name === 'buyLicense' && $refs.page_dialog.open" />
+      <BuyLicense :license="license" v-if="selectedItem.name === 'buyLicense' && $refs.page_dialog.open" />
       <TrainSettings :group="selectedItem.group"
         v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" />
       <PublishSettings :group="selectedItem.group"
@@ -73,7 +73,7 @@ import ManageDevices from './components/device/ManageDevices.vue'
 import ManageAccounts from './components/account/ManageAccounts.vue'
 import ManageAnalytics from './components/analytics/ManageAnalytics.vue'
 import ManageMaterials from './components/material/ManageMaterials.vue'
-import ManageTasks from './components/jobs/ManageTasks.vue'
+import ManageTasks from './components/tasks/ManageTasks.vue'
 import ManageDialog from './components/dialog/ManageDialog.vue'
 import RegisterSettings from './components/settings/RegisterSettings.vue'
 import ProfileSettings from './components/settings/ProfileSettings.vue'
@@ -142,6 +142,7 @@ export default {
         percentage: 0
       },
       download_filename: '',
+      license: {}
     }
   },
   methods: {
@@ -227,6 +228,7 @@ export default {
           if (port > 0) {
             this.$emitter.emit('reload_sidebar')
             this.$emitter.emit('reload_tasks')
+            this.$emitter.emit('reload_license')
             break;
           }
           if (i === 4) {
@@ -339,6 +341,11 @@ export default {
       util.setData(filename, remoteVersion)
       return path;
     },
+    get_license() {
+      this.$service.get_license().then(res => {
+        this.license = res.data
+      })
+    },
   },
   mounted() {
     const hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate')
@@ -379,6 +386,10 @@ export default {
     this.$emitter.on('updateService', () => {
       this.check_update()
     });
+    this.$emitter.on('reload_license', () => {
+      this.get_license()
+    });
+    this.get_license()
   }
 }
 </script>

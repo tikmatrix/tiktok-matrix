@@ -1,27 +1,27 @@
 <template>
     <!--status-->
     <div class="flex flex-wrap">
-        <div class="w-1/4 text-center">
+        <div class="w-1/4 text-center tooltip" :data-tip="$t('waitingTasks')">
             <div class="badge badge-neutral">
                 <font-awesome-icon icon="clock" class="h-3 w-3 mr-1" />{{ waiting_count }}
             </div>
 
         </div>
-        <div class="w-1/4 text-center">
+        <div class="w-1/4 text-center tooltip" :data-tip="$t('runningTasks')">
             <div class="badge badge-accent">
                 <font-awesome-icon icon="spinner" class="h-3 w-3 mr-1 fa-spin" />
                 {{ running_count }}
 
             </div>
         </div>
-        <div class="w-1/4 text-center">
+        <div class="w-1/4 text-center tooltip" :data-tip="$t('successTasks')">
             <div class="badge badge-primary">
                 <font-awesome-icon icon="check" class="h-3 w-3 mr-1" />
                 {{ success_count }}
             </div>
 
         </div>
-        <div class="w-1/4 text-center">
+        <div class="w-1/4 text-center tooltip" :data-tip="$t('failedTasks')">
             <div class="badge badge-secondary">
                 <font-awesome-icon icon="times" class="h-3 w-3 mr-1" />
                 {{ failed_count }}
