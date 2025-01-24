@@ -16,13 +16,13 @@
     </div>
 
     <!-- 现有的许可证信息 -->
-    <div class="flex items-center flex-row gap-2 max-w-lg w-full">
+    <div class="flex items-center flex-row gap-2  w-full">
       <span class="font-bold">{{ $t('uid') }}: </span>
       <input id="uid" type="text" placeholder="uid" class="input input-sm grow input-bordered" v-model="license.uid"
         readonly disabled />
       <MyButton @click="copyuid" label="copy" />
     </div>
-    <div class="flex items-center flex-row gap-2  w-full">
+    <div class="flex items-center flex-row gap-2   w-full">
       <span class="font-bold">{{ $t('license') }}: </span>
       <input type="text" placeholder="license key" class="input input-sm grow input-bordered" v-model="license.key" />
       <div class="flex">
