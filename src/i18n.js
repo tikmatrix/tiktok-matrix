@@ -455,8 +455,10 @@ export const i18n = createI18n({
       runningTasks: 'Running Tasks',
       successTasks: 'Success Tasks',
       failedTasks: 'Failed Tasks',
+      invalidLicense: 'Invalid License',
     },
     'zh-CN': {
+      invalidLicense: '无效授权',
       waitingTasks: '等待中任务',
       runningTasks: '运行中任务',
       successTasks: '成功任务',

@@ -26,9 +26,9 @@
       <span class="font-bold">{{ $t('license') }}: </span>
       <input type="text" placeholder="license key" class="input input-sm grow input-bordered" v-model="license.key" />
       <div class="flex">
-        <label class="text-red-500 font-bold" v-if="license.status != 'pass'">{{ $t(`${license.status}`)
+        <label class="text-red-500 font-bold" v-if="license.left_days <= 0">{{ $t('invalidLicense')
           }}</label>
-        <label class="font-bold" v-if="license.status == 'pass'">
+        <label class="font-bold" v-if="license.left_days > 0">
           {{ $t('left_days') }}:
           <label class="text-green-500 font-bold">{{ license.left_days }}</label>
         </label>
