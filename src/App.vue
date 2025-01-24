@@ -222,7 +222,7 @@ export default {
         }
         console.log('agent started')
         // wait for agent startup by listening to port
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 10; i++) {
           await new Promise(r => setTimeout(r, 1000));
           const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
           if (port > 0) {
@@ -231,7 +231,7 @@ export default {
             this.$emitter.emit('reload_license')
             break;
           }
-          if (i === 4) {
+          if (i === 9) {
             await message('Agent Start Timeout, Please Restart!', { title: 'Error', type: 'error' });
             tauriWindow.getCurrent().close();
           }
