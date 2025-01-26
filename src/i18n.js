@@ -299,7 +299,7 @@ export const i18n = createI18n({
       quickActions: 'Shortcut',
       uploadToGallery: 'Upload To Gallery',
       openIpChecker: 'Open IP Checker',
-      initApp: 'Init App',
+      initAppAgent: 'Init App Agent',
       startRegister: 'Start Register',
       startFillProfile: 'Start Fill Profile',
       startLogin: 'Start Login',
@@ -351,7 +351,7 @@ export const i18n = createI18n({
       global: 'Global: com.zhiliaoapp.musically',
       asia: 'Asia: com.ss.android.ugc.trill',
       tiktokPackagename: 'Tiktok Packagename',
-      openApp: 'Open App',
+      openAppAgent: 'Open App Agent',
       trainStartTimeFormatError: 'Train Start Time Format Error',
       publishStartTimeFormatError: 'Publish Start Time Format Error',
       usdtTip: 'Please ensure the recharge network is consistent, to avoid the risk of recharge failure and fund loss! Please contact customer service to send a recharge screenshot to obtain the license code!',
@@ -456,8 +456,10 @@ export const i18n = createI18n({
       successTasks: 'Success Tasks',
       failedTasks: 'Failed Tasks',
       invalidLicense: 'Invalid License',
+      openAppDir: 'Open App Dir',
     },
     'zh-CN': {
+      openAppDir: '打开应用目录',
       invalidLicense: '无效授权',
       waitingTasks: '等待中任务',
       runningTasks: '运行中任务',
@@ -563,7 +565,7 @@ export const i18n = createI18n({
       usdtTip: '请确保充币网络一致, 以避免出现充值失败导致资金损失! 请联系客服发送充币截图获取授权码!',
       publishStartTimeFormatError: '发布开始时间格式错误',
       trainStartTimeFormatError: '养号开始时间格式错误',
-      openApp: '打开 App',
+      openAppAgent: '打开App Agent',
       tiktokPackagename: 'Tiktok 包名',
       asia: '亚洲: com.ss.android.ugc.trill',
       global: '全球: com.zhiliaoapp.musically',
@@ -858,7 +860,7 @@ export const i18n = createI18n({
       quickActions: '快捷操作',
       uploadToGallery: '上传到相册',
       openIpChecker: '打开 IP 检查器',
-      initApp: '初始化 App',
+      initAppAgent: '初始化 App Agent',
     }
   }
 })

@@ -25,33 +25,38 @@
         {{ $t('enableTCP') }}
     </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$refs.proxy_dialog.show()">
-        <font-awesome-icon icon="fa-solid fa-link" class="h-3 w-3 text-white" />
-        {{ $t('setProxy') }}
-    </button>
+
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('initDevice')">
-        <font-awesome-icon icon="fa fa-mobile" class="h-3 w-3 mr-1" />{{ $t('initApp') }}
+        <font-awesome-icon icon="fa fa-undo" class="h-3 w-3 mr-1 text-pink-500" />
+        {{ $t('initAppAgent') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.github.tikmatrix/.MainActivity'] })">
-        <font-awesome-icon icon="fa fa-mobile" class="h-3 w-3 mr-1" />{{ $t('openApp') }}
+        <font-awesome-icon icon="fa fa-play" class="h-3 w-3 mr-1 text-green-500" />
+        {{ $t('openAppAgent') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="open_dir('logs')">
-        <font-awesome-icon icon="fa-solid fa-file-lines" class="h-3 w-3 mr-1" />{{ $t('openLogs') }}
+        @click="$refs.proxy_dialog.show()">
+        <font-awesome-icon icon="fa fa-server" class="h-3 w-3 mr-1" />
+        {{ $t('setProxy') }}
+    </button>
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="open_dir('bin')">
+        <font-awesome-icon icon="fa fa-folder" class="h-3 w-3 mr-1" />
+        {{ $t('openAppDir') }}
     </button>
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$emitter.emit('updateService')">
-        <font-awesome-icon icon="fa fa-cloud-arrow-down" class="h-3 w-3 mr-1" />{{ $t('updateService') }}
+        <font-awesome-icon icon="fa fa-download" class="h-3 w-3 mr-1" />
+        {{ $t('checkUpdate') }}
     </button>
     <dialog ref="proxy_dialog" class="modal">
         <div class="modal-box">

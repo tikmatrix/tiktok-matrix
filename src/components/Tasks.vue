@@ -3,28 +3,29 @@
     <div class="flex flex-wrap">
         <div class="w-1/4 text-center tooltip" :data-tip="$t('waitingTasks')">
             <div class="badge badge-neutral">
-                <font-awesome-icon icon="clock" class="h-3 w-3 mr-1" />{{ waiting_count }}
+                <font-awesome-icon icon="clock" class="h-3 w-3 mr-1" />
+                <Countup :end="taskCounts[0] || 0" :options="{ duration: 3 }" />
             </div>
 
         </div>
         <div class="w-1/4 text-center tooltip" :data-tip="$t('runningTasks')">
             <div class="badge badge-accent">
                 <font-awesome-icon icon="spinner" class="h-3 w-3 mr-1 fa-spin" />
-                {{ running_count }}
+                <Countup :end="taskCounts[1] || 0" :options="{ duration: 3 }" />
 
             </div>
         </div>
         <div class="w-1/4 text-center tooltip" :data-tip="$t('successTasks')">
             <div class="badge badge-primary">
                 <font-awesome-icon icon="check" class="h-3 w-3 mr-1" />
-                {{ success_count }}
+                <Countup :end="taskCounts[2] || 0" :options="{ duration: 3 }" />
             </div>
 
         </div>
         <div class="w-1/4 text-center tooltip" :data-tip="$t('failedTasks')">
             <div class="badge badge-secondary">
                 <font-awesome-icon icon="times" class="h-3 w-3 mr-1" />
-                {{ failed_count }}
+                <Countup :end="taskCounts[3] || 0" :options="{ duration: 3 }" />
             </div>
         </div>
         <button
@@ -43,31 +44,26 @@
 
 </template>
 <script>
+import Countup from './Countup.vue'
 export default {
     name: 'Tools',
     props: ['settings'],
+    components: {
+        Countup
+    },
     data() {
         return {
-            waiting_count: 0,
-            running_count: 0,
-            success_count: 0,
-            failed_count: 0,
+            taskCounts: {},
         }
     },
     methods: {
         countTasks() {
             this.$service.count_task_by_status().then((res) => {
+                const counts = {};
                 for (let item of res.data) {
-                    if (item.status == 0) {
-                        this.waiting_count = item.count;
-                    } else if (item.status == 1) {
-                        this.running_count = item.count;
-                    } else if (item.status == 2) {
-                        this.success_count = item.count;
-                    } else if (item.status == 3) {
-                        this.failed_count = item.count;
-                    }
+                    counts[item.status] = item.count;
                 }
+                this.taskCounts = counts;
             });
 
         }

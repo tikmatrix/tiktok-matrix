@@ -164,7 +164,7 @@ export default {
 
     retry_all_failed() {
       this.$service
-        .retry_all_failed_task()
+        .retry_all_failed_tasks()
         .then(() => {
           this.get_tasks()
         })
