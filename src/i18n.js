@@ -457,8 +457,10 @@ export const i18n = createI18n({
       failedTasks: 'Failed Tasks',
       invalidLicense: 'Invalid License',
       openAppDir: 'Open App Dir',
+      moveToFirst: 'Move To First',
     },
     'zh-CN': {
+      moveToFirst: '移动到第一位',
       openAppDir: '打开应用目录',
       invalidLicense: '无效授权',
       waitingTasks: '等待中任务',

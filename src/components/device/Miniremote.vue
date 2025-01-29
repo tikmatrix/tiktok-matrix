@@ -5,10 +5,17 @@
         <div class="flex flex-row drag  bg-base-300">
           <div class="flex flex-1 justify-center items-center text-center">
             <div class="flex-1 justify-center items-center text-center">
-              <details ref="edit_index_input" class="dropdown dropdown-top">
+              <span class="text-xs font-bold bg-blue-300 pl-2 pr-2 rounded-md">
+                {{ no }}
+              </span>
+              <button class="btn btn-xs bg-transparent hover:bg-transparent border-0 tooltip"
+                :data-tip="$t('moveToFirst')" @click="updateIndex">
+                <font-awesome-icon icon="fa-arrow-up" class="text-blue-500 cursor-pointer"></font-awesome-icon>
+              </button>
+              <!-- <details ref="edit_index_input" class="dropdown dropdown-top" v-else>
                 <summary class="btn btn-xs bg-transparent hover:bg-transparent border-0">
                   <span class="text-xs font-bold bg-blue-300 pl-1 pr-1 rounded-md">
-                    {{ device.index }}
+                    {{ no }}
                     <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer"></font-awesome-icon>
                   </span>
                 </summary>
@@ -16,7 +23,7 @@
                   class="input input-sm input-bordered border-2 dropdown-content z-10 shadow bg-white w-20 border-green-500"
                   v-model="temp_index" type="number" @keyup.enter="updateIndex"
                   @focus="(event) => event.target.select()" @blur="updateIndex" />
-              </details>
+              </details> -->
 
 
               <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-green-500' : ' text-red-500')" v-if="big"> -
@@ -108,6 +115,10 @@ export default {
     BottomBar
   },
   props: {
+    no: {
+      type: Number,
+      default: 1
+    },
     big: {
       type: Boolean,
       default: false
@@ -139,15 +150,14 @@ export default {
       width: this.big ? 320 : 120,
       height: this.big ? 580 : 250,
       connect_count: 0,
-      temp_index: this.device.index,
+      min_index: localStorage.getItem('min_index') || 0,
     }
   },
   methods: {
     updateIndex() {
-      this.$refs.edit_index_input.removeAttribute('open')
-      this.$service.index({ serial: this.device.real_serial, index: this.temp_index }).then(res => {
-        this.$emitter.emit('showToast', this.$t('indexUpdated'))
-        this.device.index = this.temp_index
+      this.min_index = this.min_index - 1
+      this.$service.index({ serial: this.device.real_serial, index: this.min_index }).then(res => {
+        this.device.index = this.min_index
       })
     },
     get_task_status() {

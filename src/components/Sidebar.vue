@@ -165,7 +165,7 @@
             </div>
           </div>
           <drag-select v-model="selection">
-            <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="item.real_serial">
+            <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
               {{ index + 1 }}
             </drag-select-option>
           </drag-select>

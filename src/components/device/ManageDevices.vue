@@ -1,6 +1,6 @@
 <template>
   <div class="w-full min-h-screen">
-    <Pagination ref="device_panel" :items="devices" :pageSize="200" @refresh="refreshPage">
+    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage">
       <template v-slot:buttons>
         <!-- <MyButton @click="$service.reset_all_index" label="resetIndex" icon="fa fa-refresh" /> -->
         <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired" />
@@ -15,8 +15,8 @@
       <template v-slot:default="slotProps">
         <div class="flex flex-wrap gap-2 p-4">
           <div class="flex flex-wrap gap-2 flex-1">
-            <div v-for="(device, _index) in slotProps.items" :key="device.serial">
-              <Miniremote :device="device" :key="device.key" />
+            <div v-for="(device, index) in slotProps.items" :key="device.key">
+              <Miniremote :device="device" :key="index" :no="index + 1" />
             </div>
           </div>
         </div>
@@ -156,15 +156,11 @@ export default {
         console.log(res)
       })
     }
-
-
   },
 
   mounted() {
     this.mydevices = this.devices
-    for (let i = 0; i < this.mydevices.length; i++) {
-      this.mydevices[i].key = i
-    }
+
     this.get_settings()
     this.$emitter.on('reload_sidebar', () => {
       this.get_settings()
