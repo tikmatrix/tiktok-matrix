@@ -75,7 +75,7 @@
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.followDialog.showModal">
-        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startFollow') }}
+        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('followAndUnFollow') }}
     </button>
 
     <dialog ref="scrapeUsersDialog" class="modal">
@@ -118,8 +118,12 @@
                 <input class="input input-bordered input-sm" type="text" v-model="tartget_username"
                     :placeholder="$t('targetUsername')" />
             </div>
-            <button class="btn btn-sm btn-success ml-2" @click="startFollow">{{
-                $t('startFollow') }}</button>
+            <button class="btn btn-sm btn-primary ml-2" @click="startFollow">
+                {{ $t('startFollow') }}
+            </button>
+            <button class="btn btn-sm btn-secondary ml-2" @click="startUnFollow">
+                {{ $t('startUnFollow') }}
+            </button>
 
         </div>
 
@@ -180,7 +184,18 @@ export default {
             this.$emitter.emit('follow', this.tartget_username)
             this.$refs.followDialog.close()
         },
+        startUnFollow() {
+            if (this.tartget_username == '') {
+                alert(this.$t('targetUsernameRequired'))
+                return;
+            }
+            if (!this.tartget_username.startsWith('@')) {
+                this.tartget_username = '@' + this.tartget_username
+            }
 
+            this.$emitter.emit('unfollow', this.tartget_username)
+            this.$refs.followDialog.close()
+        },
         startScrape() {
             if (this.tartget_username == '') {
                 alert(this.$t('targetUsernameRequired'))

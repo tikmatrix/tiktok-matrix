@@ -458,8 +458,12 @@ export const i18n = createI18n({
       invalidLicense: 'Invalid License',
       openAppDir: 'Open App Dir',
       moveToFirst: 'Move To First',
+      startUnFollow: 'Start UnFollow',
+      followAndUnFollow: 'Follow & UnFollow',
     },
     'zh-CN': {
+      followAndUnFollow: '关注 & 取消关注',
+      startUnFollow: '开始取消关注',
       moveToFirst: '移动到第一位',
       openAppDir: '打开应用目录',
       invalidLicense: '无效授权',
