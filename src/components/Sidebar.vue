@@ -710,6 +710,23 @@ export default {
 
         })
     },
+    unfollow(targetUsername) {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+
+      this.$service
+        .unfollow_now({
+          serials: this.selection,
+          target_username: targetUsername
+        })
+        .then(res => {
+          this.$emitter.emit('reload_tasks', {})
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+
+        })
+    },
     clearGallery() {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
@@ -823,6 +840,9 @@ export default {
     });
     this.$emitter.on('follow', (targetUsername) => {
       this.follow(targetUsername)
+    });
+    this.$emitter.on('unfollow', (targetUsername) => {
+      this.unfollow(targetUsername)
     });
     this.$emitter.on('send_screen_mode', (mode) => {
       this.send_screen_mode(mode)

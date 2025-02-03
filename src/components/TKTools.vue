@@ -189,8 +189,8 @@ export default {
                 alert(this.$t('targetUsernameRequired'))
                 return;
             }
-            if (!this.tartget_username.startsWith('@')) {
-                this.tartget_username = '@' + this.tartget_username
+            if (this.tartget_username.startsWith('@')) {
+                this.tartget_username = this.tartget_username.replace('@', '')
             }
 
             this.$emitter.emit('unfollow', this.tartget_username)

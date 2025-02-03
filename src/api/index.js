@@ -13,6 +13,7 @@ const api = {
   message_now: '/api/message_now',
   share_now: '/api/share_now',
   follow_now: '/api/follow_now',
+  unfollow_now: '/api/unfollow_now',
   scrape_now: '/api/scrape_now',
   init: '/api/device/init',
   index: '/api/device/index',

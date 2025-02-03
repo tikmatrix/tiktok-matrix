@@ -434,6 +434,13 @@ export function follow_now(data) {
     url: api.follow_now
   })
 }
+export function unfollow_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.unfollow_now
+  })
+}
 export function scrape_now(data) {
   return request({
     method: 'post',
