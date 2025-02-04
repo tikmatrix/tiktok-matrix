@@ -1,5 +1,5 @@
 <template>
-  <div class="relative  shadow-2xl border-2 border-solid border-black indicator">
+  <div class="relative  shadow-2xl border-2 border-solid border-green-500 indicator">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag  bg-base-300">
@@ -12,20 +12,6 @@
                 :data-tip="$t('moveToFirst')" @click="updateIndex">
                 <font-awesome-icon icon="fa-arrow-up" class="text-blue-500 cursor-pointer"></font-awesome-icon>
               </button>
-              <!-- <details ref="edit_index_input" class="dropdown dropdown-top" v-else>
-                <summary class="btn btn-xs bg-transparent hover:bg-transparent border-0">
-                  <span class="text-xs font-bold bg-blue-300 pl-1 pr-1 rounded-md">
-                    {{ no }}
-                    <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer"></font-awesome-icon>
-                  </span>
-                </summary>
-                <input
-                  class="input input-sm input-bordered border-2 dropdown-content z-10 shadow bg-white w-20 border-green-500"
-                  v-model="temp_index" type="number" @keyup.enter="updateIndex"
-                  @focus="(event) => event.target.select()" @blur="updateIndex" />
-              </details> -->
-
-
               <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-green-500' : ' text-red-500')" v-if="big"> -
                 {{
                   $t(task_status) }}</span>
@@ -48,7 +34,6 @@
         </div>
 
         <div class="flex flex-row flex-1 ">
-          <!-- <LeftBars v-if="big" :device="device" /> -->
           <div>
             <div class="relative flex-1 object-fill" :style="'width:' + width + 'px;height:' + height + 'px'">
               <video class="absolute top-0 left-0 w-full h-full" ref="display" autoplay
@@ -66,7 +51,6 @@
               </div>
 
             </div>
-            <!-- <BottomBar v-if="big" @send_keycode="send_keycode" /> -->
           </div>
           <RightBars v-if="big" :serial="device.serial" :real_serial="device.real_serial" />
         </div>
@@ -103,16 +87,12 @@
 </style>
 <script>
 import JMuxer from 'jmuxer'
-import LeftBars from './LeftBars.vue';
 import RightBars from './RightBars.vue';
-import BottomBar from './BottomBar.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 export default {
   name: 'Miniremote',
   components: {
-    LeftBars,
     RightBars,
-    BottomBar
   },
   props: {
     no: {
@@ -241,10 +221,7 @@ export default {
       }
       this.touch = false
       if (!this.big) {
-        // console.log("open device: ",this.device)
-        let mydevice = this.device
-        this.$emitter.emit('openDevice', mydevice)
-
+        this.$emitter.emit('openDevice', this.device)
         return
       }
       this.touchSync('u', event)

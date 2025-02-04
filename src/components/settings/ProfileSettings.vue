@@ -99,7 +99,7 @@ export default {
     },
     set_settings() {
       this.$service.update_settings(this.settings).then(res => {
-        this.$emitter.emit('scriptEventData', { name: 'profile', args: {} })
+        this.$emitter.emit('run_task_now', { name: 'profile', args: {} })
       })
     },
     copyuid() {

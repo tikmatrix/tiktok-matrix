@@ -16,7 +16,7 @@
         <div class="flex flex-wrap gap-2 p-4">
           <div class="flex flex-wrap gap-2 flex-1">
             <div v-for="(device, index) in slotProps.items" :key="device.key">
-              <Miniremote :device="device" :key="index" :no="index + 1" />
+              <Miniremote :device="device" :key="device.key" :no="device.key" />
             </div>
           </div>
         </div>
@@ -61,7 +61,6 @@
 <script>
 import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
-import Device from './Device.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
 import { inject } from 'vue'
@@ -77,7 +76,6 @@ export default {
   components: {
     MyButton,
     Miniremote,
-    Device,
     Modal,
     Pagination,
   },
@@ -99,21 +97,11 @@ export default {
     }
   },
   watch: {
-    mydevices: {
-      handler: function () {
-        this.sortByIndex();
-      },
-      deep: true
-    }
+
   },
   methods: {
     refreshPage() {
       window.location.reload();
-    },
-    sortByIndex() {
-      this.mydevices.sort((a, b) => {
-        return a.index - b.index
-      })
     },
     get_groups() {
       this.$service

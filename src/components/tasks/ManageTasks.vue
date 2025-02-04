@@ -127,7 +127,7 @@ export default {
         .then(res => {
           this.tasks = res.data
           this.tasks.forEach(task => {
-            task.device_index = this.devices.find(device => device.serial === task.serial || device.real_serial === task.serial)?.key
+            task.device_index = this.devices.find(device => device.serial === task.serial)?.key
           })
         })
         .catch(err => {

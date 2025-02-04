@@ -64,7 +64,7 @@
           <label class="text-sm text-left col-span-1">%</label>
         </div>
         <div class="col-span-2 grid grid-cols-6 items-center">
-          <label class="text-sm text-right col-span-3">{{ $t('collect') }}: </label>
+          <label class="text-sm text-right col-span-3">{{ $t('favorite') }}: </label>
           <input type="number" class="border-2 border-gray-300 p-2 rounded col-span-2"
             v-model="mygroup.collect_probable" placeholder="0" />
           <label class="text-sm text-left col-span-1">%</label>

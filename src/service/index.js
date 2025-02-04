@@ -21,13 +21,6 @@ export function get_devices() {
   })
 }
 
-export function install(data) {
-  return request({
-    method: 'post',
-    url: api.install,
-    data
-  })
-}
 
 export function get_materials_byused({ used }) {
   return request({
@@ -391,13 +384,6 @@ export function set_text(data) {
   })
 }
 
-export function train_now(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.train_now
-  })
-}
 export function run_task_now(data) {
   return request({
     method: 'post',
@@ -405,13 +391,14 @@ export function run_task_now(data) {
     url: api.run_task_now
   })
 }
-export function publish_now(data) {
+export function run_now_by_account(data) {
   return request({
     method: 'post',
     data,
-    url: api.publish_now
+    url: api.run_now_by_account
   })
 }
+
 
 export function message_now(data) {
   return request({
@@ -420,34 +407,9 @@ export function message_now(data) {
     url: api.message_now
   })
 }
-export function share_now(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.share_now
-  })
-}
-export function follow_now(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.follow_now
-  })
-}
-export function unfollow_now(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.unfollow_now
-  })
-}
-export function scrape_now(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.scrape_now
-  })
-}
+
+
+
 //reset_all_index
 export function reset_all_index(data) {
   return request({
@@ -463,13 +425,7 @@ export function edit_title(data) {
     url: api.edit_title
   })
 }
-export function install_now(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.install_now
-  })
-}
+
 
 export function clear_gallery(data) {
   return request({

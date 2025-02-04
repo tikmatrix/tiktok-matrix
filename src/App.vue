@@ -8,7 +8,7 @@
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
     :z="20" drag-handle=".drag"
     class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col">
-    <Miniremote :device="device" :index="device.index" :big="true" :key="device.serial + '_big'" />
+    <Miniremote :device="device" :no="device.key" :big="true" :key="device.key + '_big'" />
   </vue-draggable-resizable>
   <dialog ref="page_dialog" class="modal">
     <div class="modal-box w-11/12 max-w-5xl">

@@ -89,7 +89,7 @@ export default {
     },
     set_settings() {
       this.$service.update_settings(this.settings).then(res => {
-        this.$emitter.emit('scriptEventData', { name: 'register', args: { count: 1 } })
+        this.$emitter.emit('run_task_now', { name: 'register', args: { count: 1 } })
       })
     },
     copyuid() {

@@ -21,7 +21,7 @@
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        disabled @click="$emitter.emit('scriptEventData', { name: 'register', args: { count: 1 } })">
+        disabled @click="$emitter.emit('run_task_now', { name: 'register', args: { count: 1 } })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startRegister') }}
     </button>
     <button
@@ -31,17 +31,17 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        disabled @click="$emitter.emit('scriptEventData', { name: 'profile', args: {} })">
+        disabled @click="$emitter.emit('run_task_now', { name: 'profile', args: {} })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startFillProfile') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('scriptEventData', { name: 'ins_match_account', args: {} })">
+        @click="$emitter.emit('run_task_now', { name: 'ins_match_account', args: {} })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('matchAccount') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        disabled @click="$emitter.emit('scriptEventData', { name: 'login', args: {} })">
+        disabled @click="$emitter.emit('run_task_now', { name: 'login', args: {} })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('startLogin') }}
     </button>
     <button

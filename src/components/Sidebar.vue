@@ -434,13 +434,21 @@ export default {
       });
 
       console.log('Selected file path:', filePath);
+      let args = {
+        apk_path: filePath,
+      }
       this.$service
-        .install_now({
-          apk_path: filePath,
-          serials: this.selection
+        .run_task_now({
+          script_name: 'install',
+          serials: this.selection,
+          script_args: JSON.stringify(args)
         })
         .then(res => {
-          console.log(res)
+          this.$emitter.emit('reload_tasks', {})
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+        })
+        .catch(err => {
+          console.log(err)
         })
     },
     adb_command(args) {
@@ -456,13 +464,32 @@ export default {
           console.log(err)
         })
     },
-    script(name, args = {}) {
+    run_task_now(name, args = {}) {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
       }
       this.$service
         .run_task_now({
+          script_name: name,
+          serials: this.selection,
+          script_args: JSON.stringify(args)
+        })
+        .then(res => {
+          this.$emitter.emit('reload_tasks', {})
+          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    run_now_by_account(name, args = {}) {
+      if (this.selection.length == 0) {
+        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+      this.$service
+        .run_now_by_account({
           script_name: name,
           serials: this.selection,
           script_args: JSON.stringify(args)
@@ -579,35 +606,8 @@ export default {
       }, 3000)
 
     },
-    train(platform) {
-      if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
-        return
-      }
-      this.$service
-        .train_now({
-          platform: platform,
-          serials: this.selection,
-        })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-        })
-    },
-    publish() {
-      if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
-        return
-      }
-      this.$service
-        .publish_now({
-          serials: this.selection,
-        })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-        })
-    },
+
+
     message() {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
@@ -624,22 +624,7 @@ export default {
 
         })
     },
-    share(postUrl) {
-      if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
-        return
-      }
 
-      this.$service
-        .share_now({
-          serials: this.selection,
-          post_url: postUrl
-        })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-        })
-    },
     stop_task() {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
@@ -673,60 +658,9 @@ export default {
         mode
       }));
     },
-    scrape_fans(targetUsername) {
-      if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
-        return
-      }
-      if (this.selection.length > 1) {
-        this.$emitter.emit('showToast', this.$t('onlyOneDeviceSelected'))
-        return
-      }
-      this.$service
-        .scrape_now({
-          serial: this.selection[0],
-          target_username: targetUsername
-        })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
-        })
-    },
-    follow(targetUsername) {
-      if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
-        return
-      }
 
-      this.$service
-        .follow_now({
-          serials: this.selection,
-          target_username: targetUsername
-        })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
-        })
-    },
-    unfollow(targetUsername) {
-      if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
-        return
-      }
-
-      this.$service
-        .unfollow_now({
-          serials: this.selection,
-          target_username: targetUsername
-        })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-
-        })
-    },
     clearGallery() {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
@@ -794,9 +728,13 @@ export default {
       this.adb_command(data.args)
 
     });
-    this.$emitter.on('scriptEventData', (data) => {
-      console.log("receive scriptEventData: ", data)
-      this.script(data.name, data.args)
+    this.$emitter.on('run_task_now', (data) => {
+      console.log("receive run_task_now: ", data)
+      this.run_task_now(data.name, data.args)
+    });
+    this.$emitter.on('run_now_by_account', (data) => {
+      console.log("receive run_now_by_account: ", data)
+      this.run_now_by_account(data.name, data.args)
     });
     this.$emitter.on('uploadFiles', () => {
       this.uploadFiles()
@@ -817,33 +755,21 @@ export default {
       }
       this.$emitter.emit('syncEventData', new_data)
     });
-    this.$emitter.on('train', (platform) => {
-      this.train(platform);
-    });
-    this.$emitter.on('publish', () => {
-      this.publish();
-    });
+
+
     this.$emitter.on('message', () => {
       this.message();
     });
-    this.$emitter.on('share', (postUrl) => {
-      this.share(postUrl);
-    });
+
     this.$emitter.on('stop_task', () => {
       this.stop_task();
     });
     this.$emitter.on('send_keycode', (code) => {
       this.send_keycode(code)
     });
-    this.$emitter.on('scrape_fans', (targetUsername) => {
-      this.scrape_fans(targetUsername)
-    });
-    this.$emitter.on('follow', (targetUsername) => {
-      this.follow(targetUsername)
-    });
-    this.$emitter.on('unfollow', (targetUsername) => {
-      this.unfollow(targetUsername)
-    });
+
+
+
     this.$emitter.on('send_screen_mode', (mode) => {
       this.send_screen_mode(mode)
     });

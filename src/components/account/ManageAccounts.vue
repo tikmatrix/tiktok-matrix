@@ -199,7 +199,7 @@ export default {
         .then(res => {
           this.accounts = res.data
           this.accounts.forEach(account => {
-            account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.index
+            account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
           })
         })
         .catch(err => {
