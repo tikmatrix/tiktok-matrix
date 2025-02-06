@@ -1,6 +1,7 @@
 <template>
   <div class="w-full">
-    <Pagination :items="accounts" :searchKeys="['email', 'username', 'device', 'device_index']" @refresh="get_accounts">
+    <Pagination :items="accounts" :searchKeys="['email', 'username', 'device', 'device_index', 'platform']"
+      @refresh="get_accounts">
       <template v-slot:buttons>
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="$refs.batch_add_dialog.showModal()" label="batchAdd" icon="fa fa-add" />
@@ -37,7 +38,7 @@
 
                 <td>
                   <a class="cursor-pointer underline text-blue-500" v-if="account.device_index"
-                    @click="show_device(account.device_index, account.device)">{{ account.device_index }}
+                    @click="show_device(account.device)">{{ account.device_index }}
                   </a>
                   <span v-else class="text text-red-500">{{ $t('offline') }}</span>
                 </td>
@@ -188,7 +189,7 @@ export default {
       this.get_accounts()
     },
     show_device(serial) {
-      let mydevice = this.devices.find(d => d.serial === serial)
+      let mydevice = this.devices.find(d => d.serial === serial || d.real_serial === serial)
       this.$emitter.emit('openDevice', mydevice)
     },
 

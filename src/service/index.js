@@ -117,12 +117,11 @@ export function update_task({ id, status }) {
 }
 
 
-//repair
-export function init({ serial, init }) {
+export function init(data) {
   return request({
-    method: 'get',
+    method: 'post',
     url: api.init,
-    params: { serial, init }
+    data
   })
 }
 export function index({ serial, index }) {

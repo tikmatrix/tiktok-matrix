@@ -117,7 +117,7 @@ export default {
     },
 
     show_device(serial) {
-      let mydevice = this.devices.find(d => d.serial === serial)
+      let mydevice = this.devices.find(d => d.serial === serial || d.real_serial === serial)
       this.$emitter.emit('openDevice', mydevice)
     },
     get_tasks() {
@@ -127,7 +127,7 @@ export default {
         .then(res => {
           this.tasks = res.data
           this.tasks.forEach(task => {
-            task.device_index = this.devices.find(device => device.serial === task.serial)?.key
+            task.device_index = this.devices.find(device => device.serial === task.serial || device.real_serial === task.serial)?.key
           })
         })
         .catch(err => {

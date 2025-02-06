@@ -174,7 +174,16 @@
     </div>
   </transition>
 
-
+  <dialog ref="init_dialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('initing') }}</h3>
+      <div class="modal-body">
+        <div class="flex flex-row justify-between text-center items-center">
+          <progress class="progress progress-success w-full"></progress>
+        </div>
+      </div>
+    </div>
+  </dialog>
 </template>
 <style>
 .fade-enter-active,
@@ -201,7 +210,6 @@ import QuickActions from './QuickActions.vue';
 import { open, ask } from '@tauri-apps/api/dialog';
 import { getVersion } from '@tauri-apps/api/app';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
-import { appDataDir } from '@tauri-apps/api/path';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 export default {
   name: 'Sidebar',
@@ -588,22 +596,18 @@ export default {
       })
     },
     async initDevice() {
-      const yes = await ask(this.$t('initDeviceConfirm'), this.$t('confirm'));
-      if (!yes) {
-        return
-      }
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
       }
-      let work_path = await appDataDir();
-      this.$emitter.emit('showToast', this.$t('initStart'))
-      this.adb_command(['uninstall', 'com.github.tikmatrix'])
-      this.adb_command(['uninstall', 'com.github.tikmatrix.test'])
-      setTimeout(() => {
-        this.adb_command(['install', '-r', '-t', '-g', work_path + 'bin/com.github.tikmatrix.apk'])
-        this.adb_command(['install', '-r', '-t', '-g', work_path + 'bin/com.github.tikmatrix.test.apk'])
-      }, 3000)
+      this.$refs.init_dialog.showModal()
+      this.$service
+        .init({
+          serials: this.selection,
+        })
+        .then(res => {
+          this.$refs.init_dialog.close()
+        })
 
     },
 
