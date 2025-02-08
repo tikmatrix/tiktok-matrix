@@ -463,8 +463,10 @@ export const i18n = createI18n({
       postActions: 'Like & Comment & Share & Favorite & View',
       view: 'View',
       initing: 'Initing',
+      grantApp: 'Grant App',
     },
     'zh-CN': {
+      grantApp: '授权应用',
       initing: '初始化中',
       view: '查看',
       postActions: '点赞 & 评论 & 分享 & 收藏 & 观看',

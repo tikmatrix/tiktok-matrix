@@ -9,7 +9,12 @@
         @click="$emitter.emit('menuSelected', { name: 'packageNameSettings' })">
         <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('packageNameSettings') }}
     </button>
-
+    <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="grantApp">
+        <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 mr-1 text-green-500" />
+        {{ $t('grantApp') }}
+    </button>
 
 
     <button
@@ -100,6 +105,10 @@ export default {
         }
     },
     methods: {
+        grantApp() {
+            $emitter.emit('adbEventData', { args: ['shell', 'pm', 'grant', settings.packagename, 'android.permission.READ_EXTERNAL_STORAGE'] })
+            $emitter.emit('adbEventData', { args: ['shell', 'pm', 'grant', settings.packagename, 'android.permission.WRITE_EXTERNAL_STORAGE'] })
+        },
         enableProxy() {
             util.setData('proxy_host', this.proxy_host)
             util.setData('proxy_port', this.proxy_port)

@@ -8,10 +8,10 @@
               <span class="text-xs font-bold bg-blue-300 pl-2 pr-2 rounded-md">
                 {{ no }}
               </span>
-              <button class="btn btn-xs bg-transparent hover:bg-transparent border-0 tooltip"
+              <!-- <button class="btn btn-xs bg-transparent hover:bg-transparent border-0 tooltip"
                 :data-tip="$t('moveToFirst')" @click="updateIndex">
                 <font-awesome-icon icon="fa-arrow-up" class="text-blue-500 cursor-pointer"></font-awesome-icon>
-              </button>
+              </button> -->
               <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-green-500' : ' text-red-500')" v-if="big"> -
                 {{
                   $t(task_status) }}</span>

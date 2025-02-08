@@ -149,7 +149,7 @@ export default {
         }
 
         let [platform, email, pwd, username, device] = line.split('##').map(v => v.trim())
-        let serial = this.devices.find(d => d.index === parseInt(device))?.serial
+        let serial = this.devices.find(d => d.key === parseInt(device))?.real_serial
         if (!serial) {
           return
         }
