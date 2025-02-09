@@ -42,7 +42,7 @@ export default {
         key: '',
         status: '',
         name: '',
-        left_days: 0
+        leftdays: 0
       },
     }
   },

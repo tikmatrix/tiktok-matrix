@@ -1,7 +1,7 @@
 <template>
 
   <div class="flex flex-row items-start bg-base-300 h-screen w-screen">
-    <Sidebar :license="license" />
+    <Sidebar />
     <ManageDevices />
   </div>
 
@@ -23,7 +23,7 @@
       <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
       <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
       <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
-      <BuyLicense :license="license" v-if="selectedItem.name === 'buyLicense' && $refs.page_dialog.open" />
+
       <TrainSettings :group="selectedItem.group"
         v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" />
       <PublishSettings :group="selectedItem.group"
@@ -89,8 +89,6 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { window as tauriWindow } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
 import { ask, message } from '@tauri-apps/api/dialog';
-import BuyLicense from './components/settings/BuyLicense.vue'
-import { listen } from '@tauri-apps/api/event';
 import axios from 'axios'
 import { os } from '@tauri-apps/api';
 import { appDataDir } from '@tauri-apps/api/path';
@@ -103,6 +101,7 @@ import {
 import { exit, relaunch } from '@tauri-apps/api/process'
 import { Command } from '@tauri-apps/api/shell'
 import { getAll } from '@tauri-apps/api/window';
+import { emit, listen } from '@tauri-apps/api/event';
 export default {
   name: 'app',
   setup() {
@@ -124,7 +123,6 @@ export default {
     PackageNameSettings,
     MessageSettings,
     Miniremote,
-    BuyLicense,
     TrainSettings,
     PublishSettings
   },
@@ -142,7 +140,7 @@ export default {
         percentage: 0
       },
       download_filename: '',
-      license: {}
+
     }
   },
   methods: {
@@ -228,7 +226,7 @@ export default {
           if (port > 0) {
             this.$emitter.emit('reload_sidebar')
             this.$emitter.emit('reload_tasks')
-            this.$emitter.emit('reload_license')
+            await emit('LICENSE', { reload: true })
             break;
           }
           if (i === 9) {
@@ -341,11 +339,7 @@ export default {
       util.setData(filename, remoteVersion)
       return path;
     },
-    get_license() {
-      this.$service.get_license().then(res => {
-        this.license = res.data
-      })
-    },
+
     disableMenu() {
       if (window.location.hostname !== 'tauri.localhost') {
         return
@@ -402,10 +396,7 @@ export default {
     this.$emitter.on('updateService', () => {
       this.check_update()
     });
-    this.$emitter.on('reload_license', () => {
-      this.get_license()
-    });
-    this.get_license()
+
   }
 }
 </script>

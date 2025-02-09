@@ -14,7 +14,7 @@ embed-resource = "2.4"
 
 [dependencies]
 reqwest = { version = "0.11", features = ["blocking", "multipart", "json"] }
-tauri = { version = "1.5", features = [ "shell-execute", "shell-sidecar", "protocol-asset",
+tauri = { version = "1.5", features = [ "http-all", "shell-execute", "shell-sidecar", "protocol-asset",
     "notification-all",
     "global-shortcut-all",
     "clipboard-all",

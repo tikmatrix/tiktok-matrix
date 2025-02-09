@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "TikMatrix",
-    "version": "2.0.2"
+    "version": "2.0.3"
   },
   "tauri": {
     "allowlist": {
@@ -105,6 +105,14 @@
       },
       "notification": {
         "all": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": [
+          "https://api.tikmatrix.com/*",
+          "https://pro.api.tikmatrix.com/*/*"
+        ]
       }
     },
     "bundle": {

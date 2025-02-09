@@ -190,7 +190,7 @@ const data = {
     [api.get_license]: {
       uid: '12ab-34cd-56ef-78gh',
       key: 'abcd-efgh-ijkl-mnop',
-      left_days: 50,
+      leftdays: 50,
       name: 'Niostack',
       status: 'pass'
     },

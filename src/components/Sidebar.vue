@@ -37,13 +37,13 @@
       <div class="p-4">
         <div class="flex flex-row p-2 bg-base-300 rounded-md">
           <a class="link link-primary text-xs float-right flex items-center mr-1"
-            @click="$emitter.emit('menuSelected', { name: 'buyLicense' })" v-if="license.left_days > 0">
+            @click="$refs.buyLiscenseDialog.show()" v-if="license.leftdays > 0">
             <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4 mr-1" />
-            {{ $t('left_days') }}:
-            <label class="text-green-500 font-bold">{{ license.left_days }}</label>
+            {{ $t('leftDays') }}:
+            <label class="text-green-500 font-bold">{{ license.leftdays }}</label>
           </a>
           <a class="link link-primary text-xs float-right flex items-center mr-1"
-            @click="$emitter.emit('menuSelected', { name: 'buyLicense' })" v-else>
+            @click="$refs.buyLiscenseDialog.show()" v-else>
             <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4 mr-1" />
             {{ $t('buyLicense') }}
           </a>
@@ -173,7 +173,7 @@
       </div>
     </div>
   </transition>
-
+  <BuyLicense ref="buyLiscenseDialog" :license="license" />
   <dialog ref="init_dialog" class="modal">
     <div class="modal-box">
       <h3 class="font-bold text-lg">{{ $t('initing') }}</h3>
@@ -200,6 +200,7 @@
 }
 </style>
 <script>
+import BuyLicense from '../components/settings/BuyLicense.vue'
 import { inject } from 'vue'
 import * as util from '../utils'
 import General from './General.vue'
@@ -211,6 +212,7 @@ import { open, ask } from '@tauri-apps/api/dialog';
 import { getVersion } from '@tauri-apps/api/app';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+import { emit, listen } from '@tauri-apps/api/event';
 export default {
   name: 'Sidebar',
   setup() {
@@ -222,13 +224,14 @@ export default {
     Tasks,
     TKTools,
     InsTools,
-    QuickActions
+    QuickActions,
+    BuyLicense
   },
   props: {
-    license: Object
   },
   data() {
     return {
+      license: {},
       showSidebar: true,
       settings: {},
       menuItems: [],
@@ -263,6 +266,12 @@ export default {
     }
   },
   methods: {
+    loadLicense() {
+      this.$service.get_license().then(res => {
+        this.license = res.data
+        console.log(this.license)
+      })
+    },
     renameGroup(item) {
       if (this.showAddGroup) {
         this.showAddGroup = false
@@ -794,6 +803,20 @@ export default {
       this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
       console.log('reload_sidebar port:', this.port)
     });
+    await listen("LICENSE", async (e) => {
+      if (e.payload.reload) {
+        await this.loadLicense()
+      }
+
+      if (e.payload.show) {
+        if (this.license.leftdays <= 0) {
+          this.$refs.buyLiscenseDialog.show()
+        }
+
+      }
+
+    });
+    this.loadLicense()
     this.get_menus()
     this.get_settings()
     this.get_groups()
