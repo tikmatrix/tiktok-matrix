@@ -185,7 +185,7 @@ export default {
         console.error(error)
       }
 
-      axios.get('https://api.tikmatrix.com/coreVersion.json?time=' + new Date().getTime()).then(async (res) => {
+      axios.get('https://pro.api.tikmatrix.com/front-api/check_core_update?time=' + new Date().getTime()).then(async (res) => {
         const unlistenProgress = await listen("DOWNLOAD_PROGRESS", async (e) => {
           this.download_progress = e.payload;
         });
