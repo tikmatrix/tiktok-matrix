@@ -24,7 +24,6 @@
           <label class="swap swap-rotate ml-2">
             <!-- this hidden checkbox controls the state -->
             <input type="checkbox" class="theme-controller" value="dark" />
-            <input type="checkbox" class="theme-controller" value="dark" />
             <!-- sun icon -->
             <font-awesome-icon icon="fa-solid fa-sun" class="swap-off fill-current w-6 h-6 text-white" />
             <!-- moon icon -->
@@ -36,26 +35,25 @@
       </div>
       <div class="p-4">
         <div class="flex flex-row p-2 bg-base-300 rounded-md">
-          <a class="link link-primary text-xs float-right flex items-center mr-1"
+          <a class="link link-primary text-xs float-right flex items-center mr-2"
             @click="$refs.buyLiscenseDialog.show()" v-if="license.leftdays > 0">
             <font-awesome-icon icon="fa fa-check-circle" class="text-green-500 h-4 w-4" />
-            {{ $t('licensedDays') }}:
-            <label class="text-green-500 font-bold mr-2">{{ license.leftdays }}</label>
-
+            <span class="ml-2">{{ $t('licensedDays') }}:</span>
+            <span class="text-green-500 font-bold mr-2">{{ license.leftdays }}</span>
           </a>
-          <a class="link link-primary text-xs float-right flex items-center mr-1"
+          <a class="link link-primary text-xs float-right flex items-center mr-2"
             @click="$refs.buyLiscenseDialog.show()" v-else>
             <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-red-500 h-4 w-4" />
-            {{ $t('activate') }}
+            <span class="ml-2">{{ $t('activate') }}</span>
           </a>
-          <a class="link link-primary text-xs float-right flex items-center mr-1" :href="$t('siteUrl') + '/docs/intro'"
+          <a class="link link-primary text-xs float-right flex items-center mr-2" :href="$t('siteUrl') + '/docs/intro'"
             target="_blank">
-            <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4 mr-1" />
+            <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4 mr-2" />
             {{ $t('tutorial') }}
           </a>
-          <a class="link link-primary text-xs float-right flex items-center mr-1"
+          <a class="link link-primary text-xs float-right flex items-center mr-2"
             :href="'http://127.0.0.1:' + port + '/swagger-ui/'" target="_blank">
-            <font-awesome-icon icon="fa-solid fa-globe" class="text-blue-500 h-4 w-4 mr-1" />
+            <font-awesome-icon icon="fa-solid fa-globe" class="text-blue-500 h-4 w-4 mr-2" />
             API Doc
           </a>
         </div>

@@ -25,24 +25,22 @@ import VueDraggableResizable from 'vue-draggable-resizable'
 
 const emitter = mitt()
 let devices = reactive({ list: [] })
-// let min_index = 0;
+
 async function getDevices() {
   service.get_devices().then(res => {
     devices.list.splice(0, devices.list.length, ...res.data)
+    for (let i = 0; i < devices.list.length; i++) {
+      devices.list[i].sort = localStorage.getItem(`sort_${devices.list[i].real_serial}`) || '0'
+    }
     devices.list.sort((a, b) => {
-      if (a.group_id === b.group_id) {
-        return a.id - b.id;
-      }
-      return a.group_id - b.group_id;
+      // fisrt: sort
+      // second: group_id
+      // third: real_serial
+      return a.sort - b.sort || a.group_id - b.group_id || a.real_serial - b.real_serial
     });
     for (let i = 0; i < devices.list.length; i++) {
       devices.list[i].key = i + 1
-      // if (res.data[i].index < min_index) {
-      //   min_index = res.data[i].index
-      // }
     }
-    // localStorage.setItem("min_index", min_index)
-
   })
 }
 getDevices()

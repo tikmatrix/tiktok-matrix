@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-base-100">
+  <div class="bg-base-200">
     <div class="w-full flex items-center p-4">
       <span class="font-bold p-2 text-sm">{{ $t('total') }}: {{ filteredItems.length }}</span>
 
