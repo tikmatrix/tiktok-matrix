@@ -271,7 +271,7 @@ export default {
       this.$service.get_license().then(res => {
         this.license = res.data
         //test
-        // this.license.github_authorized = false
+        // this.license.github_authorized = dalse
         if (this.license.leftdays <= 0 && !this.license.github_authorized) {
           this.$refs.buyLiscenseDialog.show()
         }
