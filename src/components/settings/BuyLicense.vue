@@ -1,20 +1,42 @@
 <template>
   <dialog ref="buy_liscense_dialog" class="modal">
     <div class="modal-box w-11/12 max-w-5xl">
-      <h3 class="font-bold text-lg">{{ $t('buyLicense') }}</h3>
+      <h3 class="font-bold text-lg">{{ $t('activate') }}</h3>
       <div class="modal-body">
 
         <div class="flex flex-col items-start p-12 w-full">
-
+          <!-- GitHub认证部分 -->
+          <div class="flex flex-col items-start w-full mb-6">
+            <h2 class="text-xl font-bold mb-4">{{ $t('freeTrial') }}</h2>
+            <div v-if="!license.github_authorized" class="flex items-center flex-row gap-2 w-full">
+              <span class="font-bold">{{ $t('githubAuthStatus') }}: </span>
+              <span class="text-red-500">{{ $t('notAuthorized') }}</span>
+              <a class="link link-primary text-xs flex items-center" @click="startGitHubAuth">
+                <font-awesome-icon icon="fab fa-github" class="text-gray-500 h-4 w-4" />
+                {{ $t('authorizeWithGithub') }}
+              </a>
+              <button @click="reload" class="btn btn-sm btn-primary">{{ $t('refresh') }}</button>
+            </div>
+            <div v-else class="flex items-center flex-row gap-2 w-full">
+              <span class="font-bold">{{ $t('githubAuthStatus') }}: </span>
+              <span class="text-green-500">{{ $t('authorized') }}</span>
+            </div>
+          </div>
           <div class="flex items-center flex-row gap-2 w-full">
             <div class="flex items-start flex-col w-full">
-              <label class="font-bold">{{ $t('uid') }}: </label>
+              <label class="font-bold p-2">{{ $t('uid') }}: </label>
               <div class="flex items-center flex-row gap-2 w-full">
                 <input id="uid" type="text" placeholder="uid" class="input input-sm grow input-bordered"
                   v-model="license.uid" readonly disabled />
                 <button @click="copyText(license.uid, $event)" class="btn btn-sm btn-primary">{{ $t('copy') }}</button>
               </div>
-
+              <label class="font-bold p-2">{{ $t('licenseCode') }}: </label>
+              <div class="flex items-center flex-row gap-2 w-full">
+                <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" class="input input-sm grow input-bordered"
+                  v-model="licenseCode" />
+                <button @click="activate" class="btn btn-sm btn-primary">
+                  {{ $t('activate') }}</button>
+              </div>
               <label class="font-bold">{{ $t('price') }}:</label>
               <label class="font-light text-sm pb-2 mt-4">$0 / {{ $t('freeTrial') }}</label>
               <label class="font-dark text-sm pb-2">$99 / {{ $t('computer') }} / {{ $t('month') }}</label>
@@ -25,9 +47,12 @@
                 {{ $t('telegramCustom') }}
               </a>
               <label class="text-md p-2 pr-4 font-bold text-green-500" v-if="license.leftdays">
-                {{ $t('leftDays') }}: {{ license.leftdays }}
+                <font-awesome-icon icon="fa fa-check-circle" class="text-green-500 h-4 w-4" />
+                {{ $t('licensedDays') }}:
+                <label class="text-green-500 font-bold mr-2">{{ license.leftdays }}</label>
               </label>
               <label class="text-md p-2 pr-4 font-bold text-red-500" v-else>
+                <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-red-500 h-4 w-4" />
                 {{ $t('unlicensed') }}
               </label>
             </div>
@@ -90,6 +115,9 @@ import { writeText } from '@tauri-apps/api/clipboard';
 import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
 import { emit } from '@tauri-apps/api/event';
 import { message } from '@tauri-apps/api/dialog';
+import { readTextFile } from '@tauri-apps/api/fs';
+import { BaseDirectory } from '@tauri-apps/api/fs';
+import { open } from '@tauri-apps/api/shell';
 import QRCode from 'qrcode';
 import Bluebird from 'bluebird';
 import confetti from 'canvas-confetti';
@@ -123,6 +151,66 @@ export default {
     }
   },
   methods: {
+    async startGitHubAuth() {
+      try {
+        // 打开GitHub授权页面
+        const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+        const apiUrl = 'http://127.0.0.1:' + port;
+        await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${apiUrl}/github_auth_callback&scope=user%20public_repo`);
+      } catch (error) {
+        console.error('GitHub认证错误:', error);
+        this.$emitter.emit('showToast', this.$t('githubAuthErrorMessage'));
+      }
+    },
+    async reload(event) {
+      await emit('LICENSE', { reload: true })
+      if (event) {
+        event.target.innerText = this.$t('fetching')
+        event.target.disabled = true
+        setTimeout(() => {
+          event.target.innerText = this.$t('refresh')
+          event.target.disabled = false
+        }, 1000)
+      }
+    },
+    async activate(event) {
+      event.target.innerText = this.$t('activating')
+      event.target.disabled = true
+      const response = await fetch(`https://pro.api.tikmatrix.com/front-api/verify`, {
+        method: 'POST',
+        timeout: 10,
+        contentType: 'application/json',
+        responseType: ResponseType.JSON,
+        body: Body.json({
+          mid: this.license.uid,
+          app: 'TikMatrix',
+          license: this.licenseCode,
+        }),
+      });
+      console.log('response:', response)
+      if (response.ok) {
+        const data = response.data
+        console.log(`license leftdays: ${data.data.leftdays}, key: ${data.data.license}`)
+        if (data.data.leftdays > 0) {
+          localStorage.setItem('license', data.data.license)
+          await emit('LICENSE', { reload: true })
+          this.paymentSuccess()
+          await message(this.$t('activateSuccess'))
+          return;
+        } else {
+          await message('invalid license')
+          localStorage.setItem('license', '')
+          await emit('LICENSE', { reload: true })
+        }
+      } else {
+        await message('verify failed')
+        localStorage.setItem('license', '')
+        await emit('LICENSE', { reload: true })
+      }
+
+      event.target.innerText = this.$t('activate')
+      event.target.disabled = false
+    },
     async closeOrder() {
       clearInterval(this.interval);
       this.order = null;
@@ -182,6 +270,9 @@ export default {
       this.$refs.buy_liscense_dialog.close();
     },
     async getOrder(refresh_status = false) {
+      if (!this.license.uid) {
+        return;
+      }
       const response = await fetch(`https://pro.api.tikmatrix.com/front-api/get_order`, {
         method: 'POST',
         timeout: 10,

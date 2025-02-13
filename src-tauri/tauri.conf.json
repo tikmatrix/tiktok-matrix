@@ -71,7 +71,7 @@
         "scope": [
           {
             "name": "start-agent",
-            "cmd": "$APPDATA/bin/tiktok-agent",
+            "cmd": "$APPDATA/bin/agent",
             "args": []
           }
         ]

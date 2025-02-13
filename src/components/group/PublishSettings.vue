@@ -47,6 +47,11 @@
         <label class="font-bold text-right col-span-2">{{ $t('addSound') }}:</label>
         <div class="col-span-6 flex items-center gap-4">
           <div class="flex items-center">
+            <input type="radio" id="default" value="-1" v-model="mygroup.add_sound"
+              class="form-radio text-blue-500 h-4 w-4">
+            <label for="default" class="ml-2">{{ $t('default') }}</label>
+          </div>
+          <div class="flex items-center">
             <input type="radio" id="disable" value="0" v-model="mygroup.add_sound"
               class="form-radio text-blue-500 h-4 w-4">
             <label for="disable" class="ml-2">{{ $t('disable') }}</label>

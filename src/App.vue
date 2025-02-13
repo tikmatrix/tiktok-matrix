@@ -242,8 +242,8 @@ export default {
 
     async check_ocr() {
       let work_path = await appDataDir();
-      let url = "https://r2.tikmatrix.com/PaddleOCR-json.zip"
-      let path = await this.check_file_update('PaddleOCR', "v1.0", url);
+      let url = this.remote_version.ocr_windows_url
+      let path = await this.check_file_update('PaddleOCR', this.remote_version.ocr_version, url);
       //check paddle file exists
       let adb_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData })
       if (!adb_exists) {

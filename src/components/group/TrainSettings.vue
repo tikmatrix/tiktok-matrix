@@ -52,7 +52,7 @@
       <div class="grid grid-cols-10 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-2">{{ $t('interact') }}:</label>
         <div class="col-span-2 grid grid-cols-6 items-center">
-          <label class="text-sm text-right col-span-3">{{ $t('floow') }}: </label>
+          <label class="text-sm text-right col-span-3">{{ $t('follow') }}: </label>
           <input type="number" class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="mygroup.floow_probable"
             placeholder="0" />
           <label class="text-sm text-left col-span-1">%</label>

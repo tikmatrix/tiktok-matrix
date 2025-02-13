@@ -38,14 +38,15 @@
         <div class="flex flex-row p-2 bg-base-300 rounded-md">
           <a class="link link-primary text-xs float-right flex items-center mr-1"
             @click="$refs.buyLiscenseDialog.show()" v-if="license.leftdays > 0">
-            <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4 mr-1" />
-            {{ $t('leftDays') }}:
-            <label class="text-green-500 font-bold">{{ license.leftdays }}</label>
+            <font-awesome-icon icon="fa fa-check-circle" class="text-green-500 h-4 w-4" />
+            {{ $t('licensedDays') }}:
+            <label class="text-green-500 font-bold mr-2">{{ license.leftdays }}</label>
+
           </a>
           <a class="link link-primary text-xs float-right flex items-center mr-1"
             @click="$refs.buyLiscenseDialog.show()" v-else>
-            <font-awesome-icon icon="fa fa-key" class="text-blue-500 h-4 w-4 mr-1" />
-            {{ $t('buyLicense') }}
+            <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-red-500 h-4 w-4" />
+            {{ $t('activate') }}
           </a>
           <a class="link link-primary text-xs float-right flex items-center mr-1" :href="$t('siteUrl') + '/docs/intro'"
             target="_blank">
@@ -228,6 +229,7 @@ export default {
     BuyLicense
   },
   props: {
+
   },
   data() {
     return {
@@ -237,7 +239,6 @@ export default {
       menuItems: [],
       fullMenuItems: [
       ],
-
       selection: [],
       newGroupName: '',
       showAddGroup: false,
@@ -266,9 +267,14 @@ export default {
     }
   },
   methods: {
-    loadLicense() {
+    async loadLicense() {
       this.$service.get_license().then(res => {
         this.license = res.data
+        //test
+        // this.license.github_authorized = false
+        if (this.license.leftdays <= 0 && !this.license.github_authorized) {
+          this.$refs.buyLiscenseDialog.show()
+        }
         console.log(this.license)
       })
     },
@@ -454,19 +460,7 @@ export default {
       let args = {
         apk_path: filePath,
       }
-      this.$service
-        .run_task_now({
-          script_name: 'install',
-          serials: this.selection,
-          script_args: JSON.stringify(args)
-        })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-        })
-        .catch(err => {
-          console.log(err)
-        })
+      await this.run_task_now('install', args)
     },
     adb_command(args) {
       this.$service
@@ -481,7 +475,7 @@ export default {
           console.log(err)
         })
     },
-    run_task_now(name, args = {}) {
+    async run_task_now(name, args = {}) {
       if (this.selection.length == 0) {
         this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
         return
@@ -492,9 +486,10 @@ export default {
           serials: this.selection,
           script_args: JSON.stringify(args)
         })
-        .then(res => {
+        .then(async res => {
           this.$emitter.emit('reload_tasks', {})
           this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+          await emit('LICENSE', { show: true })
         })
         .catch(err => {
           console.log(err)
@@ -741,9 +736,9 @@ export default {
       this.adb_command(data.args)
 
     });
-    this.$emitter.on('run_task_now', (data) => {
+    this.$emitter.on('run_task_now', async (data) => {
       console.log("receive run_task_now: ", data)
-      this.run_task_now(data.name, data.args)
+      await this.run_task_now(data.name, data.args)
     });
     this.$emitter.on('run_now_by_account', (data) => {
       console.log("receive run_now_by_account: ", data)
@@ -812,7 +807,6 @@ export default {
         if (this.license.leftdays <= 0) {
           this.$refs.buyLiscenseDialog.show()
         }
-
       }
 
     });
