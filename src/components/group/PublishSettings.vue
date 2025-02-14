@@ -111,8 +111,8 @@
       </div>
       <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-1">{{ $t('titles') }}:</label>
-        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32" :placeholder="$t('titlesTips')"
-          autocomplete="off" v-model="mygroup.title"> </textarea>
+        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
+          :placeholder="$t('titlesTips')" autocomplete="off" v-model="mygroup.title"> </textarea>
       </div>
 
     </div>
@@ -215,6 +215,7 @@ export default {
         })
         .then(async () => {
           await this.$emiter('closePageDialog', {})
+          await this.$emiter('reload_group', {})
         })
     },
   },

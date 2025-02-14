@@ -41,13 +41,13 @@
       </div>
       <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-1">{{ $t('topics') }}:</label>
-        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-16" :placeholder="$t('topicsTips')"
-          autocomplete="off" v-model="mygroup.topic"> </textarea>
+        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-16 leading-tight"
+          :placeholder="$t('topicsTips')" autocomplete="off" v-model="mygroup.topic"> </textarea>
       </div>
       <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-1">{{ $t('comments') }}:</label>
-        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-16" :placeholder="$t('commentsTips')"
-          autocomplete="off" v-model="mygroup.comment"> </textarea>
+        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-16 leading-tight"
+          :placeholder="$t('commentsTips')" autocomplete="off" v-model="mygroup.comment"> </textarea>
       </div>
       <div class="grid grid-cols-10 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-2">{{ $t('interact') }}:</label>
@@ -176,6 +176,7 @@ export default {
         })
         .then(async () => {
           await this.$emiter('closePageDialog', {})
+          await this.$emiter('reload_group', {})
         })
     },
   },

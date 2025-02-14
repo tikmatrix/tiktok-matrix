@@ -5,8 +5,8 @@
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('messageContent') }}: </span>
-      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('messageContentTips')" autocomplete="off"
-        v-model="settings.message_content"> </textarea>
+      <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('messageContentTips')"
+        autocomplete="off" v-model="settings.message_content"> </textarea>
 
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">

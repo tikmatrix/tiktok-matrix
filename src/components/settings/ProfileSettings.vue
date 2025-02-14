@@ -4,20 +4,20 @@
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('nicknames') }}: </span>
-      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('nicknamesTips')" autocomplete="off"
-        v-model="settings.nicknames"> </textarea>
+      <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('nicknamesTips')"
+        autocomplete="off" v-model="settings.nicknames"> </textarea>
 
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('usernames') }}: </span>
-      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('usernamesTips')" autocomplete="off"
-        v-model="settings.usernames"> </textarea>
+      <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('usernamesTips')"
+        autocomplete="off" v-model="settings.usernames"> </textarea>
 
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('bios') }}: </span>
-      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('biosTips')" autocomplete="off"
-        v-model="settings.bios"> </textarea>
+      <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('biosTips')"
+        autocomplete="off" v-model="settings.bios"> </textarea>
 
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">

@@ -1,18 +1,22 @@
 <template>
   <dialog ref="buy_liscense_dialog" class="modal">
     <div class="modal-box w-11/12 max-w-5xl">
-      <!-- <h3 class="font-bold text-lg">{{ $t('activate') }}</h3> -->
       <div class="modal-body">
         <div class="relative isolate bg-white px-6 py-6 w-full">
+          <div class="absolute inset-x-0 -z-10 transform-gpu overflow-hidden px-36 blur-3xl" aria-hidden="true">
+            <div
+              class="mx-auto aspect-1155/678 w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 h-96"
+              style="clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);"></div>
+          </div>
           <div class="flex items-start flex-col w-full">
-            <div class="flex items-center flex-row gap-2 w-full">
+            <div class="flex items-center flex-row gap-2 w-full justify-center">
               <label class="font-bold p-2">{{ $t('uid') }}: </label>
               <input id="uid" type="text" placeholder="uid" class="input input-sm grow input-bordered"
                 v-model="license.uid" readonly disabled />
               <button @click="copyText(license.uid, $event)" class="btn btn-sm btn-primary">{{ $t('copy') }}</button>
-              <a class="link link-primary text-xs float-right flex items-center  pb-2"
+              <a class="link link-primary text-md float-right flex items-center pb-2"
                 href="https://t.me/+iGhozoBfAbI5YmE1" target="_blank">
-                <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-4 w-4" />
+                <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-6 w-6" />
                 {{ $t('telegramCustom') }}
               </a>
             </div>
@@ -362,7 +366,6 @@ export default {
           }
 
           if (data.data.status == 0) {
-
             await this.showOrder(data.data)
           }
         }
@@ -371,6 +374,7 @@ export default {
       }
     },
     async showOrder(order) {
+      console.log('showOrder:', order)
       this.order = order
       if (this.interval) {
         clearInterval(this.interval);
@@ -379,13 +383,13 @@ export default {
       const expireAt = new Date(this.order.expire_at).getTime();
       const now = new Date().getTime();
       this.remainingTime = Math.floor((expireAt - now) / 1000);
-      this.interval = setInterval(() => {
+      this.interval = setInterval(async () => {
         if (this.remainingTime > 0) {
           this.remainingTime--;
           this.refreshTime--;
           if (this.refreshTime == 0) {
             console.log('refresh order status')
-            this.getOrder(true)
+            await this.getOrder(true)
             this.refreshTime = 10;
           }
         } else {

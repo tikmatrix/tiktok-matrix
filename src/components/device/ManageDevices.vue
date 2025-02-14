@@ -89,7 +89,7 @@
         </div>
         <div class="absolute top-1/2 left-1/2 w-1 h-32 bg-blue-500 origin-bottom animate-radar"></div>
       </div>
-      <span class="mt-4 text-lg font-semibold text-gray-700">{{ $t('detecting_devices') }}</span>
+      <span class="mt-4 text-lg font-semibold text-gray-700 animate-bounce">{{ $t('detecting_devices') }}</span>
     </div>
   </div>
   <dialog ref="scan_dialog" class="modal">

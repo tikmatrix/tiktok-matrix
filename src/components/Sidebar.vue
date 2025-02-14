@@ -798,6 +798,9 @@ export default {
       this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
       console.log('reload_sidebar port:', this.port)
     });
+    await this.$listen('reload_group', async () => {
+      this.get_groups()
+    });
     await this.$listen("LICENSE", async (e) => {
       if (e.payload.reload) {
         await this.loadLicense()
