@@ -188,12 +188,12 @@ export default {
 
       this.get_accounts()
     },
-    show_device(serial) {
+    async show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial || d.real_serial === serial)
-      this.$emitter.emit('openDevice', mydevice)
+      await this.$emiter('openDevice', mydevice)
     },
 
-    get_accounts() {
+    async get_accounts() {
       this.currentAccount = null
       this.$service
         .get_accounts()
@@ -207,7 +207,7 @@ export default {
           console.log(err)
         })
     },
-    add_account() {
+    async add_account() {
       this.currentAccount = {
         email: '',
         pwd: '',
@@ -219,7 +219,7 @@ export default {
       }
       this.$refs.edit_dialog.showModal()
     },
-    addAccount(account) {
+    async addAccount(account) {
       this.$service
         .add_account(account)
         .then(() => {
@@ -230,7 +230,7 @@ export default {
           console.log(err)
         })
     },
-    editAccount(account) {
+    async editAccount(account) {
       this.currentAccount = account
       console.log(this.currentAccount)
       this.$refs.edit_dialog.showModal()
@@ -238,7 +238,7 @@ export default {
         this.currentAccount = null
       })
     },
-    updateAccount(account) {
+    async updateAccount(account) {
       this.$service
         .update_account(account)
         .then(() => {
@@ -249,7 +249,7 @@ export default {
           console.log(err)
         })
     },
-    deleteAccount(account) {
+    async deleteAccount(account) {
       this.$service
         .delete_account({
           id: account.id
@@ -263,7 +263,7 @@ export default {
     },
 
   },
-  mounted() {
+  async mounted() {
     this.get_accounts()
   }
 }

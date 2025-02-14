@@ -1,19 +1,19 @@
 <template>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.HOME'] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.HOME'] })">
         <font-awesome-icon icon="fa fa-home" class="h-3 w-3 text-white" />
         {{ $t('home') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('send_screen_mode', 'off')">
+        @click="$emiter('send_screen_mode', 'off')">
         <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-white" />
         {{ $t('screenOff') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
         <font-awesome-icon icon="fa fa-cube" class="h-3 w-3 text-white" />
         {{ $t('openNekoBox') }}
     </button>
@@ -46,21 +46,21 @@
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         :data-tip="$t('showTimeSetting')"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DATE_SETTINGS'] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DATE_SETTINGS'] })">
         <font-awesome-icon icon="fa fa-clock" class="h-3 w-3" />
         {{ $t('showTimeSetting') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         :data-tip="$t('showLanguageSetting')"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.android.settings/.LanguageSettings'] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.android.settings/.LanguageSettings'] })">
         <font-awesome-icon icon="fa fa-language" class="h-3 w-3" />
         {{ $t('showLanguageSetting') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         :data-tip="$t('showSimInfo')"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DEVICE_INFO_SETTINGS'] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DEVICE_INFO_SETTINGS'] })">
         <font-awesome-icon icon="fa fa-sim-card" class="h-3 w-3" />
         {{ $t('showSimInfo') }}
     </button>
@@ -90,18 +90,18 @@ export default {
         }
     },
     methods: {
-        app_install() {
-            this.$emitter.emit('installApks', {})
+        async app_install() {
+            await this.$emiter('installApks', {})
         },
-        uploadVideo() {
-            this.$emitter.emit('uploadFiles', {})
+        async uploadVideo() {
+            await this.$emiter('uploadFiles', {})
         },
-        uninstallApk() {
+        async uninstallApk() {
             this.$refs.uninstall_dialog.close()
-            this.$emitter.emit('adbEventData', { args: ['shell', 'pm', 'uninstall', this.uninstall_package] })
+            await this.$emiter('adbEventData', { args: ['shell', 'pm', 'uninstall', this.uninstall_package] })
         },
-        clearGallery() {
-            this.$emitter.emit('clearGallery', {})
+        async clearGallery() {
+            await this.$emiter('clearGallery', {})
         }
     }
 }

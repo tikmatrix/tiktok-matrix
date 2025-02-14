@@ -116,11 +116,11 @@ export default {
       }
     },
 
-    show_device(serial) {
+    async show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial || d.real_serial === serial)
-      this.$emitter.emit('openDevice', mydevice)
+      await this.$emiter('openDevice', mydevice)
     },
-    get_tasks() {
+    async get_tasks() {
       this.currentTask = null
       this.$service
         .get_tasks()
@@ -135,7 +135,7 @@ export default {
         })
     },
 
-    retry(task) {
+    async retry(task) {
       this.$service
         .update_task({
           id: task.id,
@@ -148,7 +148,7 @@ export default {
           console.log(err)
         })
     },
-    deleteTask(task) {
+    async deleteTask(task) {
       this.$service
         .delete_task({
           id: task.id
@@ -162,7 +162,7 @@ export default {
         })
     },
 
-    retry_all_failed() {
+    async retry_all_failed() {
       this.$service
         .retry_all_failed_tasks()
         .then(() => {
@@ -173,7 +173,7 @@ export default {
         })
     }
   },
-  mounted() {
+  async mounted() {
     this.get_tasks()
   }
 }

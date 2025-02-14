@@ -47,7 +47,7 @@
                   <tr v-for="(device, index) in slotProps.items" :key="index">
                     <td>{{ device.key }}</td>
                     <td>
-                      <a class="link link-primary" @click="$emitter.emit('openDevice', device)" v-if="device.key">{{
+                      <a class="link link-primary" @click="$emiter('openDevice', device)" v-if="device.key">{{
                         device.serial }}</a>
                     </td>
                     <td>{{ device.mode }}</td>
@@ -205,6 +205,7 @@ export default {
       });
     },
     refreshPage() {
+      console.log('refreshPage')
       window.location.reload();
     },
     get_groups() {
@@ -250,11 +251,11 @@ export default {
     }
   },
 
-  mounted() {
+  async mounted() {
     this.mydevices = this.devices
     this.get_groups()
     this.get_settings()
-    this.$emitter.on('reload_sidebar', () => {
+    await this.$listen('reload_sidebar', (e) => {
       this.get_settings()
     });
   },

@@ -130,7 +130,7 @@ export default {
     }
   },
   methods: {
-    update() {
+    async update() {
       this.mygroup.train_start_time = [this.train_time1, this.train_time2, this.train_time3, this.train_time4, this.train_time5, this.train_time6]
         .filter(Boolean)
         .join(',')
@@ -138,17 +138,17 @@ export default {
         .filter(Boolean)
         .join(',')
       if (this.mygroup.auto_train == 1 && !this.mygroup.train_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
-        this.$emitter.emit('showToast', this.$t('trainStartTimeFormatError'))
+        await this.$emiter('showToast', this.$t('trainStartTimeFormatError'))
         return
       }
       if (this.mygroup.auto_publish == 1 && !this.mygroup.publish_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
-        this.$emitter.emit('showToast', this.$t('publishStartTimeFormatError'))
+        await this.$emiter('showToast', this.$t('publishStartTimeFormatError'))
         return
       }
       this.updateGroup(this.mygroup)
     },
 
-    updateGroup(group) {
+    async updateGroup(group) {
       this.$service
         .update_group({
           id: group.id,
@@ -174,12 +174,12 @@ export default {
           origin_sound_volume: group.origin_sound_volume,
           add_sound_volume: group.add_sound_volume,
         })
-        .then(() => {
-          this.$emitter.emit('closePageDialog', {})
+        .then(async () => {
+          await this.$emiter('closePageDialog', {})
         })
     },
   },
-  mounted() {
+  async mounted() {
     console.log('mounted', this.group)
     this.mygroup = this.group
     console.log(this.mygroup)

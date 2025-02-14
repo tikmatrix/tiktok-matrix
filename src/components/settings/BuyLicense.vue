@@ -109,7 +109,6 @@
 <script>
 import { writeText } from '@tauri-apps/api/clipboard';
 import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
-import { emit } from '@tauri-apps/api/event';
 import { message } from '@tauri-apps/api/dialog';
 import { readTextFile } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
@@ -221,11 +220,11 @@ export default {
         await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${apiUrl}/github_auth_callback&scope=user%20public_repo`);
       } catch (error) {
         console.error('GitHub认证错误:', error);
-        this.$emitter.emit('showToast', this.$t('githubAuthErrorMessage'));
+        await this.$emiter('showToast', this.$t('githubAuthErrorMessage'));
       }
     },
     async reload(event) {
-      await emit('LICENSE', { reload: true })
+      await this.$emiter('LICENSE', { reload: true })
       if (event) {
         event.target.innerText = this.$t('fetching')
         event.target.disabled = true
@@ -256,17 +255,17 @@ export default {
         const data = response.data
         console.log(`license leftdays: ${data.data.leftdays}, key: ${data.data.license}`)
         if (data.data.leftdays > 0) {
-          await emit('LICENSE', { reload: true })
+          await this.$emiter('LICENSE', { reload: true })
           this.paymentSuccess()
           await message(this.$t('activateSuccess'))
           return;
         } else {
           await message('invalid license')
-          await emit('LICENSE', { reload: true })
+          await this.$emiter('LICENSE', { reload: true })
         }
       } else {
         await message('verify failed')
-        await emit('LICENSE', { reload: true })
+        await this.$emiter('LICENSE', { reload: true })
       }
 
       event.target.innerText = this.$t('activate')
@@ -354,7 +353,7 @@ export default {
           console.log('refresh_status:', refresh_status)
           if (refresh_status) {
             if (data.data.status == 1) {
-              await emit('LICENSE', { reload: true })
+              await this.$emiter('LICENSE', { reload: true })
               await this.paymentSuccess()
               await message(this.$t('paymentSuccess'))
               return;

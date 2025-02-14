@@ -2,13 +2,13 @@
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 mr-1 text-white" />
         {{ $t('openTiktok') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 mr-1 text-yellow-500" />
         {{ $t('stopTiktok') }}
     </button>
@@ -27,7 +27,7 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('run_task_now', { name: 'login', args: {} })">
+        @click="$emiter('run_task_now', { name: 'login', args: {} })">
         <font-awesome-icon icon="fa-solid fa-right-to-bracket" class="h-3 w-3 mr-1" />
         {{ $t('startLogin') }}
     </button>
@@ -39,19 +39,19 @@
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('run_task_now', { name: 'match_account', args: {} })">
+        @click="$emiter('run_task_now', { name: 'match_account', args: {} })">
         <font-awesome-icon icon="fa-solid fa-user-check" class="h-3 w-3 mr-1" />
         {{ $t('matchAccount') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('run_now_by_account', { name: 'train', args: {} })">
+        @click="$emiter('run_now_by_account', { name: 'train', args: {} })">
         <font-awesome-icon icon="robot" class="h-3 w-3 mr-1 text-green-500" />
         {{ $t('startTrain') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('run_now_by_account', { name: 'publish', args: {} })">
+        @click="$emiter('run_now_by_account', { name: 'publish', args: {} })">
         <font-awesome-icon icon="paper-plane" class="h-3 w-3 mr-1 text-green-500" />
         {{ $t('startPublish') }}
     </button>
@@ -61,6 +61,11 @@
         @click="$refs.userActionsDialog.showModal">
         <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1 text-green-500" />{{ $t('userActions') }}
     </button>
+    <!-- <button
+        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+        @click="batchFO">
+        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('batchFO') }}
+    </button> -->
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.postActionsDialog.showModal">
@@ -70,8 +75,8 @@
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="startMessage">
-        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3 mr-1" />{{ $t('startMessage') }}
+        @click="batchDM">
+        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3 mr-1" />{{ $t('batchDM') }}
     </button>
     <dialog ref="postActionsDialog" class="modal">
         <div class="modal-box">
@@ -137,34 +142,37 @@ export default {
         }
     },
     methods: {
-        open_dir(name) {
+        async open_dir(name) {
             invoke("open_dir", {
                 name
             });
         },
-        async startMessage() {
-            this.$emitter.emit('menuSelected', { name: 'messageSettings' });
+        async batchDM() {
+            await this.$emiter('menuSelected', { name: 'messageSettings' });
+        },
+        async batchFO() {
+            await this.$emiter('menuSelected', { name: 'followSettings' });
         },
         async startFillProfile() {
-            this.$emitter.emit('menuSelected', { name: 'profileSettings' });
+            await this.$emiter('menuSelected', { name: 'profileSettings' });
 
         },
         async startRegister() {
-            this.$emitter.emit('menuSelected', { name: 'registerSettings' });
+            await this.$emiter('menuSelected', { name: 'registerSettings' });
         },
         async logout() {
             let yes = await ask(this.$t('logoutConfirm'), this.$t('confirm'));
             if (yes) {
-                this.$emitter.emit('adbEventData', { args: ['shell', 'pm', 'clear', this.settings.packagename] })
+                await this.$emiter('adbEventData', { args: ['shell', 'pm', 'clear', this.settings.packagename] })
             }
         },
-        open_dir(name) {
+        async open_dir(name) {
             invoke("open_dir", {
                 name
             });
         },
 
-        startFollow() {
+        async startFollow() {
             if (this.target_username == '') {
                 alert(this.$t('targetUsernameRequired'))
                 return;
@@ -173,10 +181,10 @@ export default {
                 this.target_username = '@' + this.target_username
             }
 
-            this.$emitter.emit('run_now_by_account', { name: 'follow', args: { target_username: this.target_username } })
+            await this.$emiter('run_now_by_account', { name: 'follow', args: { target_username: this.target_username } })
             this.$refs.userActionsDialog.close()
         },
-        startUnFollow() {
+        async startUnFollow() {
             if (this.target_username == '') {
                 alert(this.$t('targetUsernameRequired'))
                 return;
@@ -185,10 +193,10 @@ export default {
                 this.target_username = this.target_username.replace('@', '')
             }
 
-            this.$emitter.emit('run_now_by_account', { name: 'unfollow', args: { target_username: this.target_username } })
+            await this.$emiter('run_now_by_account', { name: 'unfollow', args: { target_username: this.target_username } })
             this.$refs.userActionsDialog.close()
         },
-        startScrape() {
+        async startScrape() {
             if (this.target_username == '') {
                 alert(this.$t('targetUsernameRequired'))
                 return;
@@ -196,62 +204,62 @@ export default {
             if (!this.target_username.startsWith('@')) {
                 this.target_username = '@' + this.target_username
             }
-            this.$emitter.emit('run_now_by_account', { name: 'scrape_fans', args: { target_username: this.target_username } })
+            await this.$emiter('run_now_by_account', { name: 'scrape_fans', args: { target_username: this.target_username } })
             this.$refs.scrapeUsersDialog.close()
         },
-        startShare() {
+        async startShare() {
             if (this.target_post_url == '') {
                 alert(this.$t('postUrlRequired'))
                 return;
-            } this.$emitter.emit('run_now_by_account', { name: 'share', args: { post_url: this.target_post_url } })
+            } await this.$emiter('run_now_by_account', { name: 'share', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
-        startLike() {
+        async startLike() {
             if (this.target_post_url == '') {
                 alert(this.$t('postUrlRequired'))
                 return;
-            } this.$emitter.emit('run_now_by_account', { name: 'like', args: { post_url: this.target_post_url } })
+            } await this.$emiter('run_now_by_account', { name: 'like', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
-        startComment() {
+        async startComment() {
             if (this.target_post_url == '') {
                 alert(this.$t('postUrlRequired'))
                 return;
-            } this.$emitter.emit('run_now_by_account', { name: 'comment', args: { post_url: this.target_post_url } })
+            } await this.$emiter('run_now_by_account', { name: 'comment', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
-        startFavorite() {
+        async startFavorite() {
             if (this.target_post_url == '') {
                 alert(this.$t('postUrlRequired'))
                 return;
-            } this.$emitter.emit('run_now_by_account', { name: 'favorite', args: { post_url: this.target_post_url } })
+            } await this.$emiter('run_now_by_account', { name: 'favorite', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
-        startView() {
+        async startView() {
             if (this.target_post_url == '') {
                 alert(this.$t('postUrlRequired'))
                 return;
-            } this.$emitter.emit('run_now_by_account', { name: 'view', args: { post_url: this.target_post_url } })
+            } await this.$emiter('run_now_by_account', { name: 'view', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
 
-        app_install() {
+        async app_install() {
             document.getElementById('app_install_input').click()
         },
-        on_app_install(e) {
-            this.$emitter.emit('installApks', e.target.files)
+        async on_app_install(e) {
+            await this.$emiter('installApks', e.target.files)
         },
-        uploadVideo() {
+        async uploadVideo() {
             document.getElementById('upload_video_input').click()
         },
-        on_upload_video(e) {
+        async on_upload_video(e) {
             console.log(e.target.files)
-            this.$emitter.emit('uploadFiles', e.target.files)
+            await this.$emiter('uploadFiles', e.target.files)
         },
     }
 }

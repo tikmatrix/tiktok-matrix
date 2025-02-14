@@ -1,24 +1,23 @@
 <template>
   <div class="flex flex-col items-start p-12">
-
-
-
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <span class="font-bold">{{ $t('messageContent') }}: </span>
-      <textarea class="textarea textarea-success grow  h-16" :placeholder="$t('messageContentTips')" autocomplete="off"
-        v-model="settings.message_content"> </textarea>
-
-    </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('targetUsernamesPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/usernames.txt"
         class="input input-sm grow input-bordered" v-model="settings.target_username_path" />
       <button class="btn btn-sm btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
+
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
-      <button class="btn btn-success" @click="set_settings">{{ $t('startScript') }}</button>
+      <button class="btn btn-md btn-primary ml-2" @click="startFollow">
+        {{ $t('follow') }}
+      </button>
+      <button class="btn btn-md btn-secondary ml-2" @click="startUnFollow">
+        {{ $t('unFollow') }}
+      </button>
+
     </div>
+
   </div>
 </template>
 <script>
@@ -57,10 +56,9 @@ export default {
     },
     async set_settings() {
       this.$service.update_settings(this.settings).then(async (res) => {
-        await this.$emiter('message')
+        await this.$emiter('batch_follow')
       })
     },
-
 
   },
   async mounted() {

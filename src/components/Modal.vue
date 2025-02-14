@@ -15,7 +15,7 @@ export default {
   props: ['show'],
   methods: {
     close() {
-      this.$emit('close')
+      this.$emiter('close')
     }
   }
 }

@@ -1,4 +1,4 @@
-import request, { post } from '../utils/request'
+import request from '../utils/request'
 import * as util from '../utils'
 import api from '../api'
 export function auth({ password }) {
@@ -46,14 +46,16 @@ export function get_material_count({ used, group_id }) {
 
 
 export function upload_videos(data) {
-  return post({
+  return request({
+    method: 'post',
     url: api.upload_videos,
     data
   })
 }
 
 export function upload_video(data) {
-  return post({
+  return request({
+    method: 'post',
     url: api.upload_video,
     data
   })
@@ -237,7 +239,8 @@ export function get_task_status({ serial }) {
 export function get_license() {
   return request({
     method: 'get',
-    url: api.get_license
+    url: api.get_license,
+    params: {}
   })
 }
 export function add_license({ key }) {

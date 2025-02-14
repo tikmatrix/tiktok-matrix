@@ -30,13 +30,13 @@
         </div>
         <button
             class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal mt-1 ml-1 mb-1 min-w-max"
-            @click="$emitter.emit('menuSelected', { name: 'tasks' })">
+            @click="$emiter('menuSelected', { name: 'tasks' })">
             <font-awesome-icon icon="random" class="h-3 w-3 mr-1" />{{ $t('tasks') }}
         </button>
 
         <button
             class="btn btn-sm bg-green-500 hover:bg-green-300 border-0 text-white text-xs block font-normal mt-1 ml-1 mb-1 min-w-max"
-            @click="$emitter.emit('stop_task')">
+            @click="$emiter('stop_task')">
             <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 mr-1 text-pink-500" />{{ $t('stopTask') }}
         </button>
     </div>
@@ -69,10 +69,10 @@ export default {
         }
 
     },
-    mounted() {
+    async mounted() {
         this.countTasks();
         setInterval(this.countTasks, 10000);
-        this.$emitter.on('reload_tasks', async () => {
+        await this.$listen('reload_tasks', async (e) => {
             this.countTasks();
         });
     }

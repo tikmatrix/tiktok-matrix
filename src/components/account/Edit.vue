@@ -100,9 +100,9 @@ export default {
       this.myaccount.username = this.myaccount.username.trim()
       this.myaccount.logined = parseInt(this.myaccount.logined)
       if (this.myaccount.id) {
-        this.$emit('update', this.myaccount)
+        this.$emiter('update', this.myaccount)
       } else {
-        this.$emit('add', this.myaccount)
+        this.$emiter('add', this.myaccount)
       }
     },
 

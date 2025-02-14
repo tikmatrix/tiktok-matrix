@@ -197,7 +197,8 @@ export default {
         .get_materials({
           group_id: this.group.id
         })
-        .then(async res => {
+        .then(async (res) => {
+          console.log(res)
           this.materials = res.data
           let work_path = await appDataDir();
           for (let i = 0; i < this.materials.length; i++) {

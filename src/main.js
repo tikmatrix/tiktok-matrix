@@ -2,8 +2,6 @@ import './assets/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import './index.css'
-import axios from 'axios'
-import VueAxios from 'vue-axios'
 import * as service from './service'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -18,12 +16,10 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 library.add(fas, fab)
 import { i18n } from './i18n.js'
 import { reactive } from 'vue'
-import mitt from 'mitt'
 import VueDragSelect from "@coleqiu/vue-drag-select";
 import VueDraggableResizable from 'vue-draggable-resizable'
+import { emit, listen } from '@tauri-apps/api/event';
 
-
-const emitter = mitt()
 let devices = reactive({ list: [] })
 
 async function getDevices() {
@@ -47,13 +43,12 @@ getDevices()
 setInterval(getDevices, 10000)
 
 const app = createApp(App)
-app.use(VueAxios, axios)
 app.use(i18n)
 app.use(VueDragSelect)
-app.provide('axios', app.config.globalProperties.axios) // provide 'axios'
 app.provide('devices', devices) // provide 'devices
 app.config.globalProperties.$service = service
-app.config.globalProperties.$emitter = emitter
+app.config.globalProperties.$emiter = emit
+app.config.globalProperties.$listen = listen
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.component('VueDatePicker', VueDatePicker)
 app.component("vue-draggable-resizable", VueDraggableResizable)

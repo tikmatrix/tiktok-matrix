@@ -22,8 +22,8 @@
       <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
       <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
       <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
+      <FollowSettings v-if="selectedItem.name === 'followSettings' && $refs.page_dialog.open" />
       <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
-
       <TrainSettings :group="selectedItem.group"
         v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" />
       <PublishSettings :group="selectedItem.group"
@@ -79,6 +79,7 @@ import RegisterSettings from './components/settings/RegisterSettings.vue'
 import ProfileSettings from './components/settings/ProfileSettings.vue'
 import PackageNameSettings from './components/settings/PackageNameSettings.vue'
 import MessageSettings from './components/settings/MessageSettings.vue'
+import FollowSettings from './components/settings/FollowSettings.vue'
 import Login from './components/Login.vue'
 import Miniremote from './components/device/Miniremote.vue'
 import TrainSettings from './components/group/TrainSettings.vue'
@@ -89,7 +90,6 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { window as tauriWindow } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
 import { ask, message } from '@tauri-apps/api/dialog';
-import axios from 'axios'
 import { os } from '@tauri-apps/api';
 import { appDataDir } from '@tauri-apps/api/path';
 import { readTextFile, exists, BaseDirectory } from '@tauri-apps/api/fs'
@@ -99,9 +99,9 @@ import {
   onUpdaterEvent,
 } from '@tauri-apps/api/updater'
 import { exit, relaunch } from '@tauri-apps/api/process'
+import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
 import { Command } from '@tauri-apps/api/shell'
 import { getAll } from '@tauri-apps/api/window';
-import { emit, listen } from '@tauri-apps/api/event';
 export default {
   name: 'app',
   setup() {
@@ -122,6 +122,7 @@ export default {
     ProfileSettings,
     PackageNameSettings,
     MessageSettings,
+    FollowSettings,
     Miniremote,
     TrainSettings,
     PublishSettings
@@ -144,8 +145,9 @@ export default {
     }
   },
   methods: {
+
     async shutdown() {
-      await invoke("kill_process", { name: "tiktok-agent" });
+      await invoke("kill_process", { name: "agent" });
       await invoke("kill_process", { name: "script" });
       await invoke("kill_process", { name: "adb" });
 
@@ -184,21 +186,14 @@ export default {
       } catch (error) {
         console.error(error)
       }
-
-      axios.get('https://pro.api.tikmatrix.com/front-api/check_core_update?time=' + new Date().getTime()).then(async (res) => {
-        const unlistenProgress = await listen("DOWNLOAD_PROGRESS", async (e) => {
-          this.download_progress = e.payload;
-        });
-        const unlistenFinished = await listen("DOWNLOAD_FINISHED", async (e) => {
-          console.log("download finished")
-          this.download_progress = {
-            filesize: 0,
-            transfered: 0,
-            transfer_rate: 0,
-            percentage: 0
-          }
-        })
-        this.remote_version = res.data;
+      const response = await fetch('https://pro.api.tikmatrix.com/front-api/check_core_update?time=' + new Date().getTime(), {
+        method: 'GET',
+        timeout: 10,
+        responseType: ResponseType.JSON,
+      });
+      console.log('response:', response)
+      if (response.ok) {
+        this.remote_version = response.data
         await this.shutdown()
         await this.check_platform_tools();
         await this.check_ocr();
@@ -224,9 +219,9 @@ export default {
           await new Promise(r => setTimeout(r, 1000));
           const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
           if (port > 0) {
-            this.$emitter.emit('reload_sidebar')
-            this.$emitter.emit('reload_tasks')
-            await emit('LICENSE', { reload: true })
+            await this.$emiter('reload_sidebar')
+            await this.$emiter('reload_tasks')
+            await this.$emiter('LICENSE', { reload: true })
             break;
           }
           if (i === 9) {
@@ -235,7 +230,7 @@ export default {
           }
         }
         this.$refs.download_dialog.close();
-      })
+      }
 
     },
 
@@ -356,8 +351,20 @@ export default {
       // }, { capture: true })
     }
   },
-  mounted() {
+  async mounted() {
     this.disableMenu()
+    await this.$listen("DOWNLOAD_PROGRESS", async (e) => {
+      this.download_progress = e.payload;
+    });
+    await this.$listen("DOWNLOAD_FINISHED", async (e) => {
+      console.log("download finished")
+      this.download_progress = {
+        filesize: 0,
+        transfered: 0,
+        transfer_rate: 0,
+        percentage: 0
+      }
+    });
     const hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate')
     console.log('hasCheckedUpdate:', hasCheckedUpdate)
     if (!hasCheckedUpdate) {
@@ -375,25 +382,24 @@ export default {
       }
     });
 
-
-    this.$emitter.on('showToast', async (text) => {
-      await message(text);
+    await this.$listen('showToast', async (e) => {
+      await message(e.payload);
     });
 
-    this.$emitter.on('openDevice', (device) => {
-      this.device = device
+    await this.$listen('openDevice', (e) => {
+      this.device = e.payload
     });
-    this.$emitter.on('closeDevice', (device) => {
+    await this.$listen('closeDevice', (e) => {
       this.device = null
     });
-    this.$emitter.on('closePageDialog', (data) => {
+    await this.$listen('closePageDialog', (e) => {
       this.$refs.page_dialog.close()
     });
-    this.$emitter.on('menuSelected', (item) => {
-      this.menu_selected(item)
+    await this.$listen('menuSelected', (e) => {
+      this.menu_selected(e.payload)
     });
 
-    this.$emitter.on('updateService', () => {
+    await this.$listen('updateService', (e) => {
       this.check_update()
     });
 

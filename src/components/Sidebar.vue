@@ -66,7 +66,7 @@
         </div>
         <div class="border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
           <div class="flex flex-row flex-wrap" v-if="selectedTab === 'general'">
-            <General :menuItems="menuItems" />
+            <General :menuItems="menuItems" :settings="settings" />
           </div>
           <div class="flex flex-row flex-wrap" v-if="selectedTab === 'quickActions'">
             <QuickActions :settings="settings" />
@@ -123,17 +123,17 @@
             <div class="flex flex-row form-control items-center">
               <button
                 class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-                @click="$emitter.emit('menuSelected', { name: 'trainSettings', group: item })">
+                @click="$emiter('menuSelected', { name: 'trainSettings', group: item })">
                 <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('trainSettings') }}
               </button>
               <button
                 class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-                @click="$emitter.emit('menuSelected', { name: 'publishSettings', group: item })">
+                @click="$emiter('menuSelected', { name: 'publishSettings', group: item })">
                 <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('publishSettings') }}
               </button>
               <button
                 class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-                @click="$emitter.emit('menuSelected', { name: 'materials', group: item })">
+                @click="$emiter('menuSelected', { name: 'materials', group: item })">
                 <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3 mr-1" />{{ $t('materials') }}
               </button>
             </div>
@@ -211,7 +211,7 @@ import { open, ask } from '@tauri-apps/api/dialog';
 import { getVersion } from '@tauri-apps/api/app';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
-import { emit, listen } from '@tauri-apps/api/event';
+
 export default {
   name: 'Sidebar',
   setup() {
@@ -268,15 +268,13 @@ export default {
     async loadLicense() {
       this.$service.get_license().then(res => {
         this.license = res.data
-        //test
-        // this.license.github_authorized = dalse
         if (this.license.leftdays <= 0 && !this.license.github_authorized) {
           this.$refs.buyLiscenseDialog.show()
         }
-        console.log(this.license)
+        console.log(JSON.stringify(this.license))
       })
     },
-    renameGroup(item) {
+    async renameGroup(item) {
       if (this.showAddGroup) {
         this.showAddGroup = false
         return
@@ -286,7 +284,7 @@ export default {
       this.newGroupName = item.name
 
     },
-    addGroup() {
+    async addGroup() {
       if (this.showAddGroup) {
         this.showAddGroup = false
         return
@@ -295,7 +293,7 @@ export default {
       this.showAddGroup = true
       this.newGroupName = ''
     },
-    saveGroup() {
+    async saveGroup() {
       if (this.updateGroup) {
         const group = this.updateGroup
         this.$service
@@ -376,13 +374,13 @@ export default {
       }
 
     },
-    moveToGroup(src_id, dst_id) {
+    async moveToGroup(src_id, dst_id) {
       let serials = []
       for (let i = 0; i < this.selections[src_id].length; i++) {
         serials.push(this.selections[src_id][i])
       }
       if (serials.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
         for (let i = 0; i < this.groups.length; i++) {
           let view = this.$refs['moveToGroupMenu_' + this.groups[i].id];
           if (view) {
@@ -408,7 +406,7 @@ export default {
         this.refreshSelections()
       })
     },
-    get_groups() {
+    async get_groups() {
       this.$service
         .get_groups()
         .then(res => {
@@ -443,7 +441,7 @@ export default {
     },
     async selectApkFile() {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
       }
       const filePath = await open({
@@ -460,7 +458,7 @@ export default {
       }
       await this.run_task_now('install', args)
     },
-    adb_command(args) {
+    async adb_command(args) {
       this.$service
         .adb_command({
           serials: this.selection,
@@ -475,7 +473,7 @@ export default {
     },
     async run_task_now(name, args = {}) {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
       }
       this.$service
@@ -485,17 +483,17 @@ export default {
           script_args: JSON.stringify(args)
         })
         .then(async res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
-          await emit('LICENSE', { show: true })
+          await this.$emiter('reload_tasks', {})
+          await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
+          await this.$emiter('LICENSE', { show: true })
         })
         .catch(err => {
           console.log(err)
         })
     },
-    run_now_by_account(name, args = {}) {
+    async run_now_by_account(name, args = {}) {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
       }
       this.$service
@@ -504,15 +502,15 @@ export default {
           serials: this.selection,
           script_args: JSON.stringify(args)
         })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+        .then(async (res) => {
+          await this.$emiter('reload_tasks', {})
+          await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })
         .catch(err => {
           console.log(err)
         })
     },
-    selectTab(tab) {
+    async selectTab(tab) {
       this.selectedTab = tab
       switch (tab) {
         case 'general':
@@ -542,10 +540,13 @@ export default {
       }
     },
     isSelectAll(id) {
+      console.log('isSelectAll:', id)
+      console.log(this.groupDevices[id].length, this.selections[id].length)
+      console.log(this.groupDevices[id].length > 0 && this.selections[id].length == this.groupDevices[id].length)
       return this.groupDevices[id].length > 0 && this.selections[id].length == this.groupDevices[id].length
     },
-    selectAll(id) {
-
+    async selectAll(id) {
+      console.log('selectAll:', id)
       if (!this.isSelectAll(id)) {
         if (id == 0) {
           this.selection = this.devices.map(device => device.real_serial)
@@ -558,7 +559,7 @@ export default {
       console.log(this.selection);
       this.refreshSelections()
     },
-    refreshSelections() {
+    async refreshSelections() {
       this.groupDevices[0] = this.devices;
       for (let i = 0; i < this.groups.length; i++) {
         this.selections[this.groups[i].id] = []
@@ -571,7 +572,7 @@ export default {
           .filter(device => this.selection.includes(device.real_serial)).map(device => device.real_serial)
       }
     },
-    get_menus() {
+    async get_menus() {
       this.$service.get_menus().then(res => {
         this.menuItems = this.fullMenuItems.filter(item => res.data.includes(item.name))
       }).catch(err => {
@@ -580,7 +581,7 @@ export default {
       })
     },
 
-    get_settings() {
+    async get_settings() {
       this.$service.get_settings().then(res => {
         this.settings = res.data
       }).catch(err => {
@@ -589,7 +590,7 @@ export default {
       })
     },
 
-    setText(text) {
+    async setText(text) {
       this.$service.set_text({
         text: text,
         serials: this.selection,
@@ -599,7 +600,7 @@ export default {
     },
     async initDevice() {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
       }
       this.$refs.init_dialog.showModal()
@@ -614,9 +615,9 @@ export default {
     },
 
 
-    message() {
+    async message() {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
       }
 
@@ -624,42 +625,42 @@ export default {
         .message_now({
           serials: this.selection,
         })
-        .then(res => {
-          this.$emitter.emit('reload_tasks', {})
-          this.$emitter.emit('showToast', `${res.data} ${this.$t('taskCreated')}`)
+        .then(async (res) => {
+          await this.$emiter('reload_tasks', {})
+          await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
 
         })
     },
 
-    stop_task() {
+    async stop_task() {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
       }
       this.$service
         .stop_task({
           serials: this.selection,
         })
-        .then(res => {
-          this.$emitter.emit('showToast', this.$t('commandSendSuccess'))
+        .then(async (res) => {
+          await this.$emiter('showToast', this.$t('commandSendSuccess'))
         })
     },
-    send_keycode(keycode) {
-      this.$emitter.emit('eventData', JSON.stringify({
+    async send_keycode(keycode) {
+      await this.$emiter('eventData', JSON.stringify({
         type: 'keycode',//type=keycode
         operation: 'd',//operation=down
         keycode,
       }));
-      setTimeout(() => {
-        this.$emitter.emit('eventData', JSON.stringify({
+      setTimeout(async () => {
+        await this.$emiter('eventData', JSON.stringify({
           type: 'keycode',//type=keycode
           operation: 'u',//operation=up
           keycode,
         }));
       }, 100);
     },
-    send_screen_mode(mode) {
-      this.$emitter.emit('eventData', JSON.stringify({
+    async send_screen_mode(mode) {
+      await this.$emiter('eventData', JSON.stringify({
         type: 'screen',//type=keycode
         mode
       }));
@@ -667,17 +668,17 @@ export default {
 
 
 
-    clearGallery() {
+    async clearGallery() {
       if (this.selection.length == 0) {
-        this.$emitter.emit('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
       }
       this.$service
         .clear_gallery({
           serials: this.selection,
         })
-        .then(res => {
-          this.$emitter.emit('showToast', `${this.$t('commandSendSuccess')}`)
+        .then(async (res) => {
+          await this.$emiter('showToast', `${this.$t('commandSendSuccess')}`)
         })
     },
 
@@ -701,7 +702,7 @@ export default {
             return
           }
           await writeText(res.data)
-          this.$emitter.emit('showToast', this.$t('copySuccess'))
+          await this.$emiter('showToast', this.$t('copySuccess'))
         })
     },
     async pasteToPhone() {
@@ -714,72 +715,72 @@ export default {
       }
       const text = await readText()
       this.setText(text)
-      this.$emitter.emit('showToast', this.$t('pasteSuccess'))
+      await this.$emiter('showToast', this.$t('pasteSuccess'))
     },
   },
   async mounted() {
     this.$i18n.locale = this.locale
 
     this.version = await getVersion();
-    this.$emitter.on('openDevice', (device) => {
-      this.selection = [device.real_serial]
+    await this.$listen('openDevice', (e) => {
+      this.selection = [e.payload.real_serial]
       this.refreshSelections()
     });
-    this.$emitter.on('closeDevice', (device) => {
+    await this.$listen('closeDevice', (e) => {
       this.selection = []
       this.refreshSelections()
     });
-    this.$emitter.on('adbEventData', (data) => {
-      console.log("receive adbEventData: ", data, this.selection,)
-      this.adb_command(data.args)
+    await this.$listen('adbEventData', (e) => {
+      console.log("receive adbEventData: ", e.payload, this.selection,)
+      this.adb_command(e.payload.args)
 
     });
-    this.$emitter.on('run_task_now', async (data) => {
-      console.log("receive run_task_now: ", data)
-      await this.run_task_now(data.name, data.args)
+    await this.$listen('run_task_now', async (e) => {
+      console.log("receive run_task_now: ", e.payload)
+      await this.run_task_now(e.payload.name, e.payload.args)
     });
-    this.$emitter.on('run_now_by_account', (data) => {
-      console.log("receive run_now_by_account: ", data)
-      this.run_now_by_account(data.name, data.args)
+    await this.$listen('run_now_by_account', (e) => {
+      console.log("receive run_now_by_account: ", e.payload)
+      this.run_now_by_account(e.payload.name, e.payload.args)
     });
-    this.$emitter.on('uploadFiles', () => {
+    await this.$listen('uploadFiles', (e) => {
       this.uploadFiles()
     });
-    this.$emitter.on('installApks', () => {
+    await this.$listen('installApks', (e) => {
       this.selectApkFile()
     });
-    this.$emitter.on('initDevice', () => {
+    await this.$listen('initDevice', (e) => {
       this.initDevice()
     });
-    this.$emitter.on('setText', (text) => {
-      this.setText(text)
+    await this.$listen('setText', (e) => {
+      this.setText(e.payload)
     });
-    this.$emitter.on('eventData', (data) => {
+    await this.$listen('eventData', async (e) => {
       let new_data = {
         devices: [...this.selection],
-        data: data
+        data: e.payload
       }
-      this.$emitter.emit('syncEventData', new_data)
+      await this.$emiter('syncEventData', new_data)
     });
 
 
-    this.$emitter.on('message', () => {
+    await this.$listen('message', (e) => {
       this.message();
     });
 
-    this.$emitter.on('stop_task', () => {
+    await this.$listen('stop_task', (e) => {
       this.stop_task();
     });
-    this.$emitter.on('send_keycode', (code) => {
-      this.send_keycode(code)
+    await this.$listen('send_keycode', (e) => {
+      this.send_keycode(e.payload)
     });
 
 
 
-    this.$emitter.on('send_screen_mode', (mode) => {
-      this.send_screen_mode(mode)
+    await this.$listen('send_screen_mode', (e) => {
+      this.send_screen_mode(e.payload)
     });
-    this.$emitter.on('clearGallery', () => {
+    await this.$listen('clearGallery', () => {
       this.clearGallery()
     });
     document.addEventListener('copy', () => {
@@ -789,14 +790,15 @@ export default {
     document.addEventListener('paste', () => {
       this.pasteToPhone()
     });
-    this.$emitter.on('reload_sidebar', async () => {
+    await this.$listen('reload_sidebar', async () => {
+      this.loadLicense()
       this.get_menus()
       this.get_settings()
       this.get_groups()
       this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
       console.log('reload_sidebar port:', this.port)
     });
-    await listen("LICENSE", async (e) => {
+    await this.$listen("LICENSE", async (e) => {
       if (e.payload.reload) {
         await this.loadLicense()
       }

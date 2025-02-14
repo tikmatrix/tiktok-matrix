@@ -495,8 +495,12 @@ export const i18n = createI18n({
       ip: 'IP',
       connectType: 'Connect Type',
       setSort: 'Set Sort',
+      batchDM: 'Batch DM',
+      batchFO: 'Batch FO',
     },
     'zh-CN': {
+      batchFO: '批量关注',
+      batchDM: '批量私信',
       setSort: '设置排序',
       connectType: '连接类型',
       ip: 'IP',

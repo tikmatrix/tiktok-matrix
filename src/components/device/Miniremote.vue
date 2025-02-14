@@ -27,7 +27,7 @@
           </div>
           <button
             class="btn bg-transparent hover:bg-transparent hover:text-red-500 text-gray-700 float-right border-0 p-4"
-            @click="$emitter.emit('closeDevice', this.device)" v-if="big">
+            @click="$emiter('closeDevice', this.device)" v-if="big">
             <font-awesome-icon icon="fa fa-times" class="h-4 w-4" />
           </button>
 
@@ -183,7 +183,7 @@ export default {
       }
       return { x, y, w, h }
     },
-    touchSync(operation, event) {
+    async touchSync(operation, event) {
       if (!this.big) {
         return
       }
@@ -204,7 +204,7 @@ export default {
         x: (scaled.x / scaled.w).toFixed(2),
         y: (scaled.y / scaled.h).toFixed(2),
       });
-      this.$emitter.emit('eventData', data)
+      await this.$emiter('eventData', data)
     },
     mouseMoveListener(event) {
       if (this.loading) {
@@ -215,13 +215,13 @@ export default {
       }
       this.touchSync('m', event)
     },
-    mouseUpListener(event) {
+    async mouseUpListener(event) {
       if (!this.touch) {
         return
       }
       this.touch = false
       if (!this.big) {
-        this.$emitter.emit('openDevice', this.device)
+        await this.$emiter('openDevice', this.device)
         return
       }
       this.touchSync('u', event)
@@ -369,30 +369,30 @@ export default {
     },
 
   },
-  mounted() {
+  async mounted() {
     // console.log('miniremote mounted,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
     if (!this.big) {
-      this.$emitter.on('closeDevice', (device) => {
-        if (device.serial === this.device.serial) {
+      await this.$listen('closeDevice', (e) => {
+        if (e.payload.serial === this.device.serial) {
           this.operating = false
           this.$refs.display.play();
         }
       });
-      this.$emitter.on('openDevice', (device) => {
-        if (device.serial === this.device.serial) {
+      await this.$listen('openDevice', (e) => {
+        if (e.payload.serial === this.device.serial) {
           this.operating = true
           this.$refs.display.play();
         }
-        if (device.serial !== this.device.serial && this.operating) {
+        if (e.payload.serial !== this.device.serial && this.operating) {
           this.operating = false
         }
       });
-      this.$emitter.on('syncEventData', (data) => {
-        if (!data.devices.includes(this.device.real_serial)) {
+      await this.$listen('syncEventData', (e) => {
+        if (!e.payload.devices.includes(this.device.real_serial)) {
           return
         }
         if (this.scrcpy) {
-          this.scrcpy.send(data.data)
+          this.scrcpy.send(e.payload.data)
         }
       });
       // 获取视频元素

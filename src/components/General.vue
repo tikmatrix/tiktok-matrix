@@ -1,12 +1,12 @@
 <template>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('menuSelected', { name: 'accounts' })">
+        @click="$emiter('menuSelected', { name: 'accounts' })">
         <font-awesome-icon icon="user" class="h-3 w-3 mr-1" />{{ $t('accounts') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('menuSelected', { name: 'packageNameSettings' })">
+        @click="$emiter('menuSelected', { name: 'packageNameSettings' })">
         <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('packageNameSettings') }}
     </button>
     <button
@@ -19,13 +19,13 @@
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })">
         <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-white" />
         {{ $t('enableFastInput') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        :data-tip="$t('enableTCP')" @click="$emitter.emit('adbEventData', { args: ['tcpip', '5555'] })">
+        :data-tip="$t('enableTCP')" @click="$emiter('adbEventData', { args: ['tcpip', '5555'] })">
         <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />
         {{ $t('enableTCP') }}
     </button>
@@ -34,13 +34,13 @@
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('initDevice')">
+        @click="$emiter('initDevice')">
         <font-awesome-icon icon="fa fa-undo" class="h-3 w-3 mr-1 text-pink-500" />
         {{ $t('initAppAgent') }}
     </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.github.tikmatrix/.MainActivity'] })">
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.github.tikmatrix/.MainActivity'] })">
         <font-awesome-icon icon="fa fa-play" class="h-3 w-3 mr-1 text-green-500" />
         {{ $t('openAppAgent') }}
     </button>
@@ -59,7 +59,7 @@
 
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emitter.emit('updateService')">
+        @click="$emiter('updateService')">
         <font-awesome-icon icon="fa fa-download" class="h-3 w-3 mr-1" />
         {{ $t('checkUpdate') }}
     </button>
@@ -87,7 +87,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import MyButton from './Button.vue'
 export default {
     name: 'Tools',
-    props: ['menuItems'],
+    props: ['menuItems', 'settings'],
     components: {
         MyButton
     },
@@ -105,26 +105,26 @@ export default {
         }
     },
     methods: {
-        grantApp() {
-            $emitter.emit('adbEventData', { args: ['shell', 'pm', 'grant', settings.packagename, 'android.permission.READ_EXTERNAL_STORAGE'] })
-            $emitter.emit('adbEventData', { args: ['shell', 'pm', 'grant', settings.packagename, 'android.permission.WRITE_EXTERNAL_STORAGE'] })
+        async grantApp() {
+            await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.READ_EXTERNAL_STORAGE'] })
+            await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.WRITE_EXTERNAL_STORAGE'] })
         },
-        enableProxy() {
+        async enableProxy() {
             util.setData('proxy_host', this.proxy_host)
             util.setData('proxy_port', this.proxy_port)
-            this.$emitter.emit('adbEventData', { args: ['shell', 'settings', 'put', 'global', 'http_proxy', `${this.proxy_host}:${this.proxy_port}`] })
-            this.$emitter.emit('showToast', this.$t('proxyEnabled'))
+            await this.$emiter('adbEventData', { args: ['shell', 'settings', 'put', 'global', 'http_proxy', `${this.proxy_host}:${this.proxy_port}`] })
+            await this.$emiter('showToast', this.$t('proxyEnabled'))
         },
-        disableProxy() {
-            this.$emitter.emit('adbEventData', { args: ['shell', 'settings', 'put', 'global', 'http_proxy', ':0'] })
-            this.$emitter.emit('showToast', this.$t('proxyDisabled'))
+        async disableProxy() {
+            await this.$emiter('adbEventData', { args: ['shell', 'settings', 'put', 'global', 'http_proxy', ':0'] })
+            await this.$emiter('showToast', this.$t('proxyDisabled'))
         },
-        open_dir(name) {
+        async open_dir(name) {
             invoke("open_dir", {
                 name
             });
         },
-        scan() {
+        async scan() {
             this.scaning = true
             util.setData('ip_1', this.ip_1)
             util.setData('ip_2', this.ip_2)

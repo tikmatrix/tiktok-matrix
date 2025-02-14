@@ -8,11 +8,13 @@
       <label class="font-bold text-right col-span-1">{{ $t('action') }}:</label>
       <div class="col-span-2 flex items-center gap-4">
         <div class="flex items-center">
-          <input type="radio" id="click" value="click" v-model="mywatcher.action" class="form-radio text-blue-500 h-4 w-4" />
+          <input type="radio" id="click" value="click" v-model="mywatcher.action"
+            class="form-radio text-blue-500 h-4 w-4" />
           <label for="click" class="ml-2">{{ $t('click') }}</label>
         </div>
         <div class="flex items-center">
-          <input type="radio" id="back" value="back" v-model="mywatcher.action" class="form-radio text-blue-500 h-4 w-4" />
+          <input type="radio" id="back" value="back" v-model="mywatcher.action"
+            class="form-radio text-blue-500 h-4 w-4" />
           <label for="back" class="ml-2">{{ $t('back') }}</label>
         </div>
       </div>
@@ -25,7 +27,9 @@
 
     <!-- other fields... -->
     <div class="mt-4 w-full flex justify-end">
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" @click="update">
+      <button
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        @click="update">
         {{ $t('update') }}
       </button>
     </div>
@@ -47,7 +51,7 @@ export default {
   },
   methods: {
     update() {
-      this.$emit('update', this.mywatcher)
+      this.$emiter('update', this.mywatcher)
     }
   },
   mounted() {
