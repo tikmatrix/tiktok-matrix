@@ -485,7 +485,6 @@ export default {
         .then(async res => {
           await this.$emiter('reload_tasks', {})
           await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
-          await this.$emiter('LICENSE', { show: true })
         })
         .catch(err => {
           console.log(err)
@@ -807,7 +806,7 @@ export default {
       }
 
       if (e.payload.show) {
-        if (this.license.leftdays <= 0) {
+        if (this.license.leftdays <= 0 && !this.license.github_authorized) {
           this.$refs.buyLiscenseDialog.show()
         }
       }

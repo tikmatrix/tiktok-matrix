@@ -221,7 +221,6 @@ export default {
           if (port > 0) {
             await this.$emiter('reload_sidebar')
             await this.$emiter('reload_tasks')
-            await this.$emiter('LICENSE', { reload: true })
             break;
           }
           if (i === 9) {
