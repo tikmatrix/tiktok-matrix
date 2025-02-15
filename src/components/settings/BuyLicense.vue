@@ -47,7 +47,7 @@
               </a>
 
             </div>
-            <label class="font-bold">{{ $t('depositNetwork') }}: USDT-TRC20</label>
+            <label class="font-bold">{{ $t('depositNetwork') }}: {{ order.network }}</label>
             <img :src="order.qrcode" class="w-50 h-50" />
             <div class="flex items-center flex-row gap-2 w-full mt-2">
               <label class="font-bold text-right col-span-1">{{ $t('depositAddress') }}:</label>
@@ -57,7 +57,9 @@
                 {{ $t('copy') }}
               </button>
             </div>
-            <label class="text-red-500 font-bold mt-2">{{ $t('usdtTip', { amount: selectedPrice }) }}</label>
+            <label class="text-red-500 font-bold mt-2">{{ $t('usdtTip', {
+              network: order.network, amount: order.amount
+            }) }}</label>
             <label class="text-green-500 font-bold mt-2">{{ $t('afterPayTip') }}</label>
             <div class="flex items-center justify-center flex-row w-full">
               <progress class="progress progress-primary" :value="refreshTime" max="10"></progress>
@@ -89,11 +91,41 @@
                   {{ $t(feature) }}
                 </li>
               </ul>
-              <a @click="tier.onclick" :aria-describedby="tier.id"
+              <a @click="tier.onclicks[0]" :aria-describedby="tier.id"
                 :class="[tier.featured ? 'bg-indigo-500 text-white shadow-xs hover:bg-indigo-400 focus-visible:outline-indigo-500' :
                   'text-indigo-600 ring-1 ring-indigo-200 ring-inset hover:ring-indigo-300 hover:bg-indigo-300 focus-visible:outline-indigo-600',
-                  'mt-8 block rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
-                {{ $t(tier.label) }}
+                  'flex flex-row items-center justify-center cursor-pointer mt-8 rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
+                <!-- github icon -->
+                <font-awesome-icon v-if="tier.name === 'free'" icon="fab fa-github" class="mr-2" />
+
+                <!-- tron network icon -->
+                <svg class="mr-2 fill-current text-red-500 h-6 w-6" xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 64 64" v-else>
+                  <g id="tron">
+                    <path class="cls-1"
+                      d="M61.55,19.28c-3-2.77-7.15-7-10.53-10l-.2-.14a3.82,3.82,0,0,0-1.11-.62l0,0C41.56,7,3.63-.09,2.89,0a1.4,1.4,0,0,0-.58.22L2.12.37a2.23,2.23,0,0,0-.52.84l-.05.13v.71l0,.11C5.82,14.05,22.68,53,26,62.14c.2.62.58,1.8,1.29,1.86h.16c.38,0,2-2.14,2-2.14S58.41,26.74,61.34,23a9.46,9.46,0,0,0,1-1.48A2.41,2.41,0,0,0,61.55,19.28ZM36.88,23.37,49.24,13.12l7.25,6.68Zm-4.8-.67L10.8,5.26l34.43,6.35ZM34,27.27l21.78-3.51-24.9,30ZM7.91,7,30.3,26,27.06,53.78Z" />
+                  </g>
+                </svg>
+                {{ $t(tier.buttons[0]) }}
+              </a>
+              <a @click="tier.onclicks[1]" :aria-describedby="tier.id" v-if="tier.buttons[1]"
+                :class="[tier.featured ? 'bg-green-500 text-white shadow-xs hover:bg-green-400 focus-visible:outline-green-500' :
+                  'text-green-600 ring-1 ring-green-200 ring-inset hover:ring-green-300 hover:bg-green-300 focus-visible:outline-green-600',
+                  'flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
+                <!-- bsc network icon -->
+
+                <svg class="mr-2 fill-current text-orange-300 h-6 w-6" xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 336.41 337.42">
+                  <g id="Layer_2" data-name="Layer 2">
+                    <g id="Layer_1-2" data-name="Layer 1">
+                      <path class="cls-1" d="M168.2.71l41.5,42.5L105.2,147.71l-41.5-41.5Z" />
+                      <path class="cls-1" d="M231.2,63.71l41.5,42.5L105.2,273.71l-41.5-41.5Z" />
+                      <path class="cls-1" d="M42.2,126.71l41.5,42.5-41.5,41.5L.7,169.21Z" />
+                      <path class="cls-1" d="M294.2,126.71l41.5,42.5L168.2,336.71l-41.5-41.5Z" />
+                    </g>
+                  </g>
+                </svg>
+                {{ $t(tier.buttons[1]) }}
               </a>
             </div>
           </div>
@@ -135,7 +167,9 @@ export default {
       required: true
     }
   },
+  computed: {
 
+  },
   data() {
     return {
       tiers: [
@@ -150,8 +184,8 @@ export default {
             'allFeatures',
           ],
           featured: false,
-          label: this.license.github_authorized ? 'authorized' : 'startWithGithub',
-          onclick: this.startGitHubAuth
+          buttons: [this.license.github_authorized ? 'authorized' : 'startWithGithub'],
+          onclicks: [this.startGitHubAuth]
         },
         {
           name: 'monthly',
@@ -165,8 +199,8 @@ export default {
             'customerSupport',
           ],
           featured: true,
-          label: 'pay',
-          onclick: this.createMonthOrder
+          buttons: ['usdttrc20', 'usdtbep20'],
+          onclicks: [this.createMonthOrderTrc20, this.createMonthOrderBep20]
         },
         {
           name: 'yearly',
@@ -180,8 +214,8 @@ export default {
             'customerSupport',
           ],
           featured: false,
-          label: 'pay',
-          onclick: this.createYearOrder
+          buttons: ['usdttrc20', 'usdtbep20'],
+          onclicks: [this.createMonthOrderTrc20, this.createMonthOrderBep20]
         },
       ],
       licenseCode: '',
@@ -189,14 +223,13 @@ export default {
       order: null,
       interval: null,
       refreshTime: 10,
-      selectedPrice: 0
     }
   },
   watch: {
     'license.github_authorized': {
       handler: function (val) {
         console.log('github_authorized:', val)
-        this.tiers[0].label = val ? 'authorized' : 'startWithGithub'
+        this.tiers[0].buttons[0] = val ? 'authorized' : 'startWithGithub'
       },
       deep: true
     },
@@ -209,6 +242,7 @@ export default {
     }
   },
   computed: {
+
     formattedTime() {
       const minutes = Math.floor((this.remainingTime % 3600) / 60).toString().padStart(2, '0');
       const seconds = (this.remainingTime % 60).toString().padStart(2, '0');
@@ -398,15 +432,19 @@ export default {
         }
       }, 1000);
     },
-    async createMonthOrder(event) {
-      await this.createOrder(99, event)
+    async createMonthOrderTrc20(event) {
+      await this.createOrder(99, 'TRC20', event)
     },
-    async createYearOrder(event) {
-      await this.createOrder(599, event)
+    async createMonthOrderBep20(event) {
+      await this.createOrder(99, 'BEP20', event)
     },
-    async createOrder(price, event) {
-      console.log('price:', price)
-      this.selectedPrice = price
+    async createYearOrderTrc20(event) {
+      await this.createOrder(599, 'TRC20', event)
+    },
+    async createYearOrderBep20(event) {
+      await this.createOrder(599, 'BEP20', event)
+    },
+    async createOrder(price, network, event) {
       event.target.innerText = this.$t('fetching')
       event.target.disabled = true
       const response = await fetch(`https://pro.api.tikmatrix.com/front-api/create_order`, {
@@ -417,6 +455,8 @@ export default {
         body: Body.json({
           mid: this.license.uid,
           app: 'TikMatrix',
+          network: network,
+          amount: price,
         }),
       });
       console.log('response:', response)
