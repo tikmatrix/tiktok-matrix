@@ -215,7 +215,7 @@ export default {
           ],
           featured: false,
           buttons: ['usdttrc20', 'usdtbep20'],
-          onclicks: [this.createMonthOrderTrc20, this.createMonthOrderBep20]
+          onclicks: [this.createYearOrderTrc20, this.createYearOrderBep20]
         },
       ],
       licenseCode: '',
