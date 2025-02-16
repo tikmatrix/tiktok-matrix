@@ -499,8 +499,10 @@ export const i18n = createI18n({
       batchFO: 'Batch FO',
       usdttrc20: 'Pay With USDT-TRC20',
       usdtbep20: 'Pay With USDT-BEP20',
+      loadSoundWaitTime: 'Load Sound Wait Time',
     },
     'zh-CN': {
+      loadSoundWaitTime: '加载声音等待时间',
       usdtbep20: 'USDT-BEP20 支付',
       usdttrc20: 'USDT-TRC20 支付',
       batchFO: '批量关注',

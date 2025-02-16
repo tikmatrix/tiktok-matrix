@@ -1,7 +1,7 @@
 import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
 import mock from '../mock'
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
-
+import { message } from '@tauri-apps/api/dialog';
 
 const request = async function request(config) {
   const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
@@ -26,6 +26,10 @@ const request = async function request(config) {
   console.log(`request: ${queryUrl} options: ${JSON.stringify(options)}`)
   const response = await fetch(`${queryUrl}`, options,);
   console.log(`response status: ${response.status}`)
+  if (response.status == 500 || response.status == 400) {
+    await message(response.data, { title: 'Agent Error', type: 'error' })
+    return { code: 500, data: [] }
+  }
   return response.data
 }
 export default request

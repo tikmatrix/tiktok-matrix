@@ -107,42 +107,32 @@ export default {
       }
     }
   },
-  components: {},
   data() {
     return {
-      mygroup: {
-        auto_train: 0,
-        auto_publish: 0,
-        image_count: 2,
-      },
+      mygroup: {},
       train_time1: '',
       train_time2: '',
       train_time3: '',
       train_time4: '',
       train_time5: '',
       train_time6: '',
-      publish_time1: '',
-      publish_time2: '',
-      publish_time3: '',
-      publish_time4: '',
-      publish_time5: '',
-      publish_time6: ''
+
     }
+  },
+  watch: {
+    'mygroup.auto_train': function (val) {
+      this.mygroup.auto_train = Number(val)
+    },
+
+
   },
   methods: {
     async update() {
       this.mygroup.train_start_time = [this.train_time1, this.train_time2, this.train_time3, this.train_time4, this.train_time5, this.train_time6]
         .filter(Boolean)
         .join(',')
-      this.mygroup.publish_start_time = [this.publish_time1, this.publish_time2, this.publish_time3, this.publish_time4, this.publish_time5, this.publish_time6]
-        .filter(Boolean)
-        .join(',')
       if (this.mygroup.auto_train == 1 && !this.mygroup.train_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
         await this.$emiter('showToast', this.$t('trainStartTimeFormatError'))
-        return
-      }
-      if (this.mygroup.auto_publish == 1 && !this.mygroup.publish_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
-        await this.$emiter('showToast', this.$t('publishStartTimeFormatError'))
         return
       }
       this.updateGroup(this.mygroup)
@@ -150,30 +140,7 @@ export default {
 
     async updateGroup(group) {
       this.$service
-        .update_group({
-          id: group.id,
-          name: group.name,
-          auto_train: Number(group.auto_train),
-          auto_publish: Number(group.auto_publish),
-          publish_start_time: group.publish_start_time,
-          train_start_time: group.train_start_time,
-          title: group.title,
-          publish_type: Number(group.publish_type),
-          add_product_link: group.add_product_link,
-          floow_probable: Number(group.floow_probable),
-          like_probable: Number(group.like_probable),
-          collect_probable: Number(group.collect_probable),
-          comment_probable: Number(group.comment_probable),
-          train_duration: Number(group.train_duration),
-          min_duration: Number(group.min_duration),
-          max_duration: Number(group.max_duration),
-          topic: group.topic,
-          comment: group.comment,
-          image_count: Number(group.image_count),
-          add_sound: group.add_sound,
-          origin_sound_volume: group.origin_sound_volume,
-          add_sound_volume: group.add_sound_volume,
-        })
+        .update_group(group)
         .then(async () => {
           await this.$emiter('closePageDialog', {})
           await this.$emiter('reload_group', {})
@@ -181,9 +148,7 @@ export default {
     },
   },
   async mounted() {
-    console.log('mounted', this.group)
     this.mygroup = this.group
-    console.log(this.mygroup)
     if (this.mygroup.train_start_time) {
       const [train_time1, train_time2, train_time3, train_time4, train_time5, train_time6] = this.mygroup.train_start_time.split(',')
       this.train_time1 = train_time1
@@ -193,18 +158,8 @@ export default {
       this.train_time5 = train_time5
       this.train_time6 = train_time6
     }
-    if (this.mygroup.publish_start_time) {
-      const [publish_time1, publish_time2, publish_time3, publish_time4, publish_time5, publish_time6] = this.mygroup.publish_start_time.split(',')
-      this.publish_time1 = publish_time1
-      this.publish_time2 = publish_time2
-      this.publish_time3 = publish_time3
-      this.publish_time4 = publish_time4
-      this.publish_time5 = publish_time5
-      this.publish_time6 = publish_time6
-    }
+
   },
-  unmounted() {
-    console.log('unmounted', this.group)
-  }
+
 }
 </script>

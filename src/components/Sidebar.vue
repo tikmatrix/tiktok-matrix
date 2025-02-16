@@ -295,32 +295,9 @@ export default {
     },
     async saveGroup() {
       if (this.updateGroup) {
-        const group = this.updateGroup
+        this.updateGroup.name = this.newGroupName
         this.$service
-          .update_group({
-            id: group.id,
-            name: this.newGroupName,
-            auto_train: Number(group.auto_train),
-            auto_publish: Number(group.auto_publish),
-            publish_start_time: group.publish_start_time,
-            train_start_time: group.train_start_time,
-            title: group.title,
-            publish_type: Number(group.publish_type),
-            floow_probable: Number(group.floow_probable),
-            like_probable: Number(group.like_probable),
-            collect_probable: Number(group.collect_probable),
-            comment_probable: Number(group.comment_probable),
-            train_duration: Number(group.train_duration),
-            min_duration: Number(group.min_duration),
-            max_duration: Number(group.max_duration),
-            topic: group.topic,
-            comment: group.comment,
-            image_count: Number(group.image_count),
-            add_sound: Number(group.add_sound),
-            origin_sound_volume: Number(group.origin_sound_volume),
-            add_sound_volume: Number(group.add_sound_volume),
-            add_product_link: Number(group.add_product_link),
-          })
+          .update_group(this.updateGroup)
           .then(() => {
             this.newGroupName = ''
             this.showAddGroup = false
@@ -330,26 +307,6 @@ export default {
         this.$service
           .add_group({
             name: this.newGroupName,
-            auto_train: 0,
-            auto_publish: 0,
-            publish_start_time: '',
-            train_start_time: '',
-            title: '',
-            comment: '',
-            publish_type: 0,
-            floow_probable: 0,
-            like_probable: 0,
-            collect_probable: 0,
-            comment_probable: 0,
-            train_duration: 0,
-            min_duration: 10,
-            max_duration: 30,
-            topic: '',
-            image_count: 2,
-            add_sound: 0,
-            origin_sound_volume: 0,
-            add_sound_volume: 0,
-            add_product_link: 0,
           })
           .then(() => {
             this.newGroupName = ''

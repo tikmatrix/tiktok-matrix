@@ -119,12 +119,13 @@
     </div>
   </dialog>
   <dialog ref="log_dialog" class="modal">
-    <div class="modal-box">
+    <div class="modal-box w-11/12 max-w-5xl">
       <form method="dialog">
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="font-bold text-lg">logs/{{ real_serial }}.log</h3>
-      <pre class="text-xs">{{ logs }}</pre>
+      <pre ref="log_dialog_body" class="text-xs h-96 overflow-y-scroll">{{ logs }}</pre>
+      <MyButton icon="fa fa-refresh" @click="loadLogs" label="refresh" />
     </div>
     <form method="dialog" class="modal-backdrop">
       <button>close</button>
@@ -134,8 +135,12 @@
 <script>
 import { WebviewWindow } from '@tauri-apps/api/window'
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+import MyButton from '../Button.vue'
 export default {
   name: 'RightBars',
+  components: {
+    MyButton
+  },
   props: {
     serial: {
       type: String,
@@ -159,11 +164,17 @@ export default {
     }
   },
   methods: {
-    async showLogs() {
+    async loadLogs() {
       const logs = await readTextFile(`logs/${this.real_serial}.log`, { dir: BaseDirectory.AppData });
       //show tail 100 lines
-      this.logs = logs.split('\n').slice(-100).join('\n')
+      this.logs = logs.split('\n').slice(-200).join('\n')
+      this.$nextTick(() => {
+        this.$refs.log_dialog_body.scrollTop = this.$refs.log_dialog_body.scrollHeight
+      })
+    },
+    async showLogs() {
       this.$refs.log_dialog.showModal()
+      this.loadLogs()
 
     },
     async openDebugWindow() {

@@ -55,7 +55,7 @@
           v-show="showDeviceList">
           <div class="cursor-pointer p-2 hover:bg-gray-200" v-for="(device, _index) in devices" :key="device.serial"
             @click="selectDevice(device)">
-            {{ device.index }}
+            {{ device.key }}
           </div>
         </div>
       </div>
@@ -100,22 +100,22 @@ export default {
       this.myaccount.username = this.myaccount.username.trim()
       this.myaccount.logined = parseInt(this.myaccount.logined)
       if (this.myaccount.id) {
-        this.$emiter('update', this.myaccount)
+        this.$emit('update', this.myaccount)
       } else {
-        this.$emiter('add', this.myaccount)
+        this.$emit('add', this.myaccount)
       }
     },
 
     selectDevice(device) {
-      this.myaccount.device = device.serial
-      this.myaccount.device_index = device.index
+      this.myaccount.device = device.real_serial
+      this.myaccount.device_index = device.key
       this.showDeviceList = false
     },
 
   },
   mounted() {
     this.myaccount = this.account
-    this.myaccount.device_index = this.devices.find(device => device.serial === this.myaccount.device)?.index
+    this.myaccount.device_index = this.devices.find(device => device.real_serial === this.myaccount.device)?.key
   }
 }
 </script>
