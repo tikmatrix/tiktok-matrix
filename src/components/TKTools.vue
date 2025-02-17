@@ -61,11 +61,11 @@
         @click="$refs.userActionsDialog.showModal">
         <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1 text-green-500" />{{ $t('userActions') }}
     </button>
-    <!-- <button
+    <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="batchFO">
         <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('batchFO') }}
-    </button> -->
+    </button>
     <button
         class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
         @click="$refs.postActionsDialog.showModal">

@@ -500,8 +500,12 @@ export const i18n = createI18n({
       usdttrc20: 'Pay With USDT-TRC20',
       usdtbep20: 'Pay With USDT-BEP20',
       loadSoundWaitTime: 'Load Sound Wait Time',
+      batchFOTips: 'If there are 1000 target accounts, and there are 100 accounts in the currently selected device, then each account will follow 10 target accounts, so the tasks will be evenly distributed to each selected account',
+      batchDMTips: 'If there are 1000 target accounts, and there are 100 accounts in the currently selected device, then each account will DM 10 target accounts, so the tasks will be evenly distributed to each selected account',
     },
     'zh-CN': {
+      batchDMTips: '如果有1000个目标账号,当前选择的设备中有100个账号,那么每个账号会私信10个目标账号,平均分配任务到每个选择执行的账号',
+      batchFOTips: '如果有1000个目标账号,当前选择的设备中有100个账号,那么每个账号会关注10个目标账号,平均分配任务到每个选择执行的账号',
       loadSoundWaitTime: '加载声音等待时间',
       usdtbep20: 'USDT-BEP20 支付',
       usdttrc20: 'USDT-TRC20 支付',

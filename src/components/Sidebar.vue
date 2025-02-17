@@ -101,7 +101,7 @@
                 <input type="checkbox" class="checkbox checkbox-sm" @change="selectAll(item.id)"
                   :checked="isSelectAll(item.id)" />
                 <span class="label-text text-blue-500  text-xs">{{ item.name }}({{ groupDevices[item.id].length
-                  }})</span>
+                }})</span>
               </label>
               <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer ml-2"
                 @click="renameGroup(item)"></font-awesome-icon>
@@ -143,7 +143,7 @@
             <label class="label cursor-pointer">
               <input type="checkbox" class="checkbox checkbox-sm" @change="selectAll(0)" :checked="isSelectAll(0)" />
               <span class="label-text text-blue-500 text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
-                }})</span>
+              }})</span>
             </label>
 
             <span class="label-text text-xs text-right flex-1">{{ $t('selected') }}
@@ -571,7 +571,7 @@ export default {
     },
 
 
-    async message() {
+    async batchDM() {
       if (this.selection.length == 0) {
         await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
@@ -579,6 +579,22 @@ export default {
 
       this.$service
         .message_now({
+          serials: this.selection,
+        })
+        .then(async (res) => {
+          await this.$emiter('reload_tasks', {})
+          await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
+
+        })
+    },
+    async batchFO() {
+      if (this.selection.length == 0) {
+        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        return
+      }
+
+      this.$service
+        .follow_now({
           serials: this.selection,
         })
         .then(async (res) => {
@@ -720,8 +736,11 @@ export default {
     });
 
 
-    await this.$listen('message', (e) => {
-      this.message();
+    await this.$listen('batchDM', (e) => {
+      this.batchDM();
+    });
+    await this.$listen('batchFO', (e) => {
+      this.batchFO();
     });
 
     await this.$listen('stop_task', (e) => {

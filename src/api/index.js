@@ -7,6 +7,7 @@ const api = {
   upload_videos: '/api/material/upload_videos',
   material_count: '/api/material/count',
   message_now: '/api/message_now',
+  follow_now: '/api/follow_now',
   init: '/api/device/init',
   index: '/api/device/index',
   group: '/api/group',

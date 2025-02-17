@@ -103,17 +103,11 @@ export default {
   },
   methods: {
     async clearAll() {
-      const yes = await ask(this.$t('confirmClearAll'), this.$t('confirm'));
-      if (yes) {
-        this.$service
-          .delete_all_tasks()
-          .then(() => {
-            this.get_tasks()
-          })
-          .catch(err => {
-            console.log(err)
-          })
-      }
+      this.$service
+        .delete_all_tasks()
+        .then(() => {
+          this.get_tasks()
+        })
     },
 
     async show_device(serial) {

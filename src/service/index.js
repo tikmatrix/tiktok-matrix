@@ -409,7 +409,13 @@ export function message_now(data) {
     url: api.message_now
   })
 }
-
+export function follow_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.follow_now
+  })
+}
 
 
 //reset_all_index
