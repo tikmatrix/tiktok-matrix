@@ -175,7 +175,7 @@
   <BuyLicense ref="buyLiscenseDialog" :license="license" />
   <dialog ref="init_dialog" class="modal">
     <div class="modal-box">
-      <h3 class="font-bold text-lg">{{ $t('initing') }}</h3>
+      <h3 class="font-bold text-lg">{{ $t('initing') }}{{ init_progress }}</h3>
       <div class="modal-body">
         <div class="flex flex-row justify-between text-center items-center">
           <progress class="progress progress-success w-full"></progress>
@@ -251,7 +251,8 @@ export default {
       },
       locale: util.getData('locale') || 'en',
       version: '1.0.0',
-      port: -1
+      port: -1,
+      init_progress: '0/0',
     }
   },
 
@@ -560,14 +561,13 @@ export default {
         return
       }
       this.$refs.init_dialog.showModal()
-      this.$service
-        .init({
-          serials: this.selection,
+      for (let i = 0; i < this.selection.length; i++) {
+        this.init_progress = `${i + 1}/${this.selection.length}`
+        await this.$service.init({
+          serials: [this.selection[i]],
         })
-        .then(res => {
-          this.$refs.init_dialog.close()
-        })
-
+      }
+      this.$refs.init_dialog.close()
     },
 
 
