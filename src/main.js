@@ -24,6 +24,10 @@ let devices = reactive({ list: [] })
 
 async function getDevices() {
   service.get_devices().then(res => {
+    //mock
+    // for (let i = 0; i < 100; i++) {
+    //   res.data[i] = { real_serial: i, group_id: 0, sort: 0 }
+    // }
     devices.list.splice(0, devices.list.length, ...res.data)
     for (let i = 0; i < devices.list.length; i++) {
       devices.list[i].sort = localStorage.getItem(`sort_${devices.list[i].real_serial}`) || '0'

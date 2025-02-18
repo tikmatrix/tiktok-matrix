@@ -27,12 +27,12 @@
         <div class="col-span-2 flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="video" value="0" v-model="mygroup.publish_type"
-              class="form-radio text-blue-500 h-4 w-4">
+              class="form-radio text-primary h-4 w-4">
             <label for="video" class="ml-2">{{ $t('video') }}</label>
           </div>
           <div class="flex items-center">
             <input type="radio" id="image" value="1" v-model="mygroup.publish_type"
-              class="form-radio text-blue-500 h-4 w-4">
+              class="form-radio text-primary h-4 w-4">
             <label for="image" class="ml-2">{{ $t('image') }}</label>
           </div>
           <div class="flex items-center" v-if="mygroup.publish_type == 1">
@@ -47,17 +47,17 @@
         <div class="col-span-6 flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="default" value="-1" v-model="mygroup.add_sound"
-              class="form-radio text-blue-500 h-4 w-4">
+              class="form-radio text-primary h-4 w-4">
             <label for="default" class="ml-2">{{ $t('default') }}</label>
           </div>
           <div class="flex items-center">
             <input type="radio" id="disable" value="0" v-model="mygroup.add_sound"
-              class="form-radio text-blue-500 h-4 w-4">
+              class="form-radio text-primary h-4 w-4">
             <label for="disable" class="ml-2">{{ $t('disable') }}</label>
           </div>
           <div class="flex items-center">
             <input type="radio" id="enable" value="1" v-model="mygroup.add_sound"
-              class="form-radio text-blue-500 h-4 w-4">
+              class="form-radio text-primary h-4 w-4">
             <label for="enable" class="ml-2">{{ $t('enable') }}</label>
           </div>
           <!-- add sound tips -->
@@ -98,12 +98,12 @@
         <div class="col-span-6 flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="disable" value="0" v-model="mygroup.add_product_link"
-              class="form-radio text-blue-500 h-4 w-4">
+              class="form-radio text-primary h-4 w-4">
             <label for="disable" class="ml-2">{{ $t('disable') }}</label>
           </div>
           <div class="flex items-center">
             <input type="radio" id="enable" value="1" v-model="mygroup.add_product_link"
-              class="form-radio text-blue-500 h-4 w-4">
+              class="form-radio text-primary h-4 w-4">
             <label for="enable" class="ml-2">{{ $t('enable') }}</label>
           </div>
 
@@ -127,7 +127,7 @@
     <!-- other fields... -->
     <div class="mt-8 w-full flex justify-end">
       <button
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        class="bg-primary hover:bg-blue-700 text-primary-content font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         @click="update">
         {{ $t('update') }}
       </button>

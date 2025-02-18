@@ -1,28 +1,30 @@
 <template>
-  <div class="w-full min-h-screen">
+  <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar">
     <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage">
       <template v-slot:buttons>
         <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired" />
-        <div class="form-control">
+        <div class="form-control ring-1 ml-2 rounded-lg">
           <label class="label cursor-pointer">
-            <span class="label-text text-xs font-bold">{{ $t('autoWakeUp') }}</span>
+            <span class="text-md font-bold mr-2">{{ $t('autoWakeUp') }}: </span>
             <input type="checkbox" class="toggle toggle-success" v-model="settings.uiautomator_status" true-value="1"
               false-value="0" @change="update_settings" />
           </label>
         </div>
-        <div class="flex-1">
-
+        <div class="form-control ring-1 ml-2 rounded-lg">
+          <label class="label cursor-pointer">
+            <span class="text-md font-bold mr-2">
+              {{ $t('displayMode') }}:
+            </span>
+            <label class="swap swap-rotate">
+              <input type="checkbox" v-model="listMode" />
+              <!--list mode-->
+              <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-6 h-6 text-success" />
+              <!--grid mode-->
+              <font-awesome-icon icon="fa-solid fa-th" class="swap-off fill-current w-6 h-6 text-success" />
+            </label>
+          </label>
         </div>
-        <span class=" text-md font-bold mr-2">
-          {{ $t('displayMode') }}:
-        </span>
-        <label class="swap swap-rotate">
-          <input type="checkbox" v-model="listMode" />
-          <!--list mode-->
-          <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-6 h-6 text-blue-500" />
-          <!--grid mode-->
-          <font-awesome-icon icon="fa-solid fa-th" class="swap-off fill-current w-6 h-6 text-blue-500" />
-        </label>
+
       </template>
       <template v-slot:default="slotProps">
         <div class="flex flex-wrap gap-2 p-4">
@@ -62,7 +64,7 @@
                     <td>{{ device.sort }}</td>
                     <td>
                       <div class="space-x-4">
-                        <button class="btn-sm bg-blue-500 hover:bg-blue-700 text-white rounded"
+                        <button class="btn-xs bg-primary hover:bg-blue-700 text-primary-content rounded"
                           @click="showSetSortDialog(device)">{{
                             $t('setSort') }}</button>
                       </div>
@@ -83,11 +85,11 @@
     <div v-if="devices.length == 0" class="w-full min-h-screen bg-base-100 flex flex-col items-center justify-center">
       <div class="relative w-64 h-64">
         <div class="absolute inset-0 border-4 border-gray-300 rounded-full"></div>
-        <div class="absolute inset-0 border-4 border-blue-500 rounded-full animate-ping"></div>
+        <div class="absolute inset-0 border-4 border-primary rounded-full animate-ping"></div>
         <div class="absolute inset-0 flex items-center justify-center">
           <i class="fas fa-mobile-alt text-5xl text-gray-600"></i>
         </div>
-        <div class="absolute top-1/2 left-1/2 w-1 h-32 bg-blue-500 origin-bottom animate-radar"></div>
+        <div class="absolute top-1/2 left-1/2 w-1 h-32 bg-primary origin-bottom animate-radar"></div>
       </div>
       <span class="mt-4 text-lg font-semibold text-gray-700 animate-bounce">{{ $t('detecting_devices') }}</span>
     </div>

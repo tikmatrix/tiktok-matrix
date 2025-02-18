@@ -22,7 +22,7 @@
                 <th>{{ $t('scriptArgs') }}</th>
                 <th>{{ $t('startTime') }}</th>
                 <th>{{ $t('status') }}</th>
-                <th>{{ $t('remark') }}</th>
+                <!-- <th>{{ $t('remark') }}</th> -->
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
@@ -43,17 +43,17 @@
                   <div class="badge badge-success badge-sm" v-else-if="task.status == '2'">{{ $t('success') }}</div>
                   <div class="badge badge-error badge-sm" v-else-if="task.status == '3'">{{ $t('failed') }}</div>
                 </td>
-                <td><span class="badge badge-ghost badge-sm">{{ task.remark }}</span></td>
+                <!-- <td><span class="badge badge-ghost badge-sm">{{ task.remark }}</span></td> -->
                 <td>
                   <a class="link link-primary" @click="show_device(task.serial)" v-if="task.device_index">{{
                     task.device_index }}</a>
-                  <span v-else class="text text-red-500">{{ $t('offline') }}</span>
+                  <span v-else class="text text-error">{{ $t('offline') }}</span>
                 </td>
                 <td>
                   <div class="space-x-4">
-                    <button class="btn-sm bg-blue-500 hover:bg-blue-700 text-white rounded" @click="retry(task)">{{
+                    <button class="btn btn-sm btn-primary rounded" @click="retry(task)">{{
                       $t('retry') }}</button>
-                    <button class="btn-sm bg-red-500 hover:bg-red-700 text-white rounded" @click="deleteTask(task)">{{
+                    <button class="btn btn-sm btn-error rounded" @click="deleteTask(task)">{{
                       $t('delete') }}</button>
                   </div>
                 </td>

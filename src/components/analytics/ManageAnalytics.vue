@@ -85,9 +85,9 @@
                 <td>{{ item.day_hour }}</td>
                 <!-- <td>
                                     <div class="space-x-4">
-                                        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                        <button class="bg-primary hover:bg-blue-700 text-primary-content font-bold py-2 px-4 rounded"
                                             @click="editAnalytics(item)">{{ $t('edit') }}</button>
-                                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                                        <button class="bg-error hover:bg-red-700 text-primary-content font-bold py-2 px-4 rounded"
                                             @click="deleteAnalytics(item)">{{ $t('delete') }}</button>
                                     </div>
                                 </td> -->

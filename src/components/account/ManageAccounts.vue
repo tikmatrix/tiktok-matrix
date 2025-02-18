@@ -37,21 +37,19 @@
                 <!-- <td>{{ account.fans }}</td> -->
 
                 <td>
-                  <a class="cursor-pointer underline text-blue-500" v-if="account.device_index"
+                  <a class="cursor-pointer underline text-primary" v-if="account.device_index"
                     @click="show_device(account.device)">{{ account.device_index }}
                   </a>
-                  <span v-else class="text text-red-500">{{ $t('offline') }}</span>
+                  <span v-else class="text text-error">{{ $t('offline') }}</span>
                 </td>
                 <td>
-                  <span v-if="account.logined == 1" class="text text-green-500">{{ $t('logined') }}</span>
-                  <span v-else class="text text-red-500">{{ $t('unlogined') }}</span>
+                  <span v-if="account.logined == 1" class="text text-success">{{ $t('logined') }}</span>
+                  <span v-else class="text text-error">{{ $t('unlogined') }}</span>
                 </td>
                 <td>
                   <div class="space-x-4">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                      @click="editAccount(account)">{{ $t('edit') }}</button>
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                      @click="deleteAccount(account)">
+                    <button class="btn btn-sm btn-primary" @click="editAccount(account)">{{ $t('edit') }}</button>
+                    <button class="btn btn-sm btn-error" @click="deleteAccount(account)">
                       {{ $t('delete') }}
                     </button>
                   </div>

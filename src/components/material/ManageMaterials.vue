@@ -50,8 +50,9 @@
                 </td>
                 <td>
                   <button class="btn btn-sm btn-success" @click="showEditTitle(material)">{{ $t('editTitle')
-                    }}</button>
-                  <button class="bg-red-500 hover:bg-red-700 text-white btn btn-sm" @click="delete_material(material)">
+                  }}</button>
+                  <button class="bg-error hover:bg-red-700 text-primary-content btn btn-sm"
+                    @click="delete_material(material)">
                     {{ $t('delete') }}
                   </button>
                 </td>

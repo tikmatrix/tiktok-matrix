@@ -1,66 +1,49 @@
 <template>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emiter('menuSelected', { name: 'accounts' })">
-        <font-awesome-icon icon="user" class="h-3 w-3 mr-1" />{{ $t('accounts') }}
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('menuSelected', { name: 'accounts' })">
+        <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emiter('menuSelected', { name: 'packageNameSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('packageNameSettings') }}
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('menuSelected', { name: 'packageNameSettings' })">
+        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('packageNameSettings') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="grantApp">
-        <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 mr-1 text-green-500" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="grantApp">
+        <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />
         {{ $t('grantApp') }}
     </button>
 
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })">
-        <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-white" />
+        <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-primary-content" />
         {{ $t('enableFastInput') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        :data-tip="$t('enableTCP')" @click="$emiter('adbEventData', { args: ['tcpip', '5555'] })">
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" :data-tip="$t('enableTCP')"
+        @click="$emiter('adbEventData', { args: ['tcpip', '5555'] })">
         <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />
         {{ $t('enableTCP') }}
     </button>
 
 
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emiter('initDevice')">
-        <font-awesome-icon icon="fa fa-undo" class="h-3 w-3 mr-1 text-pink-500" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('initDevice')">
+        <font-awesome-icon icon="fa fa-undo" class="h-3 w-3 text-pink-500" />
         {{ $t('initAppAgent') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.github.tikmatrix/.MainActivity'] })">
-        <font-awesome-icon icon="fa fa-play" class="h-3 w-3 mr-1 text-green-500" />
+        <font-awesome-icon icon="fa fa-play" class="h-3 w-3 text-success" />
         {{ $t('openAppAgent') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$refs.proxy_dialog.show()">
-        <font-awesome-icon icon="fa fa-server" class="h-3 w-3 mr-1" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.proxy_dialog.show()">
+        <font-awesome-icon icon="fa fa-server" class="h-3 w-3" />
         {{ $t('setProxy') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="open_dir('bin')">
-        <font-awesome-icon icon="fa fa-folder" class="h-3 w-3 mr-1" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="open_dir('bin')">
+        <font-awesome-icon icon="fa fa-folder" class="h-3 w-3" />
         {{ $t('openAppDir') }}
     </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emiter('updateService')">
-        <font-awesome-icon icon="fa fa-download" class="h-3 w-3 mr-1" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('updateService')">
+        <font-awesome-icon icon="fa fa-download" class="h-3 w-3" />
         {{ $t('checkUpdate') }}
     </button>
     <dialog ref="proxy_dialog" class="modal">

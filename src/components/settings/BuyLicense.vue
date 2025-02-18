@@ -1,44 +1,44 @@
 <template>
   <dialog ref="buy_liscense_dialog" class="modal">
-    <div class="modal-box w-11/12 max-w-5xl">
+    <div class="modal-box w-11/12 max-w-5xl overflow-hidden">
       <div class="modal-body">
-        <div class="relative isolate bg-white px-6 py-6 w-full">
+        <div class="relative isolate px-6 py-6 w-full">
           <div class="absolute inset-x-0 -z-10 transform-gpu overflow-hidden px-36 blur-3xl" aria-hidden="true">
             <div
-              class="mx-auto aspect-1155/678 w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 h-96"
+              class="mx-auto aspect-1155/678 w-[72.1875rem] bg-gradient-to-tr from-secondary to-neutral opacity-30 h-96"
               style="clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);"></div>
           </div>
           <div class="flex items-start flex-col w-full">
             <div class="flex items-center flex-row gap-2 w-full justify-center">
               <label class="font-bold p-2">{{ $t('uid') }}: </label>
-              <input id="uid" type="text" placeholder="uid" class="input input-sm grow input-bordered"
+              <input id="uid" type="text" placeholder="uid" class="input input-sm grow input-bordered ring-1"
                 v-model="license.uid" readonly disabled />
               <button @click="copyText(license.uid, $event)" class="btn btn-sm btn-primary">{{ $t('copy') }}</button>
               <a class="link link-primary text-md float-right flex items-center pb-2"
                 href="https://t.me/+iGhozoBfAbI5YmE1" target="_blank">
-                <font-awesome-icon icon="fab fa-telegram" class="text-blue-500 h-6 w-6" />
+                <font-awesome-icon icon="fab fa-telegram" class="text-primary h-6 w-6" />
                 {{ $t('telegramCustom') }}
               </a>
             </div>
             <div class="flex items-center flex-row gap-2 w-full">
               <label class="font-bold p-2">{{ $t('licenseCode') }}: </label>
-              <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" class="input input-sm grow input-bordered"
+              <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" class="input input-sm grow input-bordered ring-1"
                 v-model="licenseCode" />
               <button @click="activate" class="btn btn-sm btn-primary">
                 {{ $t('activate') }}</button>
-              <label class="text-md p-2 pr-4 font-bold text-green-500" v-if="license.leftdays">
-                <font-awesome-icon icon="fa fa-check-circle" class="text-green-500 h-4 w-4" />
+              <label class="text-md p-2 pr-4 font-bold text-success" v-if="license.leftdays">
+                <font-awesome-icon icon="fa fa-check-circle" class="text-success h-4 w-4" />
                 {{ $t('licensedDays') }}:
-                <label class="text-green-500 font-bold mr-2">{{ license.leftdays }}</label>
+                <label class="text-success font-bold mr-2">{{ license.leftdays }}</label>
               </label>
-              <label class="text-md p-2 pr-4 font-bold text-red-500" v-else>
-                <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-red-500 h-4 w-4" />
+              <label class="text-md p-2 pr-4 font-bold text-error" v-else>
+                <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-error h-4 w-4" />
                 {{ $t('unlicensed') }}
               </label>
               <button @click="reload" class="btn btn-sm btn-primary">{{ $t('refresh') }}</button>
             </div>
           </div>
-          <div class="flex items-center flex-col w-full bg-green-100 rounded-lg p-4" v-if="order && order.status == 0">
+          <div class="flex items-center flex-col w-full rounded-lg p-4" v-if="order && order.status == 0">
             <div class="flex items-center justify-center flex-row w-full">
               <div class="flex-1"></div>
               <a class="link link-secondary text-md" @click="closeOrder">
@@ -51,16 +51,16 @@
             <img :src="order.qrcode" class="w-50 h-50" />
             <div class="flex items-center flex-row gap-2 w-full mt-2">
               <label class="font-bold text-right col-span-1">{{ $t('depositAddress') }}:</label>
-              <input type="text" class="input input-sm grow input-bordered" v-model="order.to_address" readonly
+              <input type="text" class="input input-sm grow input-bordered ring-1" v-model="order.to_address" readonly
                 disabled />
               <button @click="copyText(order.to_address, $event)" class="btn btn-sm btn-primary">
                 {{ $t('copy') }}
               </button>
             </div>
-            <label class="text-red-500 font-bold mt-2">{{ $t('usdtTip', {
+            <label class="text-error font-bold mt-2">{{ $t('usdtTip', {
               network: order.network, amount: order.amount
             }) }}</label>
-            <label class="text-green-500 font-bold mt-2">{{ $t('afterPayTip') }}</label>
+            <label class="text-success font-bold mt-2">{{ $t('afterPayTip') }}</label>
             <div class="flex items-center justify-center flex-row w-full">
               <progress class="progress progress-primary" :value="refreshTime" max="10"></progress>
             </div>
@@ -68,53 +68,53 @@
           </div>
           <div class="mx-auto mt-2 grid  grid-cols-3 items-center gap-y-6 w-full" v-else>
             <div v-for="(tier, tierIdx) in tiers" :key="tier.id"
-              :class="[tier.featured ? 'relative bg-gray-900 shadow-2xl' : 'bg-white/60', tier.featured ? '' : tierIdx === 0 ? 'rounded-t-3xl' : '', 'rounded-3xl p-8 ring-1 ring-gray-900/10']">
-              <h3 :id="tier.id"
-                :class="[tier.featured ? 'text-indigo-400' : 'text-indigo-600', 'text-base/7 font-semibold']">
+              :class="[tier.featured ? 'relative bg-neutral shadow-2xl' : 'bg-base-100', 'rounded-3xl p-8 ring-1 ring-info ring-opacity-50']">
+              <h3 :id="tier.id" :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-base/7 font-semibold']">
                 {{ $t(tier.name) }}
               </h3>
               <p class="mt-4 flex items-baseline gap-x-2">
                 <span
-                  :class="[tier.featured ? 'text-white' : 'text-gray-900', 'text-5xl font-semibold tracking-tight']">{{
+                  :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-5xl font-semibold tracking-tight']">{{
                     tier.priceMonthly }}</span>
-                <span :class="[tier.featured ? 'text-gray-400' : 'text-gray-500', 'text-base']">/
+                <span :class="[tier.featured ? 'text-accent' : 'text-primary']">/
                   {{ $t(tier.duration) }}
                 </span>
               </p>
-              <p :class="[tier.featured ? 'text-gray-300' : 'text-gray-600', 'mt-6 text-base/7']">
+              <p :class="[tier.featured ? 'text-neutral-content' : 'text-base-content', 'mt-6 text-base/7']">
                 {{ $t(tier.description) }}
               </p>
-              <ul role="list" :class="[tier.featured ? 'text-gray-300' : 'text-gray-600', 'mt-8 space-y-3 text-sm/6']">
+              <ul role="list"
+                :class="[tier.featured ? 'text-neutral-content' : 'text-base-content', 'mt-8 space-y-3 text-sm/6']">
                 <li v-for="feature in tier.features" :key="feature" class="flex gap-x-3">
-                  <CheckIcon :class="[tier.featured ? 'text-indigo-400' : 'text-indigo-600', 'h-6 w-5 flex-none']"
+                  <CheckIcon :class="[tier.featured ? 'text-accent' : 'text-primary', 'h-6 w-5 flex-none']"
                     aria-hidden="true" />
                   {{ $t(feature) }}
                 </li>
               </ul>
-              <a @click="tier.onclicks[0]" :aria-describedby="tier.id"
-                :class="[tier.featured ? 'bg-indigo-500 text-white shadow-xs hover:bg-indigo-400 focus-visible:outline-indigo-500' :
-                  'text-indigo-600 ring-1 ring-indigo-200 ring-inset hover:ring-indigo-300 hover:bg-indigo-300 focus-visible:outline-indigo-600',
-                  'flex flex-row items-center justify-center cursor-pointer mt-8 rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
+              <button @click="tier.onclicks[0]" :aria-describedby="tier.id"
+                :class="[tier.featured ? 'btn-primary text-primary-content shadow-xs' :
+                  'btn-accent text-accent-content shadow-xs',
+                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-8 rounded-md px-3.5 py-2.5 text-center text-sm font-semibold']">
                 <!-- github icon -->
-                <font-awesome-icon v-if="tier.name === 'free'" icon="fab fa-github" class="mr-2" />
+                <font-awesome-icon v-if="tier.name === 'free'" icon="fab fa-github" class="h-6 w-6" />
 
                 <!-- tron network icon -->
-                <svg class="mr-2 fill-current text-red-500 h-6 w-6" xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 64 64" v-else>
+                <svg class="fill-current text-error h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+                  v-else>
                   <g id="tron">
                     <path class="cls-1"
                       d="M61.55,19.28c-3-2.77-7.15-7-10.53-10l-.2-.14a3.82,3.82,0,0,0-1.11-.62l0,0C41.56,7,3.63-.09,2.89,0a1.4,1.4,0,0,0-.58.22L2.12.37a2.23,2.23,0,0,0-.52.84l-.05.13v.71l0,.11C5.82,14.05,22.68,53,26,62.14c.2.62.58,1.8,1.29,1.86h.16c.38,0,2-2.14,2-2.14S58.41,26.74,61.34,23a9.46,9.46,0,0,0,1-1.48A2.41,2.41,0,0,0,61.55,19.28ZM36.88,23.37,49.24,13.12l7.25,6.68Zm-4.8-.67L10.8,5.26l34.43,6.35ZM34,27.27l21.78-3.51-24.9,30ZM7.91,7,30.3,26,27.06,53.78Z" />
                   </g>
                 </svg>
                 {{ $t(tier.buttons[0]) }}
-              </a>
-              <a @click="tier.onclicks[1]" :aria-describedby="tier.id" v-if="tier.buttons[1]"
-                :class="[tier.featured ? 'bg-green-500 text-white shadow-xs hover:bg-green-400 focus-visible:outline-green-500' :
-                  'text-green-600 ring-1 ring-green-200 ring-inset hover:ring-green-300 hover:bg-green-300 focus-visible:outline-green-600',
-                  'flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
+              </button>
+              <button @click="tier.onclicks[1]" :aria-describedby="tier.id" v-if="tier.buttons[1]"
+                :class="[tier.featured ? 'btn-secondary text-secondary-content shadow-xs' :
+                  'btn-neutral text-neutral-content shadow-xs',
+                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
                 <!-- bsc network icon -->
 
-                <svg class="mr-2 fill-current text-orange-300 h-6 w-6" xmlns="http://www.w3.org/2000/svg"
+                <svg class="fill-current text-orange-300 h-6 w-6" xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 336.41 337.42">
                   <g id="Layer_2" data-name="Layer 2">
                     <g id="Layer_1-2" data-name="Layer 1">
@@ -126,7 +126,7 @@
                   </g>
                 </svg>
                 {{ $t(tier.buttons[1]) }}
-              </a>
+              </button>
             </div>
           </div>
         </div>

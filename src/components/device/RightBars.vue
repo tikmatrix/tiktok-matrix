@@ -2,102 +2,102 @@
   <div class="flex flex-col justify-start">
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('send_keycode', 'task')">
-      <font-awesome-icon icon="fa fa-window-restore" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa fa-window-restore" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('task') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('send_keycode', 'home')">
-      <font-awesome-icon icon="fa-solid fa-home" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa-solid fa-home" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('home') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('send_keycode', 'back')">
-      <font-awesome-icon icon="fa fa-reply" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa fa-reply" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('back') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'keyevent', 'KEYCODE_POWER'] })">
-      <font-awesome-icon icon="fa fa-lightbulb" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa fa-lightbulb" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('power') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 tooltip p-1"
       @click="$emiter('adbEventData', { args: ['shell', 'reboot'] })">
-      <font-awesome-icon icon="fa fa fa-refresh" class="h-4 w-4 text-red-500" />
+      <font-awesome-icon icon="fa fa fa-refresh" class="h-4 w-4 text-error" />
       <span class="text-xs block font-normal">{{ $t('reboot') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '1000', '500', '500', '300'] })">
-      <font-awesome-icon icon="fa-arrow-up" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa-arrow-up" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('up') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '500', '500', '1000', '300'] })">
-      <font-awesome-icon icon="fa-arrow-down" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa-arrow-down" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('down') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '1000', '500', '500', '500', '300'] })">
-      <font-awesome-icon icon="fa-arrow-left" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa-arrow-left" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('left') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '500', '1000', '500', '300'] })">
-      <font-awesome-icon icon="fa-arrow-right" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa-arrow-right" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('right') }}</span>
     </button>
     <!-- <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
       :data-tip="$t('showTimeSetting')"
       @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DATE_SETTINGS'] })">
-      <font-awesome-icon icon="fa fa-clock" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa fa-clock" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('time') }}</span>
     </button>
     <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
       :data-tip="$t('showLanguageSetting')"
       @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.android.settings/.LanguageSettings'] })">
-      <font-awesome-icon icon="fa fa-language" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa fa-language" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('language') }}</span>
     </button>
     <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
       :data-tip="$t('showSimInfo')"
       @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DEVICE_INFO_SETTINGS'] })">
-      <font-awesome-icon icon="fa fa-mobile" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa fa-mobile" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('sim') }}</span>
     </button> -->
     <!-- <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="uploadVideo">
-        <font-awesome-icon icon="fa fa-upload" class="h-4 w-4 text-blue-500" />
+        <font-awesome-icon icon="fa fa-upload" class="h-4 w-4 text-primary" />
         <span class="text-xs block font-normal">{{ $t('upload') }}</span>
         <input id="upload_video_input" type="file" v-on:change="on_upload_video" multiple hidden />
       </button> -->
     <!-- <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip" :data-tip="$t('installAPK')"
         @click="app_install">
-        <font-awesome-icon icon="fa-brands fa-android" class="h-4 w-4 text-blue-500" />
+        <font-awesome-icon icon="fa-brands fa-android" class="h-4 w-4 text-primary" />
         <span class="text-xs block font-normal">{{ $t('apk') }}</span>
         <input id="app_install_input" type="file" v-on:change="on_app_install" multiple hidden />
       </button> -->
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="show_text_input_dialog">
-      <font-awesome-icon icon="fa fa-keyboard" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa fa-keyboard" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('input') }}</span>
     </button>
     <!-- <button
       class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
       :data-tip="$t('enableTCP')" @click="$emiter('adbEventData', { args: ['tcpip', '5555'] })">
-      <font-awesome-icon icon="fa-solid fa-network-wired" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa-solid fa-network-wired" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('tcp') }}</span>
     </button> -->
 
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="openDebugWindow">
-      <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('debug') }}</span>
     </button>
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="showLogs">
-      <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 text-blue-500" />
+      <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 text-primary" />
       <span class="text-xs block font-normal">{{ $t('logs') }}</span>
     </button>
   </div>

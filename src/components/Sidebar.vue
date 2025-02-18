@@ -1,19 +1,19 @@
 <template>
   <div class="z-50 top-12 left-0 fixed" v-if="!showSidebar">
     <font-awesome-icon icon="fa-solid fa-angle-right"
-      class="text-white h-6 w-6 bg-blue-300 p-2 rounded-lg cursor-pointer" @click="showSidebar = true" />
+      class="text-secondary-content h-6 w-6 bg-secondary p-2 rounded-lg cursor-pointer" @click="showSidebar = true" />
   </div>
   <transition name="fade">
-    <div class="bg-base-100 m-4 flex flex-col rounded-lg shadow max-w-96" v-if="showSidebar">
-      <div class="bg-blue-500 p-4 rounded-t-lg">
-        <div class="flex flex-row items-center">
-          <font-awesome-icon icon="fa-brands fa-tiktok" class="text-white h-8 w-8 mr-2" />
+    <div class="bg-base-100 m-1 flex flex-col rounded-lg shadow w-96 h-screen overflow-y-scroll no-scrollbar"
+      v-if="showSidebar">
+      <div class="bg-primary p-4 rounded-t-lg">
+        <div class="flex flex-row items-center justify-center">
+          <font-awesome-icon icon="fa-brands fa-tiktok" class="text-primary-content h-8 w-8 mr-2" />
           <div>
-            <span class="text-xl text-white font-bold">{{ $t('siteName') }}</span>
-            <span class="text-xs text-white ml-2">v{{ version }}</span>
+            <span class="text-xl text-primary-content font-bold">{{ $t('siteName') }}</span>
+            <span class="text-xs text-primary-content ml-2">v{{ version }}</span>
             <br>
-            <span class="text-xs text-white font-sans">{{ $t('siteUrl') }}</span>
-
+            <span class="text-xs text-primary-content font-sans">{{ $t('siteUrl') }}</span>
           </div>
           <div class="ml-2">
             <select class="select select-info select-sm" v-model="locale">
@@ -23,37 +23,38 @@
           </div>
           <label class="swap swap-rotate ml-2">
             <!-- this hidden checkbox controls the state -->
-            <input type="checkbox" class="theme-controller" value="dark" />
+            <input type="checkbox" class="theme-controller" value="dark" v-model="isDark" />
             <!-- sun icon -->
-            <font-awesome-icon icon="fa-solid fa-sun" class="swap-off fill-current w-6 h-6 text-white" />
+            <font-awesome-icon icon="fa-solid fa-sun" class="swap-off fill-current w-6 h-6 text-primary-content" />
             <!-- moon icon -->
-            <font-awesome-icon icon="fa-solid fa-moon" class="swap-on fill-current w-6 h-6 text-white" />
+            <font-awesome-icon icon="fa-solid fa-moon" class="swap-on fill-current w-6 h-6 text-primary-content" />
           </label>
           <font-awesome-icon icon="fa-solid fa-angle-left"
-            class="text-white h-6 w-6 bg-blue-300 p-2 ml-2 rounded-lg cursor-pointer" @click="showSidebar = false" />
+            class="text-secondary-content h-6 w-6 bg-secondary p-2 ml-2 rounded-lg cursor-pointer"
+            @click="showSidebar = false" />
         </div>
       </div>
       <div class="p-4">
         <div class="flex flex-row p-2 bg-base-300 rounded-md">
           <a class="link link-primary text-xs float-right flex items-center mr-2"
             @click="$refs.buyLiscenseDialog.show()" v-if="license.leftdays > 0">
-            <font-awesome-icon icon="fa fa-check-circle" class="text-green-500 h-4 w-4" />
+            <font-awesome-icon icon="fa fa-check-circle" class="text-success h-4 w-4" />
             <span class="ml-2">{{ $t('licensedDays') }}:</span>
-            <span class="text-green-500 font-bold mr-2">{{ license.leftdays }}</span>
+            <span class="text-success font-bold mr-2">{{ license.leftdays }}</span>
           </a>
           <a class="link link-primary text-xs float-right flex items-center mr-2"
             @click="$refs.buyLiscenseDialog.show()" v-else>
-            <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-red-500 h-4 w-4" />
+            <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-error h-4 w-4" />
             <span class="ml-2">{{ $t('activate') }}</span>
           </a>
           <a class="link link-primary text-xs float-right flex items-center mr-2" :href="$t('siteUrl') + '/docs/intro'"
             target="_blank">
-            <font-awesome-icon icon="fa-solid fa-file-lines" class="text-blue-500 h-4 w-4 mr-2" />
+            <font-awesome-icon icon="fa-solid fa-file-lines" class="text-primary h-4 w-4 mr-2" />
             {{ $t('tutorial') }}
           </a>
           <a class="link link-primary text-xs float-right flex items-center mr-2"
             :href="'http://127.0.0.1:' + port + '/swagger-ui/'" target="_blank">
-            <font-awesome-icon icon="fa-solid fa-globe" class="text-blue-500 h-4 w-4 mr-2" />
+            <font-awesome-icon icon="fa-solid fa-globe" class="text-primary h-4 w-4 mr-2" />
             API Doc
           </a>
         </div>
@@ -86,30 +87,30 @@
         </div>
         <div class="flex flex-col">
           <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('groups') }}</span>
-          <button
-            class="btn btn-sm bg-transparent hover:bg-transparent border-1 border-success text-black-500 hover:text-blue-700 p-0 mt-1 block"
+          <button class="btn btn-sm btn-primary border-1 border-success text-primary-content p-0 mt-1"
             @click="addGroup">
-            <font-awesome-icon icon="fa-solid fa-plus" class="h-4 w-4 text-blue-500" />
-            <span class="text-xs text-blue-500">{{ $t('addGroup') }}</span>
+            <font-awesome-icon icon="fa-solid fa-plus" class="h-4 w-4" />
+            <span class="text-xs">{{ $t('addGroup') }}</span>
           </button>
-          <input ref="groupNameInput" v-if="showAddGroup" class="input input-sm input-bordered w-full max-w-xs mt-2"
-            type="text" v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
+          <input ref="groupNameInput" v-if="showAddGroup"
+            class="input input-sm input-bordered w-full max-w-xs mt-2 ring-1 ring-success" type="text"
+            v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
           <div class="border border-base-300 bg-base-500 rounded-md mt-2 shadow-lg" v-for="(item, index) in groups"
             :key="item.id">
             <div class="flex flex-row form-control items-center">
               <label class="label cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-sm" @change="selectAll(item.id)"
+                <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(item.id)"
                   :checked="isSelectAll(item.id)" />
-                <span class="label-text text-blue-500  text-xs">{{ item.name }}({{ groupDevices[item.id].length
+                <span class="label-text text-primary  text-xs">{{ item.name }}({{ groupDevices[item.id].length
                 }})</span>
               </label>
-              <font-awesome-icon icon="fa-solid fa-edit" class="text-blue-500 cursor-pointer ml-2"
+              <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
                 @click="renameGroup(item)"></font-awesome-icon>
 
 
 
               <div class="tooltip" :data-tip="$t('deleteGroup')">
-                <font-awesome-icon icon="fa-solid fa-trash" class="text-red-500 cursor-pointer ml-2"
+                <font-awesome-icon icon="fa-solid fa-trash" class="text-error cursor-pointer ml-2"
                   @click="deleteGroup(item.id)"></font-awesome-icon>
               </div>
 
@@ -121,28 +122,26 @@
             </div>
 
             <div class="flex flex-row form-control items-center">
-              <button
-                class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+              <button class="btn btn-sm btn-accent ml-1 mb-1"
                 @click="$emiter('menuSelected', { name: 'trainSettings', group: item })">
-                <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('trainSettings') }}
+                <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
               </button>
-              <button
-                class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+              <button class="btn btn-sm btn-accent ml-1 mb-1"
                 @click="$emiter('menuSelected', { name: 'publishSettings', group: item })">
-                <font-awesome-icon icon="cog" class="h-3 w-3 mr-1" />{{ $t('publishSettings') }}
+                <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
               </button>
-              <button
-                class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+              <button class="btn btn-sm btn-accent ml-1 mb-1"
                 @click="$emiter('menuSelected', { name: 'materials', group: item })">
-                <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3 mr-1" />{{ $t('materials') }}
+                <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
               </button>
             </div>
           </div>
 
           <div class="flex flex-row form-control items-center">
             <label class="label cursor-pointer">
-              <input type="checkbox" class="checkbox checkbox-sm" @change="selectAll(0)" :checked="isSelectAll(0)" />
-              <span class="label-text text-blue-500 text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
+              <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(0)"
+                :checked="isSelectAll(0)" />
+              <span class="label-text text-primary text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
               }})</span>
             </label>
 
@@ -152,8 +151,8 @@
             </span>
             <div class="tooltip" :data-tip="$t('moveToGroup')">
               <details ref="moveToGroupMenu" class="dropdown dropdown-top">
-                <summary class="btn btn-xs bg-transparent hover:bg-transparent border-0">
-                  <font-awesome-icon icon="fa-solid fa-share" class="text-blue-500"></font-awesome-icon>
+                <summary class="btn btn-sm bg-transparent hover:bg-transparent border-0">
+                  <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
                 </summary>
                 <ul class="dropdown-content z-[10] menu menu-sm p-2 shadow bg-base-200 rounded-box w-52">
                   <li v-for="(item, index) in groups" :key="item.id"><a @click="moveToGroup(0, item.id)">{{
@@ -253,6 +252,7 @@ export default {
       version: '1.0.0',
       port: -1,
       init_progress: '0/0',
+      isDark: util.getData('isDark') || '0',
     }
   },
 
@@ -263,6 +263,10 @@ export default {
     },
     selection() {
       this.refreshSelections()
+    },
+    isDark() {
+      console.log('isDark:', this.isDark)
+      util.setData('isDark', this.isDark)
     }
   },
   methods: {
@@ -272,7 +276,7 @@ export default {
         if (this.license.leftdays <= 0 && !this.license.github_authorized) {
           this.$refs.buyLiscenseDialog.show()
         }
-        console.log(JSON.stringify(this.license))
+        console.log(`license: ${JSON.stringify(this.license)}`)
       })
     },
     async renameGroup(item) {
@@ -283,6 +287,10 @@ export default {
       this.updateGroup = item
       this.showAddGroup = true
       this.newGroupName = item.name
+      //get focus
+      this.$nextTick(() => {
+        this.$refs.groupNameInput.focus()
+      })
 
     },
     async addGroup() {
@@ -292,7 +300,11 @@ export default {
       }
       this.updateGroup = null
       this.showAddGroup = true
-      this.newGroupName = ''
+      this.newGroupName = 'New Group'
+      //get focus
+      this.$nextTick(() => {
+        this.$refs.groupNameInput.focus()
+      })
     },
     async saveGroup() {
       if (this.updateGroup) {
@@ -320,7 +332,6 @@ export default {
     },
     async deleteGroup(id) {
       const yes = await ask(this.$t('deleteGroupConfirm'), this.$t('confirm'));
-      console.log("result:" + yes);
       if (yes) {
         this.$service
           .delete_group({
@@ -370,9 +381,6 @@ export default {
         .then(res => {
           this.groups = res.data
           this.refreshSelections()
-        }).catch(err => {
-          console.log(err)
-
         })
     },
     async uploadFiles() {
@@ -392,9 +400,6 @@ export default {
         })
         .then(res => {
           console.log(res)
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     async selectApkFile() {
@@ -425,9 +430,6 @@ export default {
         .then(res => {
           console.log(res)
         })
-        .catch(err => {
-          console.log(err)
-        })
     },
     async run_task_now(name, args = {}) {
       if (this.selection.length == 0) {
@@ -444,9 +446,6 @@ export default {
           await this.$emiter('reload_tasks', {})
           await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })
-        .catch(err => {
-          console.log(err)
-        })
     },
     async run_now_by_account(name, args = {}) {
       if (this.selection.length == 0) {
@@ -462,9 +461,6 @@ export default {
         .then(async (res) => {
           await this.$emiter('reload_tasks', {})
           await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     async selectTab(tab) {
@@ -497,13 +493,9 @@ export default {
       }
     },
     isSelectAll(id) {
-      console.log('isSelectAll:', id)
-      console.log(this.groupDevices[id].length, this.selections[id].length)
-      console.log(this.groupDevices[id].length > 0 && this.selections[id].length == this.groupDevices[id].length)
       return this.groupDevices[id].length > 0 && this.selections[id].length == this.groupDevices[id].length
     },
     async selectAll(id) {
-      console.log('selectAll:', id)
       if (!this.isSelectAll(id)) {
         if (id == 0) {
           this.selection = this.devices.map(device => device.real_serial)
@@ -513,7 +505,6 @@ export default {
       } else {
         this.selection = []
       }
-      console.log(this.selection);
       this.refreshSelections()
     },
     async refreshSelections() {
@@ -532,18 +523,12 @@ export default {
     async get_menus() {
       this.$service.get_menus().then(res => {
         this.menuItems = this.fullMenuItems.filter(item => res.data.includes(item.name))
-      }).catch(err => {
-        console.log(err)
-
       })
     },
 
     async get_settings() {
       this.$service.get_settings().then(res => {
         this.settings = res.data
-      }).catch(err => {
-        console.log(err)
-
       })
     },
 

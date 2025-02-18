@@ -1,6 +1,6 @@
 <template>
 
-  <div class="flex flex-row items-start bg-base-300 h-screen w-screen">
+  <div class="flex flex-row items-start bg-base-300 h-screen w-screen overflow-hidden">
     <Sidebar />
     <ManageDevices />
   </div>

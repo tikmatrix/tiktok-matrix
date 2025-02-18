@@ -6,12 +6,12 @@
       <div class="col-span-2 flex items-center gap-4">
         <div class="flex items-center">
           <input type="radio" id="global" value="com.zhiliaoapp.musically" v-model="settings.packagename"
-            class="form-radio text-blue-500 h-4 w-4">
+            class="form-radio text-primary h-4 w-4">
           <label for="global" class="ml-2">{{ $t('global') }}</label>
         </div>
         <div class="flex items-center">
           <input type="radio" id="asia" value="com.ss.android.ugc.trill" v-model="settings.packagename"
-            class="form-radio text-blue-500 h-4 w-4">
+            class="form-radio text-primary h-4 w-4">
           <label for="asia" class="ml-2">{{ $t('asia') }}</label>
         </div>
 

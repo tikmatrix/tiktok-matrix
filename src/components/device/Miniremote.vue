@@ -1,5 +1,5 @@
 <template>
-  <div class="relative  shadow-2xl border-2 border-solid border-green-500 indicator">
+  <div class="relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag  bg-base-300">
@@ -8,11 +8,11 @@
               <span class="text-xs font-bold bg-blue-300 pl-2 pr-2 rounded-md">
                 {{ no }}
               </span>
-              <!-- <button class="btn btn-xs bg-transparent hover:bg-transparent border-0 tooltip"
+              <!-- <button class="btn btn-sm bg-transparent hover:bg-transparent border-0 tooltip"
                 :data-tip="$t('moveToFirst')" @click="updateIndex">
-                <font-awesome-icon icon="fa-arrow-up" class="text-blue-500 cursor-pointer"></font-awesome-icon>
+                <font-awesome-icon icon="fa-arrow-up" class="text-primary cursor-pointer"></font-awesome-icon>
               </button> -->
-              <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-green-500' : ' text-red-500')" v-if="big"> -
+              <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-success' : ' text-error')" v-if="big"> -
                 {{
                   $t(task_status) }}</span>
             </div>
@@ -20,13 +20,13 @@
               <span :class="'mr-2 ' + (big ? 'text-sm font-bold' : 'text-xs')">{{ name }} </span>
               <span class="text-xs font-sans font-bold mr-1">{{ device.connect_type == 0 ? 'USB' :
                 'TCP'
-                }}</span>
+              }}</span>
               <span class="text-xs font-sans" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
             </div>
 
           </div>
           <button
-            class="btn bg-transparent hover:bg-transparent hover:text-red-500 text-gray-700 float-right border-0 p-4"
+            class="btn bg-transparent hover:bg-transparent hover:text-error text-gray-700 float-right border-0 p-4"
             @click="$emiter('closeDevice', this.device)" v-if="big">
             <font-awesome-icon icon="fa fa-times" class="h-4 w-4" />
           </button>
@@ -36,18 +36,19 @@
         <div class="flex flex-row flex-1 ">
           <div>
             <div class="relative flex-1 object-fill" :style="'width:' + width + 'px;height:' + height + 'px'">
-              <video class="absolute top-0 left-0 w-full h-full" ref="display" autoplay
-                poster="../../assets/preview.jpg" muted @mousedown="mouseDownListener" @mouseup="mouseUpListener"
-                @mouseleave="mouseLeaveListener" @mousemove="mouseMoveListener"></video>
-              <div class="absolute top-0 left-0 w-full h-full bg-base-200 flex justify-center items-center"
+              <video class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="display" autoplay muted
+                @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
+                @mousemove="mouseMoveListener"></video>
+              <div
+                class="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-gradient-to-tr from-secondary/30 to-neutral/30 opacity-50"
                 v-if="loading">
-                <font-awesome-icon icon="fa-solid fa-hourglass-end" class="h-6 w-6 text-blue-500 rotate" />
+                <font-awesome-icon icon="fa-solid fa-hourglass-end" class="h-6 w-6 text-primary rotate" />
               </div>
               <div
-                class="absolute top-0 left-0 w-full h-full bg-base-200 flex flex-col justify-center items-center opacity-90"
+                class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-gradient-to-tr from-secondary/30 to-neutral/30 opacity-50"
                 v-if="operating">
-                <font-awesome-icon icon="fa fa-hand-pointer" class="h-6 w-6 text-blue-500" />
-                <span class="text-blue-500 font-bold">{{ $t('operating') }}</span>
+                <font-awesome-icon icon="fa fa-hand-pointer" class="h-6 w-6 text-primary" />
+                <span class="text-primary font-bold">{{ $t('operating') }}</span>
               </div>
 
             </div>

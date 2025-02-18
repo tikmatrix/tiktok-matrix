@@ -1,83 +1,63 @@
 <template>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 mr-1 text-white" />
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-primary-content" />
         {{ $t('openTiktok') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 mr-1 text-yellow-500" />
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
         {{ $t('stopTiktok') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="logout">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 mr-1 text-pink-500" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="logout">
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
         {{ $t('logout') }}
     </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="startRegister">
-        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="startRegister">
+        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
         {{ $t('startRegister') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emiter('run_task_now', { name: 'login', args: {} })">
-        <font-awesome-icon icon="fa-solid fa-right-to-bracket" class="h-3 w-3 mr-1" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('run_task_now', { name: 'login', args: {} })">
+        <font-awesome-icon icon="fa-solid fa-right-to-bracket" class="h-3 w-3" />
         {{ $t('startLogin') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="startFillProfile">
-        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="startFillProfile">
+        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
         {{ $t('startFillProfile') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('run_task_now', { name: 'match_account', args: {} })">
-        <font-awesome-icon icon="fa-solid fa-user-check" class="h-3 w-3 mr-1" />
+        <font-awesome-icon icon="fa-solid fa-user-check" class="h-3 w-3" />
         {{ $t('matchAccount') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('run_now_by_account', { name: 'train', args: {} })">
-        <font-awesome-icon icon="robot" class="h-3 w-3 mr-1 text-green-500" />
+        <font-awesome-icon icon="robot" class="h-3 w-3 text-success" />
         {{ $t('startTrain') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('run_now_by_account', { name: 'publish', args: {} })">
-        <font-awesome-icon icon="paper-plane" class="h-3 w-3 mr-1 text-green-500" />
+        <font-awesome-icon icon="paper-plane" class="h-3 w-3 text-success" />
         {{ $t('startPublish') }}
     </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchDM">
+        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('batchDM') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.userActionsDialog.showModal">
+        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 text-success" />{{ $t('userActions') }}
+    </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$refs.userActionsDialog.showModal">
-        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1 text-green-500" />{{ $t('userActions') }}
-    </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="batchFO">
-        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 mr-1" />{{ $t('batchFO') }}
-    </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$refs.postActionsDialog.showModal">
-        <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3 mr-1 text-green-500" />
+    <!-- <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchFO">
+        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3" />{{ $t('batchFO') }}
+    </button> -->
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.postActionsDialog.showModal">
+        <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3 text-success" />
         {{ $t('postActions') }}
     </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="batchDM">
-        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3 mr-1" />{{ $t('batchDM') }}
-    </button>
+
     <dialog ref="postActionsDialog" class="modal">
         <div class="modal-box">
             <div class="flex flex-row items-center p-2">

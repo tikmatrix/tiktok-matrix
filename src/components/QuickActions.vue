@@ -1,65 +1,47 @@
 <template>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.HOME'] })">
-        <font-awesome-icon icon="fa fa-home" class="h-3 w-3 text-white" />
+        <font-awesome-icon icon="fa fa-home" class="h-3 w-3 text-primary-content" />
         {{ $t('home') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$emiter('send_screen_mode', 'off')">
-        <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-white" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('send_screen_mode', 'off')">
+        <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-primary-content" />
         {{ $t('screenOff') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
-        <font-awesome-icon icon="fa fa-cube" class="h-3 w-3 text-white" />
+        <font-awesome-icon icon="fa fa-cube" class="h-3 w-3 text-primary-content" />
         {{ $t('openNekoBox') }}
     </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="app_install">
-        <font-awesome-icon icon="fa fa-download" class="h-3 w-3 text-white" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="app_install">
+        <font-awesome-icon icon="fa fa-download" class="h-3 w-3 text-primary-content" />
         {{ $t('installApk') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="$refs.uninstall_dialog.showModal()">
-        <font-awesome-icon icon="fa-brands fa-android" class="h-3 w-3 text-white" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.uninstall_dialog.showModal()">
+        <font-awesome-icon icon="fa-brands fa-android" class="h-3 w-3 text-primary-content" />
         {{ $t('uninstallApk') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="uploadVideo">
-        <font-awesome-icon icon="fa fa-upload" class="h-3 w-3 text-white" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="uploadVideo">
+        <font-awesome-icon icon="fa fa-upload" class="h-3 w-3 text-primary-content" />
         {{ $t('uploadToGallery') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        @click="clearGallery">
-        <font-awesome-icon icon="fa fa-eraser" class="h-3 w-3 text-white" />
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="clearGallery">
+        <font-awesome-icon icon="fa fa-eraser" class="h-3 w-3 text-primary-content" />
         {{ $t('clearGallery') }}
     </button>
 
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        :data-tip="$t('showTimeSetting')"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" :data-tip="$t('showTimeSetting')"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DATE_SETTINGS'] })">
         <font-awesome-icon icon="fa fa-clock" class="h-3 w-3" />
         {{ $t('showTimeSetting') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        :data-tip="$t('showLanguageSetting')"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" :data-tip="$t('showLanguageSetting')"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.android.settings/.LanguageSettings'] })">
         <font-awesome-icon icon="fa fa-language" class="h-3 w-3" />
         {{ $t('showLanguageSetting') }}
     </button>
-    <button
-        class="btn btn-sm bg-blue-500 hover:bg-blue-300 border-0 text-white text-xs block font-normal ml-1 mb-1 min-w-max"
-        :data-tip="$t('showSimInfo')"
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" :data-tip="$t('showSimInfo')"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DEVICE_INFO_SETTINGS'] })">
         <font-awesome-icon icon="fa fa-sim-card" class="h-3 w-3" />
         {{ $t('showSimInfo') }}
