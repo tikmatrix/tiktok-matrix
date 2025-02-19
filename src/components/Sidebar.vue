@@ -52,11 +52,16 @@
             <font-awesome-icon icon="fa-solid fa-file-lines" class="text-primary h-4 w-4 mr-2" />
             {{ $t('tutorial') }}
           </a>
-          <a class="link link-primary text-xs float-right flex items-center mr-2"
+          <!-- <a class="link link-primary text-xs float-right flex items-center mr-2" :href="$t('siteUrl') + '#faq'"
+            target="_blank">
+            <font-awesome-icon icon="fa-solid fa-file-lines" class="text-primary h-4 w-4 mr-2" />
+            {{ $t('faq') }}
+          </a> -->
+          <!-- <a class="link link-primary text-xs float-right flex items-center mr-2"
             :href="'http://127.0.0.1:' + port + '/swagger-ui/'" target="_blank">
             <font-awesome-icon icon="fa-solid fa-globe" class="text-primary h-4 w-4 mr-2" />
             API Doc
-          </a>
+          </a> -->
         </div>
 
         <div role="tablist" class="tabs tabs-lifted mt-2 bg-base-200 rounded-md">
