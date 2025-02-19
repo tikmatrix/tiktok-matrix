@@ -150,6 +150,9 @@ export default {
       this.download_filename = 'Connecting to agent'
       this.$refs.download_dialog.showModal()
       const wsPort = await readTextFile('wssport.txt', { dir: BaseDirectory.AppData });
+      if (wsPort === '0') {
+        return;
+      }
       const wsUrl = `ws://127.0.0.1:${wsPort}`
       console.log(wsUrl)
       this.ws = new WebSocket(wsUrl)
@@ -421,10 +424,6 @@ export default {
         return false;
       }, { capture: true })
 
-      // document.addEventListener('selectstart', e => {
-      //   e.preventDefault();
-      //   return false;
-      // }, { capture: true })
     }
   },
   async mounted() {
@@ -454,7 +453,6 @@ export default {
         getAll().forEach((win) => {
           win.close();
         });
-        // tauriWindow.getCurrent().close();
       }
     });
 

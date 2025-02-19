@@ -223,6 +223,7 @@ fn main() -> std::io::Result<()> {
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
             std::fs::write(format!("{}/port.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
+            std::fs::write(format!("{}/wssport.txt", work_dir), "0")?;
             Ok(())
         })
         //listen to the tauri update event
