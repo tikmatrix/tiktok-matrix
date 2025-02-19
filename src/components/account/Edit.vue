@@ -74,13 +74,13 @@
 </template>
 
 <script>
-import { inject } from 'vue'
 export default {
-  setup() {
-    const devices = inject('devices')
-    return { devices: devices.list }
-  },
+
   props: {
+    devices: {
+      type: Array,
+      required: true
+    },
     account: {
       type: Object,
       required: true

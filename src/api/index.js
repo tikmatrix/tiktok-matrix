@@ -14,7 +14,7 @@ const api = {
   music: '/api/music',
   watcher: '/api/dialog_watcher',
   settings: '/api/settings',
-  task_status: '/api/device/task_status',
+  running_task: '/api/running_task',
   get_license: '/api/get_license',
   add_license: '/api/add_license',
   count_online_device: '/api/device/count_online',

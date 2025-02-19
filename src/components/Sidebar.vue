@@ -199,7 +199,6 @@
 </style>
 <script>
 import BuyLicense from '../components/settings/BuyLicense.vue'
-import { inject } from 'vue'
 import * as util from '../utils'
 import General from './General.vue'
 import TKTools from './TKTools.vue'
@@ -213,9 +212,11 @@ import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 
 export default {
   name: 'Sidebar',
-  setup() {
-    const devices = inject('devices')
-    return { devices: devices.list }
+  props: {
+    devices: {
+      type: Array,
+      required: true
+    }
   },
   components: {
     General,
@@ -224,9 +225,6 @@ export default {
     InsTools,
     QuickActions,
     BuyLicense
-  },
-  props: {
-
   },
   data() {
     return {
@@ -452,6 +450,7 @@ export default {
         await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
       }
+
       this.$service
         .run_now_by_account({
           script_name: name,
@@ -459,6 +458,10 @@ export default {
           script_args: JSON.stringify(args)
         })
         .then(async (res) => {
+          if (res.code == 40004) {
+            await this.$emiter('showToast', this.$t('noAccount'))
+            return
+          }
           await this.$emiter('reload_tasks', {})
           await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })
@@ -674,12 +677,14 @@ export default {
       this.setText(text)
       await this.$emiter('showToast', this.$t('pasteSuccess'))
     },
+
   },
   async mounted() {
     this.$i18n.locale = this.locale
 
     this.version = await getVersion();
-    await this.$listen('openDevice', (e) => {
+    await this.$listen('openDevice', async (e) => {
+      console.log("receive openDevice: ", e.payload)
       this.selection = [e.payload.real_serial]
       this.refreshSelections()
     });
@@ -734,9 +739,6 @@ export default {
     await this.$listen('send_keycode', (e) => {
       this.send_keycode(e.payload)
     });
-
-
-
     await this.$listen('send_screen_mode', (e) => {
       this.send_screen_mode(e.payload)
     });
@@ -746,17 +748,16 @@ export default {
     document.addEventListener('copy', () => {
       this.copyFromPhone()
     });
-
     document.addEventListener('paste', () => {
       this.pasteToPhone()
     });
-    await this.$listen('reload_sidebar', async () => {
+    await this.$listen('agent_started', async () => {
       this.loadLicense()
       this.get_menus()
       this.get_settings()
       this.get_groups()
       this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-      console.log('reload_sidebar port:', this.port)
+      console.log('agent_started port:', this.port)
     });
     await this.$listen('reload_group', async () => {
       this.get_groups()
@@ -771,14 +772,8 @@ export default {
           this.$refs.buyLiscenseDialog.show()
         }
       }
-
     });
-    this.loadLicense()
-    this.get_menus()
-    this.get_settings()
-    this.get_groups()
-    this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-
+    await this.$emiter('agent_started', {})
   }
 }
 </script>

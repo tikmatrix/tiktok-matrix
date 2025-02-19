@@ -64,8 +64,8 @@ export default {
     },
     async mounted() {
         this.countTasks();
-        setInterval(this.countTasks, 10000);
         await this.$listen('reload_tasks', async (e) => {
+            console.log('reload_tasks');
             this.countTasks();
         });
     }

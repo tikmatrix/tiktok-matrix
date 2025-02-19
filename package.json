@@ -21,7 +21,6 @@
     "@heroicons/vue": "^2.2.0",
     "@tauri-apps/api": "^1.5.2",
     "@types/jmuxer": "^2.0.6",
-    "@vuepic/vue-datepicker": "^7.2.2",
     "canvas-confetti": "^1.9.3",
     "countup.js": "^2.8.0",
     "h264-converter": "^0.1.4",
@@ -31,11 +30,8 @@
     "qrcode": "^1.5.4",
     "tiktok-matrix": "file:",
     "vue": "^3.3.4",
-    "vue-clipboard3": "^2.0.0",
     "vue-draggable-resizable": "^3.0.0",
-    "vue-i18n": "^9.8.0",
-    "vue3-clipboard": "^1.0.0",
-    "vue3-datepicker": "^0.4.0"
+    "vue-i18n": "^9.8.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.9",

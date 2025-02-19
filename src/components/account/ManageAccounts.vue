@@ -62,7 +62,8 @@
     </Pagination>
     <dialog ref="edit_dialog" class="modal">
       <div class="modal-box">
-        <Edit :account="currentAccount" @update="updateAccount" @add="addAccount" v-if="currentAccount" />
+        <Edit :account="currentAccount" :devices="devices" @update="updateAccount" @add="addAccount"
+          v-if="currentAccount" />
       </div>
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
@@ -91,7 +92,6 @@
 import MyButton from '../Button.vue'
 import Edit from './Edit.vue'
 import Pagination from '../Pagination.vue'
-import { inject } from 'vue'
 import { ask } from '@tauri-apps/api/dialog';
 import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
 import { invoke } from "@tauri-apps/api/tauri";
@@ -102,9 +102,11 @@ export default {
     Edit,
     Pagination,
   },
-  setup() {
-    const devices = inject('devices')
-    return { devices: devices.list }
+  props: {
+    devices: {
+      type: Array,
+      required: true
+    }
   },
   data() {
     return {
@@ -201,9 +203,6 @@ export default {
             account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
           })
         })
-        .catch(err => {
-          console.log(err)
-        })
     },
     async add_account() {
       this.currentAccount = {
@@ -224,9 +223,6 @@ export default {
           this.get_accounts()
           this.$refs.edit_dialog.close()
         })
-        .catch(err => {
-          console.log(err)
-        })
     },
     async editAccount(account) {
       this.currentAccount = account
@@ -243,9 +239,6 @@ export default {
           this.get_accounts()
           this.$refs.edit_dialog.close()
         })
-        .catch(err => {
-          console.log(err)
-        })
     },
     async deleteAccount(account) {
       this.$service
@@ -254,9 +247,6 @@ export default {
         })
         .then(() => {
           this.get_accounts()
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
 

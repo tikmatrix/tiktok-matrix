@@ -71,8 +71,6 @@
 import Modal from '../Modal.vue'
 import MyButton from '../Button.vue'
 import Pagination from '../Pagination.vue'
-import { inject } from 'vue'
-import { ask } from '@tauri-apps/api/dialog';
 
 export default {
   name: 'app',
@@ -81,9 +79,11 @@ export default {
     MyButton,
     Pagination
   },
-  setup() {
-    const devices = inject('devices')
-    return { devices: devices.list }
+  props: {
+    devices: {
+      type: Array,
+      required: true
+    }
   },
   data() {
     return {
@@ -118,14 +118,12 @@ export default {
       this.currentTask = null
       this.$service
         .get_tasks()
-        .then(res => {
+        .then(async (res) => {
           this.tasks = res.data
           this.tasks.forEach(task => {
             task.device_index = this.devices.find(device => device.serial === task.serial || device.real_serial === task.serial)?.key
           })
-        })
-        .catch(err => {
-          console.log(err)
+          await this.$emiter('reload_tasks', {})
         })
     },
 
@@ -138,9 +136,6 @@ export default {
         .then(() => {
           this.get_tasks()
         })
-        .catch(err => {
-          console.log(err)
-        })
     },
     async deleteTask(task) {
       this.$service
@@ -151,9 +146,6 @@ export default {
           console.log(res)
           this.get_tasks()
         })
-        .catch(err => {
-          console.log(err)
-        })
     },
 
     async retry_all_failed() {
@@ -161,9 +153,6 @@ export default {
         .retry_all_failed_tasks()
         .then(() => {
           this.get_tasks()
-        })
-        .catch(err => {
-          console.log(err)
         })
     }
   },

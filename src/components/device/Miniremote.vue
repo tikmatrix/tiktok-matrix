@@ -2,28 +2,25 @@
   <div class="relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
-        <div class="flex flex-row drag  bg-base-300">
-          <div class="flex flex-1 justify-center items-center text-center">
-            <div class="flex-1 justify-center items-center text-center">
-              <span class="text-xs font-bold bg-blue-300 pl-2 pr-2 rounded-md">
+        <div class="flex flex-row drag bg-base-300">
+          <div class="flex flex-1 items-center">
+            <div class="flex-1">
+              <span class="font-bold bg-secondary pl-2 pr-2 rounded-md ml-2" v-if="big">
                 {{ no }}
               </span>
-              <!-- <button class="btn btn-sm bg-transparent hover:bg-transparent border-0 tooltip"
-                :data-tip="$t('moveToFirst')" @click="updateIndex">
-                <font-awesome-icon icon="fa-arrow-up" class="text-primary cursor-pointer"></font-awesome-icon>
-              </button> -->
-              <span :class="'text-xs' + (task_status == 'RUNNING' ? ' text-success' : ' text-error')" v-if="big"> -
-                {{
-                  $t(task_status) }}</span>
+              <span class="text-xs text-primary font-bold ml-2">
+                {{ $t('task') }}:
+              </span>
+              <span class="text-xs text-success font-bold" v-if="device.task_status == 1">
+                {{ $t('running') }}
+              </span>
+              <span class="text-xs text-info font-bold" v-if="device.task_status != 1">
+                {{ $t('idle') }}
+              </span>
             </div>
-            <div class="justify-center items-center text-center">
-              <span :class="'mr-2 ' + (big ? 'text-sm font-bold' : 'text-xs')">{{ name }} </span>
-              <span class="text-xs font-sans font-bold mr-1">{{ device.connect_type == 0 ? 'USB' :
-                'TCP'
-              }}</span>
-              <span class="text-xs font-sans" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
-            </div>
-
+            <span class="mr-2 text-sm font-bold" v-if="big">{{ name }} </span>
+            <span class="text-xs font-sans font-bold mr-1">{{ device.connect_type == 0 ? 'USB' : 'TCP' }}</span>
+            <span class="text-xs font-sans" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
           </div>
           <button
             class="btn bg-transparent hover:bg-transparent hover:text-error text-gray-700 float-right border-0 p-4"
@@ -39,13 +36,24 @@
               <video class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="display" autoplay muted
                 @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
                 @mousemove="mouseMoveListener"></video>
+              <div @click="$emiter('openDevice', this.device)"
+                class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center" v-if="!big">
+                <div class="bg-base-content p-2 rounded-md text-center opacity-70">
+                  <div class="font-bold text-primary-content text-xl">
+                    {{ no }}
+                  </div>
+                  <div class="text-primary-content font-bold">
+                    {{ name }}
+                  </div>
+                </div>
+              </div>
               <div
-                class="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-gradient-to-tr from-secondary/30 to-neutral/30 opacity-50"
+                class="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-gradient-to-tr from-secondary/30 to-neutral/30 opacity-90"
                 v-if="loading">
                 <font-awesome-icon icon="fa-solid fa-hourglass-end" class="h-6 w-6 text-primary rotate" />
               </div>
               <div
-                class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-gradient-to-tr from-secondary/30 to-neutral/30 opacity-50"
+                class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300 opacity-90"
                 v-if="operating">
                 <font-awesome-icon icon="fa fa-hand-pointer" class="h-6 w-6 text-primary" />
                 <span class="text-primary font-bold">{{ $t('operating') }}</span>
@@ -122,12 +130,11 @@ export default {
       scrcpy: null,
       loading: true,
       operating: false,
-      task_status: 'IDLE',
       input_dialog_title: '',
       input_dialog_text: '',
       input_callback: null,
       message_index: 0,
-      name: '...',
+      name: 'Loading...',
       width: this.big ? 320 : 120,
       height: this.big ? 580 : 250,
       connect_count: 0,
@@ -141,18 +148,7 @@ export default {
         this.device.index = this.min_index
       })
     },
-    get_task_status() {
-      this.$service
-        .get_task_status({
-          serial: this.device.real_serial
-        })
-        .then(res => {
-          this.task_status = res.data
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    },
+
 
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
@@ -222,7 +218,6 @@ export default {
       }
       this.touch = false
       if (!this.big) {
-        await this.$emiter('openDevice', this.device)
         return
       }
       this.touchSync('u', event)
@@ -289,11 +284,11 @@ export default {
             case 0:
               this.name = message.data.replace(/[\x00]+$/g, '');
               // limit max length 5, other with ...
-              if (!this.big && this.name.length > 3) {
-                this.name = this.name.substring(0, 3) + '...'
-              } else if (this.big && this.name.length > 10) {
-                this.name = this.name.substring(0, 10) + '...'
-              }
+              // if (!this.big && this.name.length > 3) {
+              //   this.name = this.name.substring(0, 3) + '...'
+              // } else if (this.big && this.name.length > 10) {
+              //   this.name = this.name.substring(0, 10) + '...'
+              // }
 
               break
             case 1:
@@ -369,6 +364,7 @@ export default {
       }
     },
 
+
   },
   async mounted() {
     // console.log('miniremote mounted,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
@@ -424,12 +420,15 @@ export default {
       })
     } else {
       this.timer_task_status = setInterval(() => {
-        this.get_task_status()
         this.fps = this.periodImageCount / 0.5
         this.periodImageCount = 0
       }, 1000)
     }
     this.syncDisplay()
+    await this.$listen('refreshDevice', (e) => {
+      console.log('refreshDevice', e.payload)
+      this.syncDisplay()
+    });
 
   },
   unmounted() {

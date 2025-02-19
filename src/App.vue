@@ -1,23 +1,19 @@
 <template>
 
   <div class="flex flex-row items-start bg-base-300 h-screen w-screen overflow-hidden">
-    <Sidebar />
-    <ManageDevices />
+    <Sidebar :devices="devices" />
+    <ManageDevices :devices="devices" />
   </div>
 
-  <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
-    :z="20" drag-handle=".drag"
-    class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col">
-    <Miniremote :device="device" :no="device.key" :big="true" :key="device.key + '_big'" />
-  </vue-draggable-resizable>
+
   <dialog ref="page_dialog" class="modal">
     <div class="modal-box w-11/12 max-w-5xl">
       <h3 class="font-bold text-lg">{{ page_title }}</h3>
       <ManageDashboard v-if="selectedItem.name === 'dashboard' && $refs.page_dialog.open" />
-      <ManageAccounts v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
+      <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
       <ManageAnalytics v-if="selectedItem.name === 'analytics' && $refs.page_dialog.open" />
       <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
-      <ManageTasks v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
+      <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
       <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
       <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
       <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
@@ -63,9 +59,7 @@
     </div>
   </dialog>
 </template>
-<style>
-@import "vue-draggable-resizable/style.css";
-</style>
+
 <script>
 import Sidebar from './components/Sidebar.vue'
 import ManageDashboard from './components/dashboard/ManageDashboard.vue'
@@ -84,7 +78,6 @@ import Login from './components/Login.vue'
 import Miniremote from './components/device/Miniremote.vue'
 import TrainSettings from './components/group/TrainSettings.vue'
 import PublishSettings from './components/group/PublishSettings.vue'
-import { inject } from 'vue'
 import * as util from './utils'
 import { invoke } from "@tauri-apps/api/tauri";
 import { window as tauriWindow } from "@tauri-apps/api"
@@ -104,10 +97,6 @@ import { Command } from '@tauri-apps/api/shell'
 import { getAll } from '@tauri-apps/api/window';
 export default {
   name: 'app',
-  setup() {
-    const devices = inject('devices')
-    return { devices: devices.list }
-  },
   components: {
     Login,
     Sidebar,
@@ -129,7 +118,8 @@ export default {
   },
   data() {
     return {
-      device: null,
+      devices: [],
+
       isDark: false,
       selectedItem: {},
       page_title: '',
@@ -141,11 +131,91 @@ export default {
         percentage: 0
       },
       download_filename: '',
-
+      ws: null,
+      running_devices: []
     }
   },
-  methods: {
 
+  methods: {
+    async getRunningTasks() {
+      this.$service.get_running_tasks().then(res => {
+        let running_tasks = res.data
+        let running_serials = running_tasks.map(task => task.serial)
+        this.devices.forEach(device => {
+          device.task_status = running_serials.includes(device.serial) ? 1 : 0
+        })
+      })
+    },
+    async connectAgent() {
+      this.download_filename = 'Connecting to agent'
+      this.$refs.download_dialog.showModal()
+      const wsPort = await readTextFile('wssport.txt', { dir: BaseDirectory.AppData });
+      const wsUrl = `ws://127.0.0.1:${wsPort}`
+      console.log(wsUrl)
+      this.ws = new WebSocket(wsUrl)
+      this.ws.onopen = async () => {
+        console.log('ws open')
+        this.$refs.download_dialog.close()
+      }
+      this.ws.onmessage = async (e) => {
+        console.log(e.data)
+        const json = JSON.parse(e.data)
+        if (json.action === 'reload_devices') {
+          let data = json.data
+          if (data) {
+            this.getDevices()
+          }
+        } else if (json.action === 'task_status') {
+          let serial = json.serial
+          let status = json.status
+          if (status === 1) {
+            this.running_devices.push(serial)
+          } else {
+            let index = this.running_devices.indexOf(serial)
+            if (index > -1) {
+              this.running_devices.splice(index, 1)
+            }
+          }
+          this.devices.forEach(device => {
+            if (device.serial === serial) {
+              device.task_status = status
+            }
+          })
+          await this.$emiter('reload_tasks', {})
+        }
+      }
+      this.ws.onclose = async () => {
+        console.log('ws close')
+        this.$refs.download_dialog.close()
+        // await message('Agent Connection Closed', { title: 'Error', type: 'error' });
+      }
+      this.ws.onerror = async (e) => {
+        console.log(e)
+        this.$refs.download_dialog.close()
+        // await message('Agent Connection Error', { title: 'Error', type: 'error' });
+      }
+    },
+    async getDevices() {
+      this.$service.get_devices().then(res => {
+        //mock
+        // for (let i = 0; i < 100; i++) {
+        //   res.data[i] = { real_serial: i, group_id: 0, sort: 0 }
+        // }
+        this.devices.splice(0, this.devices.length, ...res.data)
+        for (let i = 0; i < this.devices.length; i++) {
+          this.devices[i].sort = localStorage.getItem(`sort_${this.devices[i].real_serial}`) || '0'
+        }
+        this.devices.sort((a, b) => {
+          // fisrt: sort
+          // second: group_id
+          // third: real_serial
+          return a.sort - b.sort || a.group_id - b.group_id || a.real_serial - b.real_serial
+        });
+        for (let i = 0; i < this.devices.length; i++) {
+          this.devices[i].key = i + 1
+        }
+      })
+    },
     async shutdown() {
       await invoke("kill_process", { name: "agent" });
       await invoke("kill_process", { name: "script" });
@@ -157,7 +227,6 @@ export default {
       this.$refs.page_dialog.showModal()
       this.$refs.page_dialog.addEventListener('close', () => {
         this.selectedItem = {}
-
       })
     },
     async check_update() {
@@ -186,12 +255,20 @@ export default {
       } catch (error) {
         console.error(error)
       }
-      const response = await fetch('https://pro.api.tikmatrix.com/front-api/check_core_update?time=' + new Date().getTime(), {
-        method: 'GET',
-        timeout: 10,
-        responseType: ResponseType.JSON,
-      });
-      console.log('response:', response)
+      let response = null
+      try {
+        response = await fetch('https://pro.api.tikmatrix.com/front-api/check_core_update?time=' + new Date().getTime(), {
+          method: 'GET',
+          timeout: 10,
+          responseType: ResponseType.JSON,
+        });
+        console.log('response:', response)
+      } catch (e) {
+        console.error(e)
+        await message('Check Update Error', { title: 'Error', type: 'error' });
+        return;
+      }
+
       if (response.ok) {
         this.remote_version = response.data
         await this.shutdown()
@@ -219,7 +296,7 @@ export default {
           await new Promise(r => setTimeout(r, 1000));
           const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
           if (port > 0) {
-            await this.$emiter('reload_sidebar')
+            await this.$emiter('agent_started')
             await this.$emiter('reload_tasks')
             break;
           }
@@ -385,12 +462,7 @@ export default {
       await message(e.payload);
     });
 
-    await this.$listen('openDevice', (e) => {
-      this.device = e.payload
-    });
-    await this.$listen('closeDevice', (e) => {
-      this.device = null
-    });
+
     await this.$listen('closePageDialog', (e) => {
       this.$refs.page_dialog.close()
     });
@@ -401,7 +473,11 @@ export default {
     await this.$listen('updateService', (e) => {
       this.check_update()
     });
-
+    await this.$listen('agent_started', async () => {
+      this.getDevices()
+      this.connectAgent()
+      this.getRunningTasks()
+    });
   }
 }
 </script>

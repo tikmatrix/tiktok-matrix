@@ -229,11 +229,10 @@ export function update_settings(settings) {
     data: settings
   })
 }
-export function get_task_status({ serial }) {
+export function get_running_tasks() {
   return request({
     method: 'get',
-    url: api.task_status,
-    params: { serial }
+    url: api.running_task,
   })
 }
 export function get_license() {
