@@ -168,6 +168,8 @@ export default {
           if (data) {
             this.getDevices()
           }
+        } else if (json.action === 'reload_license') {
+          await this.$emiter('LICENSE', { reload: true })
         } else if (json.action === 'task_status') {
           let serial = json.serial
           let status = json.status
@@ -190,20 +192,24 @@ export default {
       this.ws.onclose = async () => {
         console.log('ws close')
         this.$refs.download_dialog.close()
-        // await message('Agent Connection Closed', { title: 'Error', type: 'error' });
+        await message('Agent Connection Closed', { title: 'Error', type: 'error' });
       }
       this.ws.onerror = async (e) => {
         console.log(e)
         this.$refs.download_dialog.close()
-        // await message('Agent Connection Error', { title: 'Error', type: 'error' });
+        await message('Agent Connection Error', { title: 'Error', type: 'error' });
       }
     },
     async getDevices() {
       this.$service.get_devices().then(res => {
         //mock
-        // for (let i = 0; i < 100; i++) {
-        //   res.data[i] = { real_serial: i, group_id: 0, sort: 0 }
-        // }
+        for (let i = 0; i < 100; i++) {
+          res.data[i] = {
+            real_serial: `real_serial_${i + 1}`,
+            group_id: 1,
+            serial: `serial_${i + 1}`,
+          }
+        }
         this.devices.splice(0, this.devices.length, ...res.data)
         for (let i = 0; i < this.devices.length; i++) {
           this.devices[i].sort = localStorage.getItem(`sort_${this.devices[i].real_serial}`) || '0'
@@ -387,8 +393,8 @@ export default {
         console.log('Unknown OS type');
         return;
       }
-      await this.check_file_update('tiktok-agent', this.remote_version.agent_version, url);
-      await invoke("grant_permission", { path: "bin/tiktok-agent" });
+      await this.check_file_update('agent', this.remote_version.agent_version, url);
+      await invoke("grant_permission", { path: "bin/agent" });
     },
 
     async check_file_update(filename, remoteVersion, downloadUrl) {

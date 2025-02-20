@@ -210,7 +210,7 @@ import TKTools from './TKTools.vue'
 import InsTools from './InsTools.vue'
 import Tasks from './Tasks.vue'
 import QuickActions from './QuickActions.vue';
-import { open, ask } from '@tauri-apps/api/dialog';
+import { open, ask, message } from '@tauri-apps/api/dialog';
 import { getVersion } from '@tauri-apps/api/app';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
@@ -445,7 +445,11 @@ export default {
           serials: this.selection,
           script_args: JSON.stringify(args)
         })
-        .then(async res => {
+        .then(async (res) => {
+          if (res.code === 40003) {
+            await message(this.$t('needLicense'), { title: 'NeedLicense', type: 'error' });
+            return
+          }
           await this.$emiter('reload_tasks', {})
           await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
         })

@@ -35,7 +35,6 @@
                 <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-error h-4 w-4" />
                 {{ $t('unlicensed') }}
               </label>
-              <button @click="reload" class="btn btn-sm btn-primary">{{ $t('refresh') }}</button>
             </div>
           </div>
           <div class="flex items-center flex-col w-full rounded-lg p-4" v-if="order && order.status == 0">
@@ -261,17 +260,7 @@ export default {
         await this.$emiter('showToast', this.$t('githubAuthErrorMessage'));
       }
     },
-    async reload(event) {
-      await this.$emiter('LICENSE', { reload: true })
-      if (event) {
-        event.target.innerText = this.$t('fetching')
-        event.target.disabled = true
-        setTimeout(() => {
-          event.target.innerText = this.$t('refresh')
-          event.target.disabled = false
-        }, 1000)
-      }
-    },
+
     async activate(event) {
       event.target.innerText = this.$t('activating')
       event.target.disabled = true
