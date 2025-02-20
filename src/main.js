@@ -3,8 +3,6 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import './index.css'
 import * as service from './service'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
 /* import the fontawesome core */
 import { library } from '@fortawesome/fontawesome-svg-core'
 /* import font awesome icon component */
@@ -26,6 +24,5 @@ app.config.globalProperties.$service = service
 app.config.globalProperties.$emiter = emit
 app.config.globalProperties.$listen = listen
 app.component('font-awesome-icon', FontAwesomeIcon)
-app.component('VueDatePicker', VueDatePicker)
 app.component("vue-draggable-resizable", VueDraggableResizable)
 app.mount('#app')
