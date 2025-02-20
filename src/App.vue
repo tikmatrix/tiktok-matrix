@@ -203,13 +203,13 @@ export default {
     async getDevices() {
       this.$service.get_devices().then(res => {
         //mock
-        for (let i = 0; i < 100; i++) {
-          res.data[i] = {
-            real_serial: `real_serial_${i + 1}`,
-            group_id: 1,
-            serial: `serial_${i + 1}`,
-          }
-        }
+        // for (let i = 0; i < 100; i++) {
+        //   res.data[i] = {
+        //     real_serial: `real_serial_${i + 1}`,
+        //     group_id: 1,
+        //     serial: `serial_${i + 1}`,
+        //   }
+        // }
         this.devices.splice(0, this.devices.length, ...res.data)
         for (let i = 0; i < this.devices.length; i++) {
           this.devices[i].sort = localStorage.getItem(`sort_${this.devices[i].real_serial}`) || '0'
