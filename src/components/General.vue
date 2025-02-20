@@ -5,14 +5,13 @@
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('menuSelected', { name: 'packageNameSettings' })">
         <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('packageNameSettings') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="grantApp">
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="grantTikTok">
         <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />
-        {{ $t('grantApp') }}
+        {{ $t('grantTikTok') }}
     </button>
 
 
-    <button class="btn btn-sm btn-primary  ml-1 mb-1"
-        @click="$emiter('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })">
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="enableFastInput">
         <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-primary-content" />
         {{ $t('enableFastInput') }}
     </button>
@@ -21,8 +20,14 @@
         <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />
         {{ $t('enableTCP') }}
     </button>
-
-
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.proxy_dialog.show()">
+        <font-awesome-icon icon="fa fa-server" class="h-3 w-3" />
+        {{ $t('setProxy') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('send_screen_mode', 'off')">
+        <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-primary-content" />
+        {{ $t('screenOff') }}
+    </button>
 
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('initDevice')">
         <font-awesome-icon icon="fa fa-undo" class="h-3 w-3 text-pink-500" />
@@ -33,10 +38,7 @@
         <font-awesome-icon icon="fa fa-play" class="h-3 w-3 text-success" />
         {{ $t('openAppAgent') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.proxy_dialog.show()">
-        <font-awesome-icon icon="fa fa-server" class="h-3 w-3" />
-        {{ $t('setProxy') }}
-    </button>
+
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="open_dir('bin')">
         <font-awesome-icon icon="fa fa-folder" class="h-3 w-3" />
         {{ $t('openAppDir') }}
@@ -88,9 +90,16 @@ export default {
         }
     },
     methods: {
-        async grantApp() {
+        async enableFastInput() {
+            await this.$emiter('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })
+            await this.$emiter('showToast', this.$t('fastInputEnabled'))
+        },
+        async grantTikTok() {
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.READ_EXTERNAL_STORAGE'] })
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.WRITE_EXTERNAL_STORAGE'] })
+            await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.RECORD_AUDIO'] })
+            await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.CAMERA'] })
+            await this.$emiter('showToast', this.$t('grantSuccess'))
         },
         async enableProxy() {
             util.setData('proxy_host', this.proxy_host)

@@ -127,15 +127,15 @@
             </div>
 
             <div class="flex flex-row form-control items-center">
-              <button class="btn btn-sm btn-accent ml-1 mb-1"
+              <button class="btn btn-sm btn-primary ml-1 mb-1"
                 @click="$emiter('menuSelected', { name: 'trainSettings', group: item })">
                 <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
               </button>
-              <button class="btn btn-sm btn-accent ml-1 mb-1"
+              <button class="btn btn-sm btn-primary ml-1 mb-1"
                 @click="$emiter('menuSelected', { name: 'publishSettings', group: item })">
                 <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
               </button>
-              <button class="btn btn-sm btn-accent ml-1 mb-1"
+              <button class="btn btn-sm btn-primary ml-1 mb-1"
                 @click="$emiter('menuSelected', { name: 'materials', group: item })">
                 <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
               </button>
@@ -608,6 +608,7 @@ export default {
         })
         .then(async (res) => {
           await this.$emiter('showToast', this.$t('commandSendSuccess'))
+          await this.$emiter('reload_running_tasks', {})
         })
     },
     async send_keycode(keycode) {

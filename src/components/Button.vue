@@ -23,7 +23,7 @@ export default {
     },
     color: {
       type: String,
-      default: 'btn-neutral'
+      default: 'btn-primary'
     },
     loadingTime: {
       type: Number,

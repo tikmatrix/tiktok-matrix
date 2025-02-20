@@ -142,7 +142,7 @@ export default {
         let running_tasks = res.data
         let running_serials = running_tasks.map(task => task.serial)
         this.devices.forEach(device => {
-          device.task_status = running_serials.includes(device.serial) ? 1 : 0
+          device.task_status = running_serials.includes(device.real_serial) ? 1 : 0
         })
       })
     },
@@ -180,7 +180,7 @@ export default {
             }
           }
           this.devices.forEach(device => {
-            if (device.serial === serial) {
+            if (device.real_serial === serial) {
               device.task_status = status
             }
           })
@@ -474,6 +474,9 @@ export default {
     await this.$listen('agent_started', async () => {
       this.getDevices()
       this.connectAgent()
+      this.getRunningTasks()
+    });
+    await this.$listen('reload_running_tasks', async () => {
       this.getRunningTasks()
     });
   }

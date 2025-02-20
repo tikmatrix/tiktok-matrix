@@ -25,13 +25,19 @@
                 <Countup :end="taskCounts[3] || 0" :options="{ duration: 3 }" />
             </div>
         </div>
-        <button class="btn btn-sm btn-secondary mt-1 mb-1" @click="$emiter('menuSelected', { name: 'tasks' })">
+        <button class="btn btn-sm btn-primary mt-1 mb-1" @click="$emiter('menuSelected', { name: 'tasks' })">
             <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('tasks') }}
         </button>
 
-        <button class="btn btn-sm btn-secondary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
+        <button class="btn btn-sm btn-primary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
             <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-error" />{{ $t('stopTask') }}
         </button>
+        <div class="form-control ring-1 ml-1 mt-1 rounded-lg bg-base-300">
+            <label class="label cursor-pointer">
+                <span class="text-sm font-bold mr-1">{{ $t('autoRetry') }}: </span>
+                <input type="checkbox" class="toggle toggle-sm toggle-primary" v-model="autoRetry" />
+            </label>
+        </div>
     </div>
 
 
@@ -47,16 +53,40 @@ export default {
     data() {
         return {
             taskCounts: {},
+            autoRetry: localStorage.getItem('autoRetry') === 'true'
+        }
+    },
+    watch: {
+        autoRetry: {
+            handler: function (val) {
+                localStorage.setItem('autoRetry', val);
+                if (val) {
+                    this.countTasks();
+                }
+            },
+            immediate: true
         }
     },
     methods: {
         countTasks() {
             this.$service.count_task_by_status().then((res) => {
                 const counts = {};
+                let needRetryAll = false;
                 for (let item of res.data) {
                     counts[item.status] = item.count;
+                    if (this.autoRetry && item.status === 3 && item.count > 0) {
+                        needRetryAll = true;
+                    }
                 }
                 this.taskCounts = counts;
+                if (needRetryAll) {
+                    this.$service
+                        .retry_all_failed_tasks()
+                        .then(() => {
+                            console.log('retry_all_failed_tasks');
+                            this.countTasks();
+                        })
+                }
             });
 
         }

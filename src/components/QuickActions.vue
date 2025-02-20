@@ -4,10 +4,7 @@
         <font-awesome-icon icon="fa fa-home" class="h-3 w-3 text-primary-content" />
         {{ $t('home') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('send_screen_mode', 'off')">
-        <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-primary-content" />
-        {{ $t('screenOff') }}
-    </button>
+
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'moe.nb4a/io.nekohasekai.sagernet.ui.MainActivity'] })">
         <font-awesome-icon icon="fa fa-cube" class="h-3 w-3 text-primary-content" />

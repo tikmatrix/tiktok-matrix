@@ -3,14 +3,14 @@
     <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage">
       <template v-slot:buttons>
         <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired" />
-        <div class="form-control ring-1 ml-2 rounded-lg">
+        <div class="form-control ring-1 ml-2 rounded-lg bg-base-300">
           <label class="label cursor-pointer">
             <span class="text-md font-bold mr-2">{{ $t('autoWakeUp') }}: </span>
-            <input type="checkbox" class="toggle toggle-success" v-model="settings.uiautomator_status" true-value="1"
+            <input type="checkbox" class="toggle toggle-primary" v-model="settings.uiautomator_status" true-value="1"
               false-value="0" @change="update_settings" />
           </label>
         </div>
-        <div class="form-control ring-1 ml-2 rounded-lg">
+        <div class="form-control ring-1 ml-2 rounded-lg bg-base-300">
           <label class="label cursor-pointer">
             <span class="text-md font-bold mr-2">
               {{ $t('displayMode') }}:
@@ -18,9 +18,9 @@
             <label class="swap swap-rotate">
               <input type="checkbox" v-model="listMode" />
               <!--list mode-->
-              <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-6 h-6 text-success" />
+              <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-6 h-6 text-primary" />
               <!--grid mode-->
-              <font-awesome-icon icon="fa-solid fa-th" class="swap-off fill-current w-6 h-6 text-success" />
+              <font-awesome-icon icon="fa-solid fa-th" class="swap-off fill-current w-6 h-6 text-primary" />
             </label>
           </label>
         </div>
