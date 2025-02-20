@@ -292,10 +292,11 @@ export function read_clipboard({ serial }) {
   })
 }
 
-export function delete_all_materials() {
+export function delete_all_materials(params) {
   return request({
     method: 'delete',
-    url: api.delete_all_materials
+    url: api.delete_all_materials,
+    params: params
   })
 }
 export function delete_all_tasks() {

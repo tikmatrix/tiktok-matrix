@@ -186,7 +186,9 @@ export default {
     },
     delete_all() {
       this.$service
-        .delete_all_materials()
+        .delete_all_materials({
+          group_id: this.group.id
+        })
         .then(() => {
           this.get_materials()
         })
