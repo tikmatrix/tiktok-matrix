@@ -155,11 +155,12 @@
               {{ $t('units') }}
             </span>
             <div class="tooltip" :data-tip="$t('moveToGroup')">
-              <details ref="moveToGroupMenu" class="dropdown dropdown-top">
+              <details ref="moveToGroupMenu" class="dropdown dropdown-top dropdown-left">
                 <summary class="btn btn-sm bg-transparent hover:bg-transparent border-0">
                   <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
                 </summary>
-                <ul class="dropdown-content z-[10] menu menu-sm p-2 shadow bg-base-200 rounded-box w-52">
+                <ul
+                  class="dropdown-content z-[100] menu menu-sm p-2 bg-info text-info-content w-52 ring ring-info ring-offset-base-100">
                   <li v-for="(item, index) in groups" :key="item.id"><a @click="moveToGroup(0, item.id)">{{
                     item.name }}</a>
                   </li>

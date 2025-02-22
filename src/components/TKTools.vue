@@ -46,9 +46,7 @@
         <font-awesome-icon icon="fa-solid fa-trash" class="h-3 w-3 text-error" />
         {{ $t('deletePost') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchDM">
-        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('batchDM') }}
-    </button>
+
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.userActionsDialog.showModal">
         <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 text-success" />{{ $t('userActions') }}
     </button>
@@ -60,7 +58,9 @@
         <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3 text-success" />
         {{ $t('postActions') }}
     </button>
-
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchDM">
+        <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('batchDM') }}
+    </button>
 
     <dialog ref="postActionsDialog" class="modal">
         <div class="modal-box">
@@ -115,15 +115,26 @@
     <dialog ref="deletePostDialog" class="modal">
         <div class="modal-box">
             <div class="flex flex-row items-center p-2">
-                <input class="input input-bordered input-sm" type="text" v-model="maxViews"
+                <span>
+                    {{ $t('maxViews') }}:
+                </span>
+                <input class="input ring input-sm ml-2" type="number" v-model="maxViews"
                     :placeholder="$t('maxViews')" />
+
             </div>
-            <button class="btn btn-sm btn-primary ml-2" @click="deletePost">
+            <div role="alert" class="alert col-span-5">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    class="stroke-info shrink-0 w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>{{ $t('maxViewsTips') }}</span>
+            </div>
+            <button class="btn btn-md btn-error mt-2" @click="deletePost">
                 {{ $t('delete') }}
             </button>
-
-
         </div>
+
 
         <form method="dialog" class="modal-backdrop">
             <button>close</button>

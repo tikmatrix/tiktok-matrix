@@ -506,8 +506,12 @@ export const i18n = createI18n({
       autoRetry: 'Auto Retry',
       needLicense: 'Sorry, you need to activate the license before you can use this feature!',
       deletePost: 'Delete Post',
+      maxViews: 'Max Views',
+      maxViewsTips: 'Posts with views less than the maximum views will be deleted',
     },
     'zh-CN': {
+      maxViews: '最大观看数',
+      maxViewsTips: '删除观看数小于最大观看数的帖子',
       deletePost: '删除帖子',
       needLicense: '很抱歉,您需要激活授权后才能使用该功能!',
       autoRetry: '自动重试',

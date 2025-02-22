@@ -123,18 +123,18 @@
     <div class="modal-box">
       <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
       <div class="flex flex-row items-center">
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_1" />
+        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_1" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_2" />
+        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_2" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_3" />
+        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_3" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_4" />
-        <span class="font-bold p-2">-</span>
-        <input class="input input-bordered input-sm w-20" type="number" v-model="ip_5" />
+        <input class="input input-bordered input-sm w-20 ring ring-info" type="number" v-model="ip_4" />
+        <span class="font-bold p-2 mr-1 ml-1 text-lg">-</span>
+        <input class="input input-bordered input-sm w-20 ring ring-success" type="number" v-model="ip_5" />
       </div>
       <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
-      <input class="input input-bordered input-sm w-24" type="number" v-model="port" />
+      <input class="input input-bordered input-sm w-24 ring" type="number" v-model="port" />
       <MyButton @click="scan" label="startScan" :showLoading="scaning" />
       <span class="label-text ml-2">{{ scanResult }}</span>
     </div>
