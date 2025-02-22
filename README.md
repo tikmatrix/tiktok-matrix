@@ -1,7 +1,6 @@
 # TikMatrix
 
-TikMatrix 是一个群控安卓真实手机（非云控，非协议），基于adb和android uiautomator的tiktok自动化运营工具，可以实现自动注册账号，自动登录，自动发布视频，自动点赞，自动关注，自动收藏，自动评论, 自动私信, 自动刷视频, 全网视频采集等功能。
-> TikMatrix is a real android phone based on adb and android uiautomator. It provides tiktok automation tools for real phone registration, login, publish videos, like videos, follow, favorite, comment, private message, brush videos and more.
+TikMatrix is a real android phone based on adb and android uiautomator. It provides tiktok automation tools for real phone registration, login, publish videos, like videos, follow, favorite, comment, private message, brush videos and more.
 
 ## Quick start
 
@@ -30,20 +29,18 @@ npm run tauri dev
 
 ## FAQ
 
-1. 手动安装app
+### How to run TikMatrix Agent on phone by adb?
+
+You can check the reason why the agent is not running by the following command.
 
 ```shell
-adb -s <device_id> install -r -t -g ../bin/com.github.tikmatrix.apk
-adb -s <device_id> install -r -t -g ../bin/com.github.tikmatrix.test.apk
-```
-
-2. 手动启动UIAutomator
-
-```shell
+# You can find the device id by the following command.
+adb devices
+# Start the agent on the phone.
 adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.tikmatrix.stub.Stub com.github.tikmatrix.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-3. 自定义软件名称
+### How to customize TikMatrix Brand?
 
 * src/src-tauri/tauri.conf.json
 
@@ -60,6 +57,16 @@ adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.
  siteName: 'TikMatrix',
  siteUrl: 'https://www.tikmatrix.com',
 ```
+
+### How to fix vcruntime140_1.dll not found?
+
+Need to install Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019.
+<https://tikmatrix.com/blog/how-to-fix-vcruntime140.dll-not-found-when-open-TikMatrix>
+
+### How to fix The application was unable to start correctly (0xc000007b)?
+
+Need to install Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019.
+<https://tikmatrix.com/blog/how-to-fix-vcruntime140.dll-not-found-when-open-TikMatrix>
 
 ## Star History
 

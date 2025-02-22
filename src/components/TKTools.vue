@@ -42,6 +42,10 @@
         <font-awesome-icon icon="paper-plane" class="h-3 w-3 text-success" />
         {{ $t('startPublish') }}
     </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.deletePostDialog.showModal">
+        <font-awesome-icon icon="fa-solid fa-trash" class="h-3 w-3 text-error" />
+        {{ $t('deletePost') }}
+    </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchDM">
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('batchDM') }}
     </button>
@@ -108,6 +112,23 @@
             <button>close</button>
         </form>
     </dialog>
+    <dialog ref="deletePostDialog" class="modal">
+        <div class="modal-box">
+            <div class="flex flex-row items-center p-2">
+                <input class="input input-bordered input-sm" type="text" v-model="maxViews"
+                    :placeholder="$t('maxViews')" />
+            </div>
+            <button class="btn btn-sm btn-primary ml-2" @click="deletePost">
+                {{ $t('delete') }}
+            </button>
+
+
+        </div>
+
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 </template>
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
@@ -118,7 +139,8 @@ export default {
     data() {
         return {
             target_username: '',
-            target_post_url: ''
+            target_post_url: '',
+            maxViews: 0
         }
     },
     methods: {
@@ -126,6 +148,10 @@ export default {
             invoke("open_dir", {
                 name
             });
+        },
+        async deletePost() {
+            await this.$emiter('run_now_by_account', { name: 'delete_post', args: { max_views: this.maxViews } })
+            this.$refs.deletePostDialog.close()
         },
         async batchDM() {
             await this.$emiter('menuSelected', { name: 'messageSettings' });

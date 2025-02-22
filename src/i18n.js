@@ -505,8 +505,10 @@ export const i18n = createI18n({
       fastInputEnabled: 'Fast Input Enabled',
       autoRetry: 'Auto Retry',
       needLicense: 'Sorry, you need to activate the license before you can use this feature!',
+      deletePost: 'Delete Post',
     },
     'zh-CN': {
+      deletePost: '删除帖子',
       needLicense: '很抱歉,您需要激活授权后才能使用该功能!',
       autoRetry: '自动重试',
       fastInputEnabled: '快速输入已启用',

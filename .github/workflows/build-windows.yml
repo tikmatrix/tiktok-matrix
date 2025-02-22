@@ -33,7 +33,6 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-version.js
           node scripts/update-version_v2.js
       # - name: commit
       #   run: |
