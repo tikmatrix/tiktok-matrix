@@ -1,21 +1,6 @@
 <template>
   <div class="bg-base-100 flex flex-col items-start p-4 min-h-96">
-    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right col-span-1">{{ $t('platform') }}:</label>
-      <div class="col-span-2 flex items-center gap-4">
-        <div class="flex items-center">
-          <input type="radio" id="tiktok" value="tiktok" v-model="myaccount.platform"
-            class="form-radio text-primary h-4 w-4">
-          <label for="tiktok" class="ml-2">{{ $t('tiktok') }}</label>
-        </div>
-        <div class="flex items-center">
-          <input type="radio" id="instagram" value="instagram" v-model="myaccount.platform"
-            class="form-radio text-primary h-4 w-4">
-          <label for="instagram" class="ml-2">{{ $t('instagram') }}</label>
-        </div>
 
-      </div>
-    </div>
     <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
       <label class="font-bold text-right col-span-1">{{ $t('email') }}:</label>
       <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="myaccount.email" />

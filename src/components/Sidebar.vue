@@ -68,7 +68,6 @@
           <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
           <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
           <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
-          <a ref="instools" role="tab" class="tab" @click="selectTab('instools')">{{ $t('instools') }}</a>
         </div>
         <div class="border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
           <div class="flex flex-row flex-wrap" v-if="selectedTab === 'general'">
@@ -79,9 +78,6 @@
           </div>
           <div class="flex flex-row flex-wrap" v-if="selectedTab === 'tktools'">
             <TKTools :settings="settings" />
-          </div>
-          <div class="flex flex-row flex-wrap" v-if="selectedTab === 'instools'">
-            <InsTools :settings="settings" />
           </div>
         </div>
         <div class="flex flex-col">
@@ -482,27 +478,19 @@ export default {
         case 'general':
           this.$refs.general.classList.add('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.instools.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
           break
         case 'tktools':
           this.$refs.general.classList.remove('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.instools.classList.remove('tab-active')
           this.$refs.tktools.classList.add('tab-active')
           break
         case 'quickActions':
           this.$refs.general.classList.remove('tab-active')
           this.$refs.tktools.classList.remove('tab-active')
-          this.$refs.instools.classList.remove('tab-active')
           this.$refs.quickActions.classList.add('tab-active')
           break
-        case 'instools':
-          this.$refs.general.classList.remove('tab-active')
-          this.$refs.tktools.classList.remove('tab-active')
-          this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.instools.classList.add('tab-active')
-          break
+
       }
     },
     isSelectAll(id) {

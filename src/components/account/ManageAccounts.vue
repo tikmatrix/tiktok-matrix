@@ -1,7 +1,6 @@
 <template>
   <div class="w-full">
-    <Pagination :items="accounts" :searchKeys="['email', 'username', 'device', 'device_index', 'platform']"
-      @refresh="get_accounts">
+    <Pagination :items="accounts" :searchKeys="['email', 'username', 'device', 'device_index']" @refresh="get_accounts">
       <template v-slot:buttons>
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="$refs.batch_add_dialog.showModal()" label="batchAdd" icon="fa fa-add" />
@@ -13,7 +12,6 @@
             <thead>
               <tr>
                 <th>{{ $t('id') }}</th>
-                <th>{{ $t('platform') }}</th>
                 <th>{{ $t('email') }}</th>
                 <th>{{ $t('username') }}</th>
                 <!-- <th>{{ $t('fans') }}</th> -->
@@ -25,14 +23,10 @@
             <tbody>
               <tr v-for="(account, _index) in slotProps.items">
                 <td>{{ account.id }}</td>
-                <td>{{ account.platform }}</td>
                 <td>{{ account.email }}</td>
                 <td>
-                  <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank"
-                    v-if="account.platform === 'tiktok'">{{
-                      account.username }}</a>
-                  <a class="link link-primary" :href="`https://www.instagram.com/${account.username}`" target="_blank"
-                    v-if="account.platform === 'instagram'">{{ account.username }}</a>
+                  <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">{{
+                    account.username }}</a>
                 </td>
                 <!-- <td>{{ account.fans }}</td> -->
 
@@ -148,7 +142,7 @@ export default {
           return
         }
 
-        let [platform, email, pwd, username, device] = line.split('##').map(v => v.trim())
+        let [email, pwd, username, device] = line.split('##').map(v => v.trim())
         let serial = this.devices.find(d => d.key === parseInt(device))?.real_serial
         if (!serial) {
           return
@@ -158,8 +152,7 @@ export default {
           pwd,
           fans: 0,
           serial,
-          username,
-          platform
+          username
         }
       })
 
@@ -181,7 +174,7 @@ export default {
             device: account.serial,
             username: account.username,
             logined: 0,
-            platform: account.platform
+            platform: 'tiktok'
           })
       }
       this.$refs.batch_add_dialog.close()
