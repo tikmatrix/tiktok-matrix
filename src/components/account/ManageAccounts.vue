@@ -174,7 +174,6 @@ export default {
             device: account.serial,
             username: account.username,
             logined: 0,
-            platform: 'tiktok'
           })
       }
       this.$refs.batch_add_dialog.close()
@@ -205,7 +204,6 @@ export default {
         fans: 0,
         device: '',
         logined: 0,
-        platform: 'tiktok',
       }
       this.$refs.edit_dialog.showModal()
     },
