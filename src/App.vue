@@ -85,7 +85,7 @@ import { TauriEvent } from "@tauri-apps/api/event"
 import { ask, message } from '@tauri-apps/api/dialog';
 import { os } from '@tauri-apps/api';
 import { appDataDir } from '@tauri-apps/api/path';
-import { readTextFile, exists, BaseDirectory } from '@tauri-apps/api/fs'
+import { readTextFile, exists, BaseDirectory, writeTextFile } from '@tauri-apps/api/fs'
 import {
   checkUpdate,
   installUpdate,
@@ -192,12 +192,10 @@ export default {
       this.ws.onclose = async () => {
         console.log('ws close')
         this.$refs.download_dialog.close()
-        await message('Agent Connection Closed', { title: 'Error', type: 'error' });
       }
       this.ws.onerror = async (e) => {
         console.log(e)
         this.$refs.download_dialog.close()
-        await message('Agent Connection Error', { title: 'Error', type: 'error' });
       }
     },
     async getDevices() {
@@ -228,7 +226,7 @@ export default {
     async shutdown() {
       await invoke("kill_process", { name: "agent" });
       await invoke("kill_process", { name: "script" });
-      await invoke("kill_process", { name: "adb" });
+      await writeTextFile('agent.pid', '', { dir: BaseDirectory.AppData });
 
     },
     menu_selected(item) {
@@ -293,6 +291,8 @@ export default {
           const command = new Command('start-agent', [])
           const child = await command.spawn();
           console.log('pid:', child.pid);
+          //write pid to file
+          await writeTextFile('agent.pid', `${child.pid}`, { dir: BaseDirectory.AppData });
         } catch (e) {
           console.error(e);
           let error = e.toString();
