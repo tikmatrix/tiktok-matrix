@@ -139,6 +139,10 @@ export default {
       height: this.big ? 580 : 250,
       connect_count: 0,
       min_index: localStorage.getItem('min_index') || 0,
+      unlisten_closeDevice: null,
+      unlisten_openDevice: null,
+      unlisten_syncEventData: null,
+      unlisten_refreshDevice: null,
     }
   },
   methods: {
@@ -325,7 +329,6 @@ export default {
     },
     syncDisplay() {
       this.connect_count += 1
-
       this.loading = true
       if (this.$refs.display == null) {
         console.log('display is null,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
@@ -367,15 +370,14 @@ export default {
 
   },
   async mounted() {
-    // console.log('miniremote mounted,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
     if (!this.big) {
-      await this.$listen('closeDevice', (e) => {
+      this.unlisten_closeDevice = await this.$listen('closeDevice', (e) => {
         if (e.payload.serial === this.device.serial) {
           this.operating = false
           this.$refs.display.play();
         }
       });
-      await this.$listen('openDevice', (e) => {
+      this.unlisten_openDevice = await this.$listen('openDevice', (e) => {
         if (e.payload.serial === this.device.serial) {
           this.operating = true
           this.$refs.display.play();
@@ -384,7 +386,7 @@ export default {
           this.operating = false
         }
       });
-      await this.$listen('syncEventData', (e) => {
+      this.unlisten_syncEventData = await this.$listen('syncEventData', (e) => {
         if (!e.payload.devices.includes(this.device.real_serial)) {
           return
         }
@@ -392,12 +394,17 @@ export default {
           this.scrcpy.send(e.payload.data)
         }
       });
+      this.unlisten_refreshDevice = await this.$listen('refreshDevice', (e) => {
+        console.log('refreshDevice', e.payload)
+        this.closeScrcpy()
+        this.closeJmuxer()
+        this.syncDisplay()
+      });
       // 获取视频元素
       var video = this.$refs.display;
 
       // 添加播放事件监听器
       video.addEventListener('play', () => {
-        // console.log('Video started playing.currentTime: ' + video.currentTime);
         //set progress to newest
         video.currentTime = 999999
         video.playbackRate = 2;
@@ -405,17 +412,10 @@ export default {
 
       // 添加暂停事件监听器
       video.addEventListener('pause', () => {
-        // console.log('Video paused');
       });
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-          // this.closeScrcpy()
-          // this.closeJmuxer()
         } else {
-          // this.syncDisplay()
-          // if (this.jmuxer) {
-          // this.jmuxer.reset()
-          // }
         }
       })
     } else {
@@ -425,19 +425,25 @@ export default {
       }, 1000)
     }
     this.syncDisplay()
-    await this.$listen('refreshDevice', (e) => {
-      console.log('refreshDevice', e.payload)
-      this.syncDisplay()
-    });
-
   },
-  unmounted() {
+  async unmounted() {
     this.closeScrcpy()
     this.closeJmuxer()
-    clearInterval(this.timer_task_status)
-    this.timer_task_status = null
-    clearInterval(this.timer_video)
-    this.timer_video = null
+    if (this.timer_task_status) {
+      clearInterval(this.timer_task_status)
+    }
+    if (this.unlisten_closeDevice) {
+      this.unlisten_closeDevice()
+    }
+    if (this.unlisten_openDevice) {
+      this.unlisten_openDevice()
+    }
+    if (this.unlisten_syncEventData) {
+      this.unlisten_syncEventData()
+    }
+    if (this.unlisten_refreshDevice) {
+      this.unlisten_refreshDevice()
+    }
   },
 
 }

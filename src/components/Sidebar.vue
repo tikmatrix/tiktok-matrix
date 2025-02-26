@@ -1,9 +1,6 @@
 <template>
-  <div class="bg-base-100 m-1 flex flex-col rounded-lg shadow w-96 h-screen overflow-y-scroll no-scrollbar">
-
-    <div class="p-4">
-
-
+  <div class="sidebar bg-base-100 m-1 flex flex-col rounded-lg shadow w-96 h-screen overflow-y-scroll no-scrollbar">
+    <div class="pl-2 pr-2 pt-2 pb-14">
       <div role="tablist" class="tabs tabs-lifted mt-2 bg-base-200 rounded-md">
         <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
         <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
@@ -84,24 +81,24 @@
             <span class="label-text text-primary text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
             }})</span>
           </label>
+          <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-xs text-right flex-1">
+            <div tabindex="0" role="button" class="btn bg-transparent hover:bg-transparent border-none text-primary">
+              <span class="text-xs">{{ $t('moveToGroup') }}</span>
+              <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
+            </div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow ring">
+              <li v-for="(item, index) in groups" :key="item.id">
+                <a @click="moveToGroup(0, item.id)">{{
+                  item.name }}</a>
+              </li>
+            </ul>
 
-          <span class="label-text text-xs text-right flex-1">{{ $t('selected') }}
+          </div>
+          <span class="label-text text-xs text-right">{{ $t('selected') }}
             {{ selections[0].length }}
             {{ $t('units') }}
           </span>
-          <div class="tooltip" :data-tip="$t('moveToGroup')">
-            <details ref="moveToGroupMenu" class="dropdown dropdown-top dropdown-left">
-              <summary class="btn btn-sm bg-transparent hover:bg-transparent border-0">
-                <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
-              </summary>
-              <ul
-                class="dropdown-content z-[100] menu menu-sm p-2 bg-info text-info-content w-52 ring ring-info ring-offset-base-100">
-                <li v-for="(item, index) in groups" :key="item.id"><a @click="moveToGroup(0, item.id)">{{
-                  item.name }}</a>
-                </li>
-              </ul>
-            </details>
-          </div>
+
         </div>
         <drag-select v-model="selection">
           <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
@@ -127,7 +124,6 @@
 
 import General from './General.vue'
 import TKTools from './TKTools.vue'
-import InsTools from './InsTools.vue'
 import Tasks from './Tasks.vue'
 import QuickActions from './QuickActions.vue';
 import { open, ask, message } from '@tauri-apps/api/dialog';
@@ -146,12 +142,10 @@ export default {
     General,
     Tasks,
     TKTools,
-    InsTools,
     QuickActions
   },
   data() {
     return {
-
       settings: {},
       menuItems: [],
       fullMenuItems: [
@@ -170,6 +164,7 @@ export default {
       },
       port: -1,
       init_progress: '0/0',
+      listeners: []
     }
   },
 
@@ -214,20 +209,20 @@ export default {
         this.updateGroup.name = this.newGroupName
         this.$service
           .update_group(this.updateGroup)
-          .then(() => {
+          .then(async () => {
             this.newGroupName = ''
             this.showAddGroup = false
-            this.get_groups()
+            await this.$emiter('reload_group', {})
           })
       } else {
         this.$service
           .add_group({
             name: this.newGroupName,
           })
-          .then(() => {
+          .then(async () => {
             this.newGroupName = ''
             this.showAddGroup = false
-            this.get_groups()
+            await this.$emiter('reload_group', {})
 
           })
       }
@@ -240,8 +235,8 @@ export default {
           .delete_group({
             id: id
           })
-          .then(() => {
-            this.get_groups()
+          .then(async () => {
+            await this.$emiter('reload_group', {})
           })
       }
 
@@ -253,29 +248,16 @@ export default {
       }
       if (serials.length == 0) {
         await this.$emiter('showToast', this.$t('noDevicesSelected'))
-        for (let i = 0; i < this.groups.length; i++) {
-          let view = this.$refs['moveToGroupMenu_' + this.groups[i].id];
-          if (view) {
-            view[0].removeAttribute('open')
-          }
-        }
-        this.$refs.moveToGroupMenu.removeAttribute('open')
         return
       }
-      this.$service.move_to_group({ serials: serials, dst_id: dst_id }).then(res => {
-        this.$refs.moveToGroupMenu.removeAttribute('open')
-        for (let i = 0; i < this.groups.length; i++) {
-          let view = this.$refs['moveToGroupMenu_' + this.groups[i].id];
-          if (view) {
-            view[0].removeAttribute('open')
-          }
-        }
+      this.$service.move_to_group({ serials: serials, dst_id: dst_id }).then(async res => {
         this.devices.map(device => {
           if (serials.includes(device.real_serial)) {
             device.group_id = dst_id
           }
         })
         this.refreshSelections()
+        await this.$emiter('showToast', this.$t('moveSuccess'))
       })
     },
     async get_groups() {
@@ -564,7 +546,7 @@ export default {
             return
           }
           await writeText(res.data)
-          await this.$emiter('showToast', this.$t('copySuccess'))
+          // await this.$emiter('showToast', this.$t('copySuccess'))
         })
     },
     async pasteToPhone() {
@@ -577,91 +559,92 @@ export default {
       }
       const text = await readText()
       this.setText(text)
-      await this.$emiter('showToast', this.$t('pasteSuccess'))
+      // await this.$emiter('showToast', this.$t('pasteSuccess'))
     },
 
   },
   async mounted() {
 
-    await this.$listen('openDevice', async (e) => {
+    this.listeners.push(await this.$listen('openDevice', async (e) => {
       console.log("receive openDevice: ", e.payload)
       this.selection = [e.payload.real_serial]
       this.refreshSelections()
-    });
-    await this.$listen('closeDevice', (e) => {
+    }))
+    this.listeners.push(await this.$listen('closeDevice', (e) => {
       this.selection = []
       this.refreshSelections()
-    });
-    await this.$listen('adbEventData', (e) => {
+    }))
+    this.listeners.push(await this.$listen('adbEventData', (e) => {
       console.log("receive adbEventData: ", e.payload, this.selection,)
       this.adb_command(e.payload.args)
 
-    });
-    await this.$listen('run_task_now', async (e) => {
+    }))
+    this.listeners.push(await this.$listen('run_task_now', async (e) => {
       console.log("receive run_task_now: ", e.payload)
       await this.run_task_now(e.payload.name, e.payload.args)
-    });
-    await this.$listen('run_now_by_account', (e) => {
+    }))
+    this.listeners.push(await this.$listen('run_now_by_account', (e) => {
       console.log("receive run_now_by_account: ", e.payload)
       this.run_now_by_account(e.payload.name, e.payload.args)
-    });
-    await this.$listen('uploadFiles', (e) => {
+    }))
+    this.listeners.push(await this.$listen('uploadFiles', (e) => {
       this.uploadFiles()
-    });
-    await this.$listen('installApks', (e) => {
+    }))
+    this.listeners.push(await this.$listen('installApks', (e) => {
       this.selectApkFile()
-    });
-    await this.$listen('initDevice', (e) => {
+    }))
+    this.listeners.push(await this.$listen('initDevice', (e) => {
       this.initDevice()
-    });
-    await this.$listen('setText', (e) => {
+    }))
+    this.listeners.push(await this.$listen('setText', (e) => {
       this.setText(e.payload)
-    });
-    await this.$listen('eventData', async (e) => {
+    }))
+    this.listeners.push(await this.$listen('eventData', async (e) => {
       let new_data = {
         devices: [...this.selection],
         data: e.payload
       }
       await this.$emiter('syncEventData', new_data)
-    });
+    }))
 
 
-    await this.$listen('batchDM', (e) => {
+    this.listeners.push(await this.$listen('batchDM', (e) => {
       this.batchDM();
-    });
-    await this.$listen('batchFO', (e) => {
+    }))
+    this.listeners.push(await this.$listen('batchFO', (e) => {
       this.batchFO();
-    });
+    }))
 
-    await this.$listen('stop_task', (e) => {
+    this.listeners.push(await this.$listen('stop_task', (e) => {
       this.stop_task();
-    });
-    await this.$listen('send_keycode', (e) => {
+    }))
+    this.listeners.push(await this.$listen('send_keycode', (e) => {
       this.send_keycode(e.payload)
-    });
-    await this.$listen('send_screen_mode', (e) => {
+    }))
+    this.listeners.push(await this.$listen('send_screen_mode', (e) => {
       this.send_screen_mode(e.payload)
-    });
-    await this.$listen('clearGallery', () => {
+    }))
+    this.listeners.push(await this.$listen('clearGallery', () => {
       this.clearGallery()
-    });
-    document.addEventListener('copy', () => {
+    }))
+    this.listeners.push(document.addEventListener('copy', () => {
       this.copyFromPhone()
-    });
-    document.addEventListener('paste', () => {
+    }))
+    this.listeners.push(document.addEventListener('paste', () => {
       this.pasteToPhone()
-    });
-    await this.$listen('agent_started', async () => {
+    }))
+    this.listeners.push(await this.$listen('agent_started', async () => {
       this.get_menus()
       this.get_settings()
       this.get_groups()
       this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
       console.log('agent_started port:', this.port)
-    });
+    }))
 
-    await this.$listen('reload_group', async () => {
+    this.listeners.push(await this.$listen('reload_group', async () => {
+      console.log('reload group')
       this.get_groups()
-    });
+    }))
     this.get_menus()
     this.get_settings()
     this.get_groups()
@@ -669,6 +652,14 @@ export default {
     console.log('agent_started port:', this.port)
 
 
+  },
+  unmounted() {
+    this.listeners.forEach(listener => {
+      if (listener) {
+        listener()
+      }
+    })
+    this.listeners = []
   }
 }
 </script>

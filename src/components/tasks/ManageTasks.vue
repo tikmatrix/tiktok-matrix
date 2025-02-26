@@ -32,7 +32,7 @@
                 <td>{{ task.id }}</td>
                 <td><span class="badge badge-ghost badge-sm">{{ task.script_name }}</span></td>
                 <td>
-                  <span class="badge badge-ghost badge-sm">{{ task.script_args }}</span>
+                  <span class="badge badge-ghost badge-sm">{{ truncateScriptArgs(task.script_args) }}</span>
                 </td>
                 <td>
                   <span class="badge badge-ghost badge-sm">{{ task.start_time }}</span>
@@ -99,9 +99,16 @@ export default {
         tasks = tasks.filter(task => task.status == this.searchStatus)
       }
       return tasks
-    }
+    },
+
   },
   methods: {
+    truncateScriptArgs(scriptArgs) {
+      if (scriptArgs.length > 30) {
+        return `${scriptArgs.slice(0, 10)}...${scriptArgs.slice(-10)}`;
+      }
+      return scriptArgs;
+    },
     async clearAll() {
       this.$service
         .delete_all_tasks()

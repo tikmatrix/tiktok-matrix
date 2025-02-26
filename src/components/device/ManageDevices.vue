@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar">
+  <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
     <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage">
       <template v-slot:buttons>
         <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired" />
@@ -236,9 +236,9 @@ export default {
       });
     },
     refreshPage() {
-      window.location.reload()
+      // window.location.reload()
       // this.mydevices = []
-      // this.$emiter('refreshDevice', {})
+      this.$emiter('refreshDevice', {})
       // //wait 1s
       // setTimeout(() => {
       //   this.mydevices = this.devices
@@ -303,6 +303,10 @@ export default {
     await this.$listen('closeDevice', (e) => {
       this.device = null
       console.log(`close device`)
+    });
+    await this.$listen('reload_group', async () => {
+      console.log('reload group')
+      this.get_groups()
     });
     await this.$listen('agent_started', (e) => {
       this.get_settings()

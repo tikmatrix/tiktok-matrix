@@ -1,130 +1,133 @@
 <template>
-  <div data-tauri-drag-region
-    class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
-    <!-- 左侧：应用图标、名称、版本和检查更新 -->
-    <div class="flex items-center space-x-2">
-      <font-awesome-icon icon="fa-brands fa-tiktok" class="text-base-content h-10 w-10" />
-      <span class="text-2xl text-base-content font-bold">{{ $t('siteName') }}</span>
-      <span class="text-sm text-base-content">v{{ version }}</span>
-      <!-- 检查更新按钮 -->
-      <button @click="$emiter('updateService')"
-        class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline">
-        <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
-        <span>{{ $t('checkUpdate') }}</span>
-      </button>
-    </div>
-    <!-- 教程链接 -->
-    <a class="flex items-center space-x-1 text-sm text-info ml-2" :href="$t('siteUrl') + '/docs/intro'" target="_blank">
-      <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
-      <span>{{ $t('tutorial') }}</span>
-    </a>
-    <!-- 中间：灵活空间 -->
-    <div class="flex-1"></div>
-
-    <!-- 右侧：功能按钮和控制按钮 -->
-    <div class="flex items-center space-x-4">
-      <!-- 侧边栏切换 -->
-      <label class="swap swap-rotate">
-        <input type="checkbox" value="true" v-model="showSidebar" />
-        <font-awesome-icon icon="fa fa-bars" class="swap-off fill-current w-6 h-6 text-base-content" />
-        <font-awesome-icon icon="fa fa-bars" class="swap-on fill-current w-6 h-6 text-base-content" />
-      </label>
-      <!-- 许可证状态 -->
-      <button
-        class="flex items-center space-x-1 text-sm px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
-        :class="license.leftdays > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'"
-        @click="$refs.buyLiscenseDialog.show()"
-        :title="license.leftdays > 0 ? $t('licenseValid', { days: license.leftdays }) : $t('activateLicense')">
-        <font-awesome-icon :icon="license.leftdays > 0 ? 'fa fa-key' : 'fa fa-lock'" class="h-4 w-4" />
-        <span v-if="license.leftdays > 0">{{ $t('licensed') }} ({{ license.leftdays }} {{ $t('days') }})</span>
-        <span v-else>{{ $t('unlicensed') }}</span>
-      </button>
-      <!-- 语言选择 -->
-      <select class="select select-info select-sm" v-model="locale">
-        <option selected value="en">English</option>
-        <option value="zh-CN">简体中文</option>
-      </select>
-
-      <!-- 主题切换 -->
-      <label class="swap swap-rotate">
-        <input type="checkbox" class="theme-controller" value="dark" v-model="isDark" />
-        <font-awesome-icon icon="fa-solid fa-sun" class="swap-off fill-current w-6 h-6 text-base-content" />
-        <font-awesome-icon icon="fa-solid fa-moon" class="swap-on fill-current w-6 h-6 text-base-content" />
-      </label>
-
-      <!-- 窗口控制按钮 -->
-      <div class="flex space-x-2">
-        <button @click="minimizeWindow" class="p-1 hover:bg-gray-200 rounded">
-          <font-awesome-icon icon="fa-solid fa-minus" class="h-5 w-5 text-base-content" />
-        </button>
-        <button @click="maximizeWindow" class="p-1 hover:bg-gray-200 rounded">
-          <font-awesome-icon icon="fa fa-window-restore" class="h-5 w-5 text-base-content" />
-        </button>
-        <button @click="closeWindow" class="p-1 hover:bg-gray-200 rounded">
-          <font-awesome-icon icon="fa-solid fa-xmark" class="h-5 w-5 text-base-content" />
+  <div class="flex flex-col items-start h-screen w-screen overflow-hidden">
+    <div data-tauri-drag-region
+      class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
+      <!-- 左侧：应用图标、名称、版本和检查更新 -->
+      <div class="flex items-center space-x-2">
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="text-base-content h-10 w-10" />
+        <span class="text-2xl text-base-content font-bold">{{ $t('siteName') }}</span>
+        <span class="text-sm text-base-content">v{{ version }}</span>
+        <!-- 检查更新按钮 -->
+        <button @click="$emiter('updateService')"
+          class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline">
+          <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
+          <span>{{ $t('checkUpdate') }}</span>
         </button>
       </div>
-    </div>
-  </div>
-  <div class="flex flex-row items-start bg-base-300 h-screen w-screen overflow-hidden mt-12">
-    <Sidebar :devices="devices" v-if="showSidebar" />
-    <ManageDevices :devices="devices" />
-  </div>
+      <!-- 教程链接 -->
+      <a class="flex items-center space-x-1 text-sm text-info ml-2" :href="$t('siteUrl') + '/docs/intro'"
+        target="_blank">
+        <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
+        <span>{{ $t('tutorial') }}</span>
+      </a>
+      <!-- 中间：灵活空间 -->
+      <div class="flex-1"></div>
+      <!-- 右侧：功能按钮和控制按钮 -->
+      <div class="flex items-center space-x-4">
+        <!-- 侧边栏切换 -->
+        <label class="swap swap-rotate" :title="$t('toggleSidebar')">
+          <input type="checkbox" value="true" v-model="showSidebar" />
+          <font-awesome-icon icon="fa fa-bars" class="swap-off fill-current w-6 h-6 text-base-content" />
+          <font-awesome-icon icon="fa fa-bars" class="swap-on fill-current w-6 h-6 text-base-content" />
+        </label>
+        <!-- 许可证状态 -->
+        <button
+          class="flex items-center space-x-1 text-sm px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
+          :class="license.leftdays > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'"
+          @click="$refs.buyLiscenseDialog.show()"
+          :title="license.leftdays > 0 ? $t('licenseValid', { days: license.leftdays }) : $t('activateLicense')">
+          <font-awesome-icon :icon="license.leftdays > 0 ? 'fa fa-key' : 'fa fa-lock'" class="h-4 w-4" />
+          <span v-if="license.leftdays > 0">{{ $t('licensed') }} ({{ license.leftdays }} {{ $t('days') }})</span>
+          <span v-else>{{ $t('unlicensed') }}</span>
+        </button>
+        <!-- 语言选择 -->
+        <select class="select select-info select-sm" v-model="locale">
+          <option selected value="en">English</option>
+          <option value="zh-CN">简体中文</option>
+        </select>
 
+        <!-- 主题切换 -->
+        <label class="swap swap-rotate">
+          <input type="checkbox" class="theme-controller" value="dark" v-model="isDark" />
+          <font-awesome-icon icon="fa-solid fa-sun" class="swap-off fill-current w-6 h-6 text-base-content" />
+          <font-awesome-icon icon="fa-solid fa-moon" class="swap-on fill-current w-6 h-6 text-base-content" />
+        </label>
 
-  <dialog ref="page_dialog" class="modal">
-    <div class="modal-box w-11/12 max-w-5xl">
-      <h3 class="font-bold text-lg">{{ page_title }}</h3>
-      <ManageDashboard v-if="selectedItem.name === 'dashboard' && $refs.page_dialog.open" />
-      <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
-      <ManageAnalytics v-if="selectedItem.name === 'analytics' && $refs.page_dialog.open" />
-      <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
-      <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
-      <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
-      <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
-      <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
-      <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
-      <FollowSettings v-if="selectedItem.name === 'followSettings' && $refs.page_dialog.open" />
-      <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
-      <TrainSettings :group="selectedItem.group"
-        v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" />
-      <PublishSettings :group="selectedItem.group"
-        v-if="selectedItem.name === 'publishSettings' && $refs.page_dialog.open" />
-      <BuyLicense ref="buyLiscenseDialog" :license="license" />
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button>close</button>
-    </form>
-  </dialog>
-
-  <dialog ref="download_dialog" class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">{{ download_filename }}</h3>
-      <div class="modal-body">
-        <div class="flex flex-row justify-between text-center items-center" v-if="download_progress.filesize > 0">
-          <progress class="progress progress-success w-full" :value="download_progress.transfered"
-            :max="download_progress.filesize"></progress>
-          <span class="text-sm ml-1">{{ (download_progress.transfered / 1024 / 1024).toFixed(2) }}Mb</span> /
-          <span class="text-sm">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
-        </div>
-        <div class="flex flex-row justify-between text-center items-center" v-else>
-          <progress class="progress progress-success w-full"></progress>
-        </div>
-
-        <div class="flex justify-between">
-          <div class="text-md" v-if="download_progress.transfer_rate > 0">
-            {{ $t('transferRate') }}:
-            <span class="text-sm">{{ (download_progress.transfer_rate / 1024).toFixed(2) }} KB/s</span>
-          </div>
-          <div class="text-md" v-if="download_progress.percentage > 0">
-            {{ $t('percentage') }}:
-            <span class="text-sm">{{ download_progress.percentage }} %</span>
-          </div>
+        <!-- 窗口控制按钮 -->
+        <div class="flex space-x-2">
+          <button @click="minimizeWindow" class="p-1 hover:bg-gray-200 rounded">
+            <font-awesome-icon icon="fa-solid fa-minus" class="h-5 w-5 text-base-content" />
+          </button>
+          <button @click="maximizeWindow" class="p-1 hover:bg-gray-200 rounded">
+            <font-awesome-icon icon="fa fa-window-restore" class="h-5 w-5 text-base-content" />
+          </button>
+          <button @click="closeWindow" class="p-1 hover:bg-gray-200 rounded">
+            <font-awesome-icon icon="fa-solid fa-xmark" class="h-5 w-5 text-base-content" />
+          </button>
         </div>
       </div>
-
     </div>
-  </dialog>
+    <div class="flex flex-row items-start bg-base-300 h-screen w-screen overflow-hidden mt-12">
+      <Sidebar :devices="devices" v-if="showSidebar" />
+      <ManageDevices :devices="devices" />
+    </div>
+
+
+    <dialog ref="page_dialog" class="modal">
+      <div class="modal-box w-11/12 max-w-5xl">
+        <h3 class="font-bold text-lg">{{ page_title }}</h3>
+        <ManageDashboard v-if="selectedItem.name === 'dashboard' && $refs.page_dialog.open" />
+        <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
+        <ManageAnalytics v-if="selectedItem.name === 'analytics' && $refs.page_dialog.open" />
+        <ManageMaterials :group="selectedItem.group"
+          v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
+        <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
+        <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
+        <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
+        <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
+        <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
+        <FollowSettings v-if="selectedItem.name === 'followSettings' && $refs.page_dialog.open" />
+        <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
+        <TrainSettings :group="selectedItem.group"
+          v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" />
+        <PublishSettings :group="selectedItem.group"
+          v-if="selectedItem.name === 'publishSettings' && $refs.page_dialog.open" />
+        <BuyLicense ref="buyLiscenseDialog" :license="license" />
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <dialog ref="download_dialog" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">{{ download_filename }}</h3>
+        <div class="modal-body">
+          <div class="flex flex-row justify-between text-center items-center" v-if="download_progress.filesize > 0">
+            <progress class="progress progress-success w-full" :value="download_progress.transfered"
+              :max="download_progress.filesize"></progress>
+            <span class="text-sm ml-1">{{ (download_progress.transfered / 1024 / 1024).toFixed(2) }}Mb</span> /
+            <span class="text-sm">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
+          </div>
+          <div class="flex flex-row justify-between text-center items-center" v-else>
+            <progress class="progress progress-success w-full"></progress>
+          </div>
+
+          <div class="flex justify-between">
+            <div class="text-md" v-if="download_progress.transfer_rate > 0">
+              {{ $t('transferRate') }}:
+              <span class="text-sm">{{ (download_progress.transfer_rate / 1024).toFixed(2) }} KB/s</span>
+            </div>
+            <div class="text-md" v-if="download_progress.percentage > 0">
+              {{ $t('percentage') }}:
+              <span class="text-sm">{{ download_progress.percentage }} %</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </dialog>
+  </div>
 </template>
 
 <script>

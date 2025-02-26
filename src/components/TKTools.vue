@@ -51,9 +51,7 @@
         <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 text-success" />{{ $t('userActions') }}
     </button>
 
-    <!-- <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchFO">
-        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3" />{{ $t('batchFO') }}
-    </button> -->
+
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.postActionsDialog.showModal">
         <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3 text-success" />
         {{ $t('postActions') }}
@@ -61,26 +59,51 @@
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchDM">
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('batchDM') }}
     </button>
-
-    <dialog ref="postActionsDialog" class="modal">
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.scrapeUsersDialog.showModal">
+        <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />{{ $t('scrapeFans') }}
+    </button>
+    <dialog ref="scrapeUsersDialog" class="modal">
         <div class="modal-box">
+            <h3 class="font-bold text-lg">{{ $t('scrapeTitle') }}</h3>
             <div class="flex flex-row items-center p-2">
-                <input class="input input-bordered input-md flex-1" type="text" v-model="target_post_url"
-                    :placeholder="$t('postUrl')" />
+                <input class="input input-bordered input-sm" type="text" v-model="tartget_username"
+                    :placeholder="$t('targetUsername')" />
             </div>
-            <button class="btn btn-sm btn-success ml-2" @click="startLike">
+            <button class="btn btn-sm btn-success ml-2" @click="startScrape">{{
+                $t('startScript') }}</button>
+            <button class="btn btn-sm btn-success ml-2" @click="open_dir('download')">{{ $t('openDownloadDir')
+            }}</button>
+
+        </div>
+
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+    <dialog ref="postActionsDialog" class="modal">
+        <div class="modal-box max-w-5xl">
+            <div class="flex flex-row items-center p-2">
+                <textarea class="textarea textarea-success grow  h-32 leading-tight"
+                    :placeholder="$t('targetPostUrlTips')" autocomplete="off" v-model="target_post_url"> </textarea>
+            </div>
+            <button class="btn btn-sm btn-success ml-2 mt-2" @click="startLike">
+                <font-awesome-icon icon="fa-solid fa-heart" class="h-3 w-3" />
                 {{ $t('like') }}
             </button>
-            <button class="btn btn-sm btn-success ml-2" @click="startComment">
+            <button class="btn btn-sm btn-success ml-2 mt-2" @click="startComment">
+                <font-awesome-icon icon="fa-solid fa-comment" class="h-3 w-3" />
                 {{ $t('comment') }}
             </button>
-            <button class="btn btn-sm btn-success ml-2" @click="startFavorite">
+            <button class="btn btn-sm btn-success ml-2 mt-2" @click="startFavorite">
+                <font-awesome-icon icon="fa-solid fa-star" class="h-3 w-3" />
                 {{ $t('favorite') }}
             </button>
-            <button class="btn btn-sm btn-success ml-2" @click="startView">
+            <button class="btn btn-sm btn-success ml-2 mt-2" @click="startView">
+                <font-awesome-icon icon="fa-solid fa-eye" class="h-3 w-3" />
                 {{ $t('view') }}
             </button>
-            <button class="btn btn-sm btn-success ml-2" @click="startShare">
+            <button class="btn btn-sm btn-success ml-2 mt-2" @click="startShare">
+                <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3" />
                 {{ $t('share') }}
             </button>
 
@@ -92,19 +115,18 @@
     <dialog ref="userActionsDialog" class="modal">
         <div class="modal-box">
             <div class="flex flex-row items-center p-2">
-                <input class="input input-bordered input-sm" type="text" v-model="target_username"
-                    :placeholder="$t('targetUsername')" />
+                <textarea class="textarea textarea-success grow  h-32 leading-tight"
+                    :placeholder="$t('targetUsernameTips')" autocomplete="off" v-model="target_username"> </textarea>
             </div>
             <button class="btn btn-sm btn-primary ml-2" @click="startFollow">
+                <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
                 {{ $t('follow') }}
             </button>
             <button class="btn btn-sm btn-secondary ml-2" @click="startUnFollow">
+                <font-awesome-icon icon="fa-solid fa-user-minus" class="h-3 w-3" />
                 {{ $t('unFollow') }}
             </button>
-            <button class="btn btn-sm btn-success ml-2" @click="startScrape">{{
-                $t('scrapeFollowers') }}</button>
-            <a class="link text-xs float-right flex items-center link-success ml-2" @click="open_dir('download')">{{
-                $t('openDownloadDir') }}</a>
+
 
         </div>
 
@@ -188,79 +210,106 @@ export default {
                 name
             });
         },
-
-        async startFollow() {
+        filterTargetUsername() {
             if (this.target_username == '') {
                 alert(this.$t('targetUsernameRequired'))
-                return;
+                return false;
             }
-            if (!this.target_username.startsWith('@')) {
-                this.target_username = '@' + this.target_username
+            //filter empty lines
+            let lines = this.target_username.split('\n').filter(line => line.trim() != '')
+            if (lines.length == 0) {
+                alert(this.$t('targetUsernameRequired'))
+                return false;
+            }
+            //add @ to usernames
+            lines = lines.map(line => {
+                if (!line.startsWith('@')) {
+                    return '@' + line
+                }
+                return line
+            })
+            this.target_username = lines.join('\n')
+            return true;
+        },
+        filterTargetPostUrl() {
+            if (this.target_post_url == '') {
+                alert(this.$t('postUrlRequired'))
+                return false;
+            }
+            //filter empty lines
+            let lines = this.target_post_url.split('\n').filter(line => line.trim() != '')
+            if (lines.length == 0) {
+                alert(this.$t('postUrlRequired'))
+                return false;
+            }
+            //remove query string
+            lines = lines.map(line => {
+                let url = new URL(line)
+                return url.origin + url.pathname
+            })
+            this.target_post_url = lines.join('\n')
+            return true;
+        },
+        async startFollow() {
+            if (!this.filterTargetUsername()) {
+                return;
             }
 
             await this.$emiter('run_now_by_account', { name: 'follow', args: { target_username: this.target_username } })
             this.$refs.userActionsDialog.close()
         },
         async startUnFollow() {
-            if (this.target_username == '') {
-                alert(this.$t('targetUsernameRequired'))
+            if (!this.filterTargetUsername()) {
                 return;
-            }
-            if (this.target_username.startsWith('@')) {
-                this.target_username = this.target_username.replace('@', '')
             }
 
             await this.$emiter('run_now_by_account', { name: 'unfollow', args: { target_username: this.target_username } })
             this.$refs.userActionsDialog.close()
         },
         async startScrape() {
-            if (this.target_username == '') {
-                alert(this.$t('targetUsernameRequired'))
+            if (!this.filterTargetUsername()) {
                 return;
-            }
-            if (!this.target_username.startsWith('@')) {
-                this.target_username = '@' + this.target_username
             }
             await this.$emiter('run_now_by_account', { name: 'scrape_fans', args: { target_username: this.target_username } })
             this.$refs.scrapeUsersDialog.close()
         },
         async startShare() {
-            if (this.target_post_url == '') {
-                alert(this.$t('postUrlRequired'))
+            if (!this.filterTargetPostUrl()) {
                 return;
-            } await this.$emiter('run_now_by_account', { name: 'share', args: { post_url: this.target_post_url } })
+            }
+            await this.$emiter('run_now_by_account', { name: 'share', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
         async startLike() {
-            if (this.target_post_url == '') {
-                alert(this.$t('postUrlRequired'))
+            if (!this.filterTargetPostUrl()) {
                 return;
-            } await this.$emiter('run_now_by_account', { name: 'like', args: { post_url: this.target_post_url } })
+            }
+            await this.$emiter('run_now_by_account', { name: 'like', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
         async startComment() {
-            if (this.target_post_url == '') {
-                alert(this.$t('postUrlRequired'))
+            if (!this.filterTargetPostUrl()) {
                 return;
-            } await this.$emiter('run_now_by_account', { name: 'comment', args: { post_url: this.target_post_url } })
+            }
+            await this.$emiter('run_now_by_account', { name: 'comment', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
         async startFavorite() {
-            if (this.target_post_url == '') {
-                alert(this.$t('postUrlRequired'))
+            if (!this.filterTargetPostUrl()) {
                 return;
-            } await this.$emiter('run_now_by_account', { name: 'favorite', args: { post_url: this.target_post_url } })
+            }
+            await this.$emiter('run_now_by_account', { name: 'favorite', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
         async startView() {
-            if (this.target_post_url == '') {
-                alert(this.$t('postUrlRequired'))
+            if (!this.filterTargetPostUrl()) {
                 return;
-            } await this.$emiter('run_now_by_account', { name: 'view', args: { post_url: this.target_post_url } })
+            }
+            await this.$emiter('run_now_by_account', { name: 'view', args: { post_url: this.target_post_url } })
 
             this.$refs.shareDialog.close()
         },
