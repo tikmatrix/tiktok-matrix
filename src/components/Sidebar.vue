@@ -652,16 +652,21 @@ export default {
       this.pasteToPhone()
     });
     await this.$listen('agent_started', async () => {
-
       this.get_menus()
       this.get_settings()
       this.get_groups()
       this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
       console.log('agent_started port:', this.port)
     });
+
     await this.$listen('reload_group', async () => {
       this.get_groups()
     });
+    this.get_menus()
+    this.get_settings()
+    this.get_groups()
+    this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+    console.log('agent_started port:', this.port)
 
 
   }
