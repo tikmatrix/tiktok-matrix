@@ -39,15 +39,12 @@
         {{ $t('openAppAgent') }}
     </button>
 
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="open_dir('bin')">
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="open_dir('')">
         <font-awesome-icon icon="fa fa-folder" class="h-3 w-3" />
         {{ $t('openAppDir') }}
     </button>
 
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('updateService')">
-        <font-awesome-icon icon="fa fa-download" class="h-3 w-3" />
-        {{ $t('checkUpdate') }}
-    </button>
+
     <dialog ref="proxy_dialog" class="modal">
         <div class="modal-box">
             <h3 class="font-bold text-lg">{{ $t('proxyServer') }}</h3>

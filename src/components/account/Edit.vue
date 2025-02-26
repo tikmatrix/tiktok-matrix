@@ -17,7 +17,7 @@
       <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="myaccount.username" />
     </div>
     <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right col-span-1">{{ $t('status') }}:</label>
+      <label class="font-bold text-right col-span-1">{{ $t('loginStatus') }}:</label>
       <div class="col-span-2 flex items-center gap-4">
         <div class="flex items-center">
           <input type="radio" id="logined" value="1" v-model="account.logined" class="form-radio text-primary h-4 w-4">
@@ -27,6 +27,20 @@
           <input type="radio" id="unlogined" value="0" v-model="account.logined"
             class="form-radio text-primary h-4 w-4">
           <label for="unlogined" class="ml-2">{{ $t('unlogined') }}</label>
+        </div>
+
+      </div>
+    </div>
+    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
+      <label class="font-bold text-right col-span-1">{{ $t('status') }}:</label>
+      <div class="col-span-2 flex items-center gap-4">
+        <div class="flex items-center">
+          <input type="radio" id="enable" value="0" v-model="account.status" class="form-radio text-primary h-4 w-4">
+          <label for="enable" class="ml-2">{{ $t('enable') }}</label>
+        </div>
+        <div class="flex items-center">
+          <input type="radio" id="disable" value="1" v-model="account.status" class="form-radio text-primary h-4 w-4">
+          <label for="disable" class="ml-2">{{ $t('disable') }}</label>
         </div>
 
       </div>
@@ -84,7 +98,8 @@ export default {
         return
       }
       this.myaccount.username = this.myaccount.username.trim()
-      this.myaccount.logined = parseInt(this.myaccount.logined)
+      this.myaccount.logined = Number(this.myaccount.logined)
+      this.myaccount.status = Number(this.myaccount.status)
       if (this.myaccount.id) {
         this.$emit('update', this.myaccount)
       } else {

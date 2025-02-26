@@ -14,14 +14,17 @@ embed-resource = "2.4"
 
 [dependencies]
 reqwest = { version = "0.11", features = ["blocking", "multipart", "json"] }
-tauri = { version = "1.5", features = [ "http-all", "shell-execute", "shell-sidecar", "protocol-asset",
+tauri = { version = "1.5", features = [ "window-show", "window-unmaximize", "window-close", "window-center", "window-hide", "window-unminimize", "window-start-dragging", "window-maximize", "window-create", "window-minimize",
+    "http-all",
+    "shell-execute",
+    "shell-sidecar",
+    "protocol-asset",
     "notification-all",
     "global-shortcut-all",
     "clipboard-all",
     "path-all",
     "fs-all",
     "os-all",
-    "window-all",
     "dialog-all",
     "updater",
     "app-all",
@@ -32,7 +35,7 @@ futures-util = "0.3.30"
 zip = "2.1.5"
 flexi_logger = "0.27"
 log = "0.4"
-showfile = "0.1.1"
+open = "5"
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

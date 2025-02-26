@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "TikMatrix",
-    "version": "2.1.0"
+    "version": "2.1.1"
   },
   "tauri": {
     "allowlist": {
@@ -20,13 +20,17 @@
         ]
       },
       "window": {
-        "all": true,
-        "create": true,
-        "center": true,
+        "all": false,
         "close": true,
         "hide": true,
+        "show": true,
         "maximize": true,
         "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true,
+        "create": true,
+        "center": true,
         "print": false,
         "requestUserAttention": false,
         "setAlwaysOnTop": false,
@@ -49,11 +53,7 @@
         "setResizable": false,
         "setSize": false,
         "setSkipTaskbar": false,
-        "setTitle": false,
-        "show": false,
-        "startDragging": false,
-        "unmaximize": false,
-        "unminimize": false
+        "setTitle": false
       },
       "dialog": {
         "all": true,
@@ -140,7 +140,8 @@
         "title": "TikMatrix",
         "width": 1024,
         "height": 768,
-        "maximized": true
+        "maximized": true,
+        "decorations": false
       }
     ],
     "updater": {

@@ -1,179 +1,117 @@
 <template>
-  <div class="z-50 top-12 left-0 fixed" v-if="!showSidebar">
-    <font-awesome-icon icon="fa-solid fa-angle-right"
-      class="text-secondary-content h-6 w-6 bg-secondary p-2 rounded-lg cursor-pointer" @click="showSidebar = true" />
-  </div>
-  <transition name="fade">
-    <div class="bg-base-100 m-1 flex flex-col rounded-lg shadow w-96 h-screen overflow-y-scroll no-scrollbar"
-      v-if="showSidebar">
-      <div class="bg-primary p-4 rounded-t-lg">
-        <div class="flex flex-row items-center justify-center">
-          <font-awesome-icon icon="fa-brands fa-tiktok" class="text-primary-content h-8 w-8 mr-2" />
-          <div>
-            <span class="text-xl text-primary-content font-bold">{{ $t('siteName') }}</span>
-            <span class="text-xs text-primary-content ml-2">v{{ version }}</span>
-            <br>
-            <span class="text-xs text-primary-content font-sans">{{ $t('siteUrl') }}</span>
-          </div>
-          <div class="ml-2">
-            <select class="select select-info select-sm" v-model="locale">
-              <option selected value="en">English</option>
-              <option value="zh-CN">简体中文</option>
-            </select>
-          </div>
-          <label class="swap swap-rotate ml-2">
-            <!-- this hidden checkbox controls the state -->
-            <input type="checkbox" class="theme-controller" value="dark" v-model="isDark" />
-            <!-- sun icon -->
-            <font-awesome-icon icon="fa-solid fa-sun" class="swap-off fill-current w-6 h-6 text-primary-content" />
-            <!-- moon icon -->
-            <font-awesome-icon icon="fa-solid fa-moon" class="swap-on fill-current w-6 h-6 text-primary-content" />
-          </label>
-          <font-awesome-icon icon="fa-solid fa-angle-left"
-            class="text-secondary-content h-6 w-6 bg-secondary p-2 ml-2 rounded-lg cursor-pointer"
-            @click="showSidebar = false" />
+  <div class="bg-base-100 m-1 flex flex-col rounded-lg shadow w-96 h-screen overflow-y-scroll no-scrollbar">
+
+    <div class="p-4">
+
+
+      <div role="tablist" class="tabs tabs-lifted mt-2 bg-base-200 rounded-md">
+        <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
+        <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
+        <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
+      </div>
+      <div class="border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
+        <div class="flex flex-row flex-wrap" v-if="selectedTab === 'general'">
+          <General :menuItems="menuItems" :settings="settings" />
+        </div>
+        <div class="flex flex-row flex-wrap" v-if="selectedTab === 'quickActions'">
+          <QuickActions :settings="settings" />
+        </div>
+        <div class="flex flex-row flex-wrap" v-if="selectedTab === 'tktools'">
+          <TKTools :settings="settings" />
         </div>
       </div>
-      <div class="p-4">
-        <div class="flex flex-row p-2 bg-base-300 rounded-md">
-          <a class="link link-primary text-xs float-right flex items-center mr-2"
-            @click="$refs.buyLiscenseDialog.show()" v-if="license.leftdays > 0">
-            <font-awesome-icon icon="fa fa-check-circle" class="text-success h-4 w-4" />
-            <span class="ml-2">{{ $t('licensedDays') }}:</span>
-            <span class="text-success font-bold mr-2">{{ license.leftdays }}</span>
-          </a>
-          <a class="link link-primary text-xs float-right flex items-center mr-2"
-            @click="$refs.buyLiscenseDialog.show()" v-else>
-            <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-error h-4 w-4" />
-            <span class="ml-2">{{ $t('activate') }}</span>
-          </a>
-          <a class="link link-primary text-xs float-right flex items-center mr-2" :href="$t('siteUrl') + '/docs/intro'"
-            target="_blank">
-            <font-awesome-icon icon="fa-solid fa-file-lines" class="text-primary h-4 w-4 mr-2" />
-            {{ $t('tutorial') }}
-          </a>
-          <!-- <a class="link link-primary text-xs float-right flex items-center mr-2" :href="$t('siteUrl') + '#faq'"
-            target="_blank">
-            <font-awesome-icon icon="fa-solid fa-file-lines" class="text-primary h-4 w-4 mr-2" />
-            {{ $t('faq') }}
-          </a> -->
-          <!-- <a class="link link-primary text-xs float-right flex items-center mr-2"
-            :href="'http://127.0.0.1:' + port + '/swagger-ui/'" target="_blank">
-            <font-awesome-icon icon="fa-solid fa-globe" class="text-primary h-4 w-4 mr-2" />
-            API Doc
-          </a> -->
+      <div class="flex flex-col">
+        <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('tasks') }}</span>
+        <div class="flex flex-row flex-wrap border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
+          <Tasks :settings="settings" />
         </div>
-
-        <div role="tablist" class="tabs tabs-lifted mt-2 bg-base-200 rounded-md">
-          <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
-          <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
-          <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
-        </div>
-        <div class="border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
-          <div class="flex flex-row flex-wrap" v-if="selectedTab === 'general'">
-            <General :menuItems="menuItems" :settings="settings" />
-          </div>
-          <div class="flex flex-row flex-wrap" v-if="selectedTab === 'quickActions'">
-            <QuickActions :settings="settings" />
-          </div>
-          <div class="flex flex-row flex-wrap" v-if="selectedTab === 'tktools'">
-            <TKTools :settings="settings" />
-          </div>
-        </div>
-        <div class="flex flex-col">
-          <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('tasks') }}</span>
-          <div class="flex flex-row flex-wrap border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
-            <Tasks :settings="settings" />
-          </div>
-        </div>
-        <div class="flex flex-col">
-          <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('groups') }}</span>
-          <button class="btn btn-sm btn-primary border-1 border-success text-primary-content p-0 mt-1"
-            @click="addGroup">
-            <font-awesome-icon icon="fa-solid fa-plus" class="h-4 w-4" />
-            <span class="text-xs">{{ $t('addGroup') }}</span>
-          </button>
-          <input ref="groupNameInput" v-if="showAddGroup"
-            class="input input-sm input-bordered w-full max-w-xs mt-2 ring-1 ring-success" type="text"
-            v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
-          <div class="border border-base-300 bg-base-500 rounded-md mt-2 shadow-lg" v-for="(item, index) in groups"
-            :key="item.id">
-            <div class="flex flex-row form-control items-center">
-              <label class="label cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(item.id)"
-                  :checked="isSelectAll(item.id)" />
-                <span class="label-text text-primary  text-xs">{{ item.name }}({{ groupDevices[item.id].length
-                }})</span>
-              </label>
-              <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
-                @click="renameGroup(item)"></font-awesome-icon>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('groups') }}</span>
+        <button class="btn btn-sm btn-primary border-1 border-success text-primary-content p-0 mt-1" @click="addGroup">
+          <font-awesome-icon icon="fa-solid fa-plus" class="h-4 w-4" />
+          <span class="text-xs">{{ $t('addGroup') }}</span>
+        </button>
+        <input ref="groupNameInput" v-if="showAddGroup"
+          class="input input-sm input-bordered w-full max-w-xs mt-2 ring-1 ring-success" type="text"
+          v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
+        <div class="border border-base-300 bg-base-500 rounded-md mt-2 shadow-lg" v-for="(item, index) in groups"
+          :key="item.id">
+          <div class="flex flex-row form-control items-center">
+            <label class="label cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(item.id)"
+                :checked="isSelectAll(item.id)" />
+              <span class="label-text text-primary  text-xs">{{ item.name }}({{ groupDevices[item.id].length
+              }})</span>
+            </label>
+            <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
+              @click="renameGroup(item)"></font-awesome-icon>
 
 
 
-              <div class="tooltip" :data-tip="$t('deleteGroup')">
-                <font-awesome-icon icon="fa-solid fa-trash" class="text-error cursor-pointer ml-2"
-                  @click="deleteGroup(item.id)"></font-awesome-icon>
-              </div>
-
-              <span class="label-text text-xs text-right flex-1 mr-2">{{ $t('selected') }}
-                {{ selections[item.id].length }}
-                {{ $t('units') }}
-              </span>
-
+            <div class="tooltip" :data-tip="$t('deleteGroup')">
+              <font-awesome-icon icon="fa-solid fa-trash" class="text-error cursor-pointer ml-2"
+                @click="deleteGroup(item.id)"></font-awesome-icon>
             </div>
 
-            <div class="flex flex-row form-control items-center">
-              <button class="btn btn-sm btn-primary ml-1 mb-1"
-                @click="$emiter('menuSelected', { name: 'trainSettings', group: item })">
-                <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
-              </button>
-              <button class="btn btn-sm btn-primary ml-1 mb-1"
-                @click="$emiter('menuSelected', { name: 'publishSettings', group: item })">
-                <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
-              </button>
-              <button class="btn btn-sm btn-primary ml-1 mb-1"
-                @click="$emiter('menuSelected', { name: 'materials', group: item })">
-                <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
-              </button>
-            </div>
+            <span class="label-text text-xs text-right flex-1 mr-2">{{ $t('selected') }}
+              {{ selections[item.id].length }}
+              {{ $t('units') }}
+            </span>
+
           </div>
 
           <div class="flex flex-row form-control items-center">
-            <label class="label cursor-pointer">
-              <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(0)"
-                :checked="isSelectAll(0)" />
-              <span class="label-text text-primary text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
-              }})</span>
-            </label>
-
-            <span class="label-text text-xs text-right flex-1">{{ $t('selected') }}
-              {{ selections[0].length }}
-              {{ $t('units') }}
-            </span>
-            <div class="tooltip" :data-tip="$t('moveToGroup')">
-              <details ref="moveToGroupMenu" class="dropdown dropdown-top dropdown-left">
-                <summary class="btn btn-sm bg-transparent hover:bg-transparent border-0">
-                  <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
-                </summary>
-                <ul
-                  class="dropdown-content z-[100] menu menu-sm p-2 bg-info text-info-content w-52 ring ring-info ring-offset-base-100">
-                  <li v-for="(item, index) in groups" :key="item.id"><a @click="moveToGroup(0, item.id)">{{
-                    item.name }}</a>
-                  </li>
-                </ul>
-              </details>
-            </div>
+            <button class="btn btn-sm btn-primary ml-1 mb-1"
+              @click="$emiter('menuSelected', { name: 'trainSettings', group: item })">
+              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
+            </button>
+            <button class="btn btn-sm btn-primary ml-1 mb-1"
+              @click="$emiter('menuSelected', { name: 'publishSettings', group: item })">
+              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
+            </button>
+            <button class="btn btn-sm btn-primary ml-1 mb-1"
+              @click="$emiter('menuSelected', { name: 'materials', group: item })">
+              <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
+            </button>
           </div>
-          <drag-select v-model="selection">
-            <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
-              {{ index + 1 }}
-            </drag-select-option>
-          </drag-select>
         </div>
+
+        <div class="flex flex-row form-control items-center">
+          <label class="label cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(0)"
+              :checked="isSelectAll(0)" />
+            <span class="label-text text-primary text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
+            }})</span>
+          </label>
+
+          <span class="label-text text-xs text-right flex-1">{{ $t('selected') }}
+            {{ selections[0].length }}
+            {{ $t('units') }}
+          </span>
+          <div class="tooltip" :data-tip="$t('moveToGroup')">
+            <details ref="moveToGroupMenu" class="dropdown dropdown-top dropdown-left">
+              <summary class="btn btn-sm bg-transparent hover:bg-transparent border-0">
+                <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
+              </summary>
+              <ul
+                class="dropdown-content z-[100] menu menu-sm p-2 bg-info text-info-content w-52 ring ring-info ring-offset-base-100">
+                <li v-for="(item, index) in groups" :key="item.id"><a @click="moveToGroup(0, item.id)">{{
+                  item.name }}</a>
+                </li>
+              </ul>
+            </details>
+          </div>
+        </div>
+        <drag-select v-model="selection">
+          <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
+            {{ index + 1 }}
+          </drag-select-option>
+        </drag-select>
       </div>
     </div>
-  </transition>
-  <BuyLicense ref="buyLiscenseDialog" :license="license" />
+  </div>
+
   <dialog ref="init_dialog" class="modal">
     <div class="modal-box">
       <h3 class="font-bold text-lg">{{ $t('initing') }}{{ init_progress }}</h3>
@@ -185,30 +123,14 @@
     </div>
   </dialog>
 </template>
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter,
-.fade-leave-to
-
-/* .fade-leave-active 在 Vue 2.1.8 或更高版本中生效 */
-  {
-  opacity: 0;
-}
-</style>
 <script>
-import BuyLicense from '../components/settings/BuyLicense.vue'
-import * as util from '../utils'
+
 import General from './General.vue'
 import TKTools from './TKTools.vue'
 import InsTools from './InsTools.vue'
 import Tasks from './Tasks.vue'
 import QuickActions from './QuickActions.vue';
 import { open, ask, message } from '@tauri-apps/api/dialog';
-import { getVersion } from '@tauri-apps/api/app';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 
@@ -225,13 +147,11 @@ export default {
     Tasks,
     TKTools,
     InsTools,
-    QuickActions,
-    BuyLicense
+    QuickActions
   },
   data() {
     return {
-      license: {},
-      showSidebar: true,
+
       settings: {},
       menuItems: [],
       fullMenuItems: [
@@ -248,37 +168,20 @@ export default {
       groupDevices: {
         0: [],
       },
-      locale: util.getData('locale') || 'en',
-      version: '1.0.0',
       port: -1,
       init_progress: '0/0',
-      isDark: util.getData('isDark') || '0',
     }
   },
 
   watch: {
-    locale() {
-      util.setData('locale', this.locale)
-      this.$i18n.locale = this.locale
-    },
+
     selection() {
       this.refreshSelections()
     },
-    isDark() {
-      console.log('isDark:', this.isDark)
-      util.setData('isDark', this.isDark)
-    }
+
   },
   methods: {
-    async loadLicense() {
-      this.$service.get_license().then(res => {
-        this.license = res.data
-        if (this.license.leftdays <= 0 && !this.license.github_authorized) {
-          this.$refs.buyLiscenseDialog.show()
-        }
-        console.log(`license: ${JSON.stringify(this.license)}`)
-      })
-    },
+
     async renameGroup(item) {
       if (this.showAddGroup) {
         this.showAddGroup = false
@@ -679,9 +582,7 @@ export default {
 
   },
   async mounted() {
-    this.$i18n.locale = this.locale
 
-    this.version = await getVersion();
     await this.$listen('openDevice', async (e) => {
       console.log("receive openDevice: ", e.payload)
       this.selection = [e.payload.real_serial]
@@ -751,7 +652,7 @@ export default {
       this.pasteToPhone()
     });
     await this.$listen('agent_started', async () => {
-      this.loadLicense()
+
       this.get_menus()
       this.get_settings()
       this.get_groups()
@@ -761,18 +662,8 @@ export default {
     await this.$listen('reload_group', async () => {
       this.get_groups()
     });
-    await this.$listen("LICENSE", async (e) => {
-      if (e.payload.reload) {
-        await this.loadLicense()
-      }
 
-      if (e.payload.show) {
-        if (this.license.leftdays <= 0 && !this.license.github_authorized) {
-          this.$refs.buyLiscenseDialog.show()
-        }
-      }
-    });
-    await this.$emiter('agent_started', {})
+
   }
 }
 </script>

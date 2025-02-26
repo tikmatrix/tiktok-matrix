@@ -26,15 +26,7 @@
                 v-model="licenseCode" />
               <button @click="activate" class="btn btn-sm btn-primary">
                 {{ $t('activate') }}</button>
-              <label class="text-md p-2 pr-4 font-bold text-success" v-if="license.leftdays">
-                <font-awesome-icon icon="fa fa-check-circle" class="text-success h-4 w-4" />
-                {{ $t('licensedDays') }}:
-                <label class="text-success font-bold mr-2">{{ license.leftdays }}</label>
-              </label>
-              <label class="text-md p-2 pr-4 font-bold text-error" v-else>
-                <font-awesome-icon icon="fa fa-exclamation-circle mr-2" class="text-error h-4 w-4" />
-                {{ $t('unlicensed') }}
-              </label>
+
             </div>
           </div>
           <div class="flex items-center flex-col w-full rounded-lg p-4" v-if="order && order.status == 0">

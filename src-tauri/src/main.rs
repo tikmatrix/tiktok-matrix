@@ -189,7 +189,7 @@ fn open_dir(name: String, app: tauri::AppHandle) {
         name
     );
     log::info!("open_dir: {}", path);
-    showfile::show_path_in_file_manager(path);
+    let _ = open::that(path);
 }
 
 fn main() -> std::io::Result<()> {

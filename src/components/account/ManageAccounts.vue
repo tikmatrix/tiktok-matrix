@@ -16,6 +16,7 @@
                 <th>{{ $t('username') }}</th>
                 <!-- <th>{{ $t('fans') }}</th> -->
                 <th>{{ $t('device') }}</th>
+                <th>{{ $t('loginStatus') }}</th>
                 <th>{{ $t('status') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
@@ -39,6 +40,10 @@
                 <td>
                   <span v-if="account.logined == 1" class="text text-success">{{ $t('logined') }}</span>
                   <span v-else class="text text-error">{{ $t('unlogined') }}</span>
+                </td>
+                <td>
+                  <span v-if="account.status == 0" class="text text-success">{{ $t('enable') }}</span>
+                  <span v-else class="text text-error">{{ $t('disable') }}</span>
                 </td>
                 <td>
                   <div class="space-x-4">
