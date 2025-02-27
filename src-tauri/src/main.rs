@@ -17,6 +17,7 @@ use std::os::windows::process::CommandExt;
 use futures_util::stream::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use sysinfo::System;
 use tauri::{
     http::header::{ACCEPT, USER_AGENT},
     AppHandle, Manager,
@@ -152,6 +153,15 @@ fn grant_permission(app: tauri::AppHandle, path: String) {
     }
 }
 #[tauri::command]
+fn is_process_running(process_name: String) -> bool {
+    let mut system = System::new_all(); // 创建一个包含所有系统信息的实例
+    system.refresh_all();
+    let mut processes = system.processes_by_name(process_name.as_ref());
+    let exists = processes.next().is_some();
+    log::info!("is_process_running: {}", exists);
+    exists
+}
+#[tauri::command]
 fn kill_process(name: String) {
     #[cfg(target_os = "windows")]
     {
@@ -199,7 +209,8 @@ fn main() -> std::io::Result<()> {
             kill_process,
             open_dir,
             download_file,
-            unzip_file
+            unzip_file,
+            is_process_running
         ])
         .setup(|app| {
             let work_dir = app.path_resolver().app_data_dir().unwrap();

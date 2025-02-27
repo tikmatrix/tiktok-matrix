@@ -53,7 +53,7 @@
 
 
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.postActionsDialog.showModal">
-        <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3 text-success" />
+        <font-awesome-icon icon="fa-solid fa-thumbs-up" class="h-3 w-3 text-success" />
         {{ $t('postActions') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchDM">
@@ -72,7 +72,7 @@
             <button class="btn btn-sm btn-success ml-2" @click="startScrape">{{
                 $t('startScript') }}</button>
             <button class="btn btn-sm btn-success ml-2" @click="open_dir('download')">{{ $t('openDownloadDir')
-            }}</button>
+                }}</button>
 
         </div>
 
