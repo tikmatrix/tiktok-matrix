@@ -66,13 +66,13 @@
         <div class="modal-box">
             <h3 class="font-bold text-lg">{{ $t('scrapeTitle') }}</h3>
             <div class="flex flex-row items-center p-2">
-                <input class="input input-bordered input-sm" type="text" v-model="tartget_username"
+                <input class="input input-bordered input-sm" type="text" v-model="target_username"
                     :placeholder="$t('targetUsername')" />
             </div>
             <button class="btn btn-sm btn-success ml-2" @click="startScrape">{{
                 $t('startScript') }}</button>
             <button class="btn btn-sm btn-success ml-2" @click="open_dir('download')">{{ $t('openDownloadDir')
-                }}</button>
+            }}</button>
 
         </div>
 

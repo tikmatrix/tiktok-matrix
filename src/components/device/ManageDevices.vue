@@ -36,11 +36,10 @@
                     <th>{{ $t('no') }}</th>
                     <th>{{ $t('serial') }}</th>
                     <th>{{ $t('mode') }}</th>
-                    <th>{{ $t('name') }}</th>
-                    <th>{{ $t('forwardPort') }}</th>
                     <th>{{ $t('ip') }}</th>
                     <th>{{ $t('connectType') }}</th>
                     <th>{{ $t('group') }}</th>
+                    <th>{{ $t('task') }}</th>
                     <th>{{ $t('sort') }}</th>
                     <th>{{ $t('actions') }}</th>
                   </tr>
@@ -53,14 +52,20 @@
                         device.serial }}</a>
                     </td>
                     <td>{{ device.mode }}</td>
-                    <td>{{ device.name }}</td>
-                    <td>{{ device.forward_port }}</td>
                     <td>{{ device.ip }}</td>
                     <td>
                       <div class="badge badge-neutral badge-sm" v-if="device.connect_type == '0'">USB</div>
                       <div class="badge badge-primary badge-sm" v-else>TCP</div>
                     </td>
                     <td>{{ device.group_name }}</td>
+                    <td>
+                      <div class="badge badge-success badge-sm" v-if="device.task_status == '1'">
+                        {{ $t('running') }}
+                      </div>
+                      <div class="badge badge-primary badge-sm" v-else>
+                        {{ $t('idle') }}
+                      </div>
+                    </td>
                     <td>{{ device.sort }}</td>
                     <td>
                       <div class="space-x-4">

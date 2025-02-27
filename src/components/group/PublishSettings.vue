@@ -1,7 +1,7 @@
 <template>
   <div class="bg-base-100 flex flex-col items-start p-4">
     <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right col-span-2">{{ $t('autoPublish') }}:</label>
+      <label class="font-bold text-right col-span-2">{{ $t('scheduledPublish') }}:</label>
       <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.auto_publish" true-value="1"
         false-value="0" />
       <div role="alert" class="alert col-span-5">

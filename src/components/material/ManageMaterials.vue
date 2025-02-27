@@ -79,10 +79,9 @@
       <form method="dialog">
         <!-- <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button> -->
       </form>
-      <h3 class="font-bold text-lg">Upload Progress</h3>
+      <h3 class="font-bold text-lg">Uploading...</h3>
       <div class="py-4">
-        <progress class="progress progress-success w-full" :value="upload_progress"
-          :max="max_upload_progress"></progress>
+        <progress class="progress progress-success w-full"></progress>
       </div>
     </div>
   </dialog>
@@ -173,16 +172,19 @@ export default {
         directory: false, // 是否选择目录
         filters: filters
       });
+      if (filePath.length > 0) {
+        this.$refs.upload_dialog.showModal()
+        this.$service
+          .upload_videos({
+            files: filePath,
+            group_id: this.group.id
+          })
+          .then(() => {
+            this.get_materials()
+            this.$refs.upload_dialog.close()
+          })
 
-      this.$service
-        .upload_videos({
-          files: filePath,
-          group_id: this.group.id
-        })
-        .then(() => {
-          this.get_materials()
-        })
-
+      }
     },
     delete_all() {
       this.$service
