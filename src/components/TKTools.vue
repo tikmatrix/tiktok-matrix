@@ -48,13 +48,13 @@
     </button>
 
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.userActionsDialog.showModal">
-        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 text-success" />{{ $t('userActions') }}
+        <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 text-success" />{{ $t('boostUsers') }}
     </button>
 
 
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.postActionsDialog.showModal">
         <font-awesome-icon icon="fa-solid fa-thumbs-up" class="h-3 w-3 text-success" />
-        {{ $t('postActions') }}
+        {{ $t('boostPosts') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="batchDM">
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />{{ $t('batchDM') }}

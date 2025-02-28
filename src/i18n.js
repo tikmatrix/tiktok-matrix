@@ -494,8 +494,12 @@ export const i18n = createI18n({
       moveSuccess: 'Move Success',
       import: 'Import',
       deleteAllConfirm: 'Are you sure you want to delete all?',
+      boostPosts: 'Boost Posts',
+      boostUsers: 'Boost Users',
     },
     'zh-CN': {
+      boostUsers: '提升用户',
+      boostPosts: '提升帖子',
       deleteAllConfirm: '确定要删除所有吗?',
       import: '导入',
       moveSuccess: '移动成功',
