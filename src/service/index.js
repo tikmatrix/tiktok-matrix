@@ -305,6 +305,12 @@ export function delete_all_tasks() {
     url: api.delete_all_tasks
   })
 }
+export function delete_all_accounts() {
+  return request({
+    method: 'delete',
+    url: api.delete_all_accounts
+  })
+}
 
 
 export function get_ip({ serial }) {

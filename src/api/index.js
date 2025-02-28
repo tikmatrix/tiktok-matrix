@@ -28,6 +28,7 @@ const api = {
   run_now_by_account: '/api/task/run_now_by_account',
   read_clipboard: '/api/get_clipboard',
   delete_all_materials: '/api/material/delete_all',
+  delete_all_accounts: '/api/account/delete_all',
   proxy: '/agent/api/proxy',
   get_ip: '/api/get_ip',
   analytics: '/api/data_analysis',

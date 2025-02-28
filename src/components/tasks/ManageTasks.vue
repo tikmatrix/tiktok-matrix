@@ -2,8 +2,8 @@
   <div class="w-full">
     <Pagination :items="filter_tasks" :searchKeys="['id', 'device_index']" @refresh="get_tasks">
       <template v-slot:buttons>
-        <MyButton @click="retry_all_failed" label="retryAllFaied" />
-        <MyButton @click="clearAll" label="clearAll" />
+        <MyButton @click="retry_all_failed" label="retryAllFaied" icon="fa fa-repeat" />
+        <MyButton @click="clearAll" label="clearAll" icon="fa fa-trash" />
         <select v-model="searchStatus" class="select select-sm select-bordered max-w-xs ml-2">
           <option value="">{{ $t('allStatus') }}</option>
           <option value="0">{{ $t('waiting') }}</option>

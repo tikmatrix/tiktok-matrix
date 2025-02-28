@@ -140,7 +140,7 @@
       </div>
       <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
       <input class="input input-bordered input-sm w-24 ring" type="number" v-model="port" />
-      <MyButton @click="scan" label="startScan" :showLoading="scaning" />
+      <MyButton @click="scan" label="startScan" :showLoading="scaning" icon="fa fa-search" />
       <span class="label-text ml-2">{{ scanResult }}</span>
     </div>
     <form method="dialog" class="modal-backdrop">

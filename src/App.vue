@@ -7,7 +7,7 @@
     </div>
 
     <dialog ref="page_dialog" class="modal">
-      <div class="modal-box w-11/12 max-w-5xl">
+      <div class="modal-box w-11/12 max-w-6xl">
         <h3 class="font-bold text-lg">{{ page_title }}</h3>
         <ManageDashboard v-if="selectedItem.name === 'dashboard' && $refs.page_dialog.open" />
         <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
@@ -54,9 +54,6 @@ import Login from './components/Login.vue'
 import Miniremote from './components/device/Miniremote.vue'
 import TrainSettings from './components/group/TrainSettings.vue'
 import PublishSettings from './components/group/PublishSettings.vue'
-import { invoke } from "@tauri-apps/api/tauri";
-import { window as tauriWindow } from "@tauri-apps/api"
-import { TauriEvent } from "@tauri-apps/api/event"
 import { message } from '@tauri-apps/api/dialog';
 import { readTextFile, writeTextFile, exists } from '@tauri-apps/api/fs'
 import { BaseDirectory } from '@tauri-apps/api/fs';
@@ -168,11 +165,7 @@ export default {
         }
       })
     },
-    async shutdown() {
-      await invoke("kill_process", { name: "agent" });
-      await invoke("kill_process", { name: "script" });
-      await writeTextFile('agent.pid', '', { dir: BaseDirectory.AppData });
-    },
+
     menu_selected(item) {
       this.selectedItem = item
       this.$refs.page_dialog.showModal()
@@ -183,23 +176,18 @@ export default {
 
     disableMenu() {
       // 开发环境不禁止右键菜单
-      if (window.location.href.includes('localhost')) {
+      const isDev = import.meta.env.DEV;
+      if (isDev) {
+        console.log("current is dev environment")
         return;
       }
       // 禁用右键菜单
       document.addEventListener('contextmenu', event => event.preventDefault());
     },
-    async closeWindow() {
-      await this.shutdown();
-    }
+
   },
   async mounted() {
     this.disableMenu();
-
-    // 监听窗口关闭事件
-    tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
-      await this.closeWindow();
-    });
 
     // 监听显示消息事件
     await this.$listen('showToast', async (e) => {
@@ -232,11 +220,6 @@ export default {
     await this.$listen('sidebarChange', (e) => {
       this.showSidebar = e.payload;
     });
-
-
-
-    // 启动代理
-    await this.$emiter('start_agent', {});
   }
 }
 </script>

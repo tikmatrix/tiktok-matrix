@@ -493,8 +493,10 @@ export const i18n = createI18n({
       toggleSidebar: 'Toggle Sidebar',
       moveSuccess: 'Move Success',
       import: 'Import',
+      deleteAllConfirm: 'Are you sure you want to delete all?',
     },
     'zh-CN': {
+      deleteAllConfirm: '确定要删除所有吗?',
       import: '导入',
       moveSuccess: '移动成功',
       toggleSidebar: '切换侧边栏',

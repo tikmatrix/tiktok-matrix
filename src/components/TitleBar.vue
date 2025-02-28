@@ -36,7 +36,7 @@
                 :title="licenseData.leftdays > 0 ? $t('licenseValid', { days: licenseData.leftdays }) : $t('activateLicense')">
                 <font-awesome-icon :icon="licenseData.leftdays > 0 ? 'fa fa-key' : 'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="licenseData.leftdays > 0">{{ $t('licensed') }} ({{ licenseData.leftdays }} {{ $t('days')
-                    }})</span>
+                }})</span>
                 <span v-else>{{ $t('unlicensed') }}</span>
             </button>
             <!-- 语言选择 -->
@@ -195,6 +195,7 @@ export default {
                     return;
                 }
             }
+            this.$refs.download_dialog.close();
             await message('Agent Start Timeout', { title: 'Error', type: 'error' });
         },
         async minimizeWindow() {
@@ -236,6 +237,11 @@ export default {
             });
         },
         async check_update() {
+            let hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate');
+            if (hasCheckedUpdate) {
+                await this.start_agent();
+                return;
+            }
             this.download_filename = 'Checking update';
             this.$refs.download_dialog.showModal();
             try {
@@ -254,8 +260,8 @@ export default {
                 } else {
                     console.log('No update available');
                 }
-            } catch (error) {
-                console.error(error);
+            } catch (e) {
+                await message(e, { title: 'Check Update Error', type: 'error' });
             }
 
             let response = null;
@@ -267,9 +273,7 @@ export default {
                 });
                 console.log('response:', response);
             } catch (e) {
-                console.error(e);
-                await message('Check Update Error', { title: 'Error', type: 'error' });
-                return;
+                await message(e, { title: 'Check Core Update Error', type: 'error' });
             }
 
             if (response.ok) {
@@ -281,8 +285,8 @@ export default {
                 await this.check_scrcpy();
                 await this.check_script();
                 await this.check_agent();
-                await this.$emiter('start_agent', {});
-
+                await this.start_agent();
+                localStorage.setItem('hasCheckedUpdate', 'true');
             }
         },
         async check_ocr() {
@@ -461,20 +465,14 @@ export default {
             }
         });
 
-        // 监听更新服务事件
-        await this.$listen("updateService", async (e) => {
-            await this.check_update();
-        });
         // 监听代理启动事件
         await this.$listen('agent_started', async () => {
             this.loadLicense();
         });
-        // 监听启动代理事件
-        await this.$listen('start_agent', async () => {
-            await this.start_agent();
-        });
+
         // 初始加载许可证信息
         this.loadLicense();
+        this.check_update();
     }
 }
 </script>

@@ -5,6 +5,7 @@
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="import_accounts" label="import" icon="fa fa-download" />
         <MyButton @click="export_accounts" label="export" icon="fa fa-upload" />
+        <MyButton @click="delete_all" label="clearAll" icon="fa fa-trash" />
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
@@ -114,6 +115,13 @@ export default {
     }
   },
   methods: {
+    async delete_all() {
+      const yes = await ask(this.$t('deleteAllConfirm'), this.$t('confirm'));
+      if (yes) {
+        await this.$service.delete_all_accounts()
+        this.get_accounts()
+      }
+    },
     async import_accounts() {
       const filePath = await open({
         multiple: false, // 是否允许多选文件

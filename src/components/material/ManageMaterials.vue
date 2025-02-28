@@ -2,8 +2,8 @@
   <div class="w-full">
     <Pagination :items="materials" :searchKeys="['name']" @refresh="get_materials">
       <template v-slot:buttons>
-        <MyButton @click="selectMaterials" label="upload" icon="fa fa-add" />
-        <MyButton @click="delete_all" label="clearAll" />
+        <MyButton @click="selectMaterials" label="add" icon="fa fa-add" />
+        <MyButton @click="delete_all" label="clearAll" icon="fa fa-trash" />
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
