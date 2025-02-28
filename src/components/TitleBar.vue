@@ -107,7 +107,7 @@ import { appWindow } from '@tauri-apps/api/window';
 import { getAll } from '@tauri-apps/api/window';
 import { ask, message } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
-import { writeTextFile, exists, copyFile } from '@tauri-apps/api/fs';
+import { readTextFile, writeTextFile, exists, copyFile } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
 import * as util from '../utils';
 import { getVersion } from '@tauri-apps/api/app';
@@ -117,6 +117,7 @@ import { fetch, ResponseType } from '@tauri-apps/api/http';
 import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
 import BuyLicense from './settings/BuyLicense.vue';
+import { Command } from '@tauri-apps/api/shell'
 
 export default {
     name: 'TitleBar',
@@ -154,6 +155,48 @@ export default {
         }
     },
     methods: {
+        async start_agent() {
+            console.log('start_agent')
+            this.$refs.download_dialog.showModal();
+            this.download_filename = 'Starting agent';
+            try {
+                //check agent.exe is running
+                let agent_running = await invoke("is_agent_running");
+                console.log('agent_running:', agent_running)
+                if (!agent_running) {
+                    console.log('agent is not running')
+                    //check agent.exe is exists
+                    let agent_exists = await exists('bin/agent.exe', { dir: BaseDirectory.AppData })
+                    if (!agent_exists) {
+                        console.log('agent.exe not found')
+                        return;
+                    }
+                    const command = new Command('start-agent', [])
+                    const child = await command.spawn();
+                    console.log('pid:', child.pid);
+                    //write pid to file
+                    await writeTextFile('agent.pid', `${child.pid}`, { dir: BaseDirectory.AppData });
+                } else {
+                    console.log('agent is running')
+                }
+            } catch (e) {
+                let error = e.toString();
+                await message(error, { title: 'Agent Start Error', type: 'error' });
+            }
+            console.log('waiting for agent startup')
+            // wait for agent startup by listening to port
+            for (let i = 0; i < 10; i++) {
+                await new Promise(r => setTimeout(r, 1000));
+                const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+                if (port > 0) {
+                    await this.$emiter('agent_started', {})
+                    await this.$emiter('reload_tasks', {})
+                    this.$refs.download_dialog.close();
+                    return;
+                }
+            }
+            await message('Agent Start Timeout', { title: 'Error', type: 'error' });
+        },
         async minimizeWindow() {
             appWindow.minimize();
         },
@@ -239,7 +282,7 @@ export default {
                 await this.check_script();
                 await this.check_agent();
                 await this.$emiter('start_agent', {});
-                this.$refs.download_dialog.close();
+
             }
         },
         async check_ocr() {
@@ -425,6 +468,10 @@ export default {
         // 监听代理启动事件
         await this.$listen('agent_started', async () => {
             this.loadLicense();
+        });
+        // 监听启动代理事件
+        await this.$listen('start_agent', async () => {
+            await this.start_agent();
         });
         // 初始加载许可证信息
         this.loadLicense();

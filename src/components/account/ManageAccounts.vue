@@ -3,7 +3,7 @@
     <Pagination :items="accounts" :searchKeys="['email', 'username', 'device', 'device_index']" @refresh="get_accounts">
       <template v-slot:buttons>
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
-        <MyButton @click="$refs.batch_add_dialog.showModal()" label="batchAdd" icon="fa fa-add" />
+        <MyButton @click="import_accounts" label="import" icon="fa fa-download" />
         <MyButton @click="export_accounts" label="export" icon="fa fa-upload" />
       </template>
       <template v-slot:default="slotProps">
@@ -69,21 +69,16 @@
       </form>
     </dialog>
 
-    <dialog ref="batch_add_dialog" class="modal">
+    <!-- import progress dialog -->
+    <dialog ref="import_dialog" class="modal">
       <div class="modal-box">
-        <div class="flex flex-col items-center gap-2 mb-2 w-full">
-          <textarea class="textarea textarea-success w-full h-32" :placeholder="$t('batchAddTips')" autocomplete="off"
-            v-model="batchAccounts">
-
-      </textarea>
-          <div class="mt-4 w-full flex justify-end align-middle text-center items-center">
-            <MyButton class="btn-primary" @click="batchAdd" label="save" />
-          </div>
+        <form method="dialog">
+        </form>
+        <h3 class="font-bold text-lg">Importing...</h3>
+        <div class="py-4">
+          <progress class="progress progress-success w-full"></progress>
         </div>
       </div>
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
     </dialog>
   </div>
 </template>
@@ -92,8 +87,12 @@ import MyButton from '../Button.vue'
 import Edit from './Edit.vue'
 import Pagination from '../Pagination.vue'
 import { ask } from '@tauri-apps/api/dialog';
-import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
+import { writeBinaryFile, BaseDirectory, createDir, exists } from '@tauri-apps/api/fs';
 import { invoke } from "@tauri-apps/api/tauri";
+import * as XLSX from 'xlsx'
+import { open } from '@tauri-apps/api/dialog'
+import { readBinaryFile } from '@tauri-apps/api/fs';
+
 export default {
   name: 'app',
   components: {
@@ -115,76 +114,90 @@ export default {
     }
   },
   methods: {
-    async export_accounts() {
-      const yes = await ask(this.$t('exportConfirm'), this.$t('confirm'))
-      if (!yes) {
-        return
-      }
-      let content = this.accounts.map(account => {
-        account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
-        return `${account.email}##${account.pwd}##${account.username}##${account.device_index}`
-      }).join('\n')
-      await writeTextFile('download/accounts.txt', content, { dir: BaseDirectory.AppData });
-      invoke("open_dir", {
-        name: "download"
+    async import_accounts() {
+      const filePath = await open({
+        multiple: false, // 是否允许多选文件
+        directory: false, // 是否选择目录
+        filters: [{ name: 'Excel', extensions: ['xlsx'] }]
       });
+      if (filePath) {
+        console.log(`importing ${filePath}`);
+        this.$refs.import_dialog.showModal()
+        try {
+          // 读取文件内容
+          const fileContent = await readBinaryFile(filePath);
+          // 解析 Excel 文件为工作簿
+          const workbook = XLSX.read(fileContent, { type: 'array' });
+          // 获取第一个工作表的名称
+          const sheetName = workbook.SheetNames[0];
+          // 获取工作表
+          const sheet = workbook.Sheets[sheetName];
+          // 转换为 JSON，默认以第一行作为键
+          const jsonData = XLSX.utils.sheet_to_json(sheet);
+          // 输出结果
+          console.log(JSON.stringify(jsonData));
+          for (let account of jsonData) {
+            account.fans = 0
+            if (account.id) {
+              await this.$service.update_account(account)
+            } else {
+              await this.$service.add_account(account)
+            }
+          }
+        } catch (error) {
+          console.error(`Error importing file: ${error}`);
+          await message(error, { title: 'Import Error', type: 'error' });
+        } finally {
+          this.$refs.import_dialog.close()
+          this.get_accounts()
+        }
+      }
     },
-    async batchAdd() {
-      if (this.batchAccounts.length === 0) {
-        return
-      }
-      //check format
-      let accounts = this.batchAccounts.split('\n').map(line => {
-        line = line.trim()
-        if (line.length === 0) {
-          return
-        }
-        if (!line.includes('##')) {
-          return
-        }
-        //must contains 3 ##
-        if (line.split('##').length !== 5) {
-          return
-        }
 
-        let [email, pwd, username, device] = line.split('##').map(v => v.trim())
-        let serial = this.devices.find(d => d.key === parseInt(device))?.real_serial
-        if (!serial) {
-          return
-        }
-        return {
-          email,
-          pwd,
-          fans: 0,
-          serial,
-          username
-        }
-      })
+    async export_accounts() {
+      try {
+        // 准备 Excel 数据
+        const excelData = this.accounts.map(account => ({
+          id: account.id,
+          email: account.email,
+          pwd: account.pwd,
+          username: account.username,
+          device: account.device,
+          logined: account.logined,
+          status: account.status
+        }));
 
-      accounts = accounts.filter(account => account)
-      if (accounts.length === 0) {
-        alert('No valid accounts found')
-        return
-      }
-      const yes = await ask(`${this.$t('batchAddConfirm', { count: accounts.length })}`, this.$t('confirm'))
-      if (!yes) {
-        return
-      }
-      for (let account of accounts) {
-        await this.$service
-          .add_account({
-            email: account.email,
-            pwd: account.pwd,
-            fans: account.fans,
-            device: account.serial,
-            username: account.username,
-            logined: 0,
-          })
-      }
-      this.$refs.batch_add_dialog.close()
+        // 创建工作簿和工作表
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        XLSX.utils.book_append_sheet(wb, ws, "accounts");
 
-      this.get_accounts()
+        // 生成 Excel 文件 - 使用 ArrayBuffer
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+        // 转换为 Uint8Array
+        const buf = new Uint8Array(wbout);
+
+        // 指定文件路径
+        const filePath = 'download/accounts.xlsx';
+
+        // 使用 writeBinaryFile 写入二进制数据
+        await writeBinaryFile(
+          filePath,
+          buf,
+          { dir: BaseDirectory.AppData }
+        );
+
+
+        // 打开下载目录
+        await invoke("open_dir", {
+          name: "download"
+        });
+      } catch (error) {
+        await message(error, { title: 'Export Error', type: 'error' });
+      }
     },
+
     async show_device(serial) {
       let mydevice = this.devices.find(d => d.serial === serial || d.real_serial === serial)
       await this.$emiter('openDevice', mydevice)
@@ -209,6 +222,7 @@ export default {
         fans: 0,
         device: '',
         logined: 0,
+        status: 0,
       }
       this.$refs.edit_dialog.showModal()
     },

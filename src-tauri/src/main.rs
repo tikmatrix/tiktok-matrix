@@ -6,6 +6,7 @@ use std::{
     cmp::min,
     fs::File,
     io::{self, BufReader, Write},
+    net::TcpListener,
     path::Path,
     process::Command,
     time::Instant,
@@ -17,7 +18,6 @@ use std::os::windows::process::CommandExt;
 use futures_util::stream::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use sysinfo::System;
 use tauri::{
     http::header::{ACCEPT, USER_AGENT},
     AppHandle, Manager,
@@ -153,13 +153,19 @@ fn grant_permission(app: tauri::AppHandle, path: String) {
     }
 }
 #[tauri::command]
-fn is_process_running(process_name: String) -> bool {
-    let mut system = System::new_all(); // 创建一个包含所有系统信息的实例
-    system.refresh_all();
-    let mut processes = system.processes_by_name(process_name.as_ref());
-    let exists = processes.next().is_some();
-    log::info!("is_process_running: {}", exists);
-    exists
+fn is_agent_running() -> bool {
+    //check 50809 port is listening
+    let port = 50809;
+    match TcpListener::bind(("0.0.0.0", port)) {
+        Ok(_) => {
+            log::info!("agent is not running on port {}", port);
+            false
+        }
+        Err(_) => {
+            log::info!("agent is running on port {}", port);
+            true
+        }
+    }
 }
 #[tauri::command]
 fn kill_process(name: String) {
@@ -210,7 +216,7 @@ fn main() -> std::io::Result<()> {
             open_dir,
             download_file,
             unzip_file,
-            is_process_running
+            is_agent_running
         ])
         .setup(|app| {
             let work_dir = app.path_resolver().app_data_dir().unwrap();
@@ -232,6 +238,10 @@ fn main() -> std::io::Result<()> {
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/material"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/avatar"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
+            //kill agent process
+            kill_process("agent".to_string());
+            //kill script process
+            kill_process("script".to_string());
             std::fs::write(format!("{}/port.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wssport.txt", work_dir), "0")?;

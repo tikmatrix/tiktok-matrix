@@ -54,14 +54,13 @@ import Login from './components/Login.vue'
 import Miniremote from './components/device/Miniremote.vue'
 import TrainSettings from './components/group/TrainSettings.vue'
 import PublishSettings from './components/group/PublishSettings.vue'
-import * as util from './utils'
 import { invoke } from "@tauri-apps/api/tauri";
 import { window as tauriWindow } from "@tauri-apps/api"
 import { TauriEvent } from "@tauri-apps/api/event"
 import { message } from '@tauri-apps/api/dialog';
 import { readTextFile, writeTextFile, exists } from '@tauri-apps/api/fs'
 import { BaseDirectory } from '@tauri-apps/api/fs';
-import { Command } from '@tauri-apps/api/shell'
+
 
 export default {
   name: 'app',
@@ -181,47 +180,7 @@ export default {
         this.selectedItem = {}
       })
     },
-    async start_agent() {
-      try {
-        //check agent.exe is running
-        let agent_running = await invoke("is_process_running", { processName: "agent.exe" });
-        if (!agent_running) {
-          //check agent.exe is exists
-          let agent_exists = await exists('bin/agent.exe', { dir: BaseDirectory.AppData })
-          if (!agent_exists) {
-            console.log('agent.exe not found')
-            return;
-          }
-          const command = new Command('start-agent', [])
-          const child = await command.spawn();
-          console.log('pid:', child.pid);
-          //write pid to file
-          await writeTextFile('agent.pid', `${child.pid}`, { dir: BaseDirectory.AppData });
-        } else {
-          console.log('agent is running')
-          await this.$emiter('agent_started', {})
-          await this.$emiter('reload_tasks', {})
-          return;
-        }
-      } catch (e) {
-        let error = e.toString();
-        await message(error, { title: 'Agent Start Error', type: 'error' });
-        tauriWindow.getCurrent().close();
-      }
-      console.log('waiting for agent startup')
-      // wait for agent startup by listening to port
-      for (let i = 0; i < 10; i++) {
-        await new Promise(r => setTimeout(r, 1000));
-        const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-        if (port > 0) {
-          await this.$emiter('agent_started', {})
-          await this.$emiter('reload_tasks', {})
-          return;
-        }
-      }
-      await message('Agent Start Timeout', { title: 'Error', type: 'error' });
-      tauriWindow.getCurrent().close();
-    },
+
     disableMenu() {
       // 开发环境不禁止右键菜单
       if (window.location.href.includes('localhost')) {
@@ -274,13 +233,10 @@ export default {
       this.showSidebar = e.payload;
     });
 
-    // 监听启动代理事件
-    await this.$listen('start_agent', async () => {
-      await this.start_agent();
-    });
+
 
     // 启动代理
-    await this.start_agent();
+    await this.$emiter('start_agent', {});
   }
 }
 </script>

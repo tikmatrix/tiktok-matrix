@@ -492,8 +492,10 @@ export const i18n = createI18n({
       targetPostUrlTips: 'Target Post Url, one per line',
       toggleSidebar: 'Toggle Sidebar',
       moveSuccess: 'Move Success',
+      import: 'Import',
     },
     'zh-CN': {
+      import: '导入',
       moveSuccess: '移动成功',
       toggleSidebar: '切换侧边栏',
       targetPostUrlTips: '目标帖子链接,每行1个',

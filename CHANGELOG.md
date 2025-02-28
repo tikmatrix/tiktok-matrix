@@ -1,4 +1,4 @@
 # 更新日志 / Change Log
 
-1. 关注/取消关注增加批量操作 / Add batch operation for follow/unfollow
-2. 点赞/评论/分享/收藏/查看增加批量操作 / Add batch operation for like/comment/share/favorite/view
+1. 修复agent进程无法启动的问题 / Fix the problem that the agent process cannot be started
+2. 增加账号导入导出excel文件功能 / Add account import and export excel file function
