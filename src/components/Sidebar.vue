@@ -105,6 +105,24 @@
             {{ index + 1 }}
           </drag-select-option>
         </drag-select>
+
+      </div>
+      <div class="mt-4 ring-1 ring-base-300 rounded-lg overflow-hidden relative" v-if="!hideAd">
+        <a href="https://gou.niaozun.com/products/samsung-s10-mobile-farm-b8wu4pb1-1x414m0f-ahisqnqd?variant=466&f_tracking_id=tikmatrix"
+          target="_blank" class="block w-full h-full relative hover:opacity-90 transition-opacity">
+          <img src="https://gou.niaozun.com/media/product/1/image/2024/06/26/e4c4d51d0598b76eeb0e2f4ef84bdea2.png"
+            class="w-full h-full object-cover" />
+        </a>
+        <div class="absolute top-10 bg-black/50 text-white text-xs p-1 text-center">
+          <span class="text-sm font-bold">
+            {{ $t('adTips') }}
+          </span>
+        </div>
+        <div class="absolute top-0 right-0">
+          <button class="btn btn-sm btn-primary" @click="hideAd = true">
+            {{ $t('close') }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -164,12 +182,18 @@ export default {
       },
       port: -1,
       init_progress: '0/0',
-      listeners: []
+      listeners: [],
+      adImage: '',
+      adLink: '',
+      adTitle: '',
+      hideAd: localStorage.getItem('hideAd_v1') == 'true' ? true : false,
     }
   },
 
   watch: {
-
+    hideAd(newVal) {
+      localStorage.setItem('hideAd', newVal)
+    },
     selection() {
       this.refreshSelections()
     },
@@ -442,7 +466,7 @@ export default {
     },
 
 
-    async batchDM() {
+    async batchDM(args) {
       if (this.selection.length == 0) {
         await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
@@ -451,6 +475,9 @@ export default {
       this.$service
         .message_now({
           serials: this.selection,
+          message_content: args.message_content,
+          insert_emoji: args.insert_emoji,
+          target_username_path: args.target_username_path,
         })
         .then(async (res) => {
           await this.$emiter('reload_tasks', {})
@@ -562,6 +589,7 @@ export default {
       // await this.$emiter('showToast', this.$t('pasteSuccess'))
     },
 
+
   },
   async mounted() {
 
@@ -609,7 +637,7 @@ export default {
 
 
     this.listeners.push(await this.$listen('batchDM', (e) => {
-      this.batchDM();
+      this.batchDM(e.payload);
     }))
     this.listeners.push(await this.$listen('batchFO', (e) => {
       this.batchFO();

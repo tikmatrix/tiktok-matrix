@@ -6,13 +6,16 @@
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('messageContent') }}: </span>
       <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('messageContentTips')"
-        autocomplete="off" v-model="settings.message_content"> </textarea>
-
+        autocomplete="off" v-model="message_content"> </textarea>
+      <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
+      <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji" :true-value=1 :false-value=0
+        title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
     </div>
+
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('targetUsernamesPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/usernames.txt"
-        class="input input-sm grow input-bordered" v-model="settings.target_username_path" />
+        class="input input-sm grow input-bordered" v-model="target_username_path" />
       <button class="btn btn-sm btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
     </div>
     <div role="alert" class="alert gap-2 max-w-full w-full mt-2">
@@ -38,7 +41,9 @@ export default {
   },
   data() {
     return {
-      settings: {},
+      message_content: '',
+      insert_emoji: 0,
+      target_username_path: '',
     }
   },
   methods: {
@@ -63,8 +68,10 @@ export default {
       })
     },
     async batchDM() {
-      this.$service.update_settings(this.settings).then(async (res) => {
-        await this.$emiter('batchDM')
+      await this.$emiter('batchDM', {
+        message_content: this.message_content,
+        insert_emoji: this.insert_emoji,
+        target_username_path: this.target_username_path,
       })
     },
 
@@ -72,6 +79,11 @@ export default {
   },
   async mounted() {
     this.get_settings()
+  },
+  watch: {
+    insert_emoji(val) {
+      this.insert_emoji = Number(val)
+    }
   }
 }
 </script>

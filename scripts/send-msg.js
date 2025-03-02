@@ -11,7 +11,7 @@ const configPath = "src-tauri/tauri.conf.json"
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
 const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
 // const message = `A new release: ${tag} is available:\n ${changelog}\n Check it out at ${url}`
-const message = `${config.package.productName} v${config.package.version} is released!\n${changelog}\nPlease update to the new version.\n ${url}`
+const message = `*${config.package.productName} v${config.package.version}* New Release!\n\n${changelog}\n\n*Please update to the latest version*\n[Download Here](${url})`
 
 
 // 创建一个机器人实例
@@ -19,7 +19,7 @@ const bot = new TelegramBot(token, { polling: false });
 
 
 // 发送消息
-bot.sendMessage(chatId, message)
+bot.sendMessage(chatId, message, { parse_mode: 'Markdown' })
     .then(response => {
         console.log('Message sent successfully:', response);
     })

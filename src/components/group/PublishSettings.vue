@@ -15,12 +15,22 @@
     <div>
       <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-2">{{ $t('publishTimer') }}:</label>
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="publish_time1" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="publish_time2" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="publish_time3" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="publish_time4" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="publish_time5" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="publish_time6" placeholder="00:00" />
+        <div class="col-span-6 flex flex-wrap gap-2">
+          <div v-for="(time, index) in publishTimes" :key="index" class="flex items-center">
+            <input type="time" class="border-2 border-gray-300 p-2 rounded" v-model="publishTimes[index]"
+              :placeholder="'00:00'" />
+            <button @click="removeTime(index)" class="ml-1 p-1 text-red-500 hover:text-red-700">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <button v-if="publishTimes.length < 6" @click="addTime" class="p-2 text-primary hover:text-primary-focus">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-1">{{ $t('publishType') }}:</label>
@@ -146,12 +156,7 @@ export default {
   data() {
     return {
       mygroup: {},
-      publish_time1: '',
-      publish_time2: '',
-      publish_time3: '',
-      publish_time4: '',
-      publish_time5: '',
-      publish_time6: '',
+      publishTimes: [],
     }
   },
   watch: {
@@ -176,8 +181,16 @@ export default {
 
   },
   methods: {
+    addTime() {
+      if (this.publishTimes.length < 6) {
+        this.publishTimes.push('')
+      }
+    },
+    removeTime(index) {
+      this.publishTimes.splice(index, 1)
+    },
     async update() {
-      this.mygroup.publish_start_time = [this.publish_time1, this.publish_time2, this.publish_time3, this.publish_time4, this.publish_time5, this.publish_time6]
+      this.mygroup.publish_start_time = this.publishTimes
         .filter(Boolean)
         .join(',')
       if (this.mygroup.auto_publish == 1 && !this.mygroup.publish_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
@@ -199,13 +212,7 @@ export default {
   async mounted() {
     this.mygroup = this.group
     if (this.mygroup.publish_start_time) {
-      const [publish_time1, publish_time2, publish_time3, publish_time4, publish_time5, publish_time6] = this.mygroup.publish_start_time.split(',')
-      this.publish_time1 = publish_time1
-      this.publish_time2 = publish_time2
-      this.publish_time3 = publish_time3
-      this.publish_time4 = publish_time4
-      this.publish_time5 = publish_time5
-      this.publish_time6 = publish_time6
+      this.publishTimes = this.mygroup.publish_start_time.split(',')
     }
   }
 }

@@ -1,5 +1,4 @@
-# 更新日志 / Change Log
+# Change Log
 
-1. 修复agent进程无法启动的问题 / Fix the problem that the agent process cannot be started
-2. 增加账号导入导出excel文件功能 / Add account import and export excel file function
-3. 增加删除所有账号功能 / Add delete all accounts function
+1. Add `insertEmoji` option when training comments and batch DM
+2. Optimize the interaction of timer settings

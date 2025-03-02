@@ -80,8 +80,8 @@
             </div>
           </div>
           <div class="flex flex-wrap gap-2 flex-1" v-else>
-            <div v-for="(device, index) in slotProps.items" :key="device.key">
-              <Miniremote :device="device" :key="device.key" :no="device.key" />
+            <div v-for="(device, index) in slotProps.items" :key="device.real_serial">
+              <Miniremote :device="device" :key="device.real_serial" :no="device.key" />
             </div>
           </div>
         </div>
@@ -122,7 +122,7 @@
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
     :z="20" drag-handle=".drag"
     class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col">
-    <Miniremote :device="device" :no="device.key" :big="true" :key="device.key + '_big'" />
+    <Miniremote :device="device" :no="device.key" :big="true" :key="device.real_serial + '_big'" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box">

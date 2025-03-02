@@ -17,12 +17,22 @@
     <div>
       <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-2">{{ $t('trainTimer') }}:</label>
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="train_time1" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="train_time2" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="train_time3" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="train_time4" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="train_time5" placeholder="00:00" />
-        <input class="border-2 border-gray-300 p-2 rounded col-span-1" v-model="train_time6" placeholder="00:00" />
+        <div class="col-span-6 flex flex-wrap gap-2">
+          <div v-for="(time, index) in trainTimes" :key="index" class="flex items-center">
+            <input type="time" class="border-2 border-gray-300 p-2 rounded" v-model="trainTimes[index]"
+              :placeholder="'00:00'" />
+            <button @click="removeTime(index)" class="ml-1 p-1 text-red-500 hover:text-red-700">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <button v-if="trainTimes.length < 6" @click="addTime" class="p-2 text-primary hover:text-primary-focus">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
         <label class="font-bold text-right col-span-2">{{ $t('viewDuration') }}:</label>
@@ -44,13 +54,16 @@
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-16 leading-tight"
           :placeholder="$t('topicsTips')" autocomplete="off" v-model="mygroup.topic"> </textarea>
       </div>
-      <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-        <label class="font-bold text-right col-span-1">{{ $t('comments') }}:</label>
-        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-16 leading-tight"
+      <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
+        <label class="font-bold text-right col-span-2">{{ $t('comments') }}:</label>
+        <textarea class="textarea textarea-success w-full max-w-xl col-span-4 h-16 leading-tight"
           :placeholder="$t('commentsTips')" autocomplete="off" v-model="mygroup.comment"> </textarea>
+        <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
+        <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="mygroup.insert_emoji" :true-value=1
+          :false-value=0 />
       </div>
-      <div class="grid grid-cols-10 w-full items-center gap-2 mb-2">
-        <label class="font-bold text-right col-span-2">{{ $t('interact') }}:</label>
+      <div class="grid grid-cols-12 w-full items-center gap-2 mb-2">
+        <label class="font-bold text-right col-span-3">{{ $t('interact') }}:</label>
         <div class="col-span-2 grid grid-cols-6 items-center">
           <label class="text-sm text-right col-span-3">{{ $t('follow') }}: </label>
           <input type="number" class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="mygroup.floow_probable"
@@ -110,25 +123,28 @@ export default {
   data() {
     return {
       mygroup: {},
-      train_time1: '',
-      train_time2: '',
-      train_time3: '',
-      train_time4: '',
-      train_time5: '',
-      train_time6: '',
-
+      trainTimes: [],
     }
   },
   watch: {
     'mygroup.auto_train': function (val) {
       this.mygroup.auto_train = Number(val)
     },
-
-
+    'mygroup.insert_emoji': function (val) {
+      this.mygroup.insert_emoji = Number(val)
+    }
   },
   methods: {
+    addTime() {
+      if (this.trainTimes.length < 6) {
+        this.trainTimes.push('')
+      }
+    },
+    removeTime(index) {
+      this.trainTimes.splice(index, 1)
+    },
     async update() {
-      this.mygroup.train_start_time = [this.train_time1, this.train_time2, this.train_time3, this.train_time4, this.train_time5, this.train_time6]
+      this.mygroup.train_start_time = this.trainTimes
         .filter(Boolean)
         .join(',')
       if (this.mygroup.auto_train == 1 && !this.mygroup.train_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
@@ -137,7 +153,6 @@ export default {
       }
       this.updateGroup(this.mygroup)
     },
-
     async updateGroup(group) {
       this.$service
         .update_group(group)
@@ -150,16 +165,8 @@ export default {
   async mounted() {
     this.mygroup = this.group
     if (this.mygroup.train_start_time) {
-      const [train_time1, train_time2, train_time3, train_time4, train_time5, train_time6] = this.mygroup.train_start_time.split(',')
-      this.train_time1 = train_time1
-      this.train_time2 = train_time2
-      this.train_time3 = train_time3
-      this.train_time4 = train_time4
-      this.train_time5 = train_time5
-      this.train_time6 = train_time6
+      this.trainTimes = this.mygroup.train_start_time.split(',')
     }
-
   },
-
 }
 </script>
