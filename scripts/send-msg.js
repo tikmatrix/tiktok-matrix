@@ -1,4 +1,4 @@
-process.env.URL = 'https://pro.api.tikmatrix.com/download'
+process.env.URL = 'https://pro.api.tikmatrix.com/front-api/download'
 const chatId = process.env.CHAT_ID
 const token = process.env.TOKEN
 const tag = process.env.TAG

@@ -1,4 +1,4 @@
-# Change Log
+**Change Log**
 
 1. Add `insertEmoji` option when training comments and batch DM
 2. Optimize the interaction of timer settings
