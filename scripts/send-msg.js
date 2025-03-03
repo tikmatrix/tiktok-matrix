@@ -8,10 +8,8 @@ import fs from 'fs';
 const configPath = "src-tauri/tauri.conf.json"
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
 const changelog = fs.readFileSync('CHANGELOG', 'utf8');
-const message = `*${config.package.productName} v${config.package.version}* New Release!\n
-${changelog}\n
-*Please update to the latest version*\n
-[Download Here](${url})`
+const message = `*${config.package.productName} v${config.package.version}* New Release!\n\n${changelog}\n\n*Please update to the latest version*\n[Download Here](${url})`
+
 console.log(message)
 
 // 创建一个机器人实例
