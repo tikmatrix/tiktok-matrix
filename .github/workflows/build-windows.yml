@@ -46,7 +46,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./src-tauri/target/release/bundle/msi/*.msi
-          body_path: ./CHANGELOG.md
+          body_path: ./CHANGELOG
       - name: upload to r2
         uses: ryand56/r2-upload-action@v1.2.3
         with:
