@@ -12,7 +12,7 @@ const message = `*${config.package.productName} v${config.package.version}* New 
 ${changelog}\n
 *Please update to the latest version*\n
 [Download Here](${url})`
-
+console.log(message)
 
 // 创建一个机器人实例
 const bot = new TelegramBot(token, { polling: false });
