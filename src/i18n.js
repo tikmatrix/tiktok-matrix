@@ -496,8 +496,12 @@ export const i18n = createI18n({
       insertEmoji: 'Insert Emoji',
       adTips: 'Click the AD image to enter the purchase page',
       close: 'Close',
+      loadingLicense: 'Loading License...',
+      loading: 'Loading...',
     },
     'zh-CN': {
+      loadingLicense: '正在加载许可证...',
+      loading: '加载中...',
       close: '关闭',
       adTips: '点击广告图片进入购买页面',
       insertEmoji: '插入表情',

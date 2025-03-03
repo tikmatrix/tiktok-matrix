@@ -125,7 +125,7 @@
     <Miniremote :device="device" :no="device.key" :big="true" :key="device.real_serial + '_big'" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
-    <div class="modal-box">
+    <div class="modal-box bg-base-300">
       <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
       <div class="flex flex-row items-center">
         <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_1" />
@@ -148,7 +148,7 @@
     </form>
   </dialog>
   <dialog ref="set_sort_dialog" class="modal">
-    <div class="modal-box">
+    <div class="modal-box bg-base-300">
       <h3 class="font-bold text-lg">{{ $t('setSort') }}</h3>
       <div class="flex flex-row items-center">
         <input class="input input-bordered input-md" type="number" v-model="currentDevice.sort" v-if="currentDevice" />

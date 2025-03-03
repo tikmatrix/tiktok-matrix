@@ -46,7 +46,7 @@
 
 
     <dialog ref="proxy_dialog" class="modal">
-        <div class="modal-box">
+        <div class="modal-box bg-base-300">
             <h3 class="font-bold text-lg">{{ $t('proxyServer') }}</h3>
             <div class="flex flex-row items-center p-2">
                 <input class="input input-bordered input-sm w-40" type="text" v-model="proxy_host" />

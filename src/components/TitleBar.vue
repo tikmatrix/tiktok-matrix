@@ -13,8 +13,8 @@
             </button>
         </div>
         <!-- 教程链接 -->
-        <a class="flex items-center space-x-1 text-sm text-info ml-2" :href="$t('siteUrl') + '/docs/intro'"
-            target="_blank">
+        <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline"
+            :href="$t('siteUrl') + '/docs/intro'" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
@@ -31,12 +31,18 @@
             <!-- 许可证状态 -->
             <button
                 class="flex items-center space-x-1 text-sm px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
-                :class="licenseData.leftdays > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'"
-                @click="showLicenseDialog"
-                :title="licenseData.leftdays > 0 ? $t('licenseValid', { days: licenseData.leftdays }) : $t('activateLicense')">
-                <font-awesome-icon :icon="licenseData.leftdays > 0 ? 'fa fa-key' : 'fa fa-lock'" class="h-4 w-4" />
-                <span v-if="licenseData.leftdays > 0">{{ $t('licensed') }} ({{ licenseData.leftdays }} {{ $t('days')
-                    }})</span>
+                :class="[
+                    isLoadingLicense ? 'bg-gray-500 text-white' :
+                        licenseData.leftdays > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                ]" @click="showLicenseDialog" :title="isLoadingLicense ? $t('loadingLicense') :
+                    licenseData.leftdays > 0 ? $t('licenseValid', { days: licenseData.leftdays }) :
+                        $t('activateLicense')">
+                <font-awesome-icon v-if="isLoadingLicense" icon="fa-solid fa-spinner" class="h-4 w-4 animate-spin" />
+                <font-awesome-icon v-else :icon="licenseData.leftdays > 0 ? 'fa fa-key' : 'fa fa-lock'"
+                    class="h-4 w-4" />
+                <span v-if="isLoadingLicense">{{ $t('loading') }}</span>
+                <span v-else-if="licenseData.leftdays > 0">{{ $t('licensed') }} ({{ licenseData.leftdays }} {{
+                    $t('days') }})</span>
                 <span v-else>{{ $t('unlicensed') }}</span>
             </button>
             <!-- 语言选择 -->
@@ -118,6 +124,7 @@ import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
 import BuyLicense from './settings/BuyLicense.vue';
 import { Command } from '@tauri-apps/api/shell'
+import { open } from '@tauri-apps/api/shell';
 
 export default {
     name: 'TitleBar',
@@ -138,7 +145,8 @@ export default {
                 transfer_rate: 0,
                 percentage: 0
             },
-            download_filename: ''
+            download_filename: '',
+            isLoadingLicense: true
         }
     },
     watch: {
@@ -155,6 +163,7 @@ export default {
         }
     },
     methods: {
+
         async start_agent() {
             console.log('start_agent')
             this.$refs.download_dialog.showModal();
@@ -234,13 +243,20 @@ export default {
             this.$refs.buyLicenseDialog.show()
         },
         async loadLicense() {
-            this.$service.get_license().then(res => {
+            this.isLoadingLicense = true;
+            try {
+                const res = await this.$service.get_license();
+
                 this.licenseData = res.data;
                 if (this.licenseData.leftdays <= 0 && !this.licenseData.github_authorized) {
                     this.showLicenseDialog();
                 }
                 console.log(`license: ${JSON.stringify(this.licenseData)}`);
-            });
+            } catch (error) {
+                await message(error, { title: 'Load License Error', type: 'error' });
+            } finally {
+                this.isLoadingLicense = false;
+            }
         },
         async check_update() {
             let hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate');

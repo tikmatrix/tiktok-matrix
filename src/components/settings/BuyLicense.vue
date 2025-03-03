@@ -1,6 +1,9 @@
 <template>
   <dialog ref="buy_liscense_dialog" class="modal">
     <div class="modal-box w-11/12 max-w-5xl overflow-hidden">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
       <div class="modal-body">
         <div class="relative isolate px-6 py-6 w-full">
           <div class="absolute inset-x-0 -z-10 transform-gpu overflow-hidden px-36 blur-3xl" aria-hidden="true">
@@ -122,28 +125,22 @@
           </div>
         </div>
 
-        <div class="modal-action">
-          <form method="dialog">
-            <button class="btn btn-primary" @click="close">
-              {{ $t('close') }}
-            </button>
-          </form>
-        </div>
+
       </div>
     </div>
   </dialog>
 </template>
 <script>
 import { writeText } from '@tauri-apps/api/clipboard';
-import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
 import { message } from '@tauri-apps/api/dialog';
-import { readTextFile } from '@tauri-apps/api/fs';
+import { readTextFile, exists } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
 import { open } from '@tauri-apps/api/shell';
 import QRCode from 'qrcode';
 import Bluebird from 'bluebird';
 import confetti from 'canvas-confetti';
 import { CheckIcon } from '@heroicons/vue/20/solid'
+
 
 confetti.Promise = Bluebird;
 
@@ -241,6 +238,7 @@ export default {
     }
   },
   methods: {
+
     async startGitHubAuth() {
       try {
         // 打开GitHub授权页面

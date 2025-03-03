@@ -25,7 +25,6 @@
     "countup.js": "^2.8.0",
     "h264-converter": "^0.1.4",
     "jmuxer": "^2.0.5",
-    "node-telegram-bot-api": "^0.66.0",
     "odometer_countup": "^1.0.4",
     "qrcode": "^1.5.4",
     "tiktok-matrix": "file:",

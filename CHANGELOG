@@ -1,1 +1,2 @@
-* Add device_index field to accounts export Excel file to track device assignment, ignored during import
+* Add enable/disable toggle/button to accounts table
+* Modify the close button of the buy license dialog

@@ -48,6 +48,10 @@
                 </td>
                 <td>
                   <div class="space-x-4">
+                    <button class="btn btn-sm" :class="account.status == 0 ? 'btn-warning' : 'btn-success'"
+                      @click="toggleStatus(account)">
+                      {{ account.status == 0 ? $t('disable') : $t('enable') }}
+                    </button>
                     <button class="btn btn-sm btn-primary" @click="editAccount(account)">{{ $t('edit') }}</button>
                     <button class="btn btn-sm btn-error" @click="deleteAccount(account)">
                       {{ $t('delete') }}
@@ -268,7 +272,14 @@ export default {
           this.get_accounts()
         })
     },
-
+    async toggleStatus(account) {
+      const updatedAccount = {
+        ...account,
+        status: account.status === 0 ? 1 : 0
+      };
+      await this.$service.update_account(updatedAccount);
+      this.get_accounts();
+    },
   },
   async mounted() {
     this.get_accounts()
