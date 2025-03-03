@@ -1,1 +1,1 @@
-1. Add device_index field to accounts export Excel file to track device assignment, ignored during import
+* Add device_index field to accounts export Excel file to track device assignment, ignored during import
