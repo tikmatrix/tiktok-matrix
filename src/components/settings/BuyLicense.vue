@@ -256,24 +256,13 @@ export default {
     async activate(event) {
       event.target.innerText = this.$t('activating')
       event.target.disabled = true
-      const response = await fetch(`https://pro.api.tikmatrix.com/front-api/verify`, {
-        method: 'POST',
-        timeout: 10,
-        contentType: 'application/json',
-        responseType: ResponseType.JSON,
-        body: Body.json({
-          mid: this.license.uid,
-          app: 'TikMatrix',
-          license: this.licenseCode,
-        }),
-      });
-      console.log('response:', response)
-      event.target.innerText = this.$t('activate')
-      event.target.disabled = false
-      if (response.ok) {
-        const data = response.data
-        console.log(`license leftdays: ${data.data.leftdays}, key: ${data.data.license}`)
-        if (data.data.leftdays > 0) {
+      this.$service.activate_license({
+        'license_code': this.licenseCode,
+      }).then(async (res) => {
+        console.log(`activate_license: ${JSON.stringify(res)}`);
+        event.target.innerText = this.$t('activate')
+        event.target.disabled = false
+        if (res.data.leftdays > 0) {
           await this.$emiter('LICENSE', { reload: true })
           this.paymentSuccess()
           await message(this.$t('activateSuccess'))
@@ -282,28 +271,26 @@ export default {
           await message('invalid license')
           await this.$emiter('LICENSE', { reload: true })
         }
-      } else {
-        await message('verify failed')
-        await this.$emiter('LICENSE', { reload: true })
-      }
+      }).catch(async (err) => {
+        event.target.innerText = this.$t('activate')
+        event.target.disabled = false
+        console.error('activate license error:', err)
+        await this.$emiter('showToast', this.$t('activateLicenseErrorMessage'))
+      });
 
-      event.target.innerText = this.$t('activate')
-      event.target.disabled = false
     },
     async closeOrder() {
-      clearInterval(this.interval);
-      this.order = null;
-      const response = await fetch(`https://pro.api.tikmatrix.com/front-api/close_order`, {
-        method: 'POST',
-        timeout: 10,
-        contentType: 'application/json',
-        responseType: ResponseType.JSON,
-        body: Body.json({
-          mid: this.license.uid,
-          app: 'TikMatrix',
-        }),
+
+      this.$service.close_order({
+      }).then(async (res) => {
+        console.log(`close_order: ${JSON.stringify(res)}`);
+        clearInterval(this.interval);
+        this.order = null;
+      }).catch(async (err) => {
+        console.error('close_order error:', err)
+        await this.$emiter('showToast', this.$t('closeOrderErrorMessage'))
       });
-      console.log('response:', response)
+
     },
     async paymentSuccess() {
       this.close()
@@ -352,26 +339,14 @@ export default {
       if (!this.license.uid) {
         return;
       }
-      const response = await fetch(`https://pro.api.tikmatrix.com/front-api/get_order`, {
-        method: 'POST',
-        timeout: 10,
-        contentType: 'application/json',
-        responseType: ResponseType.JSON,
-        body: Body.json({
-          mid: this.license.uid,
-          app: 'TikMatrix',
-        }),
-      });
-      console.log('response:', response)
-      if (response.ok) {
-        const data = response.data
-        if (data.code != 20000) {
-          console.log('get order failed:', data.message)
+      this.$service.get_order().then(async (res) => {
+        if (res.code != 0) {
+          console.log('get order failed:', res.data)
           this.order = null
         } else {
-          console.log('refresh_status:', refresh_status)
+          console.log('get order:', res.data)
           if (refresh_status) {
-            if (data.data.status == 1) {
+            if (res.data.status == 1) {
               await this.$emiter('LICENSE', { reload: true })
               await this.paymentSuccess()
               await message(this.$t('paymentSuccess'))
@@ -380,17 +355,21 @@ export default {
             return;
           }
 
-          if (data.data.status == 0) {
-            await this.showOrder(data.data)
-          }
+          await this.showOrder(res.data)
         }
-      } else {
-        await message('get order failed')
-      }
+      }).catch(async (err) => {
+        console.error('get_order error:', err)
+        await this.$emiter('showToast', this.$t('getOrderErrorMessage'))
+      });
+
     },
     async showOrder(order) {
       console.log('showOrder:', order)
-      this.order = order
+      //parse json
+      this.order = JSON.parse(order)
+      if (this.order.status != 0) {
+        return;
+      }
       if (this.interval) {
         clearInterval(this.interval);
       }
@@ -428,31 +407,24 @@ export default {
     async createOrder(price, network, event) {
       event.target.innerText = this.$t('fetching')
       event.target.disabled = true
-      const response = await fetch(`https://pro.api.tikmatrix.com/front-api/create_order`, {
-        method: 'POST',
-        timeout: 10,
-        contentType: 'application/json',
-        responseType: ResponseType.JSON,
-        body: Body.json({
-          mid: this.license.uid,
-          app: 'TikMatrix',
-          network: network,
-          amount: price,
-        }),
-      });
-      console.log('response:', response)
-      event.target.innerText = this.$t('pay')
-      event.target.disabled = false
-      if (response.ok) {
-        const data = response.data
-        if (data.code != 20000) {
-          await message(data.message)
+      this.$service.create_order({
+        network: network,
+        amount: price,
+      }).then(async (res) => {
+        console.log(`create_order: ${JSON.stringify(res)}`);
+        event.target.innerText = this.$t('pay')
+        event.target.disabled = false
+        if (res.code != 0) {
+          await message(res.data)
         } else {
-          await this.showOrder(data.data)
+          await this.showOrder(res.data)
         }
-      } else {
-        await message('create order failed')
-      }
+      }).catch(async (err) => {
+        console.error('create_order error:', err)
+        await this.$emiter('showToast', this.$t('createOrderErrorMessage'))
+      });
+
+
     },
     async show() {
       this.licenseCode = this.license.key

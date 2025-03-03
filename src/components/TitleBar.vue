@@ -36,7 +36,7 @@
                 :title="licenseData.leftdays > 0 ? $t('licenseValid', { days: licenseData.leftdays }) : $t('activateLicense')">
                 <font-awesome-icon :icon="licenseData.leftdays > 0 ? 'fa fa-key' : 'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="licenseData.leftdays > 0">{{ $t('licensed') }} ({{ licenseData.leftdays }} {{ $t('days')
-                }})</span>
+                    }})</span>
                 <span v-else>{{ $t('unlicensed') }}</span>
             </button>
             <!-- 语言选择 -->
@@ -172,6 +172,12 @@ export default {
                         return;
                     }
                     const command = new Command('start-agent', [])
+                    command.on('close', data => {
+                        console.log(`command finished with code ${data.code} and signal ${data.signal}`)
+                    });
+                    command.on('error', error => console.error(`command error: "${error}"`));
+                    command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
+                    command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
                     const child = await command.spawn();
                     console.log('pid:', child.pid);
                     //write pid to file

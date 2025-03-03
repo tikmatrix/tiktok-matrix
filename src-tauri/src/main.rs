@@ -163,7 +163,76 @@ fn is_agent_running() -> bool {
         }
         Err(_) => {
             log::info!("agent is running on port {}", port);
-            true
+            //check which process is listening on port 50809
+            #[cfg(target_os = "windows")]
+            {
+                let mut command = Command::new("netstat");
+                command.args(&["-ano"]);
+                command.creation_flags(0x08000000); // 隐藏命令行窗口
+                let output = command.output().unwrap();
+                if output.status.success() {
+                    let output_str = String::from_utf8_lossy(&output.stdout);
+                    if output_str.contains(&format!(":{}", port)) {
+                        // 找到包含端口号的行
+                        if let Some(line) = output_str
+                            .lines()
+                            .find(|line| line.contains(&format!(":{}", port)))
+                        {
+                            // 提取PID
+                            if let Some(pid) = line.split_whitespace().last() {
+                                // 使用tasklist命令获取进程名
+                                let mut tasklist = Command::new("tasklist");
+                                tasklist.args(&["/FI", &format!("PID eq {}", pid)]);
+                                tasklist.creation_flags(0x08000000);
+                                if let Ok(task_output) = tasklist.output() {
+                                    let task_str = String::from_utf8_lossy(&task_output.stdout);
+                                    if let Some(process_line) = task_str.lines().nth(3) {
+                                        let process_name = process_line
+                                            .split_whitespace()
+                                            .next()
+                                            .unwrap_or("unknown");
+                                        log::info!(
+                                            "agent is running on port {}, process: {} (PID: {})",
+                                            port,
+                                            process_name,
+                                            pid
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                        true
+                    } else {
+                        log::info!("agent is not running on port {}", port);
+                        false
+                    }
+                } else {
+                    log::info!("agent is not running on port {}", port);
+                    false
+                }
+            }
+
+            #[cfg(target_os = "macos")]
+            {
+                let mut command = Command::new("lsof");
+                command.args(&["-i", format!(":{}", port).as_str()]);
+                let output = command.output().unwrap();
+                if output.status.success() {
+                    let output_str = String::from_utf8_lossy(&output.stdout);
+                    if let Some(line) = output_str.lines().nth(1) {
+                        let process_name = line.split_whitespace().next().unwrap_or("unknown");
+                        log::info!(
+                            "agent is running on port {}, process: {}",
+                            port,
+                            process_name
+                        );
+                    }
+                    true
+                } else {
+                    log::info!("agent is not running on port {}", port);
+                    false
+                }
+            }
         }
     }
 }

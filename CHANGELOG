@@ -1,4 +1,1 @@
-**Change Log**
-
-1. Add `insertEmoji` option when training comments and batch DM
-2. Optimize the interaction of timer settings
+1. Add device_index field to accounts export Excel file to track device assignment (ignored during import)

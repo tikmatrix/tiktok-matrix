@@ -242,11 +242,32 @@ export function get_license() {
     params: {}
   })
 }
-export function add_license({ key }) {
+export function create_order(data) {
   return request({
     method: 'post',
-    url: api.add_license,
-    data: { key }
+    url: api.create_order,
+    data: data
+  })
+}
+export function get_order() {
+  return request({
+    method: 'post',
+    url: api.get_order,
+    data: {}
+  })
+}
+export function close_order() {
+  return request({
+    method: 'post',
+    url: api.close_order,
+    data: {}
+  })
+}
+export function activate_license(data) {
+  return request({
+    method: 'post',
+    url: api.activate_license,
+    data: data
   })
 }
 

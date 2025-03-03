@@ -171,6 +171,7 @@ export default {
           pwd: account.pwd,
           username: account.username,
           device: account.device,
+          device_index: account.device_index || 'offline',
           logined: account.logined,
           status: account.status
         }));
