@@ -263,7 +263,7 @@ export default {
                 }
                 console.log(`license: ${JSON.stringify(this.licenseData)}`);
             } catch (error) {
-                await message(error, { title: 'Load License Error', type: 'error' });
+                // await message(error, { title: 'Load License Error', type: 'error' });
             } finally {
                 this.isLoadingLicense = false;
             }
