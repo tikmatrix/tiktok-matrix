@@ -11,26 +11,57 @@
               class="mx-auto aspect-1155/678 w-[72.1875rem] bg-gradient-to-tr from-secondary to-neutral opacity-30 h-96"
               style="clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);"></div>
           </div>
-          <div class="flex items-start flex-col w-full">
-            <div class="flex items-center flex-row gap-2 w-full justify-center">
-              <label class="font-bold p-2">{{ $t('uid') }}: </label>
-              <input id="uid" type="text" placeholder="uid" class="input input-sm grow input-bordered ring-1"
-                v-model="license.uid" readonly disabled />
-              <button @click="copyText(license.uid, $event)" class="btn btn-sm btn-primary">{{ $t('copy') }}</button>
-              <a class="link link-primary text-md float-right flex items-center pb-2"
+          <div class="flex items-start flex-col w-full gap-3">
+            <div class="flex items-center flex-row gap-2 w-full">
+              <label class="font-bold w-28">{{ $t('mid') }}: </label>
+              <div class="relative grow">
+                <input id="mid" type="text" placeholder="mid" class="input input-sm w-full input-bordered ring-1 pr-20"
+                  v-model="license.mid" readonly disabled />
+                <button @click="copyText(license.mid, $event)"
+                  class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none">
+                  {{ $t('copy') }}
+                </button>
+              </div>
+              <a class="link link-primary text-md flex items-center gap-1 min-w-max"
                 href="https://t.me/+iGhozoBfAbI5YmE1" target="_blank">
-                <font-awesome-icon icon="fab fa-telegram" class="text-primary h-6 w-6" />
+                <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
                 {{ $t('telegramCustom') }}
               </a>
             </div>
-            <div class="flex items-center flex-row gap-2 w-full">
-              <label class="font-bold p-2">{{ $t('licenseCode') }}: </label>
-              <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" class="input input-sm grow input-bordered ring-1"
-                v-model="licenseCode" />
-              <button @click="activate" class="btn btn-sm btn-primary">
-                {{ $t('activate') }}</button>
 
+            <div class="flex items-center flex-row gap-2 w-full">
+              <label class="font-bold w-28">{{ $t('licenseCode') }}: </label>
+              <div class="relative grow">
+                <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" :disabled="license.leftdays > 0"
+                  class="input input-sm w-full input-bordered ring-1 pr-20" v-model="license.license" />
+                <button @click="activate" class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none"
+                  v-if="license.leftdays <= 0">
+                  {{ $t('activate') }}
+                </button>
+                <button @click="copyText(license.license, $event)"
+                  class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none" v-else>
+                  {{ $t('copy') }}
+                </button>
+              </div>
+              <div class="relative grow">
+                <input type="text" :placeholder="$t('couponCode')" :disabled="license.coupon_discount > 0"
+                  class="input input-sm w-full input-bordered ring-1 pr-20" v-model="license.coupon_code" />
+                <span v-if="license.coupon_discount > 0"
+                  class="absolute right-24 top-1/2 -translate-y-1/2 badge badge-success">
+                  -{{ license.coupon_discount }}%
+                </span>
+                <button @click="applyCouponCode" v-if="license.coupon_discount == 0"
+                  class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none">
+                  {{ $t('apply') }}
+                </button>
+                <button @click="copyText(license.coupon_code, $event)"
+                  class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none" v-else>
+                  {{ $t('copy') }}
+                </button>
+              </div>
             </div>
+
+
           </div>
           <div class="flex items-center flex-col w-full rounded-lg p-4" v-if="order && order.status == 0">
             <div class="flex items-center justify-center flex-row w-full">
@@ -67,12 +98,19 @@
                 {{ $t(tier.name) }}
               </h3>
               <p class="mt-4 flex items-baseline gap-x-2">
-                <span
-                  :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-5xl font-semibold tracking-tight']">{{
-                    tier.priceMonthly }}</span>
-                <span :class="[tier.featured ? 'text-accent' : 'text-primary']">/
-                  {{ $t(tier.duration) }}
+                <template v-if="license.coupon_discount > 0 && tier.price != '$0'">
+                  <span :class="[tier.featured ? 'text-accent/50' : 'text-primary/50', 'text-2xl line-through']">{{
+                    tier.price }}</span>
+                  <span
+                    :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-5xl font-semibold tracking-tight']">
+                    ${{ (tier.price.replace('$', '') * (1 - license.coupon_discount / 100)).toFixed(0) }}
+                  </span>
+                </template>
+                <span v-else
+                  :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-5xl font-semibold tracking-tight']">
+                  {{ tier.price }}
                 </span>
+                <span :class="[tier.featured ? 'text-accent' : 'text-primary']">/ {{ $t(tier.duration) }}</span>
               </p>
               <p :class="[tier.featured ? 'text-neutral-content' : 'text-base-content', 'mt-6 text-base/7']">
                 {{ $t(tier.description) }}
@@ -164,7 +202,7 @@ export default {
         {
           name: 'free',
           id: 'tier-free',
-          priceMonthly: '$0',
+          price: '$0',
           duration: 'forever',
           description: "freeDescription",
           features: [
@@ -172,13 +210,13 @@ export default {
             'allFeatures',
           ],
           featured: false,
-          buttons: [this.license.github_authorized ? 'authorized' : 'startWithGithub'],
+          buttons: [(this.license.github_starred == 1) ? 'authorized' : 'startWithGithub'],
           onclicks: [this.startGitHubAuth]
         },
         {
           name: 'monthly',
           id: 'tier-monthly',
-          priceMonthly: '$99',
+          price: '$99',
           duration: 'month',
           description: 'monthlyDescription',
           features: [
@@ -193,7 +231,7 @@ export default {
         {
           name: 'yearly',
           id: 'tier-yearly',
-          priceMonthly: '$599',
+          price: '$599',
           duration: 'year',
           description: 'yearlyDescription',
           features: [
@@ -206,7 +244,6 @@ export default {
           onclicks: [this.createYearOrderTrc20, this.createYearOrderBep20]
         },
       ],
-      licenseCode: '',
       remainingTime: 0,
       order: null,
       interval: null,
@@ -214,20 +251,14 @@ export default {
     }
   },
   watch: {
-    'license.github_authorized': {
+    'license.github_starred': {
       handler: function (val) {
-        console.log('github_authorized:', val)
-        this.tiers[0].buttons[0] = val ? 'authorized' : 'startWithGithub'
+        console.log('github_starred:', val)
+        this.tiers[0].buttons[0] = (val == 1) ? 'authorized' : 'startWithGithub'
       },
       deep: true
     },
-    'license.key': {
-      handler: function (val) {
-        console.log('license key:', val)
-        this.licenseCode = val
-      },
-      deep: true
-    }
+
   },
   computed: {
 
@@ -246,7 +277,6 @@ export default {
         const apiUrl = 'http://127.0.0.1:' + port;
         await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${apiUrl}/github_auth_callback&scope=user%20public_repo`);
       } catch (error) {
-        console.error('GitHub认证错误:', error);
         await this.$emiter('showToast', this.$t('githubAuthErrorMessage'));
       }
     },
@@ -255,19 +285,23 @@ export default {
       event.target.innerText = this.$t('activating')
       event.target.disabled = true
       this.$service.activate_license({
-        'license_code': this.licenseCode,
+        'license_code': this.license.license,
       }).then(async (res) => {
         console.log(`activate_license: ${JSON.stringify(res)}`);
         event.target.innerText = this.$t('activate')
         event.target.disabled = false
-        if (res.data.leftdays > 0) {
-          await this.$emiter('LICENSE', { reload: true })
-          this.paymentSuccess()
-          await message(this.$t('activateSuccess'))
+        if (res.code === 0) {
+          const license = JSON.parse(res.data);
+          if (license.leftdays > 0) {
+            await this.$emiter('LICENSE', { reload: true })
+            this.paymentSuccess()
+            await message(this.$t('activateSuccess'))
+          } else {
+            await message(this.$t('invalidLicense'))
+          }
           return;
         } else {
-          await message('invalid license')
-          await this.$emiter('LICENSE', { reload: true })
+          await message(res.data)
         }
       }).catch(async (err) => {
         event.target.innerText = this.$t('activate')
@@ -334,7 +368,7 @@ export default {
       this.$refs.buy_liscense_dialog.close();
     },
     async getOrder(refresh_status = false) {
-      if (!this.license.uid) {
+      if (!this.license.mid) {
         return;
       }
       this.$service.get_order().then(async (res) => {
@@ -391,23 +425,26 @@ export default {
       }, 1000);
     },
     async createMonthOrderTrc20(event) {
-      await this.createOrder(99, 'TRC20', event)
+      await this.createOrder(99, 'monthly', 'TRC20', event)
     },
     async createMonthOrderBep20(event) {
-      await this.createOrder(99, 'BEP20', event)
+      await this.createOrder(99, 'monthly', 'BEP20', event)
     },
     async createYearOrderTrc20(event) {
-      await this.createOrder(599, 'TRC20', event)
+      await this.createOrder(599, 'yearly', 'TRC20', event)
     },
     async createYearOrderBep20(event) {
-      await this.createOrder(599, 'BEP20', event)
+      await this.createOrder(599, 'yearly', 'BEP20', event)
     },
-    async createOrder(price, network, event) {
+    async createOrder(price, plan, network, event) {
       event.target.innerText = this.$t('fetching')
       event.target.disabled = true
+      const finalPrice = Number(price * (1 - this.license.coupon_discount / 100).toFixed(0));
       this.$service.create_order({
         network: network,
-        amount: price,
+        amount: finalPrice,
+        coupon_code: this.license.coupon_code,
+        plan: plan
       }).then(async (res) => {
         console.log(`create_order: ${JSON.stringify(res)}`);
         event.target.innerText = this.$t('pay')
@@ -425,7 +462,6 @@ export default {
 
     },
     async show() {
-      this.licenseCode = this.license.key
       this.$refs.buy_liscense_dialog.showModal()
       console.log('license:', this.license)
       await this.getOrder()
@@ -438,6 +474,25 @@ export default {
         event.target.innerText = this.$t('copy')
         event.target.classList.remove('btn-success')
       }, 1000)
+    },
+    async applyCouponCode(event) {
+      event.target.innerText = this.$t('fetching')
+      event.target.disabled = true
+      try {
+        const res = await this.$service.bind_coupon({
+          coupon_code: this.license.coupon_code
+        });
+        if (res.code === 0) {
+          const coupon = JSON.parse(res.data);
+          this.license.coupon_discount = coupon.discount;
+        } else {
+          await this.$emiter('showToast', res.data);
+        }
+      } catch (err) {
+        await this.$emiter('showToast', this.$t('verifyInviteCodeError'));
+      } finally {
+        event.target.innerText = this.$t('applied')
+      }
     },
   },
   async mounted() {

@@ -192,7 +192,7 @@ export default {
 
   watch: {
     hideAd(newVal) {
-      localStorage.setItem('hideAd', newVal)
+      localStorage.setItem('hideAd_v1', newVal)
     },
     selection() {
       this.refreshSelections()

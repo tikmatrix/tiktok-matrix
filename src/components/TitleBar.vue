@@ -18,6 +18,12 @@
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
+        <!-- Rewards-->
+        <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
+            target="_blank">
+            <font-awesome-icon icon="fa-solid fa-gift" class="h-4 w-4" />
+            <span>{{ $t('rewards') }}</span>
+        </a>
         <!-- 中间：灵活空间 -->
         <div class="flex-1"></div>
         <!-- 右侧：功能按钮和控制按钮 -->
@@ -80,7 +86,7 @@
     <!-- 下载进度弹窗 -->
     <dialog ref="download_dialog" class="modal">
         <div class="modal-box">
-            <h3 class="font-bold text-lg">{{ download_filename }}</h3>
+            <h3 class="font-bold text-lg">{{ check_update_dialog_title }}</h3>
             <div class="modal-body">
                 <div class="flex flex-row justify-between text-center items-center"
                     v-if="download_progress.filesize > 0">
@@ -145,7 +151,7 @@ export default {
                 transfer_rate: 0,
                 percentage: 0
             },
-            download_filename: '',
+            check_update_dialog_title: '',
             isLoadingLicense: true
         }
     },
@@ -167,13 +173,14 @@ export default {
         async start_agent() {
             console.log('start_agent')
             this.$refs.download_dialog.showModal();
-            this.download_filename = 'Starting agent';
+            this.check_update_dialog_title = 'Checking agent...';
             try {
                 //check agent.exe is running
                 let agent_running = await invoke("is_agent_running");
                 console.log('agent_running:', agent_running)
                 if (!agent_running) {
                     console.log('agent is not running')
+                    this.check_update_dialog_title = 'Starting agent...';
                     //check agent.exe is exists
                     let agent_exists = await exists('bin/agent.exe', { dir: BaseDirectory.AppData })
                     if (!agent_exists) {
@@ -246,10 +253,13 @@ export default {
             this.isLoadingLicense = true;
             try {
                 const res = await this.$service.get_license();
-
-                this.licenseData = res.data;
-                if (this.licenseData.leftdays <= 0 && !this.licenseData.github_authorized) {
-                    this.showLicenseDialog();
+                if (res.code === 0) {
+                    this.licenseData = JSON.parse(res.data);
+                    if (this.licenseData.leftdays <= 0 && !this.licenseData.github_starred) {
+                        this.showLicenseDialog();
+                    }
+                } else {
+                    await message(res.data, { title: 'Load License Error', type: 'error' });
                 }
                 console.log(`license: ${JSON.stringify(this.licenseData)}`);
             } catch (error) {
@@ -264,7 +274,7 @@ export default {
                 await this.start_agent();
                 return;
             }
-            this.download_filename = 'Checking update';
+            this.check_update_dialog_title = 'Checking update...';
             this.$refs.download_dialog.showModal();
             try {
                 const { shouldUpdate, manifest } = await checkUpdate();
@@ -274,6 +284,7 @@ export default {
                     );
                     const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
                     if (yes) {
+                        this.check_update_dialog_title = 'Downloading update...';
                         await installUpdate();
                         await this.shutdown();
                         await relaunch();
@@ -283,7 +294,9 @@ export default {
                     console.log('No update available');
                 }
             } catch (e) {
-                await message(e, { title: 'Check Update Error', type: 'error' });
+                await message(e, { title: 'Start Error', type: 'error' });
+                this.$refs.download_dialog.close();
+                return;
             }
 
             let response = null;
@@ -318,7 +331,7 @@ export default {
             //check paddle file exists
             let paddle_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData });
             if (updated || !paddle_exists) {
-                this.download_filename = 'Uziping PaddleOCR-json.zip';
+                this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
                 //kill PaddleOCR-json.exe
                 await invoke("kill_process", { name: "PaddleOCR-json" });
                 await invoke("unzip_file", { zipPath: path, destDir: work_path });
@@ -339,7 +352,7 @@ export default {
             let { path, updated } = await this.check_file_update('platform_tools', this.remote_version.platform_tools_version, url);
             let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData });
             if (updated || !adb_exists) {
-                this.download_filename = 'Uziping platform-tools-latest-windows.zip';
+                this.check_update_dialog_title = 'Uziping platform-tools-latest-windows.zip';
                 //kill adb.exe
                 await invoke("kill_process", { name: "adb" });
                 //wait for adb to be killed
@@ -423,7 +436,7 @@ export default {
         },
         async check_file_update(filename, remoteVersion, downloadUrl) {
             let updated = false;
-            this.download_filename = `Checking ${filename} update`;
+            this.check_update_dialog_title = `Checking ${filename} update...`;
             let localversion = util.getData(filename);
             if (!localversion) {
                 localversion = 0;
@@ -481,7 +494,7 @@ export default {
             }
 
             if (e.payload.show) {
-                if (this.licenseData.leftdays <= 0 && !this.licenseData.github_authorized) {
+                if (this.licenseData.leftdays <= 0 && !this.licenseData.github_starred) {
                     this.showLicenseDialog();
                 }
             }

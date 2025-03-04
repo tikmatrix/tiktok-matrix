@@ -270,6 +270,13 @@ export function activate_license(data) {
     data: data
   })
 }
+export function bind_coupon(data) {
+  return request({
+    method: 'post',
+    url: api.bind_coupon,
+    data: data
+  })
+}
 
 export function count_task_by_status() {
   return request({
