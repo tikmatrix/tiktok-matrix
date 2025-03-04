@@ -21,6 +21,7 @@
     "@heroicons/vue": "^2.2.0",
     "@tauri-apps/api": "^1.5.2",
     "@types/jmuxer": "^2.0.6",
+    "bluebird": "^3.7.2",
     "canvas-confetti": "^1.9.3",
     "countup.js": "^2.8.0",
     "h264-converter": "^0.1.4",
