@@ -24,6 +24,16 @@ jobs:
       - name: setup rust
         id: setup-rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
       - name: build
         run: |
           npm install

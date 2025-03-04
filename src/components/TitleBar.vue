@@ -253,6 +253,7 @@ export default {
             this.isLoadingLicense = true;
             try {
                 const res = await this.$service.get_license();
+                console.log(`loadLicense: ${JSON.stringify(res)}`);
                 if (res.code === 0) {
                     this.licenseData = JSON.parse(res.data);
                     if (this.licenseData.leftdays <= 0 && !this.licenseData.github_starred) {

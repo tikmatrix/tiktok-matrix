@@ -7,7 +7,7 @@ const request = async function request(config) {
   const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
   if (port === "0") {
     console.log("port is 0, wait for agent to start")
-    let res = { code: 200, data: [] }
+    let res = { code: 0, data: [] }
     return res;
   }
   const { method, url } = config
