@@ -13,5 +13,5 @@ ${changelog}\n
 
 console.log(message);
 message = encodeURIComponent(message)
-const bot_respose = await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${message}&parse_mode=markdown`)
+const bot_respose = await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${message}&parse_mode=MarkdownV2`)
 console.log(bot_respose)
