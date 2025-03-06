@@ -20,7 +20,7 @@ const api = {
   get_order: '/api/get_order',
   close_order: '/api/close_order',
   activate_license: '/api/activate_license',
-  bind_coupon: '/api/bind_coupon',
+  bind_affiliate: '/api/bind_affiliate',
   count_online_device: '/api/device/count_online',
   count_all_account: '/api/account/count_all',
   count_account_by_group_id: '/api/account/count_account_by_group_id',

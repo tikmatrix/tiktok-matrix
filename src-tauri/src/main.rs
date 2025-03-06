@@ -45,6 +45,8 @@ impl Progress {
 fn setup_env(working_dir: &str) {
     std::env::set_var("TAURI_APP_WORK_DIR", working_dir);
     if cfg!(debug_assertions) {
+        //set env MOSS_URL=http://127.0.0.1:8788/moss
+        std::env::set_var("MOSS_URL", "http://127.0.0.1:8788/moss");
         std::env::set_var("RUST_BACKTRACE", "1");
     }
 }

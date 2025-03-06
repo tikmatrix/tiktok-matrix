@@ -225,6 +225,8 @@ export default {
           this.accounts.forEach(account => {
             account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
           })
+          //sort by device_index asc
+          this.accounts.sort((a, b) => a.device_index - b.device_index)
         })
     },
     async add_account() {

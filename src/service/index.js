@@ -270,10 +270,10 @@ export function activate_license(data) {
     data: data
   })
 }
-export function bind_coupon(data) {
+export function bind_affiliate(data) {
   return request({
     method: 'post',
-    url: api.bind_coupon,
+    url: api.bind_affiliate,
     data: data
   })
 }

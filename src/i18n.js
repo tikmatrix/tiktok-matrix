@@ -498,7 +498,7 @@ export const i18n = createI18n({
       close: 'Close',
       loadingLicense: 'Loading License...',
       loading: 'Loading...',
-      couponCode: 'Coupon Code',
+      affiliateCode: 'Promo Code',
       apply: 'Apply',
       copied: 'Copied',
       rewards: 'Rewards',
@@ -507,7 +507,7 @@ export const i18n = createI18n({
     'zh-CN': {
       applied: '已应用',
       rewards: '奖励',
-      couponCode: '优惠码',
+      affiliateCode: '优惠码',
       apply: '应用',
       loadingLicense: '正在加载许可证...',
       loading: '加载中...',

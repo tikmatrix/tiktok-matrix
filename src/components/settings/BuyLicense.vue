@@ -44,17 +44,17 @@
                 </button>
               </div>
               <div class="relative grow">
-                <input type="text" :placeholder="$t('couponCode')" :disabled="license.coupon_discount > 0"
-                  class="input input-sm w-full input-bordered ring-1 pr-20" v-model="license.coupon_code" />
-                <span v-if="license.coupon_discount > 0"
+                <input type="text" :placeholder="$t('affiliateCode')" :disabled="license.affiliate_discount > 0"
+                  class="input input-sm w-full input-bordered ring-1 pr-20" v-model="license.affiliate_code" />
+                <span v-if="license.affiliate_discount > 0"
                   class="absolute right-24 top-1/2 -translate-y-1/2 badge badge-success">
-                  -{{ license.coupon_discount }}%
+                  -{{ license.affiliate_discount }}%
                 </span>
-                <button @click="applyCouponCode" v-if="license.coupon_discount == 0"
+                <button @click="applyAffiliateCode" v-if="license.affiliate_discount == 0"
                   class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none">
                   {{ $t('apply') }}
                 </button>
-                <button @click="copyText(license.coupon_code, $event)"
+                <button @click="copyText(license.affiliate_code, $event)"
                   class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none" v-else>
                   {{ $t('copy') }}
                 </button>
@@ -98,12 +98,12 @@
                 {{ $t(tier.name) }}
               </h3>
               <p class="mt-4 flex items-baseline gap-x-2">
-                <template v-if="license.coupon_discount > 0 && tier.price != '$0'">
+                <template v-if="license.affiliate_discount > 0 && tier.price != '$0'">
                   <span :class="[tier.featured ? 'text-accent/50' : 'text-primary/50', 'text-2xl line-through']">{{
                     tier.price }}</span>
                   <span
                     :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-5xl font-semibold tracking-tight']">
-                    ${{ (tier.price.replace('$', '') * (1 - license.coupon_discount / 100)).toFixed(0) }}
+                    ${{ (tier.price.replace('$', '') * (1 - license.affiliate_discount / 100)).toFixed(0) }}
                   </span>
                 </template>
                 <span v-else
@@ -378,7 +378,7 @@ export default {
         } else {
           console.log('get order:', res.data)
           if (refresh_status) {
-            if (res.data.status == 1) {
+            if (JSON.parse(res.data).status == 1) {
               await this.$emiter('LICENSE', { reload: true })
               await this.paymentSuccess()
               await message(this.$t('paymentSuccess'))
@@ -439,11 +439,10 @@ export default {
     async createOrder(price, plan, network, event) {
       event.target.innerText = this.$t('fetching')
       event.target.disabled = true
-      const finalPrice = Number(price * (1 - this.license.coupon_discount / 100).toFixed(0));
+      const finalPrice = Number(price * (1 - this.license.affiliate_discount / 100).toFixed(0));
       this.$service.create_order({
         network: network,
         amount: finalPrice,
-        coupon_code: this.license.coupon_code,
         plan: plan
       }).then(async (res) => {
         console.log(`create_order: ${JSON.stringify(res)}`);
@@ -475,24 +474,26 @@ export default {
         event.target.classList.remove('btn-success')
       }, 1000)
     },
-    async applyCouponCode(event) {
+    async applyAffiliateCode(event) {
       event.target.innerText = this.$t('fetching')
       event.target.disabled = true
       try {
-        const res = await this.$service.bind_coupon({
-          coupon_code: this.license.coupon_code
+        const res = await this.$service.bind_affiliate({
+          code: this.license.affiliate_code
         });
         if (res.code === 0) {
-          const coupon = JSON.parse(res.data);
-          this.license.coupon_discount = coupon.discount;
+          const affiliate = JSON.parse(res.data);
+          this.license.affiliate_discount = affiliate.discount;
+          event.target.innerText = this.$t('applied')
+          return;
         } else {
           await this.$emiter('showToast', res.data);
         }
       } catch (err) {
         await this.$emiter('showToast', this.$t('verifyInviteCodeError'));
-      } finally {
-        event.target.innerText = this.$t('applied')
       }
+      event.target.innerText = this.$t('apply')
+      event.target.disabled = false
     },
   },
   async mounted() {

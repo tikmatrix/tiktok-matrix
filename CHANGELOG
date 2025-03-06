@@ -1,3 +1,4 @@
-1. Add enable/disable toggle button to the accounts table
-2. Update close button styling in the license purchase dialog
-3. Fix clear button functionality in materials section
+1. Sort accounts by device_index asc
+2. Add Affiliate Program, Any user can register as an affiliate and earn 10%-25% commission from their referrals' earnings
+3. Users can get a 5% discount on license purchases with affiliate promo code
+4. Learn more about Affiliate Program: https://tikmatrix.com/rewards
