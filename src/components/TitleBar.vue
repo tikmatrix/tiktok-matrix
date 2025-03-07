@@ -7,7 +7,8 @@
             <span class="text-2xl text-base-content font-bold">{{ $t('siteName') }}</span>
             <span class="text-sm text-base-content">v{{ version }}</span>
             <!-- 检查更新按钮 -->
-            <button @click="check_update" class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline">
+            <button @click="check_update(true)"
+                class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline">
                 <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
                 <span>{{ $t('checkUpdate') }}</span>
             </button>
@@ -269,9 +270,9 @@ export default {
                 this.isLoadingLicense = false;
             }
         },
-        async check_update() {
+        async check_update(force) {
             let hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate');
-            if (hasCheckedUpdate) {
+            if (hasCheckedUpdate && !force) {
                 await this.start_agent();
                 return;
             }

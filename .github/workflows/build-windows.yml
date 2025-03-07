@@ -66,11 +66,11 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
-      - name: telegram bot
-        env:
-          CHAT_ID: -1002080383068
-          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TAG: ${{ github.ref }}
-          URL: ${{ steps.create_release.outputs.url }}
-        run: |
-          node scripts/send-msg.js
+      # - name: telegram bot
+      #   env:
+      #     CHAT_ID: -1002080383068
+      #     TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      #     TAG: ${{ github.ref }}
+      #     URL: ${{ steps.create_release.outputs.url }}
+      #   run: |
+      #     node scripts/send-msg.js

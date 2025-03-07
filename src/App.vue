@@ -210,7 +210,9 @@ export default {
       this.connectAgent();
       this.getRunningTasks();
     });
-
+    await this.$listen('reload_devices', async () => {
+      this.getDevices();
+    });
     // 监听重新加载运行任务事件
     await this.$listen('reload_running_tasks', async () => {
       this.getRunningTasks();

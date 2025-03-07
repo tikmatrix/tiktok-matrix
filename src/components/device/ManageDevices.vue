@@ -239,6 +239,7 @@ export default {
         // third: real_serial
         return a.sort - b.sort || a.group_id - b.group_id || a.real_serial - b.real_serial
       });
+      this.$emiter('reload_devices', {})
     },
     refreshPage() {
       // window.location.reload()
