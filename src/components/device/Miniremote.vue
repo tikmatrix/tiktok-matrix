@@ -134,7 +134,6 @@ export default {
       width: this.big ? 320 : 120,
       scaled: 1,
       connect_count: 0,
-      min_index: localStorage.getItem('min_index') || 0,
       unlisten_closeDevice: null,
       unlisten_openDevice: null,
       unlisten_syncEventData: null,
@@ -144,12 +143,7 @@ export default {
     }
   },
   methods: {
-    updateIndex() {
-      this.min_index = this.min_index - 1
-      this.$service.index({ serial: this.device.real_serial, index: this.min_index }).then(res => {
-        this.device.index = this.min_index
-      })
-    },
+
 
 
     coords(boundingW, boundingH, relX, relY, rotation) {
@@ -249,7 +243,7 @@ export default {
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
         // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
-        let max_size = this.height * 2
+        let max_size = Math.floor(this.height * (this.big ? 2 : 1.5))
         this.scrcpy.send(`${this.device.serial}`)
         // max size
         this.scrcpy.send(max_size)
@@ -276,8 +270,9 @@ export default {
             case 0:
               this.name = message.data.replace(/[\x00]+$/g, '');
               // limit max length 5, other with ...
-              if (this.name.length > 5) {
-                this.name = this.name.substring(0, 5) + '...'
+              const max_length = this.big ? 10 : 5
+              if (this.name.length > max_length) {
+                this.name = this.name.substring(0, max_length) + '...'
               }
 
               break
@@ -287,20 +282,6 @@ export default {
               this.scaled = this.height / height
               this.width = width * this.scaled
               this.height = height * this.scaled
-
-              // console.log(this.width, this.height)
-              if (this.big) {
-                // let scaled = 580 / this.height;
-                // console.log(scaled)
-                // this.width = this.width * scaled
-                // this.height = 580
-              } else {
-                // let scaled = 250 / this.height;
-                // console.log(scaled)
-                // this.width = this.width * scaled
-                // this.height = 250
-                // console.log(this.width, this.height)
-              }
               break
           }
           this.message_index += 1
@@ -406,6 +387,9 @@ export default {
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
         } else {
+          var video = this.$refs.display;
+          video.currentTime = 999999
+          video.playbackRate = 2;
         }
       })
     }

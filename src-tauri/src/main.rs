@@ -310,6 +310,8 @@ fn main() -> std::io::Result<()> {
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/material"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/avatar"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
+            //delete logs older than 3 days
+            delete_logs_older_than_3_days(work_dir);
             //kill agent process
             kill_process("agent".to_string());
             //kill script process
@@ -323,4 +325,30 @@ fn main() -> std::io::Result<()> {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())
+}
+fn delete_logs_older_than_3_days(work_dir: &str) {
+    //delete logs older than 3 days
+    #[cfg(target_os = "windows")]
+    {
+        let mut command = Command::new("powershell");
+        command
+                    .args(&[
+                        "-Command",
+                        &format!(
+                            "Get-ChildItem -Path '{}/logs' -File | Where-Object LastWriteTime -lt (Get-Date).AddDays(-3) | Remove-Item -Force",
+                            work_dir.replace('\\', "/")
+                        ),
+                    ])
+                    .creation_flags(0x08000000); // 隐藏命令行窗口
+        command.status().expect("failed to delete logs");
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let mut command = Command::new("find");
+        command.args(&["-type", "f", "-mtime", "+3"]);
+        command.args(&["-exec", "rm", "-f", "{}", ";"]);
+        command.current_dir(format!("{}/logs", work_dir));
+        command.status().expect("failed to delete logs");
+    }
 }

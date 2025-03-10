@@ -20,11 +20,11 @@
             <span>{{ $t('tutorial') }}</span>
         </a>
         <!-- Rewards-->
-        <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
+        <!-- <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
             target="_blank">
             <font-awesome-icon icon="fa-solid fa-gift" class="h-4 w-4" />
             <span>{{ $t('rewards') }}</span>
-        </a>
+        </a> -->
         <!-- 中间：灵活空间 -->
         <div class="flex-1"></div>
         <!-- 右侧：功能按钮和控制按钮 -->
@@ -192,9 +192,9 @@ export default {
                     command.on('close', data => {
                         console.log(`command finished with code ${data.code} and signal ${data.signal}`)
                     });
-                    command.on('error', error => console.error(`command error: "${error}"`));
-                    command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-                    command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
+                    // command.on('error', error => console.error(`command error: "${error}"`));
+                    // command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
+                    // command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
                     const child = await command.spawn();
                     console.log('pid:', child.pid);
                     //write pid to file
