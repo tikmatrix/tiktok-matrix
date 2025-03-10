@@ -41,9 +41,9 @@ export default {
   },
   data() {
     return {
-      message_content: '',
-      insert_emoji: 0,
-      target_username_path: '',
+      message_content: localStorage.getItem('message_content') || '',
+      insert_emoji: Number(localStorage.getItem('insert_emoji')) || 0,
+      target_username_path: localStorage.getItem('target_username_path') || '',
     }
   },
   methods: {
@@ -59,15 +59,14 @@ export default {
 
       console.log('Selected file path:', filePath);
       // 将 filePath 用于其他操作
-      this.settings.target_username_path = filePath
+      this.target_username_path = filePath
     },
 
-    async get_settings() {
-      this.$service.get_settings().then(res => {
-        this.settings = res.data
-      })
-    },
+
     async batchDM() {
+      localStorage.setItem('message_content', this.message_content)
+      localStorage.setItem('insert_emoji', this.insert_emoji)
+      localStorage.setItem('target_username_path', this.target_username_path)
       await this.$emiter('batchDM', {
         message_content: this.message_content,
         insert_emoji: this.insert_emoji,
@@ -78,7 +77,6 @@ export default {
 
   },
   async mounted() {
-    this.get_settings()
   },
   watch: {
     insert_emoji(val) {

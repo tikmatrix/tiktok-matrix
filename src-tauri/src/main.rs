@@ -48,6 +48,7 @@ fn setup_env(working_dir: &str) {
         //set env MOSS_URL=http://127.0.0.1:8788/moss
         std::env::set_var("MOSS_URL", "http://127.0.0.1:8788/moss");
         std::env::set_var("RUST_BACKTRACE", "1");
+        std::env::set_var("LOG_LEVEL", "debug");
     }
 }
 #[tauri::command]

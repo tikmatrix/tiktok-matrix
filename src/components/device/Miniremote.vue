@@ -2,32 +2,28 @@
   <div class="relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
-        <div class="flex flex-row drag bg-base-300">
-          <div class="flex flex-1 items-center">
-            <div class="flex-1">
-              <span class="font-bold bg-secondary pl-2 pr-2 rounded-md ml-2" v-if="big">
+        <div class="flex flex-row drag bg-base-300 p-2">
+          <div class="flex flex-1 items-center gap-2">
+            <div class="flex-1 flex items-center gap-2">
+              <span class="font-bold bg-secondary px-3 py-1 rounded-lg text-secondary-content" v-if="big">
                 {{ no }}
               </span>
-              <span class="text-xs text-primary font-bold ml-2">
-                {{ $t('task') }}:
-              </span>
-              <span class="text-xs text-success font-bold" v-if="device.task_status == 1">
-                {{ $t('running') }}
-              </span>
-              <span class="text-xs text-info font-bold" v-if="device.task_status != 1">
-                {{ $t('idle') }}
+              <span class="px-2 py-0.5 rounded-md text-sm font-medium"
+                :class="device.task_status == 1 ? 'bg-success/20 text-success' : 'bg-info/20 text-info'">
+                {{ device.task_status == 1 ? $t('running') : $t('idle') }}
               </span>
             </div>
-            <span class="mr-2 text-sm font-bold" v-if="big">{{ name }} </span>
-            <span class="text-xs font-sans font-bold mr-1">{{ device.connect_type == 0 ? 'USB' : 'TCP' }}</span>
-            <span class="text-xs font-sans" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
+            <span class="text-sm font-semibold" v-if="big">{{ name }}</span>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="font-medium px-2 py-0.5 bg-base-200 rounded">
+                {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
+              </span>
+              <span class="font-medium" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
+            </div>
           </div>
-          <button
-            class="btn bg-transparent hover:bg-transparent hover:text-error text-gray-700 float-right border-0 p-4"
-            @click="$emiter('closeDevice', this.device)" v-if="big">
+          <button class="btn btn-ghost btn-sm hover:text-error" @click="$emiter('closeDevice', this.device)" v-if="big">
             <font-awesome-icon icon="fa fa-times" class="h-4 w-4" />
           </button>
-
         </div>
 
         <div class="flex flex-row flex-1 ">
@@ -125,7 +121,6 @@ export default {
       rotation: 0,
       fps: 0,
       periodImageCount: 0,
-      timer_task_status: null,
       jmuxer: null,
       scrcpy: null,
       loading: true,
@@ -135,14 +130,17 @@ export default {
       input_callback: null,
       message_index: 0,
       name: 'Loading...',
+      height: this.big ? window.innerHeight * 3 / 4 : window.innerHeight * 1 / 4,
       width: this.big ? 320 : 120,
-      height: this.big ? 580 : 250,
+      scaled: 1,
       connect_count: 0,
       min_index: localStorage.getItem('min_index') || 0,
       unlisten_closeDevice: null,
       unlisten_openDevice: null,
       unlisten_syncEventData: null,
       unlisten_refreshDevice: null,
+      periodStartTime: 0,
+      periodTime: 0,
     }
   },
   methods: {
@@ -251,7 +249,7 @@ export default {
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
         // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
-        let max_size = this.big ? 1080 : 540
+        let max_size = this.height * 2
         this.scrcpy.send(`${this.device.serial}`)
         // max size
         this.scrcpy.send(max_size)
@@ -264,9 +262,6 @@ export default {
       this.scrcpy.onclose = () => {
         this.loading = true
         console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
-        // if (!this.operating) {
-        //   this.connect()
-        // }
       }
       this.scrcpy.onerror = () => {
         this.loading = true
@@ -274,14 +269,7 @@ export default {
 
       }
       this.scrcpy.onmessage = message => {
-        // if (!this.jmuxer) {
-        //   // console.log('jmuxer is null,big:', this.big, 'operating:', this.operating, 'index:', this.device.index, 'scrcpy:', this.scrcpy)
-        //   this.closeScrcpy()
-        //   return
-        // }
-        if (this.loading) {
-          this.loading = false
-        }
+        this.loading = false
         if (this.message_index < 2) {
           // console.log(message)
           switch (this.message_index) {
@@ -294,19 +282,23 @@ export default {
 
               break
             case 1:
-              this.width = message.data.split('x')[0]
-              this.height = message.data.split('x')[1]
+              const width = message.data.split('x')[0]
+              const height = message.data.split('x')[1]
+              this.scaled = this.height / height
+              this.width = width * this.scaled
+              this.height = height * this.scaled
+
               // console.log(this.width, this.height)
               if (this.big) {
-                let scaled = 580 / this.height;
+                // let scaled = 580 / this.height;
                 // console.log(scaled)
-                this.width = this.width * scaled
-                this.height = 580
+                // this.width = this.width * scaled
+                // this.height = 580
               } else {
-                let scaled = 250 / this.height;
+                // let scaled = 250 / this.height;
                 // console.log(scaled)
-                this.width = this.width * scaled
-                this.height = 250
+                // this.width = this.width * scaled
+                // this.height = 250
                 // console.log(this.width, this.height)
               }
               break
@@ -314,11 +306,16 @@ export default {
           this.message_index += 1
           return
         }
-        // if (document.hidden) {
-        //   return
-        // }
-        //read video
+        //fps
         this.periodImageCount += 1
+        const currentTime = Date.now()
+
+        // 每秒更新一次FPS
+        if (currentTime - this.periodStartTime >= 1000) {
+          this.fps = (this.periodImageCount * 1000) / (currentTime - this.periodStartTime)
+          this.periodImageCount = 0
+          this.periodStartTime = currentTime
+        }
         this.jmuxer.feed({
           video: new Uint8Array(message.data)
         })
@@ -328,15 +325,11 @@ export default {
     syncDisplay() {
       this.connect_count += 1
       this.loading = true
-      if (this.$refs.display == null) {
-        console.log('display is null,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
-      }
       this.jmuxer = new JMuxer({
         node: this.$refs.display,
         mode: 'video',
         flushingTime: 1,
         maxDelay: 0,
-        // fps: this.big ? 30 : 15,
         debug: false,
         onError: function () {
           console.log('onError')
@@ -345,7 +338,6 @@ export default {
           }
         }
       })
-      // console.log('jmuxer init,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
       this.connect()
     },
     closeScrcpy() {
@@ -416,20 +408,12 @@ export default {
         } else {
         }
       })
-    } else {
-      this.timer_task_status = setInterval(() => {
-        this.fps = this.periodImageCount / 0.5
-        this.periodImageCount = 0
-      }, 1000)
     }
     this.syncDisplay()
   },
   async unmounted() {
     this.closeScrcpy()
     this.closeJmuxer()
-    if (this.timer_task_status) {
-      clearInterval(this.timer_task_status)
-    }
     if (this.unlisten_closeDevice) {
       this.unlisten_closeDevice()
     }
