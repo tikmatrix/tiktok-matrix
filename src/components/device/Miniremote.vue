@@ -243,7 +243,7 @@ export default {
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
         // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
-        let max_size = Math.floor(this.height * (this.big ? 2 : 1.5))
+        let max_size = this.big ? 1080 : 540
         this.scrcpy.send(`${this.device.serial}`)
         // max size
         this.scrcpy.send(max_size)
