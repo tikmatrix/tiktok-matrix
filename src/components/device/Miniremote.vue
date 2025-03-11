@@ -8,14 +8,14 @@
               <span class="font-bold bg-secondary px-3 py-1 rounded-lg text-secondary-content" v-if="big">
                 {{ no }}
               </span>
-              <span class="px-2 py-0.5 rounded-md text-sm font-medium"
-                :class="device.task_status == 1 ? 'bg-success/20 text-success' : 'bg-info/20 text-info'">
+              <span class="px-2 py-0.5 rounded-md font-medium" :class="[device.task_status == 1 ? 'bg-success/20 text-success' : 'bg-info/20 text-info',
+                getScaledFontSize]">
                 {{ device.task_status == 1 ? $t('running') : $t('idle') }}
               </span>
             </div>
             <span class="text-sm font-semibold" v-if="big">{{ name }}</span>
-            <div class="flex items-center gap-2 text-xs">
-              <span class="font-medium px-2 py-0.5 bg-base-200 rounded">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 bg-base-200 rounded" :class="getScaledFontSize">
                 {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
               </span>
               <span class="font-medium" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
@@ -132,20 +132,45 @@ export default {
       name: 'Loading...',
       height: this.big ? window.innerHeight * 3 / 4 : window.innerHeight * 1 / 4,
       width: this.big ? 320 : 120,
+      real_width: 0,
+      real_height: 0,
       scaled: 1,
       connect_count: 0,
       unlisten_closeDevice: null,
       unlisten_openDevice: null,
       unlisten_syncEventData: null,
       unlisten_refreshDevice: null,
+      unlisten_screenScaled: null,
       periodStartTime: 0,
       periodTime: 0,
+      screenScaled: this.big ? 1 : (Number(localStorage.getItem('screenScaled')) || 100) / 100,
+    }
+  },
+  computed: {
+    getScaledFontSize() {
+      if (this.big) return 'text-sm';
+      if (this.screenScaled <= 0.65) return 'text-[0.6rem]';
+      if (this.screenScaled <= 0.75) return 'text-[0.7rem]';
+      if (this.screenScaled <= 0.85) return 'text-[0.8rem]';
+      if (this.screenScaled <= 1) return 'text-xs';
+      return 'text-sm';
+    }
+  },
+  watch: {
+    scaled(newVal) {
+      console.log(`scaled: ${newVal}, screenScaled: ${this.screenScaled}`)
+      const newScaled = newVal * this.screenScaled
+      this.width = this.real_width * newScaled
+      this.height = this.real_height * newScaled
+      console.log(`newScaled: ${newScaled}, width: ${this.width}, height: ${this.height}`)
+    },
+    screenScaled(newVal) {
+      const newScaled = this.scaled * newVal
+      this.width = this.real_width * newScaled
+      this.height = this.real_height * newScaled
     }
   },
   methods: {
-
-
-
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -277,11 +302,9 @@ export default {
 
               break
             case 1:
-              const width = message.data.split('x')[0]
-              const height = message.data.split('x')[1]
-              this.scaled = this.height / height
-              this.width = width * this.scaled
-              this.height = height * this.scaled
+              this.real_width = message.data.split('x')[0]
+              this.real_height = message.data.split('x')[1]
+              this.scaled = this.height / this.real_height
               break
           }
           this.message_index += 1
@@ -338,7 +361,6 @@ export default {
       }
     },
 
-
   },
   async mounted() {
     if (!this.big) {
@@ -370,6 +392,11 @@ export default {
         this.closeScrcpy()
         this.closeJmuxer()
         this.syncDisplay()
+      });
+      this.unlisten_screenScaled = await this.$listen('screenScaled', (e) => {
+        this.screenScaled = e.payload.scaled
+
+
       });
       // 获取视频元素
       var video = this.$refs.display;
@@ -409,6 +436,9 @@ export default {
     }
     if (this.unlisten_refreshDevice) {
       this.unlisten_refreshDevice()
+    }
+    if (this.unlisten_screenScaled) {
+      this.unlisten_screenScaled()
     }
   },
 

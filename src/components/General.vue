@@ -44,6 +44,10 @@
         {{ $t('openAppDir') }}
     </button>
 
+    <button class="btn btn-sm btn-primary ml-1 mb-1" @click="$refs.screen_size_dialog.show()">
+        <font-awesome-icon icon="fa fa-expand" class="h-3 w-3" />
+        {{ $t('adjustScreenSize') }}
+    </button>
 
     <dialog ref="proxy_dialog" class="modal">
         <div class="modal-box bg-base-300">
@@ -56,6 +60,28 @@
             <button class="btn btn-sm btn-success ml-2" @click="enableProxy">{{ $t('enableProxy') }}</button>
             <button class="btn btn-sm btn-warning ml-2" @click="disableProxy">{{ $t('disableProxy') }}</button>
 
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <dialog ref="screen_size_dialog" class="modal">
+        <div class="modal-box bg-base-300">
+            <h3 class="font-bold text-lg">{{ $t('adjustScreenSize') }}</h3>
+
+            <div class="flex flex-col p-2 gap-4">
+
+                <div>
+                    <label class="label">
+                        <span class="label-text">{{ $t('screenScaled') }}: {{ screenScaled }}%</span>
+                    </label>
+                    <input type="range" min="50" max="150" v-model="screenScaled" class="range range-primary"
+                        @change="updateScreenSize" />
+                </div>
+
+
+            </div>
         </div>
         <form method="dialog" class="modal-backdrop">
             <button>close</button>
@@ -83,7 +109,8 @@ export default {
             port: util.getData('scan_port') || 5555,
             proxy_host: util.getData('proxy_host') || '127.0.0.1',
             proxy_port: util.getData('proxy_port') || 8080,
-            scaning: false
+            scaning: false,
+            screenScaled: Number(localStorage.getItem('screenScaled')) || 100,
         }
     },
     methods: {
@@ -130,7 +157,11 @@ export default {
                 this.scaning = false
             })
         },
-
+        async updateScreenSize() {
+            localStorage.setItem('screenScaled', this.screenScaled);
+            const scaled = this.screenScaled / 100
+            await this.$emiter('screenScaled', { scaled: scaled })
+        },
 
     }
 }

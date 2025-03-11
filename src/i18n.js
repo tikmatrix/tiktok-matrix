@@ -503,8 +503,12 @@ export const i18n = createI18n({
       copied: 'Copied',
       rewards: 'Rewards',
       applied: 'Applied',
+      adjustScreenSize: 'Adjust Screen Size',
+      screenScaled: 'Screen Scaled',
     },
     'zh-CN': {
+      adjustScreenSize: '调整屏幕尺寸',
+      screenScaled: '屏幕缩放',
       applied: '已应用',
       rewards: '奖励',
       affiliateCode: '优惠码',
