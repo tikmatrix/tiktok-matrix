@@ -46,7 +46,7 @@ fn setup_env(working_dir: &str) {
     std::env::set_var("TAURI_APP_WORK_DIR", working_dir);
     if cfg!(debug_assertions) {
         //set env MOSS_URL=http://127.0.0.1:8788/moss
-        std::env::set_var("MOSS_URL", "http://127.0.0.1:8788/moss");
+        // std::env::set_var("MOSS_URL", "http://127.0.0.1:8788/moss");
         std::env::set_var("RUST_BACKTRACE", "1");
         std::env::set_var("LOG_LEVEL", "debug");
     }
@@ -296,6 +296,10 @@ fn main() -> std::io::Result<()> {
             setup_env(work_dir);
             init_log::init(work_dir);
             log::info!("work_dir: {}", work_dir);
+            //kill agent process
+            kill_process("agent".to_string());
+            //kill script process
+            kill_process("script".to_string());
             let window = app.get_window("main").expect("Failed to get main window");
             window
                 .eval("localStorage.removeItem('hasCheckedUpdate');")
@@ -312,10 +316,7 @@ fn main() -> std::io::Result<()> {
             std::fs::create_dir_all(format!("{}/{}", work_dir, "upload/apk"))?;
             //delete logs older than 3 days
             delete_logs_older_than_3_days(work_dir);
-            //kill agent process
-            kill_process("agent".to_string());
-            //kill script process
-            kill_process("script".to_string());
+
             std::fs::write(format!("{}/port.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wssport.txt", work_dir), "0")?;
@@ -328,27 +329,22 @@ fn main() -> std::io::Result<()> {
 }
 fn delete_logs_older_than_3_days(work_dir: &str) {
     //delete logs older than 3 days
-    #[cfg(target_os = "windows")]
-    {
-        let mut command = Command::new("powershell");
-        command
-                    .args(&[
-                        "-Command",
-                        &format!(
-                            "Get-ChildItem -Path '{}/logs' -File | Where-Object LastWriteTime -lt (Get-Date).AddDays(-3) | Remove-Item -Force",
-                            work_dir.replace('\\', "/")
-                        ),
-                    ])
-                    .creation_flags(0x08000000); // 隐藏命令行窗口
-        command.status().expect("failed to delete logs");
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        let mut command = Command::new("find");
-        command.args(&["-type", "f", "-mtime", "+3"]);
-        command.args(&["-exec", "rm", "-f", "{}", ";"]);
-        command.current_dir(format!("{}/logs", work_dir));
-        command.status().expect("failed to delete logs");
+    let logs_dir = format!("{}/logs", work_dir);
+    let logs_dir = Path::new(&logs_dir);
+    if logs_dir.exists() {
+        for entry in std::fs::read_dir(logs_dir).unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.is_file() {
+                let metadata = std::fs::metadata(&path).unwrap();
+                let last_modified = metadata.modified().unwrap();
+                let three_days_ago =
+                    std::time::SystemTime::now() - std::time::Duration::from_secs(3 * 24 * 60 * 60);
+                if last_modified < three_days_ago {
+                    log::info!("delete expired log: {}", path.to_str().unwrap());
+                    std::fs::remove_file(&path).unwrap();
+                }
+            }
+        }
     }
 }
