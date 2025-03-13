@@ -141,9 +141,11 @@ export default {
       unlisten_syncEventData: null,
       unlisten_refreshDevice: null,
       unlisten_screenScaled: null,
+      unlisten_screenResolution: null,
       periodStartTime: 0,
       periodTime: 0,
       screenScaled: this.big ? 1 : (Number(localStorage.getItem('screenScaled')) || 100) / 100,
+      screenResolution: Number(localStorage.getItem('screenResolution')) || 256,
     }
   },
   computed: {
@@ -268,7 +270,7 @@ export default {
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
         // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
-        let max_size = this.big ? 1080 : 540
+        let max_size = this.big ? 1024 : this.screenResolution
         this.scrcpy.send(`${this.device.serial}`)
         // max size
         this.scrcpy.send(max_size)
@@ -398,6 +400,12 @@ export default {
 
 
       });
+      this.unlisten_screenResolution = await this.$listen('screenResolution', (e) => {
+        this.screenResolution = e.payload.resolution;
+        this.closeScrcpy();
+        this.closeJmuxer();
+        this.syncDisplay();
+      });
       // 获取视频元素
       var video = this.$refs.display;
 
@@ -439,6 +447,9 @@ export default {
     }
     if (this.unlisten_screenScaled) {
       this.unlisten_screenScaled()
+    }
+    if (this.unlisten_screenResolution) {
+      this.unlisten_screenResolution()
     }
   },
 

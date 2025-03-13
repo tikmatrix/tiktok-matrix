@@ -49,6 +49,11 @@
         {{ $t('adjustScreenSize') }}
     </button>
 
+    <button class="btn btn-sm btn-primary ml-1 mb-1" @click="$refs.resolution_dialog.show()">
+        <font-awesome-icon icon="fa fa-tv" class="h-3 w-3" />
+        {{ $t('adjustResolution') }}
+    </button>
+
     <dialog ref="proxy_dialog" class="modal">
         <div class="modal-box bg-base-300">
             <h3 class="font-bold text-lg">{{ $t('proxyServer') }}</h3>
@@ -87,6 +92,54 @@
             <button>close</button>
         </form>
     </dialog>
+
+    <dialog ref="resolution_dialog" class="modal">
+        <div class="modal-box bg-base-300">
+            <h3 class="font-bold text-lg">{{ $t('adjustResolution') }}</h3>
+            <div class="flex flex-col p-2 gap-4">
+                <div class="flex flex-wrap gap-2">
+                    <button class="btn btn-sm" :class="{ 'btn-active': resolution === 256 }"
+                        @click="setResolution(256)">
+                        {{ $t('lowResolution') }} (256px)
+                    </button>
+                    <button class="btn btn-sm" :class="{ 'btn-active': resolution === 512 }"
+                        @click="setResolution(512)">
+                        {{ $t('highResolution') }} (512px)
+                    </button>
+                    <button class="btn btn-sm" :class="{ 'btn-active': resolution === 720 }"
+                        @click="setResolution(720)">
+                        {{ $t('ultraResolution') }} (720px)
+                    </button>
+                    <button class="btn btn-sm" :class="{ 'btn-active': resolution === 1080 }"
+                        @click="setResolution(1080)">
+                        {{ $t('fullHD') }} (1080px)
+                    </button>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">{{ $t('customResolution') }}</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" v-model="customResolution" min="128" max="1920" step="16"
+                            class="input input-bordered input-sm w-24" />
+                        <span>px</span>
+                        <button @click="setResolution(Number(customResolution))" class="btn btn-sm btn-primary"
+                            :disabled="!isValidResolution">
+                            {{ $t('apply') }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-sm opacity-70">
+                    <p>{{ $t('resolutionNote') }}</p>
+                </div>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 </template>
 <script>
 import * as util from '../utils'
@@ -111,6 +164,14 @@ export default {
             proxy_port: util.getData('proxy_port') || 8080,
             scaning: false,
             screenScaled: Number(localStorage.getItem('screenScaled')) || 100,
+            resolution: Number(localStorage.getItem('screenResolution')) || 256,
+            customResolution: 512,
+        }
+    },
+    computed: {
+        isValidResolution() {
+            const res = Number(this.customResolution);
+            return !isNaN(res) && res >= 128 && res <= 1920;
         }
     },
     methods: {
@@ -162,7 +223,11 @@ export default {
             const scaled = this.screenScaled / 100
             await this.$emiter('screenScaled', { scaled: scaled })
         },
-
+        async setResolution(value) {
+            this.resolution = value;
+            localStorage.setItem('screenResolution', value);
+            await this.$emiter('screenResolution', { resolution: value });
+        },
     }
 }
 </script>

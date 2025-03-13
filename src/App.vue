@@ -151,6 +151,7 @@ export default {
     async getDevices() {
       this.$service.get_devices().then(res => {
         this.devices.splice(0, this.devices.length, ...res.data)
+
         for (let i = 0; i < this.devices.length; i++) {
           this.devices[i].sort = localStorage.getItem(`sort_${this.devices[i].real_serial}`) || '0'
         }
