@@ -56,6 +56,7 @@
             <select class="select select-info select-sm" v-model="currentLocale" @change="changeLocale">
                 <option selected value="en">English</option>
                 <option value="zh-CN">简体中文</option>
+                <option value="ru">Русский</option>
             </select>
 
             <!-- 主题切换 -->

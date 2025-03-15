@@ -143,7 +143,7 @@
               <button @click="tier.onclicks[1]" :aria-describedby="tier.id" v-if="tier.buttons[1]"
                 :class="[tier.featured ? 'btn-secondary text-secondary-content shadow-xs' :
                   'btn-neutral text-neutral-content shadow-xs',
-                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-3.5 py-2.5 text-center text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
+                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-1 py-2 text-center text-xs font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
                 <!-- bsc network icon -->
 
                 <svg class="fill-current text-orange-300 h-6 w-6" xmlns="http://www.w3.org/2000/svg"

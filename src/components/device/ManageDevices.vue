@@ -36,7 +36,7 @@
                     <th>{{ $t('no') }}</th>
                     <th>{{ $t('serial') }}</th>
                     <th>{{ $t('mode') }}</th>
-                    <th>{{ $t('ip') }}</th>
+                    <th>{{ $t('device') }}</th>
                     <th>{{ $t('connectType') }}</th>
                     <th>{{ $t('group') }}</th>
                     <th>{{ $t('task') }}</th>
@@ -52,7 +52,7 @@
                         device.serial }}</a>
                     </td>
                     <td>{{ device.mode }}</td>
-                    <td>{{ device.ip }}</td>
+                    <td>{{ device.real_serial }}</td>
                     <td>
                       <div class="badge badge-neutral badge-sm" v-if="device.connect_type == '0'">USB</div>
                       <div class="badge badge-primary badge-sm" v-else>TCP</div>

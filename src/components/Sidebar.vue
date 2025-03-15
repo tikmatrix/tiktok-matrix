@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar bg-base-100 m-1 flex flex-col rounded-lg shadow w-96 h-screen overflow-y-scroll no-scrollbar">
+  <div class="sidebar bg-base-100 m-1 flex flex-col rounded-lg shadow w-1/4 h-screen overflow-y-scroll no-scrollbar">
     <div class="pl-2 pr-2 pt-2 pb-14">
       <div role="tablist" class="tabs tabs-lifted mt-2 bg-base-200 rounded-md">
         <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
@@ -186,7 +186,8 @@ export default {
       adImage: '',
       adLink: '',
       adTitle: '',
-      hideAd: localStorage.getItem('hideAd_v1') == 'true' ? true : false,
+      hideAd: true,
+      // hideAd: localStorage.getItem('hideAd_v1') == 'true' ? true : false,
     }
   },
 
