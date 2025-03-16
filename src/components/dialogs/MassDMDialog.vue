@@ -23,11 +23,11 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
-      <span>{{ $t('batchDMTips') }}</span>
+      <span>{{ $t('massDMTips') }}</span>
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
-      <button class="btn btn-success" @click="batchDM">{{ $t('startScript') }}</button>
+      <button class="btn btn-success" @click="massDM">{{ $t('startScript') }}</button>
     </div>
   </div>
 </template>
@@ -63,11 +63,11 @@ export default {
     },
 
 
-    async batchDM() {
+    async massDM() {
       localStorage.setItem('message_content', this.message_content)
       localStorage.setItem('insert_emoji', this.insert_emoji)
       localStorage.setItem('target_username_path', this.target_username_path)
-      await this.$emiter('batchDM', {
+      await this.$emiter('massDM', {
         message_content: this.message_content,
         insert_emoji: this.insert_emoji,
         target_username_path: this.target_username_path,

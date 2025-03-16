@@ -60,11 +60,11 @@
 
           <div class="flex flex-row form-control items-center">
             <button class="btn btn-sm btn-primary ml-1 mb-1"
-              @click="$emiter('menuSelected', { name: 'trainSettings', group: item })">
+              @click="$emiter('menuSelected', { name: 'trainDialog', group: item })">
               <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
             </button>
             <button class="btn btn-sm btn-primary ml-1 mb-1"
-              @click="$emiter('menuSelected', { name: 'publishSettings', group: item })">
+              @click="$emiter('menuSelected', { name: 'publishDialog', group: item })">
               <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
             </button>
             <button class="btn btn-sm btn-primary ml-1 mb-1"
@@ -467,7 +467,7 @@ export default {
     },
 
 
-    async batchDM(args) {
+    async massDM(args) {
       if (this.selection.length == 0) {
         await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
@@ -486,7 +486,7 @@ export default {
 
         })
     },
-    async batchFO() {
+    async massFO() {
       if (this.selection.length == 0) {
         await this.$emiter('showToast', this.$t('noDevicesSelected'))
         return
@@ -637,11 +637,11 @@ export default {
     }))
 
 
-    this.listeners.push(await this.$listen('batchDM', (e) => {
-      this.batchDM(e.payload);
+    this.listeners.push(await this.$listen('massDM', (e) => {
+      this.massDM(e.payload);
     }))
-    this.listeners.push(await this.$listen('batchFO', (e) => {
-      this.batchFO();
+    this.listeners.push(await this.$listen('massFO', (e) => {
+      this.massFO();
     }))
 
     this.listeners.push(await this.$listen('stop_task', (e) => {

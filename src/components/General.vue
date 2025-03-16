@@ -2,8 +2,8 @@
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('menuSelected', { name: 'accounts' })">
         <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('menuSelected', { name: 'packageNameSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('packageNameSettings') }}
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('menuSelected', { name: 'tiktokSettingsDialog' })">
+        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('tiktokSettings') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="grantTikTok">
         <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />

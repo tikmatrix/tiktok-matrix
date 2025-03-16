@@ -15,16 +15,20 @@
         <ManageMaterials :group="selectedItem.group"
           v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
         <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
-        <ManageDialog v-if="selectedItem.name === 'dialogWatcher' && $refs.page_dialog.open" />
-        <RegisterSettings v-if="selectedItem.name === 'registerSettings' && $refs.page_dialog.open" />
-        <ProfileSettings v-if="selectedItem.name === 'profileSettings' && $refs.page_dialog.open" />
-        <MessageSettings v-if="selectedItem.name === 'messageSettings' && $refs.page_dialog.open" />
-        <FollowSettings v-if="selectedItem.name === 'followSettings' && $refs.page_dialog.open" />
-        <PackageNameSettings v-if="selectedItem.name === 'packageNameSettings' && $refs.page_dialog.open" />
-        <TrainSettings :group="selectedItem.group"
-          v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" />
-        <PublishSettings :group="selectedItem.group"
-          v-if="selectedItem.name === 'publishSettings' && $refs.page_dialog.open" />
+        <RegisterDialog v-if="selectedItem.name === 'registerDialog' && $refs.page_dialog.open" />
+        <ProfileDialog v-if="selectedItem.name === 'profileDialog' && $refs.page_dialog.open" />
+        <MassDMDialog v-if="selectedItem.name === 'massDMDialog' && $refs.page_dialog.open" />
+        <FollowDialog v-if="selectedItem.name === 'followDialog' && $refs.page_dialog.open" />
+        <TikTokSettingsDialog v-if="selectedItem.name === 'tiktokSettingsDialog' && $refs.page_dialog.open" />
+        <TrainDialog :group="selectedItem.group"
+          v-if="selectedItem.name === 'trainDialog' && $refs.page_dialog.open" />
+        <PublishDialog :group="selectedItem.group"
+          v-if="selectedItem.name === 'publishDialog' && $refs.page_dialog.open" />
+        <LoginDialog v-if="selectedItem.name === 'loginDialog' && $refs.page_dialog.open" />
+        <ScrapeFollowersDialog v-if="selectedItem.name === 'scrapeFollowersDialog' && $refs.page_dialog.open" />
+        <DeletePostDialog v-if="selectedItem.name === 'deletePostDialog' && $refs.page_dialog.open" />
+        <BoostUsersDialog v-if="selectedItem.name === 'boostUsersDialog' && $refs.page_dialog.open" />
+        <BoostPostsDialog v-if="selectedItem.name === 'boostPostsDialog' && $refs.page_dialog.open" />
       </div>
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
@@ -44,26 +48,26 @@ import ManageAccounts from './components/account/ManageAccounts.vue'
 import ManageAnalytics from './components/analytics/ManageAnalytics.vue'
 import ManageMaterials from './components/material/ManageMaterials.vue'
 import ManageTasks from './components/tasks/ManageTasks.vue'
-import ManageDialog from './components/dialog/ManageDialog.vue'
-import RegisterSettings from './components/settings/RegisterSettings.vue'
-import ProfileSettings from './components/settings/ProfileSettings.vue'
-import PackageNameSettings from './components/settings/PackageNameSettings.vue'
-import MessageSettings from './components/settings/MessageSettings.vue'
-import FollowSettings from './components/settings/FollowSettings.vue'
-import Login from './components/Login.vue'
+import RegisterDialog from './components/dialogs/RegisterDialog.vue'
+import ProfileDialog from './components/dialogs/ProfileDialog.vue'
+import TikTokSettingsDialog from './components/dialogs/TikTokSettingsDialog.vue'
+import MassDMDialog from './components/dialogs/MassDMDialog.vue'
+import FollowDialog from './components/dialogs/FollowDialog.vue'
+import LoginDialog from './components/dialogs/LoginDialog.vue'
 import Miniremote from './components/device/Miniremote.vue'
-import TrainSettings from './components/group/TrainSettings.vue'
-import PublishSettings from './components/group/PublishSettings.vue'
+import TrainDialog from './components/dialogs/TrainDialog.vue'
+import PublishDialog from './components/dialogs/PublishDialog.vue'
+import ScrapeFollowersDialog from './components/dialogs/ScrapeFollowersDialog.vue'
 import { message } from '@tauri-apps/api/dialog';
 import { readTextFile, writeTextFile, exists } from '@tauri-apps/api/fs'
 import { BaseDirectory } from '@tauri-apps/api/fs';
-
-
+import DeletePostDialog from './components/dialogs/DeletePostDialog.vue'
+import BoostUsersDialog from './components/dialogs/BoostUsersDialog.vue'
+import BoostPostsDialog from './components/dialogs/BoostPostsDialog.vue'
 export default {
   name: 'app',
   components: {
     TitleBar,
-    Login,
     Sidebar,
     ManageDashboard,
     ManageDevices,
@@ -71,15 +75,19 @@ export default {
     ManageAnalytics,
     ManageMaterials,
     ManageTasks,
-    ManageDialog,
-    RegisterSettings,
-    ProfileSettings,
-    PackageNameSettings,
-    MessageSettings,
-    FollowSettings,
+    RegisterDialog,
+    ProfileDialog,
+    TikTokSettingsDialog,
+    MassDMDialog,
+    FollowDialog,
     Miniremote,
-    TrainSettings,
-    PublishSettings
+    TrainDialog,
+    PublishDialog,
+    LoginDialog,
+    ScrapeFollowersDialog,
+    DeletePostDialog,
+    BoostUsersDialog,
+    BoostPostsDialog
   },
   data() {
     return {

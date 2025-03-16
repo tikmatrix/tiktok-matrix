@@ -82,7 +82,7 @@
     </div>
 
     <!-- 购买授权弹窗 -->
-    <BuyLicense ref="buyLicenseDialog" :license="licenseData" />
+    <BuyLicenseDialog ref="buyLicenseDialog" :license="licenseData" />
 
 
     <!-- 下载进度弹窗 -->
@@ -130,14 +130,14 @@ import { relaunch } from '@tauri-apps/api/process';
 import { fetch, ResponseType } from '@tauri-apps/api/http';
 import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
-import BuyLicense from './settings/BuyLicense.vue';
+import BuyLicenseDialog from './dialogs/BuyLicenseDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
 import { open } from '@tauri-apps/api/shell';
 
 export default {
     name: 'TitleBar',
     components: {
-        BuyLicense
+        BuyLicenseDialog
     },
     data() {
         return {

@@ -93,10 +93,11 @@
 
     <!-- other fields... -->
     <div class="mt-8 w-full flex justify-end">
-      <button
-        class="bg-primary hover:bg-blue-700 text-primary-content font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        @click="update">
+      <button class="btn btn-primary mr-2" @click="update">
         {{ $t('update') }}
+      </button>
+      <button class="btn btn-success" @click="$emiter('run_now_by_account', { name: 'train', args: {} })">
+        {{ $t('startScript') }}
       </button>
     </div>
   </div>
@@ -135,6 +136,7 @@ export default {
     }
   },
   methods: {
+   
     addTime() {
       if (this.trainTimes.length < 6) {
         this.trainTimes.push('')

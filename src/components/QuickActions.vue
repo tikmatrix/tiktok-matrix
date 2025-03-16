@@ -1,8 +1,28 @@
 <template>
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-primary-content" />
+        {{ $t('openTiktok') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
+        {{ $t('stopTiktok') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="clearCache">
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
+        {{ $t('clearCache') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.HOME'] })">
         <font-awesome-icon icon="fa fa-home" class="h-3 w-3 text-primary-content" />
         {{ $t('home') }}
+    </button>
+
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-t', 'image/*'] })">
+        <font-awesome-icon icon="fa fa-images" class="h-3 w-3 text-primary-content" />
+        {{ $t('openGallery') }}
     </button>
 
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
@@ -60,6 +80,7 @@
     </dialog>
 </template>
 <script>
+import { ask } from '@tauri-apps/api/dialog';
 export default {
     name: 'Tools',
     props: ['settings'],
@@ -81,6 +102,12 @@ export default {
         },
         async clearGallery() {
             await this.$emiter('clearGallery', {})
+        },
+        async clearCache() {
+            let yes = await ask(this.$t('clearCacheConfirm'), this.$t('confirm'));
+            if (yes) {
+                await this.$emiter('adbEventData', { args: ['shell', 'pm', 'clear', this.settings.packagename] })
+            }
         }
     }
 }
