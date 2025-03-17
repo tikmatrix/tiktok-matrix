@@ -1,5 +1,4 @@
 <template>
-  <div class="flex flex-col items-start p-12">
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('targetUsernamesPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/usernames.txt"
@@ -14,26 +13,25 @@
       </svg>
       <span>{{ $t('batchFOTips') }}</span>
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <div class="flex flex-1"></div>
-      <button class="btn btn-md btn-primary ml-2" @click="batchFO">
-        {{ $t('follow') }}
-      </button>
-    </div>
+    
 
-  </div>
 </template>
 <script>
 import MyButton from '../Button.vue'
 import { open } from '@tauri-apps/api/dialog';
 export default {
-  name: 'app',
+  name: 'FollowDialog',
   components: {
     MyButton
   },
+  props: {
+    settings: {
+      type: Object,
+      required: true
+    }
+  },
   data() {
     return {
-      settings: {},
     }
   },
   methods: {
@@ -52,20 +50,16 @@ export default {
       this.settings.target_username_path = filePath
     },
 
-    async get_settings() {
-      this.$service.get_settings().then(res => {
-        this.settings = res.data
-      })
-    },
-    async batchFO() {
-      this.$service.update_settings(this.settings).then(async (res) => {
-        await this.$emiter('batchFO')
-      })
+   
+    async runScript() {
+      await this.$service.update_settings(this.settings);
+      //reload settings
+     await this.$emiter('reload_settings', {})
+      await this.$emiter('batchFO', {})
     },
 
   },
   async mounted() {
-    this.get_settings()
   }
 }
 </script>

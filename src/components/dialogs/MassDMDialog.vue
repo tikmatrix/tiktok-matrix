@@ -1,8 +1,11 @@
 <template>
-  <div class="flex flex-col items-start p-12">
-
-
-
+     <!-- 添加提示信息 -->
+     <div class="alert alert-warning mb-4 shadow-lg">
+      <div>
+        <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="h-6 w-6 mr-2" />
+        <span>{{ $t('massDMWarning') }}</span>
+      </div>
+    </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('messageContent') }}: </span>
       <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('messageContentTips')"
@@ -18,24 +21,13 @@
         class="input input-sm grow input-bordered" v-model="target_username_path" />
       <button class="btn btn-sm btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
     </div>
-    <div role="alert" class="alert gap-2 max-w-full w-full mt-2">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-      <span>{{ $t('massDMTips') }}</span>
-    </div>
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <div class="flex flex-1"></div>
-      <button class="btn btn-success" @click="massDM">{{ $t('startScript') }}</button>
-    </div>
-  </div>
+    
 </template>
 <script>
 import MyButton from '../Button.vue'
 import { open } from '@tauri-apps/api/dialog';
 export default {
-  name: 'app',
+  name: 'MassDMDialog',
   components: {
     MyButton
   },
@@ -63,7 +55,7 @@ export default {
     },
 
 
-    async massDM() {
+    async runScript() {
       localStorage.setItem('message_content', this.message_content)
       localStorage.setItem('insert_emoji', this.insert_emoji)
       localStorage.setItem('target_username_path', this.target_username_path)

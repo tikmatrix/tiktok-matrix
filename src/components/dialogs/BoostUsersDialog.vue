@@ -1,5 +1,11 @@
 <template>
-    <div class="flex flex-col items-start p-12">
+  <!-- 添加提示信息 -->
+  <div class="alert alert-warning mb-4 shadow-lg">
+      <div>
+        <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="h-6 w-6 mr-2" />
+        <span>{{ $t('boostUsersWarning') }}</span>
+      </div>
+    </div>
       <div class="flex flex-row items-center p-2 w-full">
           <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
               :placeholder="$t('targetUsernameTips')" autocomplete="off" v-model="target_username"> </textarea>
@@ -13,11 +19,7 @@
       </div>
             
   
-      <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-        <div class="flex flex-1"></div>
-        <button class="btn btn-success" @click="boostUsers">{{ $t('startScript') }}</button>
-      </div>
-    </div>
+      
   </template>
   <script>
   export default {
@@ -50,15 +52,11 @@
             this.target_usernames = lines.join('\n')
             return true;
         },
-          async boostUsers() {
+          async runScript() {
             if (!this.filterTargetUsername()) {
               return;
             }
-            if (this.boost_type == 'follow') {
-              await this.$emiter('run_now_by_account', { name: 'follow', args: { target_username: this.target_usernames } })
-            } else {
-              await this.$emiter('run_now_by_account', { name: 'unfollow', args: { target_username: this.target_usernames } })
-            }
+            await this.$emiter('run_now_by_account', { name: this.boost_type, args: { target_username: this.target_usernames } })
         },
     },
     async mounted() {

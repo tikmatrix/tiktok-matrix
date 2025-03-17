@@ -130,7 +130,7 @@ import { relaunch } from '@tauri-apps/api/process';
 import { fetch, ResponseType } from '@tauri-apps/api/http';
 import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
-import BuyLicenseDialog from './dialogs/BuyLicenseDialog.vue';
+import BuyLicenseDialog from './BuyLicenseDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
 import { open } from '@tauri-apps/api/shell';
 
@@ -213,8 +213,8 @@ export default {
                 await new Promise(r => setTimeout(r, 1000));
                 const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
                 if (port > 0) {
+                    console.log('agent started')
                     await this.$emiter('agent_started', {})
-                    await this.$emiter('reload_tasks', {})
                     this.$refs.download_dialog.close();
                     return;
                 }
@@ -504,12 +504,10 @@ export default {
         });
 
         // 监听代理启动事件
-        await this.$listen('agent_started', async () => {
+        await this.$listen('agent_started', async (e) => {
             this.loadLicense();
         });
 
-        // 初始加载许可证信息
-        this.loadLicense();
         this.check_update();
     }
 }

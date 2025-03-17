@@ -1,5 +1,11 @@
 <template>
-  <div class="flex flex-col items-start p-12">
+  <!-- 添加提示信息 -->
+  <div class="alert alert-warning mb-4 shadow-lg">
+      <div>
+        <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="h-6 w-6 mr-2" />
+        <span>{{ $t('scrapeFollowersWarning') }}</span>
+      </div>
+    </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('targetUsername') }}: </span>
       <input class="input input-bordered input-sm" type="text" v-model="target_username"
@@ -7,13 +13,7 @@
     </div>
     
 
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <div class="flex flex-1"></div>
-      
-      <button class="btn btn-primary" @click="openDownloadDir">{{ $t('openDownloadDir') }}</button>
-      <button class="btn btn-success" @click="startScrape">{{ $t('startScript') }}</button>
-    </div>
-  </div>
+    <button class="btn btn-primary" @click="openDownloadDir">{{ $t('openDownloadDir') }}</button>
 </template>
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
@@ -49,11 +49,11 @@ export default {
             this.target_username = lines.join('\n')
             return true;
         },
-    async startScrape() {
+    async runScript() {
       if (!this.filterTargetUsername()) {
         return;
       }
-      await this.$emiter('run_now_by_account', { name: 'scrape_fans', args: { target_username: this.target_username } })
+      await this.$emiter('run_task_now', { name: 'scrape_fans', args: { target_username: this.target_username } })
     },
   },
   async mounted() {

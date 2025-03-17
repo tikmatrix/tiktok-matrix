@@ -25,7 +25,7 @@
                 <Countup :end="taskCounts[3] || 0" :options="{ duration: 3 }" />
             </div>
         </div>
-        <button class="btn btn-sm btn-primary mt-1 mb-1" @click="$emiter('menuSelected', { name: 'tasks' })">
+        <button class="btn btn-sm btn-primary mt-1 mb-1" @click="$emiter('showDialog', { name: 'tasks' })">
             <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('tasks') }}
         </button>
 

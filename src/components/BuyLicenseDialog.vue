@@ -277,7 +277,11 @@ export default {
         const apiUrl = 'http://127.0.0.1:' + port;
         await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${apiUrl}/github_auth_callback&scope=user%20public_repo`);
       } catch (error) {
-        await this.$emiter('showToast', this.$t('githubAuthErrorMessage'));
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('githubAuthErrorMessage'),
+          timeout: 2000
+        });
       }
     },
 
@@ -307,7 +311,11 @@ export default {
         event.target.innerText = this.$t('activate')
         event.target.disabled = false
         console.error('activate license error:', err)
-        await this.$emiter('showToast', this.$t('activateLicenseErrorMessage'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('activateLicenseErrorMessage'),
+          timeout: 2000
+        });
       });
 
     },
@@ -320,7 +328,11 @@ export default {
         this.order = null;
       }).catch(async (err) => {
         console.error('close_order error:', err)
-        await this.$emiter('showToast', this.$t('closeOrderErrorMessage'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('closeOrderErrorMessage'),
+          timeout: 2000
+        });
       });
 
     },
@@ -391,7 +403,11 @@ export default {
         }
       }).catch(async (err) => {
         console.error('get_order error:', err)
-        await this.$emiter('showToast', this.$t('getOrderErrorMessage'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('getOrderErrorMessage'),
+          timeout: 2000
+        });
       });
 
     },
@@ -455,7 +471,11 @@ export default {
         }
       }).catch(async (err) => {
         console.error('create_order error:', err)
-        await this.$emiter('showToast', this.$t('createOrderErrorMessage'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('createOrderErrorMessage'),
+          timeout: 2000
+        });
       });
 
 
@@ -487,10 +507,17 @@ export default {
           event.target.innerText = this.$t('applied')
           return;
         } else {
-          await this.$emiter('showToast', res.data);
+          await this.$emiter('NOTIFY', {
+            type: 'error',
+            message: res.data,
+            timeout: 2000
+          });
         }
       } catch (err) {
-        await this.$emiter('showToast', this.$t('verifyInviteCodeError'));
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('verifyInviteCodeError'),
+        });
       }
       event.target.innerText = this.$t('apply')
       event.target.disabled = false

@@ -1,5 +1,4 @@
 <template>
-  <div class="flex flex-col items-start p-12">
     <!-- 添加提示信息 -->
     <div class="alert alert-warning mb-4 shadow-lg">
       <div>
@@ -20,40 +19,34 @@
     </div>
 
 
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <div class="flex flex-1"></div>
-      <button class="btn btn-success" @click="set_settings">{{ $t('startScript') }}</button>
-    </div>
-  </div>
+   
 </template>
 <script>
-import MyButton from '../Button.vue'
 export default {
-  name: 'app',
+  name: 'RegisterDialog',
   components: {
-    MyButton
+  },
+  props: {
+    settings: {
+      type: Object,
+      required: true
+    }
   },
   data() {
     return {
-      settings: {},
-
     }
   },
   methods: {
-    async get_settings() {
-      this.$service.get_settings().then(res => {
-        this.settings = res.data
-      })
-    },
-    async set_settings() {
-      this.$service.update_settings(this.settings).then(async (res) => {
-        await this.$emiter('run_task_now', { name: 'register', args: { count: 1 } })
-      })
+    
+    async runScript() {
+      await this.$service.update_settings(this.settings)
+      //reload settings
+     await this.$emiter('reload_settings', {})
+      await this.$emiter('run_task_now', { name: 'register', args: { count: 1 } })
     },
 
   },
   async mounted() {
-    this.get_settings()
   }
 }
 </script>

@@ -3,13 +3,13 @@
     <div class="alert alert-warning mb-4 shadow-lg">
       <div>
         <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="h-6 w-6 mr-2" />
-        <span>{{ $t('loginWarning') }}</span>
+        <span>{{ $t('matchAccountsWarning') }}</span>
       </div>
     </div>
 </template>
 <script>
 export default {
-  name: 'LoginDialog',
+  name: 'MatchAccounts',
   data() {
     return {
       settings: {},
@@ -17,7 +17,7 @@ export default {
   },
   methods: {
     async runScript() {
-      await this.$emiter('run_task_now', { name: 'login', args: { count: 1 } })
+      await this.$emiter('run_task_now', { name: 'match_accounts' })
     },
   },
   async mounted() {

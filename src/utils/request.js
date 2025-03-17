@@ -27,7 +27,11 @@ const request = async function request(config) {
   const response = await fetch(`${queryUrl}`, options,);
   console.log(`response status: ${response.status}`)
   if (response.status == 500 || response.status == 400) {
-    await message(response.data, { title: 'Agent Error', type: 'error' })
+    await this.$emiter('NOTIFY', {
+      type: 'error',
+      message: response.data,
+      timeout: 2000
+    });
     return { code: 500, data: [] }
   }
   return response.data

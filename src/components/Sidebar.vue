@@ -4,17 +4,17 @@
       <div role="tablist" class="tabs tabs-lifted mt-2 bg-base-200 rounded-md">
         <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
         <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
-        <a ref="tktools" role="tab" class="tab" @click="selectTab('tktools')">{{ $t('tktools') }}</a>
+        <a ref="scripts" role="tab" class="tab" @click="selectTab('scripts')">{{ $t('scripts') }}</a>
       </div>
       <div class="border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
         <div class="flex flex-row flex-wrap" v-if="selectedTab === 'general'">
-          <General :menuItems="menuItems" :settings="settings" />
+          <General :settings="settings" />
         </div>
         <div class="flex flex-row flex-wrap" v-if="selectedTab === 'quickActions'">
           <QuickActions :settings="settings" />
         </div>
-        <div class="flex flex-row flex-wrap" v-if="selectedTab === 'tktools'">
-          <TKTools :settings="settings" />
+        <div class="flex flex-row flex-wrap" v-if="selectedTab === 'scripts'">
+          <Scripts :settings="settings" />
         </div>
       </div>
       <div class="flex flex-col">
@@ -60,15 +60,15 @@
 
           <div class="flex flex-row form-control items-center">
             <button class="btn btn-sm btn-primary ml-1 mb-1"
-              @click="$emiter('menuSelected', { name: 'trainDialog', group: item })">
+              @click="$emiter('showDialog', { name: 'trainSettings', group: item })">
               <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
             </button>
             <button class="btn btn-sm btn-primary ml-1 mb-1"
-              @click="$emiter('menuSelected', { name: 'publishDialog', group: item })">
+              @click="$emiter('showDialog', { name: 'publishSettings', group: item })">
               <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
             </button>
             <button class="btn btn-sm btn-primary ml-1 mb-1"
-              @click="$emiter('menuSelected', { name: 'materials', group: item })">
+              @click="$emiter('showDialog', { name: 'materials', group: item })">
               <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
             </button>
           </div>
@@ -141,12 +141,11 @@
 <script>
 
 import General from './General.vue'
-import TKTools from './TKTools.vue'
+import Scripts from './Scripts.vue'
 import Tasks from './Tasks.vue'
 import QuickActions from './QuickActions.vue';
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
-import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 
 export default {
   name: 'Sidebar',
@@ -154,17 +153,25 @@ export default {
     devices: {
       type: Array,
       required: true
-    }
+    },
+    groups: {
+      type: Array,
+      required: true
+    },
+    settings: {
+      type: Object,
+      required: true
+    },
+   
   },
   components: {
     General,
     Tasks,
-    TKTools,
+    Scripts,
     QuickActions
   },
   data() {
     return {
-      settings: {},
       menuItems: [],
       fullMenuItems: [
       ],
@@ -172,7 +179,6 @@ export default {
       newGroupName: '',
       showAddGroup: false,
       updateGroup: null,
-      groups: [],
       selections: {
         0: [],
       },
@@ -195,9 +201,23 @@ export default {
     hideAd(newVal) {
       localStorage.setItem('hideAd_v1', newVal)
     },
-    selection() {
+    selection(newVal) {
+      this.$emiter('selecedDevices', newVal)
       this.refreshSelections()
     },
+    groups: {
+      handler: function (val) {
+        this.refreshSelections()
+      },
+      deep: true
+    },
+    devices: {
+      handler: function (val) {
+        this.refreshSelections()
+      },
+      deep: true
+    },
+    
 
   },
   methods: {
@@ -272,7 +292,11 @@ export default {
         serials.push(this.selections[src_id][i])
       }
       if (serials.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
       this.$service.move_to_group({ serials: serials, dst_id: dst_id }).then(async res => {
@@ -282,17 +306,14 @@ export default {
           }
         })
         this.refreshSelections()
-        await this.$emiter('showToast', this.$t('moveSuccess'))
+        await this.$emiter('NOTIFY', {
+          type: 'success',
+          message: this.$t('moveSuccess'),
+          timeout: 2000
+        });
       })
     },
-    async get_groups() {
-      this.$service
-        .get_groups()
-        .then(res => {
-          this.groups = res.data
-          this.refreshSelections()
-        })
-    },
+   
     async uploadFiles() {
       const filePath = await open({
         multiple: true, // 是否允许多选文件
@@ -314,7 +335,11 @@ export default {
     },
     async selectApkFile() {
       if (this.selection.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
       const filePath = await open({
@@ -332,18 +357,35 @@ export default {
       await this.run_task_now('install', args)
     },
     async adb_command(args) {
+      if (this.selection.length == 0) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
+        return
+      }
       this.$service
         .adb_command({
           serials: this.selection,
           args: args
         })
-        .then(res => {
+        .then(async res => {
           console.log(res)
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('commandSendSuccess'),
+            timeout: 2000
+          });
         })
     },
     async run_task_now(name, args = {}) {
       if (this.selection.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
       this.$service
@@ -358,12 +400,20 @@ export default {
             return
           }
           await this.$emiter('reload_tasks', {})
-          await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${res.data} ${this.$t('taskCreated')}`,
+            timeout: 2000
+          });
         })
     },
     async run_now_by_account(name, args = {}) {
       if (this.selection.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
 
@@ -375,11 +425,19 @@ export default {
         })
         .then(async (res) => {
           if (res.code == 40004) {
-            await this.$emiter('showToast', this.$t('noAccount'))
+            await this.$emiter('NOTIFY', {
+              type: 'error',
+              message: this.$t('noAccount'),
+              timeout: 2000
+            });
             return
           }
           await this.$emiter('reload_tasks', {})
-          await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${res.data} ${this.$t('taskCreated')}`,
+            timeout: 2000
+          });
         })
     },
     async selectTab(tab) {
@@ -388,16 +446,16 @@ export default {
         case 'general':
           this.$refs.general.classList.add('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.tktools.classList.remove('tab-active')
+          this.$refs.scripts.classList.remove('tab-active')
           break
-        case 'tktools':
+        case 'scripts':
           this.$refs.general.classList.remove('tab-active')
           this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.tktools.classList.add('tab-active')
+          this.$refs.scripts.classList.add('tab-active')
           break
         case 'quickActions':
           this.$refs.general.classList.remove('tab-active')
-          this.$refs.tktools.classList.remove('tab-active')
+          this.$refs.scripts.classList.remove('tab-active')
           this.$refs.quickActions.classList.add('tab-active')
           break
 
@@ -437,11 +495,7 @@ export default {
       })
     },
 
-    async get_settings() {
-      this.$service.get_settings().then(res => {
-        this.settings = res.data
-      })
-    },
+   
 
     async setText(text) {
       this.$service.set_text({
@@ -453,7 +507,11 @@ export default {
     },
     async initDevice() {
       if (this.selection.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
       this.$refs.init_dialog.showModal()
@@ -469,7 +527,11 @@ export default {
 
     async massDM(args) {
       if (this.selection.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
 
@@ -482,13 +544,21 @@ export default {
         })
         .then(async (res) => {
           await this.$emiter('reload_tasks', {})
-          await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${res.data} ${this.$t('taskCreated')}`,
+            timeout: 2000
+          });
 
         })
     },
     async massFO() {
       if (this.selection.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
 
@@ -498,14 +568,22 @@ export default {
         })
         .then(async (res) => {
           await this.$emiter('reload_tasks', {})
-          await this.$emiter('showToast', `${res.data} ${this.$t('taskCreated')}`)
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${res.data} ${this.$t('taskCreated')}`,
+            timeout: 2000
+          });
 
         })
     },
 
     async stop_task() {
       if (this.selection.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
       this.$service
@@ -513,7 +591,11 @@ export default {
           serials: this.selection,
         })
         .then(async (res) => {
-          await this.$emiter('showToast', this.$t('commandSendSuccess'))
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('commandSendSuccess'),
+            timeout: 2000
+          });
           await this.$emiter('reload_running_tasks', {})
         })
     },
@@ -532,17 +614,34 @@ export default {
       }, 100);
     },
     async send_screen_mode(mode) {
+      if (this.selection.length == 0) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
+        return
+      }
       await this.$emiter('eventData', JSON.stringify({
         type: 'screen',//type=keycode
         mode
       }));
+      await this.$emiter('NOTIFY', {
+        type: 'success',
+        message: this.$t('commandSendSuccess'),
+        timeout: 2000
+      });
     },
 
 
 
     async clearGallery() {
       if (this.selection.length == 0) {
-        await this.$emiter('showToast', this.$t('noDevicesSelected'))
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
         return
       }
       this.$service
@@ -550,7 +649,11 @@ export default {
           serials: this.selection,
         })
         .then(async (res) => {
-          await this.$emiter('showToast', `${this.$t('commandSendSuccess')}`)
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('commandSendSuccess'),
+            timeout: 2000
+          });
         })
     },
 
@@ -574,7 +677,11 @@ export default {
             return
           }
           await writeText(res.data)
-          // await this.$emiter('showToast', this.$t('copySuccess'))
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('copySuccess'),
+            timeout: 2000
+          });
         })
     },
     async pasteToPhone() {
@@ -587,7 +694,11 @@ export default {
       }
       const text = await readText()
       this.setText(text)
-      // await this.$emiter('showToast', this.$t('pasteSuccess'))
+        await this.$emiter('NOTIFY', {
+        type: 'success',
+        message: this.$t('pasteSuccess'),
+        timeout: 2000
+      });
     },
 
 
@@ -604,7 +715,6 @@ export default {
       this.refreshSelections()
     }))
     this.listeners.push(await this.$listen('adbEventData', (e) => {
-      console.log("receive adbEventData: ", e.payload, this.selection,)
       this.adb_command(e.payload.args)
 
     }))
@@ -662,24 +772,6 @@ export default {
     this.listeners.push(document.addEventListener('paste', () => {
       this.pasteToPhone()
     }))
-    this.listeners.push(await this.$listen('agent_started', async () => {
-      this.get_menus()
-      this.get_settings()
-      this.get_groups()
-      this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-      console.log('agent_started port:', this.port)
-    }))
-
-    this.listeners.push(await this.$listen('reload_group', async () => {
-      console.log('reload group')
-      this.get_groups()
-    }))
-    this.get_menus()
-    this.get_settings()
-    this.get_groups()
-    this.port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-    console.log('agent_started port:', this.port)
-
 
   },
   unmounted() {

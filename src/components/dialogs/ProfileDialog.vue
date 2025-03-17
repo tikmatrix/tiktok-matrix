@@ -1,7 +1,11 @@
 <template>
-  <div class="flex flex-col items-start p-12">
-
-
+  <!-- 添加提示信息 -->
+  <div class="alert alert-warning mb-4 shadow-lg">
+      <div>
+        <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="h-6 w-6 mr-2" />
+        <span>{{ $t('profileWarning') }}</span>
+      </div>
+    </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('nicknames') }}: </span>
       <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('nicknamesTips')"
@@ -26,25 +30,23 @@
         class="input input-sm grow input-bordered" v-model="settings.avatars_path" />
       <button class="btn btn-sm btn-info ml-2" @click="selectAvatars">{{ $t('select') }}</button>
     </div>
-
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <div class="flex flex-1"></div>
-      <button class="btn btn-success" @click="set_settings">{{ $t('startScript') }}</button>
-    </div>
-  </div>
 </template>
 <script>
 import MyButton from '../Button.vue'
 import { open } from '@tauri-apps/api/dialog';
 export default {
-  name: 'app',
+  name: 'ProfileDialog',
   components: {
     MyButton
   },
+  props: {
+    settings: {
+      type: Object,
+      required: true
+    }
+  },
   data() {
     return {
-      settings: {},
-
     }
   },
   methods: {
@@ -73,20 +75,16 @@ export default {
       // 将 filePath 用于其他操作
       this.settings.emails_file = filePath
     },
-    async get_settings() {
-      this.$service.get_settings().then(res => {
-        this.settings = res.data
-      })
-    },
-    async set_settings() {
-      this.$service.update_settings(this.settings).then(async (res) => {
-        await this.$emiter('run_task_now', { name: 'profile', args: {} })
-      })
+   
+    async runScript() {
+      await this.$service.update_settings(this.settings)
+      //reload settings
+     await this.$emiter('reload_settings', {})
+      await this.$emiter('run_task_now', { name: 'profile', args: {} })
     },
 
   },
   async mounted() {
-    this.get_settings()
   }
 }
 </script>

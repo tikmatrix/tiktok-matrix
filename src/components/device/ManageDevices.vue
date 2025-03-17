@@ -178,6 +178,10 @@ export default {
     devices: {
       type: Array,
       required: true
+    },
+    settings: {
+      type: Object,
+      required: true
     }
   },
   components: {
@@ -191,8 +195,6 @@ export default {
       device: null,
       listMode: localStorage.getItem('listMode') === 'true' || false,
       mydevices: [],
-      settings: {
-      },
       ip_1: util.getData('ip_1') || 192,
       ip_2: util.getData('ip_2') || 168,
       ip_3: util.getData('ip_3') || 1,
@@ -208,7 +210,11 @@ export default {
     }
   },
   watch: {
-
+    groups(val) {
+        this.mydevices.forEach(device => {
+            device.group_name = this.groups.find(group => group.id === device.group_id)?.name
+      })
+    },
     listMode(val) {
       localStorage.setItem('listMode', val)
     },
@@ -250,24 +256,8 @@ export default {
       //   this.mydevices = this.devices
       // }, 1000)
     },
-    get_groups() {
-      this.$service
-        .get_groups()
-        .then(res => {
-          this.groups = res.data
-          this.mydevices.forEach(device => {
-            device.group_name = this.groups.find(group => group.id === device.group_id)?.name
-          })
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    },
-    get_settings() {
-      this.$service.get_settings().then(res => {
-        this.settings = res.data
-      })
-    },
+    
+    
 
     async scan() {
       this.scaning = true
@@ -286,10 +276,10 @@ export default {
         this.scanResult = `${res.data} ${this.$t('deviceFound')}`
       })
     },
-    update_settings() {
-      this.$service.update_settings(this.settings).then(res => {
-        console.log(res)
-      })
+    async update_settings() {
+      await this.$service.update_settings(this.settings)
+      //reload settings
+      await this.$emiter('reload_settings', {})
     },
 
   },
@@ -304,19 +294,9 @@ export default {
           break
         }
       }
-      console.log(`open device: ${this.device.serial}`)
     });
     await this.$listen('closeDevice', (e) => {
       this.device = null
-      console.log(`close device`)
-    });
-    await this.$listen('reload_group', async () => {
-      console.log('reload group')
-      this.get_groups()
-    });
-    await this.$listen('agent_started', (e) => {
-      this.get_settings()
-      this.get_groups()
     });
 
   },
