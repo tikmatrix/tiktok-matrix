@@ -84,7 +84,9 @@
                         @change="updateScreenSize" />
                 </div>
 
-
+                <div class="mt-2 text-sm opacity-70">
+                    <p>{{ $t('screenScaledNote') }}</p>
+                </div>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop">

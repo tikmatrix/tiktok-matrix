@@ -129,7 +129,7 @@ export const i18n = createI18n({
       like: 'Like',
       follow: 'Follow',
       favorite: 'Favorite',
-      interact: 'Interact',
+      interact: 'Interact Probability',
       logs: 'Logs',
       quickOperation: 'Quick Operation',
       postUrl: 'Post Url',
@@ -511,7 +511,7 @@ export const i18n = createI18n({
       ultraResolution: 'Ultra',
       fullHD: 'Full HD',
       customResolution: 'Custom Resolution',
-      resolutionNote: 'Higher resolution provides better image quality but may affect performance.',
+      resolutionNote: 'Higher resolution provides better image quality but may affect performance. It will not modify the real phone screen resolution.',
       registerWarning: 'Registration script is not 100% automated. You need to manually verify email verification code or resolve captcha.',
       loginWarning: 'Login script is not 100% automated. You need to manually verify email verification code or resolve captcha.',
       openGallery: 'Open Gallery',
@@ -536,6 +536,7 @@ export const i18n = createI18n({
       targetPostUrlTips: 'Target Post Url, one per line',
       postUrlRequired: 'Post Url Required',
       massCommentWarning: 'The mass comment feature allows you to control large-scale farm accounts to comment on target posts. To ensure each target post receives at least one comment, the system will automatically distribute tasks evenly based on the total number of accounts in the selected devices and the number of target posts.',
+      screenScaledNote: 'Only adjust the small screen size on the computer, it will not affect the real phone screen resolution.',
     },
     'zh-CN': {
       boostType: '提升类型',
@@ -889,7 +890,7 @@ export const i18n = createI18n({
       like: '点赞',
       follow: '关注',
       favorite: '收藏',
-      interact: '互动',
+      interact: '互动概率',
       logs: '日志',
       quickOperation: '快速操作',
       commentCount: '评论数量',
@@ -998,7 +999,7 @@ export const i18n = createI18n({
       initAppAgent: '初始化 Agent',
       fullHD: '全高清',
       customResolution: '自定义分辨率',
-      resolutionNote: '更高的分辨率提供更好的图像质量，但可能会影响性能。',
+      resolutionNote: '更高的分辨率提供更好的图像质量，但可能会影响性能。不会修改真实的手机屏幕分辨率。',
       registerWarning: '注册脚本不是100%自动化的，您需要手动验证邮箱验证码或者拖动滑块。',
       loginWarning: '登录脚本不是100%自动化的，您需要手动验证邮箱验证码或者拖动滑块。',
       openGallery: '打开相册',
@@ -1022,6 +1023,7 @@ export const i18n = createI18n({
       targetPostUrls: '目标帖子链接',
       targetPostUrlTips: '输入目标帖子链接,一行一个链接',
       postUrlRequired: '请输入目标帖子链接',
+      screenScaledNote: '只是调整电脑上的小屏幕显示大小, 不会影响真实的手机屏幕分辨率。',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1531,7 +1533,7 @@ export const i18n = createI18n({
       ultraResolution: 'Ультра',
       fullHD: 'Full HD',
       customResolution: 'Пользовательское разрешение',
-      resolutionNote: 'Более высокое разрешение обеспечивает лучшее качество изображения, но может влиять на производительность.',
+      resolutionNote: 'Более высокое разрешение обеспечивает лучшее качество изображения, но может влиять на производительность. Не изменяет реальное разрешение телефона.',
       registerWarning: 'Скрипт регистрации не является 100% автоматическим. Вам необходимо вручную подтвердить электронную почту или код подтверждения.',
       loginWarning: 'Скрипт входа не является 100% автоматическим.  Вам необходимо вручную подтвердить электронную почту или код подтверждения.',
       openGallery: 'Открыть галерею',
@@ -1555,6 +1557,7 @@ export const i18n = createI18n({
       targetPostUrls: 'URL целевых постов',
       targetPostUrlTips: 'URL целевых постов, по одному на строку',
       postUrlRequired: 'Требуется URL целевого поста',
+      screenScaledNote: 'Только настраивайте размер маленького экрана на компьютере, он не повлияет на реальное разрешение телефона.',
     }
   }
 })

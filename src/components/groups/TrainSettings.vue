@@ -130,10 +130,10 @@ export default {
     },
     'mygroup.insert_emoji': function (val) {
       this.mygroup.insert_emoji = Number(val)
-    }
+    },
+    
   },
   methods: {
-   
     addTime() {
       if (this.trainTimes.length < 6) {
         this.trainTimes.push('')

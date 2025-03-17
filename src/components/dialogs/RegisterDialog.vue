@@ -41,12 +41,13 @@ export default {
     async runScript() {
       await this.$service.update_settings(this.settings)
       //reload settings
-     await this.$emiter('reload_settings', {})
+      await this.$emiter('reload_settings', {})
       await this.$emiter('run_task_now', { name: 'register', args: { count: 1 } })
     },
 
   },
   async mounted() {
+    await this.$emiter('reload_settings', {})
   }
 }
 </script>
