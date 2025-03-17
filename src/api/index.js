@@ -8,6 +8,7 @@ const api = {
   material_count: '/api/material/count',
   message_now: '/api/message_now',
   follow_now: '/api/follow_now',
+  comment_now: '/api/comment_now',
   init: '/api/device/init',
   index: '/api/device/index',
   group: '/api/group',

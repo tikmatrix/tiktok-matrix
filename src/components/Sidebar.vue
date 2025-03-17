@@ -552,6 +552,33 @@ export default {
 
         })
     },
+    async massComment(args) {
+      if (this.selection.length == 0) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
+        return
+      }
+
+      this.$service
+        .comment_now({
+          serials: this.selection,
+          comment_content: args.comment_content,
+          insert_emoji: args.insert_emoji,
+          target_post_urls: args.target_post_urls,
+        })
+        .then(async (res) => {
+          await this.$emiter('reload_tasks', {})
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${res.data} ${this.$t('taskCreated')}`,
+            timeout: 2000
+          });
+        })
+    },
+    
     async massFO() {
       if (this.selection.length == 0) {
         await this.$emiter('NOTIFY', {
@@ -749,6 +776,9 @@ export default {
 
     this.listeners.push(await this.$listen('massDM', (e) => {
       this.massDM(e.payload);
+    }))
+    this.listeners.push(await this.$listen('massComment', (e) => {
+      this.massComment(e.payload);
     }))
     this.listeners.push(await this.$listen('massFO', (e) => {
       this.massFO();

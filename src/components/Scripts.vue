@@ -45,6 +45,10 @@
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />
         {{ $t('massDM') }}
     </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'massComment' } })">
+        <font-awesome-icon icon="fa-solid fa-comment" class="h-3 w-3" />
+        {{ $t('massComment') }}
+    </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'scrapeFollowers' } })">
         <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />
         {{ $t('scrapeFollowers') }}

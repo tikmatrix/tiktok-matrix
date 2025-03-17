@@ -14,8 +14,6 @@
         <label class="font-bold text-right col-span-1">{{ $t('boostType') }}:</label>
         <input type="radio" id="like" v-model="boost_type" value="like" />
         <label for="like">{{ $t('like') }}</label>
-        <input type="radio" id="comment" v-model="boost_type" value="comment" />
-        <label for="comment">{{ $t('comment') }}</label>
         <input type="radio" id="favorite" v-model="boost_type" value="favorite" />
         <label for="favorite">{{ $t('favorite') }}</label>
         <input type="radio" id="view" v-model="boost_type" value="view" />
