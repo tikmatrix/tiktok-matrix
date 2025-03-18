@@ -537,6 +537,13 @@ export const i18n = createI18n({
       postUrlRequired: 'Post Url Required',
       massCommentWarning: 'The mass comment feature allows you to control large-scale farm accounts to comment on target posts. To ensure each target post receives at least one comment, the system will automatically distribute tasks evenly based on the total number of accounts in the selected devices and the number of target posts.',
       screenScaledNote: 'Only adjust the small screen size on the computer, it will not affect the real phone screen resolution.',
+      targetLiveUrlTips: 'Target Live Url, one per line',
+      liveUrlRequired: 'Live Url Required',
+      liveUrlFormatError: 'Live Url Format Error',
+      likeLive: 'Like Live',
+      viewLive: 'View Live',
+      boostLives: 'Boost Lives',
+      boostLivesWarning: 'The live boost feature allows you to control large-scale farm accounts to like, view, and comment on target live streams, quickly increasing the popularity and engagement of target live streams.',
     },
     'zh-CN': {
       boostType: '提升类型',
@@ -1024,6 +1031,13 @@ export const i18n = createI18n({
       targetPostUrlTips: '输入目标帖子链接,一行一个链接',
       postUrlRequired: '请输入目标帖子链接',
       screenScaledNote: '只是调整电脑上的小屏幕显示大小, 不会影响真实的手机屏幕分辨率。',
+      targetLiveUrlTips: '输入目标直播链接,一行一个链接',
+      liveUrlRequired: '请输入目标直播链接',
+      liveUrlFormatError: '直播链接格式错误',
+      likeLive: '点赞直播',
+      viewLive: '观看直播',
+      boostLives: '提升直播',
+      boostLivesWarning: '提升直播功能可以控制大规模农场账号对目标直播进行点赞、观看等操作，可以快速为目标直播增加热度。',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1558,6 +1572,12 @@ export const i18n = createI18n({
       targetPostUrlTips: 'URL целевых постов, по одному на строку',
       postUrlRequired: 'Требуется URL целевого поста',
       screenScaledNote: 'Только настраивайте размер маленького экрана на компьютере, он не повлияет на реальное разрешение телефона.',
+      liveUrlRequired: 'Требуется URL целевой трансляции',
+      liveUrlFormatError: 'Формат URL целевой трансляции некорректен',
+      likeLive: 'Лайк трансляции',
+      viewLive: 'Просмотр трансляции',
+      boostLives: 'Продвигать трансляции',
+      boostLivesWarning: 'Функция повышения трансляций позволяет управлять масштабными аккаунтами для лайков, просмотров и комментирования целевых трансляций, быстро увеличивая популярность и вовлеченность целевых трансляций.',
     }
   }
 })

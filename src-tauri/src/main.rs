@@ -52,6 +52,15 @@ fn setup_env(working_dir: &str) {
     }
 }
 #[tauri::command]
+fn set_env(key: String, value: String) {
+    std::env::set_var(key.clone(), value.clone());
+    log::info!("set env: {} = {}", key, value);
+}
+#[tauri::command]
+fn get_env(key: String) -> String {
+    std::env::var(key.clone()).unwrap_or_default()
+}
+#[tauri::command]
 async fn download_file(
     url: String,
     path: String,
@@ -288,7 +297,9 @@ fn main() -> std::io::Result<()> {
             open_dir,
             download_file,
             unzip_file,
-            is_agent_running
+            is_agent_running,
+            set_env,
+            get_env
         ])
         .setup(|app| {
             let work_dir = app.path_resolver().app_data_dir().unwrap();

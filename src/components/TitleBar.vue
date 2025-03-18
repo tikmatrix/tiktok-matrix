@@ -371,6 +371,8 @@ export default {
             if (updated) {
                 //copy apk to bin
                 await copyFile(path, path.replace('tmp', 'bin'));
+                //set agent_verision
+                await invoke("set_env", { key: "agent_version", value: this.remote_version.apk_version });
             }
         },
         async check_test_apk() {
@@ -379,6 +381,8 @@ export default {
             if (updated) {
                 //copy test_apk to bin
                 await copyFile(path, path.replace('tmp', 'bin'));
+                //set agent_verision
+                await invoke("set_env", { key: "agent_version", value: this.remote_version.test_apk_version });
             }
         },
         async check_scrcpy() {

@@ -35,11 +35,13 @@
         <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 text-success" />
         {{ $t('boostUsers') }}
     </button>
-
-
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostPosts' } })">
         <font-awesome-icon icon="fa-solid fa-thumbs-up" class="h-3 w-3 text-success" />
         {{ $t('boostPosts') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostLives' } })">
+        <font-awesome-icon icon="fa-solid fa-video" class="h-3 w-3 text-success" />
+        {{ $t('boostLives') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'massDM' } })">
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />

@@ -29,7 +29,9 @@
       <DeletePostDialog v-if="script.name === 'deletePost'" ref="currentDialog" :settings="settings"/>
       <BoostUsersDialog v-if="script.name === 'boostUsers'" ref="currentDialog" :settings="settings"/>
       <BoostPostsDialog v-if="script.name === 'boostPosts'" ref="currentDialog" :settings="settings"/>
+      <BoostLivesDialog v-if="script.name === 'boostLives'" ref="currentDialog" :settings="settings"/>
       <MassCommentDialog v-if="script.name === 'massComment'" ref="currentDialog" :settings="settings"/>
+
       <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
         <div class="flex flex-1"></div>
         <button class="btn btn-success" :disabled="selecedDevices.length === 0" @click="runScript">{{ $t('startScript') }}</button>
@@ -50,6 +52,7 @@
   import BoostPostsDialog from './BoostPostsDialog.vue'
   import MatchAccounts from './MatchAccounts.vue'
   import MassCommentDialog from './MassCommentDialog.vue'
+  import BoostLivesDialog from './BoostLivesDialog.vue'
   export default {
     name: 'BeforeRunScript',
     props: {
@@ -83,7 +86,8 @@
       BoostUsersDialog,
       BoostPostsDialog,
       MatchAccounts,
-      MassCommentDialog
+      MassCommentDialog,
+      BoostLivesDialog
     },
 
     data() {
