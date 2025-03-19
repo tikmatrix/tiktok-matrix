@@ -26,18 +26,18 @@
     name: 'BoostUsers',
     data() {
       return {
-        target_usernames: '',
+        target_username: '',
         boost_type: 'follow',
       }
     },
     methods: {
       filterTargetUsername() {
-            if (this.target_usernames == '') {
+            if (this.target_username == '') {
                 alert(this.$t('targetUsernameRequired'))
                 return false;
             }
             //filter empty lines
-            let lines = this.target_usernames.split('\n').filter(line => line.trim() != '')
+            let lines = this.target_username.split('\n').filter(line => line.trim() != '')
             if (lines.length == 0) {
                 alert(this.$t('targetUsernameRequired'))
                 return false;
@@ -49,14 +49,14 @@
                 }
                 return line
             })
-            this.target_usernames = lines.join('\n')
+            this.target_username = lines.join('\n')
             return true;
         },
           async runScript() {
             if (!this.filterTargetUsername()) {
               return;
             }
-            await this.$emiter('run_now_by_account', { name: this.boost_type, args: { target_username: this.target_usernames } })
+            await this.$emiter('run_now_by_account', { name: this.boost_type, args: { target_username: this.target_username } })
         },
     },
     async mounted() {
