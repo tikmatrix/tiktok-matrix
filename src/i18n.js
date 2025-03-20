@@ -544,6 +544,7 @@ export const i18n = createI18n({
       viewLive: 'View Live',
       boostLives: 'Boost Lives',
       boostLivesWarning: 'The live boost feature allows you to control large-scale farm accounts to like, view, and comment on target live streams, quickly increasing the popularity and engagement of target live streams.',
+      likeInterval: 'Like Interval',
     },
     'zh-CN': {
       boostType: '提升类型',
@@ -1037,7 +1038,8 @@ export const i18n = createI18n({
       likeLive: '点赞直播',
       viewLive: '观看直播',
       boostLives: '提升直播',
-      boostLivesWarning: '提升直播功能可以控制大规模农场账号对目标直播进行点赞、观看等操作，可以快速为目标直播增加热度。',
+      boostLivesWarning: '直播提升功能允许您控制农场账号观看并可选择性地点赞目标直播。您可以设置观看时长和点赞间隔来自定义提升行为。',
+      likeInterval: '点赞间隔',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1577,7 +1579,8 @@ export const i18n = createI18n({
       likeLive: 'Лайк трансляции',
       viewLive: 'Просмотр трансляции',
       boostLives: 'Продвигать трансляции',
-      boostLivesWarning: 'Функция повышения трансляций позволяет управлять масштабными аккаунтами для лайков, просмотров и комментирования целевых трансляций, быстро увеличивая популярность и вовлеченность целевых трансляций.',
+      boostLivesWarning: 'Функция повышения трансляций позволяет вам управлять фермерскими аккаунтами для просмотра и опционально ставить лайки целевым трансляциям. Вы можете настроить продолжительность просмотра и интервал лайков для настройки поведения повышения.',
+      likeInterval: 'Интервал лайков',
     }
   }
 })
