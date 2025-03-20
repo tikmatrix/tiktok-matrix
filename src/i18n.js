@@ -543,7 +543,7 @@ export const i18n = createI18n({
       likeLive: 'Like Live',
       viewLive: 'View Live',
       boostLives: 'Boost Lives',
-      boostLivesWarning: 'The live boost feature allows you to control large-scale farm accounts to like, view, and comment on target live streams, quickly increasing the popularity and engagement of target live streams.',
+      boostLivesWarning: 'The live boost script allows you to control farm accounts to watch and optionally like target live streams. You can set the viewing duration and like interval to customize the boost behavior.',
       likeInterval: 'Like Interval',
     },
     'zh-CN': {
@@ -1579,7 +1579,7 @@ export const i18n = createI18n({
       likeLive: 'Лайк трансляции',
       viewLive: 'Просмотр трансляции',
       boostLives: 'Продвигать трансляции',
-      boostLivesWarning: 'Функция повышения трансляций позволяет вам управлять фермерскими аккаунтами для просмотра и опционально ставить лайки целевым трансляциям. Вы можете настроить продолжительность просмотра и интервал лайков для настройки поведения повышения.',
+      boostLivesWarning: 'Скрипт повышения трансляций позволяет управлять фермерскими аккаунтами для просмотра и опционально ставить лайки целевым трансляциям. Вы можете настроить продолжительность просмотра и интервал лайков для настройки поведения повышения.',
       likeInterval: 'Интервал лайков',
     }
   }
