@@ -9,7 +9,7 @@
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('commentContent') }}: </span>
       <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('commentContentTips')"
-        autocomplete="off" v-model="message_content"> </textarea>
+        autocomplete="off" v-model="comment_content"> </textarea>
       <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
       <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji" :true-value=1 :false-value=0
         title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
