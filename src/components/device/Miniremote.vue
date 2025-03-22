@@ -161,12 +161,18 @@ export default {
   watch: {
     scaled(newVal) {
       console.log(`scaled: ${newVal}, screenScaled: ${this.screenScaled}`)
+      if(this.real_width==0||this.real_height==0){
+        return
+      }
       const newScaled = newVal * this.screenScaled
       this.width = this.real_width * newScaled
       this.height = this.real_height * newScaled
       console.log(`newScaled: ${newScaled}, width: ${this.width}, height: ${this.height}`)
     },
     screenScaled(newVal) {
+      if(this.real_width==0||this.real_height==0){
+        return
+      }
       const newScaled = this.scaled * newVal
       this.width = this.real_width * newScaled
       this.height = this.real_height * newScaled
