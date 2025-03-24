@@ -161,7 +161,7 @@ export default {
   watch: {
     scaled(newVal) {
       console.log(`scaled: ${newVal}, screenScaled: ${this.screenScaled}`)
-      if(this.real_width==0||this.real_height==0){
+      if(this.real_width==0||this.real_height==0||this.screenScaled==0||newVal==0){
         return
       }
       const newScaled = newVal * this.screenScaled
@@ -170,7 +170,7 @@ export default {
       console.log(`newScaled: ${newScaled}, width: ${this.width}, height: ${this.height}`)
     },
     screenScaled(newVal) {
-      if(this.real_width==0||this.real_height==0){
+      if(this.real_width==0||this.real_height==0||this.screenScaled==0||newVal==0){
         return
       }
       const newScaled = this.scaled * newVal
@@ -313,6 +313,7 @@ export default {
               this.real_width = message.data.split('x')[0]
               this.real_height = message.data.split('x')[1]
               this.scaled = this.height / this.real_height
+              console.log(`real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
               break
           }
           this.message_index += 1
