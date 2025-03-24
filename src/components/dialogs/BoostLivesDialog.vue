@@ -75,14 +75,56 @@ export default {
   name: 'BoostLives',
   data() {
     return {
-      target_live_urls: '',
-      enable_like: true,
-      enable_comment: false, // 默认不启用评论
-      view_duration: 120,
-      like_interval: 10,
-      like_count: 3,
-      comment_interval: 30, // 默认评论间隔30秒
-      comment_texts: '' // 评论文本，多行
+      target_live_urls: localStorage.getItem('target_live_urls') || '',
+      enable_like: localStorage.getItem('enable_like') === 'true' || true,
+      enable_comment: localStorage.getItem('enable_comment') === 'true' || false, // 默认不启用评论
+      view_duration: Number(localStorage.getItem('view_duration')) || 120,
+      like_interval: Number(localStorage.getItem('like_interval')) || 10,
+      like_count: Number(localStorage.getItem('like_count')) || 3,
+      comment_interval: Number(localStorage.getItem('comment_interval')) || 30, // 默认评论间隔30秒
+      comment_texts: localStorage.getItem('comment_texts') || '' // 评论文本，多行
+    }
+  },
+  watch: {
+    target_live_urls: {
+      handler(newVal) {
+        localStorage.setItem('target_live_urls', newVal)
+      },
+    },
+    enable_like: {
+      handler(newVal) {
+        localStorage.setItem('enable_like', newVal)
+      },
+    },
+    enable_comment: {
+      handler(newVal) {
+        localStorage.setItem('enable_comment', newVal)
+      },
+    },
+    view_duration: {
+      handler(newVal) {
+        localStorage.setItem('view_duration', newVal)
+      },
+    },
+    like_interval: {
+      handler(newVal) {
+        localStorage.setItem('like_interval', newVal)
+      },
+    },
+    like_count: {
+      handler(newVal) {
+        localStorage.setItem('like_count', newVal)
+      },
+    },
+    comment_interval: {
+      handler(newVal) {
+        localStorage.setItem('comment_interval', newVal)
+      },
+    },
+    comment_texts: {
+      handler(newVal) {
+        localStorage.setItem('comment_texts', newVal)
+      },
     }
   },
   methods: {
