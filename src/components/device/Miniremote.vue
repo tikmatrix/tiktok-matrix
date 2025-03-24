@@ -145,7 +145,7 @@ export default {
       periodStartTime: 0,
       periodTime: 0,
       screenScaled: this.big ? 1 : (Number(localStorage.getItem('screenScaled')) || 100) / 100,
-      screenResolution: Number(localStorage.getItem('screenResolution')) || 256,
+      screenResolution: Number(localStorage.getItem('screenResolution')) || 512,
     }
   },
   computed: {

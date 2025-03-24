@@ -553,6 +553,15 @@ export const i18n = createI18n({
       singleAccountModeTip: 'In this mode, each account will comment on a single post',
       multiAccountModeTip: 'In this mode, multiple accounts will comment on a single post',
       startComment: 'Start Comment',
+      likeCount: 'Like Count',
+      times: 'times',
+      likeTapCount: 'Like Tap Count', // 每次点赞连续点击的次数
+      likeTapCountTip: 'Number of consecutive taps for each like action', // 可选的提示文本
+      commentLive: 'Comment Live',
+      commentInterval: 'Comment Interval',
+      commentTexts: 'Comment Texts',
+      commentTextsTips: 'Enter comments, one per line. They will be randomly selected and sent during the live.',
+      commentTextsRequired: 'Comment texts are required when comment is enabled',
     },
     'zh-CN': {
       boostType: '提升类型',
@@ -1056,6 +1065,15 @@ export const i18n = createI18n({
       singleAccountModeTip: '在此模式下，每个账号将对单个帖子进行评论',
       multiAccountModeTip: '在此模式下，多个账号将对单个帖子进行评论',
       startComment: '开始评论',
+      likeCount: '点赞次数',
+      times: '次',
+      likeTapCount: '点赞连击次数', // 更明确地表达是连续点击
+      likeTapCountTip: '每次点赞时连续点击屏幕的次数', // 可选的提示文本
+      commentLive: '评论直播',
+      commentInterval: '评论间隔',
+      commentTexts: '评论文本',
+      commentTextsTips: '输入评论内容，每行一条。系统会随机选择并在直播中发送。',
+      commentTextsRequired: '评论文本在启用评论功能时不能为空',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1605,6 +1623,15 @@ export const i18n = createI18n({
       singleAccountModeTip: 'В этом режиме каждый аккаунт будет комментировать один пост',
       multiAccountModeTip: 'В этом режиме несколько аккаунтов будут комментировать один пост',
       startComment: 'Начать комментирование',
+      likeCount: 'Количество лайков',
+      times: 'раз',
+      likeTapCount: 'Количество нажатий для лайка', // 俄语翻译也更明确
+      likeTapCountTip: 'Количество последовательных нажатий для каждого действия лайка', // 可选的提示文本
+      commentLive: 'Комментировать трансляцию',
+      commentInterval: 'Интервал комментариев',
+      commentTexts: 'Тексты комментариев',
+      commentTextsTips: 'Введите комментарии, по одному на строку. Они будут случайно выбираться и отправляться во время трансляции.',
+      commentTextsRequired: 'Тексты комментариев обязательны при включенном комментировании',
     }
   }
 })

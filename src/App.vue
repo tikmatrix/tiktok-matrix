@@ -128,8 +128,8 @@ export default {
         this.devices.sort((a, b) => {
           // fisrt: sort
           // second: group_id
-          // third: real_serial
-          return a.sort - b.sort || a.group_id - b.group_id || a.real_serial - b.real_serial
+          // third: serial
+          return a.sort - b.sort || a.group_id - b.group_id || a.serial - b.serial
         });
         for (let i = 0; i < this.devices.length; i++) {
           this.devices[i].key = i + 1

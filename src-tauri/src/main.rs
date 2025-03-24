@@ -47,7 +47,7 @@ fn setup_env(working_dir: &str) {
     if cfg!(debug_assertions) {
         std::env::set_var("MOSS_URL", "http://127.0.0.1:8788/moss");
         std::env::set_var("RUST_BACKTRACE", "1");
-        std::env::set_var("LOG_LEVEL", "debug");
+        std::env::set_var("LOG_LEVEL", "info");
     }
 }
 #[tauri::command]
