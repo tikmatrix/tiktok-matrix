@@ -2,7 +2,7 @@
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('targetUsernamesPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/usernames.txt"
-        class="input input-sm grow input-bordered" v-model="settings.target_username_path" />
+        class="input input-sm grow input-bordered" v-model="target_username_path" />
       <button class="btn btn-sm btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
 
     </div>
@@ -17,22 +17,18 @@
 
 </template>
 <script>
-import MyButton from '../Button.vue'
 import { open } from '@tauri-apps/api/dialog';
 export default {
   name: 'FollowDialog',
-  components: {
-    MyButton
-  },
-  props: {
-    settings: {
-      type: Object,
-      required: true
-    }
-  },
   data() {
     return {
+      target_username_path: localStorage.getItem('target_username_path') || '',
     }
+  },
+  watch: {
+    target_username_path(newVal) {
+      localStorage.setItem('target_username_path', newVal)
+    },
   },
   methods: {
     // 选择文件并获取路径
@@ -45,17 +41,12 @@ export default {
         ]
       });
 
-      console.log('Selected file path:', filePath);
-      // 将 filePath 用于其他操作
-      this.settings.target_username_path = filePath
+      this.target_username_path = filePath
     },
 
    
     async runScript() {
-      await this.$service.update_settings(this.settings);
-      //reload settings
-     await this.$emiter('reload_settings', {})
-      await this.$emiter('batchFO', {})
+      await this.$emiter('batchFO', { target_username_path: this.target_username_path })
     },
 
   },

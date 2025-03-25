@@ -12,7 +12,6 @@ export default {
   name: 'PublishDialog',
   data() {
     return {
-      settings: {},
     }
   },
   methods: {

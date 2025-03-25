@@ -778,7 +778,7 @@ export const i18n = createI18n({
       messageContent: '消息内容',
       messageSettings: '私信设置',
       openNekoBox: '打开 NekoBox',
-      clearGallery: '清除图库',
+      clearGallery: '清除相册',
       setProxy: '设置代理',
       proxyEnabled: '代理已启用',
       proxyDisabled: '代理已禁用',

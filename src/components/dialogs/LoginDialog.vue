@@ -12,7 +12,6 @@ export default {
   name: 'LoginDialog',
   data() {
     return {
-      settings: {},
     }
   },
   methods: {

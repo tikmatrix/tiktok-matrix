@@ -26,9 +26,17 @@
     name: 'BoostUsers',
     data() {
       return {
-        target_username: '',
-        boost_type: 'follow',
+        target_username: localStorage.getItem('target_username') || '',
+        boost_type: localStorage.getItem('boost_type') || 'follow',
       }
+    },
+    watch: {
+      target_username(newVal) {
+        localStorage.setItem('target_username', newVal)
+      },
+      boost_type(newVal) {
+        localStorage.setItem('boost_type', newVal)
+      },
     },
     methods: {
       filterTargetUsername() {

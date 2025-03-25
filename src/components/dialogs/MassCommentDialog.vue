@@ -27,7 +27,7 @@
       <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('commentContentTips')"
         autocomplete="off" v-model="comment_content"> </textarea>
       <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
-      <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji" :true-value=1 :false-value=0
+      <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji"
         title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
     </div>
 
@@ -58,9 +58,23 @@ export default {
     return {
       comment_mode: localStorage.getItem('comment_mode') || 'multi-to-single',
       comment_content: localStorage.getItem('comment_content') || '',
-      insert_emoji: Number(localStorage.getItem('insert_emoji')) || 0,
+      insert_emoji: localStorage.getItem('insert_emoji') || false,
       target_post_urls: localStorage.getItem('target_post_urls') || '',
     }
+  },
+  watch: {
+    comment_mode(newVal) {
+      localStorage.setItem('comment_mode', newVal)
+    },
+    comment_content(newVal) {
+      localStorage.setItem('comment_content', newVal)
+    },
+    insert_emoji(newVal) {
+      localStorage.setItem('insert_emoji', newVal)
+    },
+    target_post_urls(newVal) {
+      localStorage.setItem('target_post_urls', newVal)
+    },
   },
   methods: {
     filterTargetPostUrl() {
@@ -88,10 +102,6 @@ export default {
         return;
       }
       
-      localStorage.setItem('comment_mode', this.comment_mode)
-      localStorage.setItem('comment_content', this.comment_content)
-      localStorage.setItem('insert_emoji', this.insert_emoji)
-      localStorage.setItem('target_post_urls', this.target_post_urls)
       if (this.comment_mode === 'single-to-single') {
         await this.$emiter('massComment', {
           comment_content: this.comment_content,
@@ -107,12 +117,5 @@ export default {
       }
     },
   },
-  async mounted() {
-  },
-  watch: {
-    insert_emoji(val) {
-      this.insert_emoji = Number(val)
-    }
-  }
 }
 </script>

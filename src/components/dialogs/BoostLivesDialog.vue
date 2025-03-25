@@ -76,11 +76,11 @@ export default {
   data() {
     return {
       target_live_urls: localStorage.getItem('target_live_urls') || '',
-      enable_like: localStorage.getItem('enable_like') === 'true' || true,
-      enable_comment: localStorage.getItem('enable_comment') === 'true' || false, // 默认不启用评论
+      enable_like: localStorage.getItem('enable_like') || true,
+      enable_comment: localStorage.getItem('enable_comment') || true, // 默认不启用评论
       view_duration: Number(localStorage.getItem('view_duration')) || 120,
       like_interval: Number(localStorage.getItem('like_interval')) || 10,
-      like_count: Number(localStorage.getItem('like_count')) || 3,
+      like_count: Number(localStorage.getItem('like_count')) || 10,
       comment_interval: Number(localStorage.getItem('comment_interval')) || 30, // 默认评论间隔30秒
       comment_texts: localStorage.getItem('comment_texts') || '' // 评论文本，多行
     }

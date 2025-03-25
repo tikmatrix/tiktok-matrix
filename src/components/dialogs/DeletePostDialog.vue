@@ -20,8 +20,13 @@
     name: 'DeletePost',
     data() {
       return {
-        maxViews: 0,
+        maxViews: localStorage.getItem('maxViews') || 0,
       }
+    },
+    watch: {
+      maxViews(newVal) {
+        localStorage.setItem('maxViews', newVal)
+      },
     },
     methods: {
         async runScript() {

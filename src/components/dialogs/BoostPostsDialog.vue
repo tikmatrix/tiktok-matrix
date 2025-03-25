@@ -30,9 +30,17 @@
     name: 'BoostPosts',
     data() {
       return {
-        target_post_urls: '',
-        boost_type: 'like',
+        target_post_urls: localStorage.getItem('target_post_urls') || '',
+        boost_type: localStorage.getItem('boost_type') || 'like',
       }
+    },
+    watch: {
+      target_post_urls(newVal) {
+        localStorage.setItem('target_post_urls', newVal)
+      },
+      boost_type(newVal) {
+        localStorage.setItem('boost_type', newVal)
+      },
     },
     methods: {
       filterTargetPostUrl() {

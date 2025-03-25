@@ -21,8 +21,13 @@ export default {
   name: 'ScrapeFollowers',
   data() {
     return {
-      target_username: '',
+      target_username: localStorage.getItem('target_username') || '',
     }
+  },
+  watch: {
+    target_username(newVal) {
+      localStorage.setItem('target_username', newVal)
+    },
   },
   methods: {
     async openDownloadDir() {

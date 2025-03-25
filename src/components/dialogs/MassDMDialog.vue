@@ -24,19 +24,26 @@
     
 </template>
 <script>
-import MyButton from '../Button.vue'
 import { open } from '@tauri-apps/api/dialog';
 export default {
   name: 'MassDMDialog',
-  components: {
-    MyButton
-  },
   data() {
     return {
       message_content: localStorage.getItem('message_content') || '',
-      insert_emoji: Number(localStorage.getItem('insert_emoji')) || 0,
+      insert_emoji: localStorage.getItem('insert_emoji') || false,
       target_username_path: localStorage.getItem('target_username_path') || '',
     }
+  },
+  watch: {
+    message_content(newVal) {
+      localStorage.setItem('message_content', newVal)
+    },
+    insert_emoji(newVal) {
+      localStorage.setItem('insert_emoji', newVal)
+    },
+    target_username_path(newVal) {
+      localStorage.setItem('target_username_path', newVal)
+    },
   },
   methods: {
     // 选择文件并获取路径
@@ -49,16 +56,11 @@ export default {
         ]
       });
 
-      console.log('Selected file path:', filePath);
-      // 将 filePath 用于其他操作
       this.target_username_path = filePath
     },
 
 
     async runScript() {
-      localStorage.setItem('message_content', this.message_content)
-      localStorage.setItem('insert_emoji', this.insert_emoji)
-      localStorage.setItem('target_username_path', this.target_username_path)
       await this.$emiter('massDM', {
         message_content: this.message_content,
         insert_emoji: this.insert_emoji,
@@ -68,12 +70,6 @@ export default {
 
 
   },
-  async mounted() {
-  },
-  watch: {
-    insert_emoji(val) {
-      this.insert_emoji = Number(val)
-    }
-  }
+  
 }
 </script>

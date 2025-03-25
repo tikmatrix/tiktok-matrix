@@ -12,7 +12,6 @@ export default {
   name: 'MatchAccounts',
   data() {
     return {
-      settings: {},
     }
   },
   methods: {
