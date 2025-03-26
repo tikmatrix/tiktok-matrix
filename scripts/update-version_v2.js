@@ -1,7 +1,7 @@
 import fs from 'fs'
 const configPath = "src-tauri/tauri.conf.json"
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-const signaturePath = `src-tauri/target/release/bundle/msi/TikMatrix_${config.package.version}_x64_en-US.msi.zip.sig`
+const signaturePath = `src-tauri/target/release/bundle/msi/IgMatrix_${config.package.version}_x64_en-US.msi.zip.sig`
 const signature = fs.readFileSync(signaturePath, 'utf-8')
 const updateJson = {
     "version": `v${config.package.version}`,
@@ -10,12 +10,12 @@ const updateJson = {
     "platforms": {
         "windows-x86_64": {
             "signature": signature,
-            "url": `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.msi.zip`
+            "url": `https://r2.tikmatrix.com/IgMatrix_${config.package.version}_x64_en-US.msi.zip`
         }
     }
 }
 const updateJsonStr = JSON.stringify(updateJson, null, 2)
-const response1 = await fetch('https://pro.api.tikmatrix.com/ci/update_version_info', {
+const response1 = await fetch('https://pro.api.tikmatrix.com/ci/update_version_info_igmatrix', {
     method: 'PUT',
     headers: {
         'Content-Type': 'text/plain',
@@ -26,9 +26,9 @@ const response1 = await fetch('https://pro.api.tikmatrix.com/ci/update_version_i
 })
 console.log(`update_version_info: ${response1.status} ${response1.statusText}`)
 //update download url
-const downloadUrl = `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.msi`
+const downloadUrl = `https://r2.tikmatrix.com/IgMatrix_${config.package.version}_x64_en-US.msi`
 //put https://pro.api.tikmatrix.com/download
-const response2 = await fetch('https://pro.api.tikmatrix.com/ci/update_download_url', {
+const response2 = await fetch('https://pro.api.tikmatrix.com/ci/update_download_url_igmatrix', {
     method: 'PUT',
     headers: {
         'Content-Type': 'text/plain',
