@@ -462,6 +462,9 @@ export default {
       }
     },
     isSelectAll(id) {
+      if (!this.groupDevices[id]) {
+        this.refreshSelections()
+      }
       return this.groupDevices[id].length > 0 && this.selections[id].length == this.groupDevices[id].length
     },
     async selectAll(id) {
@@ -477,6 +480,7 @@ export default {
       this.refreshSelections()
     },
     async refreshSelections() {
+      console.log('refreshSelections')
       this.groupDevices[0] = this.devices;
       for (let i = 0; i < this.groups.length; i++) {
         this.selections[this.groups[i].id] = []
@@ -731,7 +735,7 @@ export default {
 
   },
   async mounted() {
-
+    this.refreshSelections()
     this.listeners.push(await this.$listen('openDevice', async (e) => {
       console.log("receive openDevice: ", e.payload)
       this.selection = [e.payload.real_serial]
