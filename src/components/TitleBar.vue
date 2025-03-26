@@ -178,9 +178,9 @@ export default {
             this.check_update_dialog_title = 'Checking agent...';
             try {
                 //check agent.exe is running
-                let agent_running = await invoke("is_agent_running");
-                console.log('agent_running:', agent_running)
-                if (!agent_running) {
+                let pname = await invoke("is_agent_running");
+                console.log('agent_running:', pname)
+                if (pname === '') {
                     console.log('agent is not running')
                     this.check_update_dialog_title = 'Starting agent...';
                     //check agent.exe is exists
@@ -201,7 +201,16 @@ export default {
                     //write pid to file
                     await writeTextFile('agent.pid', `${child.pid}`, { dir: BaseDirectory.AppData });
                 } else {
-                    console.log('agent is running')
+                    console.log('50809 port is used, process name:', pname)
+                    this.$refs.download_dialog.close();
+                    // 使用带参数的i18n翻译消息
+                    const shouldExit = await ask(this.$t('agentPortOccupied', { process: pname }), { title: this.$t('exitApp'), type: 'error' });
+                    if (shouldExit) {
+                        await this.shutdown();
+                        getAll().forEach((win) => {
+                            win.close();
+                        });
+                    }
                 }
             } catch (e) {
                 let error = e.toString();
@@ -288,8 +297,8 @@ export default {
                     const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
                     if (yes) {
                         this.check_update_dialog_title = 'Downloading update...';
-                        await installUpdate();
                         await this.shutdown();
+                        await installUpdate();
                         await relaunch();
                         return;
                     }

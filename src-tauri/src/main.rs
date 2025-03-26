@@ -164,13 +164,13 @@ fn grant_permission(app: tauri::AppHandle, path: String) {
     }
 }
 #[tauri::command]
-fn is_agent_running() -> bool {
+fn is_agent_running() -> String {
     //check 50809 port is listening
     let port = 50809;
     match TcpListener::bind(("0.0.0.0", port)) {
         Ok(_) => {
             log::info!("agent is not running on port {}", port);
-            false
+            "".to_string()
         }
         Err(_) => {
             log::info!("agent is running on port {}", port);
@@ -208,18 +208,19 @@ fn is_agent_running() -> bool {
                                             process_name,
                                             pid
                                         );
+                                        return process_name.to_string();
                                     }
                                 }
                             }
                         }
-                        true
+                        "".to_string()
                     } else {
                         log::info!("agent is not running on port {}", port);
-                        false
+                        "".to_string()
                     }
                 } else {
                     log::info!("agent is not running on port {}", port);
-                    false
+                    "".to_string()
                 }
             }
 
@@ -237,11 +238,12 @@ fn is_agent_running() -> bool {
                             port,
                             process_name
                         );
+                        return process_name.to_string();
                     }
-                    true
+                    "".to_string()
                 } else {
                     log::info!("agent is not running on port {}", port);
-                    false
+                    "".to_string()
                 }
             }
         }
@@ -306,10 +308,6 @@ fn main() -> std::io::Result<()> {
             setup_env(work_dir);
             init_log::init(work_dir);
             log::info!("work_dir: {}", work_dir);
-            //kill agent process
-            kill_process("agent".to_string());
-            //kill script process
-            kill_process("script".to_string());
             let window = app.get_window("main").expect("Failed to get main window");
             window
                 .eval("localStorage.removeItem('hasCheckedUpdate');")
