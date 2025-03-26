@@ -143,7 +143,6 @@
     </dialog>
 </template>
 <script>
-import * as util from '../utils'
 import { invoke } from "@tauri-apps/api/tauri";
 
 import MyButton from './Button.vue'

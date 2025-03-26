@@ -169,7 +169,7 @@ import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
-import * as util from '../../utils'
+
 
 
 export default {
@@ -195,14 +195,14 @@ export default {
       device: null,
       listMode: localStorage.getItem('listMode') === 'true' || false,
       mydevices: [],
-      ip_1: util.getData('ip_1') || 192,
-      ip_2: util.getData('ip_2') || 168,
-      ip_3: util.getData('ip_3') || 1,
-      ip_4: util.getData('ip_4') || 2,
-      ip_5: util.getData('ip_5') || 254,
-      port: util.getData('scan_port') || 5555,
-      proxy_host: util.getData('proxy_host') || '127.0.0.1',
-      proxy_port: util.getData('proxy_port') || 8080,
+      ip_1: localStorage.getItem('ip_1')?.replace(/"/g, '') || 192,
+      ip_2: localStorage.getItem('ip_2')?.replace(/"/g, '') || 168,
+      ip_3: localStorage.getItem('ip_3')?.replace(/"/g, '') || 1,
+      ip_4: localStorage.getItem('ip_4')?.replace(/"/g, '') || 2,
+      ip_5: localStorage.getItem('ip_5')?.replace(/"/g, '') || 254,
+      port: localStorage.getItem('scan_port')?.replace(/"/g, '') || 5555,
+      proxy_host: localStorage.getItem('proxy_host')?.replace(/"/g, '') || '127.0.0.1',
+      proxy_port: localStorage.getItem('proxy_port')?.replace(/"/g, '') || 8080,
       scaning: false,
       scanResult: '',
       groups: [],
@@ -248,29 +248,23 @@ export default {
       this.$emiter('reload_devices', {})
     },
     refreshPage() {
-      // window.location.reload()
-      // this.mydevices = []
       this.$emiter('refreshDevice', {})
-      // //wait 1s
-      // setTimeout(() => {
-      //   this.mydevices = this.devices
-      // }, 1000)
     },
     
     
 
     async scan() {
       this.scaning = true
-      util.setData('ip_1', this.ip_1)
-      util.setData('ip_2', this.ip_2)
-      util.setData('ip_3', this.ip_3)
-      util.setData('ip_4', this.ip_4)
-      util.setData('ip_5', this.ip_5)
-      util.setData('scan_port', this.port)
+      localStorage.setItem('ip_1', this.ip_1)
+      localStorage.setItem('ip_2', this.ip_2)
+      localStorage.setItem('ip_3', this.ip_3)
+      localStorage.setItem('ip_4', this.ip_4)
+      localStorage.setItem('ip_5', this.ip_5)
+      localStorage.setItem('scan_port', this.port)
       this.$service.scan_tcp({
         start_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_4}`,
         end_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_5}`,
-        port: this.port
+        port: Number(this.port)
       }).then((res) => {
         this.scaning = false
         this.scanResult = `${res.data} ${this.$t('deviceFound')}`

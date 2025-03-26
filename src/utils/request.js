@@ -1,7 +1,7 @@
 import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
 import mock from '../mock'
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
-import { message } from '@tauri-apps/api/dialog';
+import { emit, listen } from '@tauri-apps/api/event';
 
 const request = async function request(config) {
   const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
@@ -27,7 +27,7 @@ const request = async function request(config) {
   const response = await fetch(`${queryUrl}`, options,);
   console.log(`response status: ${response.status}`)
   if (response.status == 500 || response.status == 400) {
-    await this.$emiter('NOTIFY', {
+    await emit('NOTIFY', {
       type: 'error',
       message: response.data,
       timeout: 2000
