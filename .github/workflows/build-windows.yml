@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} is building Release 🚀
 on:
   push:
     tags:
-      - 'v*'
+      - 'ig*'
 permissions:
   contents: write
 jobs:
