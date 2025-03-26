@@ -155,8 +155,8 @@ export default {
     },
     data() {
         return {
-            proxy_host: util.getData('proxy_host') || '127.0.0.1',
-            proxy_port: util.getData('proxy_port') || 8080,
+            proxy_host: localStorage.getItem('proxy_host') || '127.0.0.1',
+            proxy_port: localStorage.getItem('proxy_port') || 8080,
             screenScaled: Number(localStorage.getItem('screenScaled')) || 100,
             resolution: Number(localStorage.getItem('screenResolution')) || 512,
             customResolution: 512,
@@ -182,8 +182,8 @@ export default {
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.CAMERA'] })
         },
         async enableProxy() {
-            util.setData('proxy_host', this.proxy_host)
-            util.setData('proxy_port', this.proxy_port)
+            localStorage.setItem('proxy_host', this.proxy_host)
+            localStorage.setItem('proxy_port', this.proxy_port)
             await this.$emiter('adbEventData', { args: ['shell', 'settings', 'put', 'global', 'http_proxy', `${this.proxy_host}:${this.proxy_port}`] })
         },
         async disableProxy() {

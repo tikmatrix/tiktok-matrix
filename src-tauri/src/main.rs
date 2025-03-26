@@ -347,7 +347,7 @@ fn delete_logs_older_than_3_days(work_dir: &str) {
             let path = entry.path();
             if path.is_file() {
                 let metadata = std::fs::metadata(&path).unwrap();
-                let last_modified = metadata.modified().unwrap();
+                let last_modified = metadata.created().unwrap();
                 let three_days_ago =
                     std::time::SystemTime::now() - std::time::Duration::from_secs(3 * 24 * 60 * 60);
                 if last_modified < three_days_ago {

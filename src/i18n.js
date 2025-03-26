@@ -562,6 +562,9 @@ export const i18n = createI18n({
       commentTexts: 'Comment Texts',
       commentTextsTips: 'Enter comments, one per line. They will be randomly selected and sent during the live.',
       commentTextsRequired: 'Comment texts are required when comment is enabled',
+      followMethod: 'Follow Method',
+      searchUser: 'Search User',
+      directOpenProfile: 'Direct Open Profile',
     },
     'zh-CN': {
       boostType: '提升类型',
@@ -1074,6 +1077,9 @@ export const i18n = createI18n({
       commentTexts: '评论文本',
       commentTextsTips: '输入评论内容，每行一条。系统会随机选择并在直播中发送。',
       commentTextsRequired: '评论文本在启用评论功能时不能为空',
+      followMethod: '关注方式',
+      searchUser: '搜索用户',
+      directOpenProfile: '直接打开主页',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1632,6 +1638,9 @@ export const i18n = createI18n({
       commentTexts: 'Тексты комментариев',
       commentTextsTips: 'Введите комментарии, по одному на строку. Они будут случайно выбираться и отправляться во время трансляции.',
       commentTextsRequired: 'Тексты комментариев обязательны при включенном комментировании',
+      followMethod: 'Метод подписки',
+      searchUser: 'Поиск пользователя',
+      directOpenProfile: 'Прямой переход в профиль',
     }
   }
 })
