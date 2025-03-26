@@ -44,7 +44,7 @@ impl Progress {
 }
 fn setup_env(working_dir: &str) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
-    std::env::set_var("MATRIX_APP_NAME", "TikMatrix");
+    std::env::set_var("MATRIX_APP_NAME", "IgMatrix");
     if cfg!(debug_assertions) {
         std::env::set_var("MOSS_URL", "http://127.0.0.1:8788/moss");
         std::env::set_var("RUST_BACKTRACE", "1");
