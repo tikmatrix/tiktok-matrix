@@ -1,5 +1,4 @@
 import request from '../utils/request'
-import * as util from '../utils'
 import api from '../api'
 export function auth({ password }) {
   return request({
@@ -11,9 +10,6 @@ export function auth({ password }) {
   })
 }
 
-export function logout() {
-  util.delCookie('password')
-}
 export function get_devices() {
   return request({
     method: 'get',

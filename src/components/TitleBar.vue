@@ -123,7 +123,6 @@ import { ask, message } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
 import { readTextFile, writeTextFile, exists, copyFile } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
-import * as util from '../utils';
 import { getVersion, getName } from '@tauri-apps/api/app';
 import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
@@ -143,8 +142,8 @@ export default {
             version: '',
             name: '',
             sidebarVisible: true,
-            darkMode: util.getData('isDark') || '0',
-            currentLocale: util.getData('locale') || 'en',
+            darkMode: localStorage.getItem('isDark')?.replace(/"/g, '') || '0',
+            currentLocale: localStorage.getItem('locale')?.replace(/"/g, '') || 'en',
             licenseData: {},
             remote_version: {},
             download_progress: {
@@ -162,11 +161,11 @@ export default {
             this.$emiter('sidebarChange', val);
         },
         darkMode(val) {
-            util.setData('isDark', val);
+            localStorage.setItem('isDark', val);
             console.log('isDark:', val);
         },
         currentLocale(val) {
-            util.setData('locale', val);
+            localStorage.setItem('locale', val);
             this.$i18n.locale = val;
         }
     },
@@ -453,10 +452,8 @@ export default {
         async check_file_update(filename, remoteVersion, downloadUrl) {
             let updated = false;
             this.check_update_dialog_title = `Checking ${filename} update...`;
-            let localversion = util.getData(filename);
-            if (!localversion) {
-                localversion = 0;
-            }
+            let localversion = localStorage.getItem(filename) || '0';
+            localversion = localversion.replace(/"/g, '');
             let url = downloadUrl;
             let work_path = await appDataDir();
             let name = url.split('/').pop();
@@ -476,7 +473,7 @@ export default {
             } else {
                 console.log(filename + " no need to update");
             }
-            util.setData(filename, remoteVersion);
+            localStorage.setItem(filename, remoteVersion);
             return { path, updated };
         }
     },
@@ -486,6 +483,7 @@ export default {
         this.name = await getName();
         // 设置当前语言
         this.$i18n.locale = this.currentLocale;
+        console.log('currentLocale:', this.currentLocale);
 
         // 监听下载进度
         await this.$listen("DOWNLOAD_PROGRESS", async (e) => {

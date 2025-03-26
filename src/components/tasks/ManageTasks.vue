@@ -131,6 +131,12 @@ export default {
             task.device_index = this.devices.find(device => device.serial === task.serial || device.real_serial === task.serial)?.key
           })
           await this.$emiter('reload_tasks', {})
+        }).catch(async (err) => {
+          await this.$emiter('NOTIFY', {
+            type: 'error',
+            message: err.message,
+            timeout: 2000
+          })
         })
     },
 
