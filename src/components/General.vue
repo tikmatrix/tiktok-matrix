@@ -2,13 +2,7 @@
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'accounts' })">
         <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('tiktokSettings') }}
-    </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="grantTikTok">
-        <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />
-        {{ $t('grantTikTok') }}
-    </button>
+   
 
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="enableFastInput">
         <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-primary-content" />

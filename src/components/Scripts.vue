@@ -1,5 +1,5 @@
 <template>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'register' } })">
+    <!-- <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'register' } })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
         {{ $t('register') }}
     </button>
@@ -10,7 +10,7 @@
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'profile' } })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
         {{ $t('fillProfile') }}
-    </button>
+    </button> -->
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'matchAccount' } })">
         <font-awesome-icon icon="fa-solid fa-user-check" class="h-3 w-3" />
@@ -26,7 +26,7 @@
         <font-awesome-icon icon="paper-plane" class="h-3 w-3 text-success" />
         {{ $t('publish') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'deletePost' } })">
+    <!-- <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'deletePost' } })">
         <font-awesome-icon icon="fa-solid fa-trash" class="h-3 w-3 text-error" />
         {{ $t('deletePost') }}
     </button>
@@ -54,7 +54,7 @@
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'scrapeFollowers' } })">
         <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />
         {{ $t('scrapeFollowers') }}
-    </button>
+    </button> -->
     
    
     

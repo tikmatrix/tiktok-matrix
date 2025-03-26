@@ -1,16 +1,16 @@
 <template>
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
-        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-primary-content" />
-        {{ $t('openTiktok') }}
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.instagram.android.activity.MainTabActivity'] })">
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-primary-content" />
+        {{ $t('openInstagram') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
-        {{ $t('stopTiktok') }}
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-yellow-500" />
+        {{ $t('stopInstagram') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="clearCache">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-pink-500" />
         {{ $t('clearCache') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
