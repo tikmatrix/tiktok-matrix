@@ -3,8 +3,8 @@
         class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
         <!-- 左侧：应用图标、名称、版本和检查更新 -->
         <div class="flex items-center space-x-2">
-            <font-awesome-icon icon="fa-brands fa-tiktok" class="text-base-content h-10 w-10" />
-            <span class="text-2xl text-base-content font-bold">{{ $t('siteName') }}</span>
+            <img src="../assets/app-icon.png" class="h-10 w-10" />
+            <span class="text-2xl text-base-content font-bold">{{ name }}</span>
             <span class="text-sm text-base-content">v{{ version }}</span>
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
@@ -124,7 +124,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { readTextFile, writeTextFile, exists, copyFile } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
 import * as util from '../utils';
-import { getVersion } from '@tauri-apps/api/app';
+import { getVersion, getName } from '@tauri-apps/api/app';
 import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
 import { fetch, ResponseType } from '@tauri-apps/api/http';
@@ -132,7 +132,6 @@ import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
 import BuyLicenseDialog from './BuyLicenseDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
-import { open } from '@tauri-apps/api/shell';
 
 export default {
     name: 'TitleBar',
@@ -142,6 +141,7 @@ export default {
     data() {
         return {
             version: '',
+            name: '',
             sidebarVisible: true,
             darkMode: util.getData('isDark') || '0',
             currentLocale: util.getData('locale') || 'en',
@@ -474,7 +474,7 @@ export default {
     async mounted() {
         // 获取版本号
         this.version = await getVersion();
-
+        this.name = await getName();
         // 设置当前语言
         this.$i18n.locale = this.currentLocale;
 
