@@ -32,7 +32,38 @@
         <input ref="groupNameInput" v-if="showAddGroup"
           class="input input-sm input-bordered w-full max-w-xs mt-2 ring-1 ring-success" type="text"
           v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
-        <div class="border border-base-300 bg-base-500 rounded-md mt-2 shadow-lg" v-for="(item, index) in groups"
+        <div class="flex flex-row form-control items-center">
+          <label class="label cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(0)"
+              :checked="isSelectAll(0)" />
+            <span class="label-text text-primary text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
+            }})</span>
+          </label>
+          
+          <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-xs text-right flex-1">
+            <div tabindex="0" role="button" class="btn bg-transparent hover:bg-transparent border-none text-primary">
+              <span class="text-xs">{{ $t('moveToGroup') }}</span>
+              <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
+            </div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow ring">
+              <li v-for="(item, index) in groups" :key="item.id">
+                <a @click="moveToGroup(0, item.id)">{{
+                  item.name }}</a>
+              </li>
+            </ul>
+          </div>
+          <span class="label-text text-xs text-right">{{ $t('selected') }}
+            {{ selections[0].length }}
+            {{ $t('units') }}
+          </span>
+
+        </div>
+        <drag-select v-model="selection">
+          <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
+            {{ index + 1 }}
+          </drag-select-option>
+        </drag-select>
+        <div class="border border-base-300 bg-base-500 rounded-md mt-2 shadow-lg" v-for="(item, index) in sortedGroups"
           :key="item.id">
           <div class="flex flex-row form-control items-center">
             <label class="label cursor-pointer">
@@ -74,37 +105,7 @@
           </div>
         </div>
 
-        <div class="flex flex-row form-control items-center">
-          <label class="label cursor-pointer">
-            <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(0)"
-              :checked="isSelectAll(0)" />
-            <span class="label-text text-primary text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
-            }})</span>
-          </label>
-          <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-xs text-right flex-1">
-            <div tabindex="0" role="button" class="btn bg-transparent hover:bg-transparent border-none text-primary">
-              <span class="text-xs">{{ $t('moveToGroup') }}</span>
-              <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
-            </div>
-            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow ring">
-              <li v-for="(item, index) in groups" :key="item.id">
-                <a @click="moveToGroup(0, item.id)">{{
-                  item.name }}</a>
-              </li>
-            </ul>
 
-          </div>
-          <span class="label-text text-xs text-right">{{ $t('selected') }}
-            {{ selections[0].length }}
-            {{ $t('units') }}
-          </span>
-
-        </div>
-        <drag-select v-model="selection">
-          <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
-            {{ index + 1 }}
-          </drag-select-option>
-        </drag-select>
 
       </div>
       <div class="mt-4 ring-1 ring-base-300 rounded-lg overflow-hidden relative" v-if="!hideAd">
@@ -162,13 +163,19 @@ export default {
       type: Object,
       required: true
     },
-   
+
   },
   components: {
     General,
     Tasks,
     Scripts,
     QuickActions
+  },
+  computed: {
+    sortedGroups() {
+      //sort by device count
+      return this.groups.sort((a, b) => this.groupDevices[b.id]?.length - this.groupDevices[a.id]?.length)
+    }
   },
   data() {
     return {
@@ -217,7 +224,7 @@ export default {
       },
       deep: true
     },
-    
+
 
   },
   methods: {
@@ -287,6 +294,7 @@ export default {
 
     },
     async moveToGroup(src_id, dst_id) {
+      this.$refs.moveToGroupMenu.classList.remove('dropdown-open')
       let serials = []
       for (let i = 0; i < this.selections[src_id].length; i++) {
         serials.push(this.selections[src_id][i])
@@ -313,7 +321,7 @@ export default {
         });
       })
     },
-   
+
     async uploadFiles() {
       const filePath = await open({
         multiple: true, // 是否允许多选文件
@@ -499,7 +507,7 @@ export default {
       })
     },
 
-   
+
 
     async setText(text) {
       this.$service.set_text({
@@ -582,7 +590,7 @@ export default {
           });
         })
     },
-    
+
     async massFO() {
       if (this.selection.length == 0) {
         await this.$emiter('NOTIFY', {
@@ -725,7 +733,7 @@ export default {
       }
       const text = await readText()
       this.setText(text)
-        await this.$emiter('NOTIFY', {
+      await this.$emiter('NOTIFY', {
         type: 'success',
         message: this.$t('pasteSuccess'),
         timeout: 2000
