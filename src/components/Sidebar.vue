@@ -683,6 +683,11 @@ export default {
         });
         return
       }
+      await this.$emiter('NOTIFY', {
+        type: 'info',
+        message: this.$t('clearGalleryStart'),
+        timeout: 2000
+      });
       this.$service
         .clear_gallery({
           serials: this.selection,
@@ -690,7 +695,7 @@ export default {
         .then(async (res) => {
           await this.$emiter('NOTIFY', {
             type: 'success',
-            message: this.$t('commandSendSuccess'),
+            message: this.$t('clearGallerySuccess'),
             timeout: 2000
           });
         })

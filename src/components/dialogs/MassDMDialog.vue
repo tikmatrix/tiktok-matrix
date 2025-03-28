@@ -30,7 +30,7 @@ export default {
   data() {
     return {
       message_content: localStorage.getItem('message_content') || '',
-      insert_emoji: localStorage.getItem('insert_emoji') || false,
+      insert_emoji: Boolean(localStorage.getItem('insert_emoji')) || false,
       target_username_path: localStorage.getItem('target_username_path') || '',
     }
   },
