@@ -567,6 +567,9 @@ export const i18n = createI18n({
       directOpenProfile: 'Direct Open Profile',
       agentPortOccupied: "Agent port 50809 is occupied by \"{process}\". Please close the occupying software and try again. Click the button to exit.",
       exitApp: "Exit Application",
+      clearGalleryStart: 'Clearing gallery...',
+      clearGallerySuccess: 'Gallery cleared successfully!',
+      enterMethod: 'Enter Method',
     },
     'zh-CN': {
       boostType: '提升类型',
@@ -1084,6 +1087,9 @@ export const i18n = createI18n({
       directOpenProfile: '直接打开主页',
       agentPortOccupied: "agent端口50809被 \"{process}\" 占用, 请关闭占用的软件后重试,点击按钮退出程序",
       exitApp: "退出程序",
+      clearGalleryStart: '清空相册...',
+      clearGallerySuccess: '相册清空成功!',
+      enterMethod: '进入方式',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1647,6 +1653,9 @@ export const i18n = createI18n({
       directOpenProfile: 'Прямой переход в профиль',
       agentPortOccupied: "Порт агента 50809 занят процессом \"{process}\". Пожалуйста, закройте занимающее порт программное обеспечение и попробуйте снова. Нажмите кнопку, чтобы выйти.",
       exitApp: "Выйти из приложения",
+      clearGalleryStart: 'Очистка галереи...',
+      clearGallerySuccess: 'Галерея очищена успешно!',
+      enterMethod: 'Метод входа',
     }
   }
 })
