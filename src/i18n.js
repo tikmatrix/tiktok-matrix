@@ -245,7 +245,7 @@ export const i18n = createI18n({
       addGroup: 'Add Group',
       general: 'General',
       scripts: 'Scripts',
-      moveToGroup: 'Move To Group',
+      moveToGroup: 'Move To',
       noDevicesSelected: 'No Devices Selected',
       mid: 'Machine ID',
       proxyServer: 'Proxy Server',
@@ -570,6 +570,8 @@ export const i18n = createI18n({
       clearGalleryStart: 'Clearing gallery...',
       clearGallerySuccess: 'Gallery cleared successfully!',
       enterMethod: 'Enter Method',
+      enabled: 'Enabled',
+      disabled: 'Disabled',
     },
     'zh-CN': {
       boostType: '提升类型',
@@ -1090,6 +1092,8 @@ export const i18n = createI18n({
       clearGalleryStart: '清空相册...',
       clearGallerySuccess: '相册清空成功!',
       enterMethod: '进入方式',
+      enabled: '已启用',
+      disabled: '已禁用',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1656,6 +1660,8 @@ export const i18n = createI18n({
       clearGalleryStart: 'Очистка галереи...',
       clearGallerySuccess: 'Галерея очищена успешно!',
       enterMethod: 'Метод входа',
+      enabled: 'Включено',
+      disabled: 'Выключено',
     }
   }
 })

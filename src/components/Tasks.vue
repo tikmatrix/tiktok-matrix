@@ -32,12 +32,13 @@
         <button class="btn btn-sm btn-primary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
             <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-error" />{{ $t('stopTask') }}
         </button>
-        <div class="form-control ring-1 ml-1 mt-1 rounded-lg bg-base-300">
-            <label class="label cursor-pointer">
-                <span class="text-sm font-bold mr-1">{{ $t('autoRetry') }}: </span>
-                <input type="checkbox" class="toggle toggle-sm toggle-primary" v-model="autoRetry" />
+        <fieldset class="fieldset p-1 bg-base-100 border border-base-300 rounded-box text-center align-middle flex flex-row items-center">
+            <label class="fieldset-label">
+                {{ $t('autoRetry') }}:
+                <input type="checkbox" checked="checked" class="toggle toggle-primary" v-model="autoRetry"/>
             </label>
-        </div>
+        </fieldset>
+        
     </div>
 
 
@@ -58,7 +59,12 @@ export default {
     },
     watch: {
         autoRetry: {
-            handler: function (val) {
+            handler: async function (val) {
+                await this.$emiter('NOTIFY', {
+                    type: 'success',
+                    message: `${this.$t('autoRetry')}: ${val ? this.$t('enabled') : this.$t('disabled')}`,
+                    timeout: 2000
+                });
                 localStorage.setItem('autoRetry', val);
                 if (val) {
                     this.countTasks();

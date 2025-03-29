@@ -37,10 +37,10 @@
             </label>
             <!-- 许可证状态 -->
             <button
-                class="flex items-center space-x-1 text-sm px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
+                class="btn btn-sm flex items-center gap-1 px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
                 :class="[
-                    isLoadingLicense ? 'bg-gray-500 text-white' :
-                        licenseData.leftdays > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                    isLoadingLicense ? 'btn-neutral' :
+                        licenseData.leftdays > 0 ? 'btn-success text-white' : 'btn-error text-white'
                 ]" @click="showLicenseDialog" :title="isLoadingLicense ? $t('loadingLicense') :
                     licenseData.leftdays > 0 ? $t('licenseValid', { days: licenseData.leftdays }) :
                         $t('activateLicense')">

@@ -58,7 +58,7 @@ export default {
     return {
       comment_mode: localStorage.getItem('comment_mode') || 'multi-to-single',
       comment_content: localStorage.getItem('comment_content') || '',
-      insert_emoji: Boolean(localStorage.getItem('insert_emoji')) || false,
+      insert_emoji: localStorage.getItem('insert_emoji') === 'true' || false,
       target_post_urls: localStorage.getItem('target_post_urls') || '',
     }
   },

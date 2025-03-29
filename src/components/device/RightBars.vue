@@ -20,7 +20,7 @@
       <font-awesome-icon icon="fa fa-lightbulb" class="h-6 w-6 text-primary" />
       <span class="text-sm block font-normal">{{ $t('power') }}</span>
     </button>
-    <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 tooltip p-1"
+    <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('adbEventData', { args: ['shell', 'reboot'] })">
       <font-awesome-icon icon="fa fa fa-refresh" class="h-6 w-6 text-error" />
       <span class="text-sm block font-normal">{{ $t('reboot') }}</span>

@@ -1,22 +1,22 @@
 <template>
   <div class="sidebar bg-base-100 m-1 flex flex-col rounded-lg shadow w-1/4 h-screen overflow-y-scroll no-scrollbar">
     <div class="pl-2 pr-2 pt-2 pb-14">
-      <div role="tablist" class="tabs tabs-lifted mt-2 bg-base-200 rounded-md">
-        <a ref="general" role="tab" class="tab tab-active" @click="selectTab('general')">{{ $t('general') }}</a>
-        <a ref="quickActions" role="tab" class="tab" @click="selectTab('quickActions')">{{ $t('quickActions') }}</a>
-        <a ref="scripts" role="tab" class="tab" @click="selectTab('scripts')">{{ $t('scripts') }}</a>
-      </div>
-      <div class="border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
-        <div class="flex flex-row flex-wrap" v-if="selectedTab === 'general'">
+      
+      <div class="tabs tabs-lift">
+        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('general')" checked="checked" />
+        <div class="tab-content">
           <General :settings="settings" />
         </div>
-        <div class="flex flex-row flex-wrap" v-if="selectedTab === 'quickActions'">
+        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('quickActions')" />
+        <div class="tab-content">
           <QuickActions :settings="settings" />
         </div>
-        <div class="flex flex-row flex-wrap" v-if="selectedTab === 'scripts'">
+        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('scripts')" />
+        <div class="tab-content">
           <Scripts :settings="settings" />
         </div>
       </div>
+     
       <div class="flex flex-col">
         <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('tasks') }}</span>
         <div class="flex flex-row flex-wrap border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
@@ -39,7 +39,7 @@
             <span class="label-text text-primary text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
             }})</span>
           </label>
-          
+
           <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-xs text-right flex-1">
             <div tabindex="0" role="button" class="btn bg-transparent hover:bg-transparent border-none text-primary">
               <span class="text-xs">{{ $t('moveToGroup') }}</span>
