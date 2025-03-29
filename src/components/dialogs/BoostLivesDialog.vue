@@ -175,7 +175,7 @@ export default {
       }
 
       // 修改为传递更多参数，包括点赞连击次数和评论相关
-      await this.$emiter('run_now_by_account', {
+      await this.$emiter('run_task_now', {
         name: 'view_live',
         args: {
           target_username: this.live_target_username,
