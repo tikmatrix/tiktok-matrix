@@ -1,1 +1,7 @@
-1. Add new language: Russian
+# 2.3.7
+
+1. Add support for custom ADB commands - create, edit and execute frequently used ADB operations 
+2. Add comprehensive documentation for custom ADB commands feature
+3. Improve resolution control with presets and custom options
+4. Add screen size scaling functionality
+5. Enhance command execution with multi-line support for batch operations
