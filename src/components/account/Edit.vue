@@ -1,24 +1,21 @@
 <template>
   <div class="bg-base-100 flex flex-col items-start p-4 min-h-96">
 
-    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right col-span-1">{{ $t('email') }}:</label>
-      <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="myaccount.email" />
+    <div class="flex w-full items-center gap-2 mb-2">
+      <label class="font-bold w-32">{{ $t('email') }}:</label>
+      <input class="input" type="email" v-model="myaccount.email" />
     </div>
-    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right">{{ $t('password') }}:</label>
-      <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="myaccount.pwd" />
+    <div class="flex w-full items-center gap-2 mb-2">
+      <label class="font-bold w-32">{{ $t('password') }}:</label>
+      <input class="input" type="password" v-model="myaccount.pwd" />
     </div>
-    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-      <div class="text-right">
-        <label class="font-bold text-error">*</label>
-        <label class="font-bold">{{ $t('username') }}:</label>
-      </div>
-      <input class="border-2 border-gray-300 p-2 rounded col-span-2" v-model="myaccount.username" />
+    <div class="flex w-full items-center gap-2 mb-2">
+      <label class="font-bold w-32">{{ $t('username') }}:</label>
+      <input class="input validator" type="input" required placeholder="Username" v-model="myaccount.username" />
     </div>
-    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right col-span-1">{{ $t('loginStatus') }}:</label>
-      <div class="col-span-2 flex items-center gap-4">
+    <div class="flex w-full items-center gap-2 mb-2">
+      <label class="font-bold w-32">{{ $t('loginStatus') }}:</label>
+      <div class="flex items-center gap-4">
         <div class="flex items-center">
           <input type="radio" id="logined" value="1" v-model="account.logined" class="form-radio text-primary h-4 w-4">
           <label for="logined" class="ml-2">{{ $t('logined') }}</label>
@@ -31,9 +28,9 @@
 
       </div>
     </div>
-    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right col-span-1">{{ $t('status') }}:</label>
-      <div class="col-span-2 flex items-center gap-4">
+    <div class="flex w-full items-center gap-2 mb-2">
+      <label class="font-bold w-32">{{ $t('status') }}:</label>
+      <div class="flex items-center gap-4">
         <div class="flex items-center">
           <input type="radio" id="enable" value="0" v-model="account.status" class="form-radio text-primary h-4 w-4">
           <label for="enable" class="ml-2">{{ $t('enable') }}</label>
@@ -45,20 +42,15 @@
 
       </div>
     </div>
-    <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right col-span-1">{{ $t('device') }}:</label>
-      <div class="relative col-span-2">
-        <input class="border-2 border-gray-300 p-2 rounded w-full" v-model="myaccount.device_index"
-          @click="showDeviceList = !showDeviceList" readonly />
-        <div
-          class="absolute z-10 bg-primary-content border border-gray-300 rounded mt-2 w-full overflow-y-auto max-h-32"
-          v-show="showDeviceList">
-          <div class="cursor-pointer p-2 hover:bg-gray-200" v-for="(device, _index) in devices" :key="device.serial"
-            @click="selectDevice(device)">
-            {{ device.key }}
-          </div>
-        </div>
-      </div>
+    <div class="flex w-full items-center gap-2 mb-2">
+      <label class="font-bold w-32">{{ $t('device') }}:</label>
+        <form class="filter" v-if="devices.length > 0">
+          <input class="btn btn-sm btn-error" type="reset" value="×" />
+          <input class="btn btn-sm btn-success" type="radio" name="frameworks" :aria-label="device.key" v-for="(device, index) in devices"
+            :key="device.serial" @click="selectDevice(device)" :checked="device.key === myaccount.device_index" />
+        </form>
+        <div v-else class="text-gray-500">{{ $t('noDevice') }}  </div>
+        
     </div>
 
     <!-- other fields... -->

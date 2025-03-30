@@ -11,7 +11,7 @@
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="clearCache">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
-        {{ $t('clearCache') }}
+        {{ $t('clearData') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.HOME'] })">

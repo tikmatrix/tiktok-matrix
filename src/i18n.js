@@ -383,7 +383,7 @@ export const i18n = createI18n({
       progress: 'Progress',
       inputPackageName: 'Input Package Name',
       tiktok: 'Tiktok',
-      clearCache: 'Clear Cache',
+      clearData: 'Clear Data',
       clearCacheConfirm: 'Are you sure you want to clear the cache of TikTok? This will delete all the cache of TikTok on this device and log out all accounts, but will not uninstall TikTok.',
       depositNetwork: 'Deposit Network',
       depositAddress: 'Deposit Address',
@@ -572,8 +572,13 @@ export const i18n = createI18n({
       enterMethod: 'Enter Method',
       enabled: 'Enabled',
       disabled: 'Disabled',
+      noDevice: 'No device found!',
+      minDuration: 'Min Duration',
+      maxDuration: 'Max Duration',
+      viewDurationTips: 'The duration of watching each video, the system will randomly select a duration within this range',
     },
     'zh-CN': {
+      viewDurationTips: '观看每个视频的时长范围, 系统会在这个范围内随机选择一个时长',
       boostType: '提升类型',
       adjustResolution: '调整分辨率',
       lowResolution: '低分辨率',
@@ -700,7 +705,7 @@ export const i18n = createI18n({
       depositNetwork: '充币网络',
       depositAddress: '充币地址',
       depositComment: '充币备注',
-      clearCache: '清除缓存',
+      clearData: '清除数据',
       clearCacheConfirm: '确定要清除TikTok的缓存吗?这将删除设备上所有TikTok的缓存并退出所有账号。但是不会卸载TikTok',
       tiktok: 'Tiktok',
       inputPackageName: '输入包名',
@@ -1094,6 +1099,9 @@ export const i18n = createI18n({
       enterMethod: '进入方式',
       enabled: '已启用',
       disabled: '已禁用',
+      noDevice: '设备未找到!',
+      minDuration: '最小观看时长',
+      maxDuration: '最大观看时长',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1475,7 +1483,7 @@ export const i18n = createI18n({
       progress: 'Прогресс',
       inputPackageName: 'Введите имя пакета',
       tiktok: 'Tiktok',
-      clearCache: 'Очистить кэш', 
+      clearData: 'Очистить данные',
       clearCacheConfirm: 'Вы уверены, что хотите очистить кэш TikTok на этом устройстве? Это удалит все кэш TikTok на этом устройстве и выйдет из всех аккаунтов, но не удалит приложение TikTok.',
       depositNetwork: 'Сеть депозита',
       depositAddress: 'Адрес депозита',
@@ -1662,6 +1670,11 @@ export const i18n = createI18n({
       enterMethod: 'Метод входа',
       enabled: 'Включено',
       disabled: 'Выключено',
+      noDevice: 'Устройства не найдены!',
+      minDuration: 'Минимальная продолжительность',
+      maxDuration: 'Максимальная продолжительность',
+      viewDurationTips: 'Продолжительность просмотра видео в секундах',
+      
     }
   }
 })
