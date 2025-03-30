@@ -19,6 +19,10 @@
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
+        <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline" @click="open_dir('')">
+            <font-awesome-icon icon="fa fa-folder" class="h-4 w-4" />
+            <span>{{ $t('openAppDir') }}</span>
+        </a>
         <!-- Rewards-->
         <!-- <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
             target="_blank">
@@ -32,8 +36,136 @@
             <!-- 侧边栏切换 -->
             <label class="swap swap-rotate" :title="$t('toggleSidebar')">
                 <input type="checkbox" value="true" v-model="sidebarVisible" />
-                <font-awesome-icon icon="fa fa-bars" class="swap-off fill-current w-6 h-6 text-base-content" />
-                <font-awesome-icon icon="fa fa-bars" class="swap-on fill-current w-6 h-6 text-base-content" />
+                <svg class="swap-off fill-current w-6 h-6 text-base-content" fill="#000000" viewBox="0 0 64 64"
+                    version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier">
+                        <rect id="Icons" x="0" y="-64" width="1280" height="800" style="fill:none;"></rect>
+                        <g id="Icons1" serif:id="Icons">
+                            <g id="Strike"> </g>
+                            <g id="H1"> </g>
+                            <g id="H2"> </g>
+                            <g id="H3"> </g>
+                            <g id="list-ul"> </g>
+                            <g id="hamburger-1"> </g>
+                            <g id="hamburger-2"> </g>
+                            <g id="list-ol"> </g>
+                            <g id="list-task"> </g>
+                            <g id="trash"> </g>
+                            <g id="vertical-menu"> </g>
+                            <g id="horizontal-menu"> </g>
+                            <g id="sidebar-2"> </g>
+                            <g id="Pen"> </g>
+                            <g id="Pen1" serif:id="Pen"> </g>
+                            <g id="clock"> </g>
+                            <g id="external-link"> </g>
+                            <g id="hr"> </g>
+                            <g id="info"> </g>
+                            <g id="warning"> </g>
+                            <g id="plus-circle"> </g>
+                            <g id="minus-circle"> </g>
+                            <g id="vue"> </g>
+                            <g id="cog"> </g>
+                            <g id="logo"> </g>
+                            <g id="radio-check"> </g>
+                            <g id="eye-slash"> </g>
+                            <g id="eye"> </g>
+                            <g id="toggle-off"> </g>
+                            <path id="sidebar"
+                                d="M50.01,56.074l-35.989,0c-3.309,0 -5.995,-2.686 -5.995,-5.995l0,-36.011c0,-3.308 2.686,-5.994 5.995,-5.994l35.989,0c3.309,0 5.995,2.686 5.995,5.994l0,36.011c0,3.309 -2.686,5.995 -5.995,5.995Zm-25.984,-4l0,-40l-9.012,0c-1.65,0.001 -2.989,1.34 -2.989,2.989l0,34.022c0,1.649 1.339,2.989 2.989,2.989l9.012,0Zm24.991,-40l-20.991,0l0,40l20.991,0c1.65,0 2.989,-1.34 2.989,-2.989l0,-34.022c0,-1.649 -1.339,-2.988 -2.989,-2.989Z">
+                            </path>
+                            <g id="shredder"> </g>
+                            <g id="spinner--loading--dots-" serif:id="spinner [loading, dots]"> </g>
+                            <g id="react"> </g>
+                            <g id="check-selected"> </g>
+                            <g id="turn-off"> </g>
+                            <g id="code-block"> </g>
+                            <g id="user"> </g>
+                            <g id="coffee-bean"> </g>
+                            <g id="coffee-beans">
+                                <g id="coffee-bean1" serif:id="coffee-bean"> </g>
+                            </g>
+                            <g id="coffee-bean-filled"> </g>
+                            <g id="coffee-beans-filled">
+                                <g id="coffee-bean2" serif:id="coffee-bean"> </g>
+                            </g>
+                            <g id="clipboard"> </g>
+                            <g id="clipboard-paste"> </g>
+                            <g id="clipboard-copy"> </g>
+                            <g id="Layer1"> </g>
+                        </g>
+                    </g>
+                </svg>
+                <svg class="swap-on fill-current w-6 h-6 text-base-content" fill="#000000" viewBox="0 0 64 64"
+                    version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier">
+                        <rect id="Icons" x="-128" y="-192" width="1280" height="800" style="fill:none;"></rect>
+                        <g id="Icons1" serif:id="Icons">
+                            <g id="Strike"> </g>
+                            <g id="H1"> </g>
+                            <g id="H2"> </g>
+                            <g id="H3"> </g>
+                            <g id="list-ul"> </g>
+                            <g id="hamburger-1"> </g>
+                            <g id="hamburger-2"> </g>
+                            <g id="list-ol"> </g>
+                            <g id="list-task"> </g>
+                            <g id="trash"> </g>
+                            <g id="vertical-menu"> </g>
+                            <g id="horizontal-menu"> </g>
+                            <g id="sidebar-2">
+                                <path
+                                    d="M50.008,56.043l-35.989,0c-3.309,0 -5.995,-2.686 -5.995,-5.995l0,-36.011c0,-3.308 2.686,-5.994 5.995,-5.995l35.989,0c3.309,0.001 5.995,2.687 5.995,5.995l0,36.011c0,3.309 -2.686,5.995 -5.995,5.995Zm-25.984,-4.001l0,-39.999l-9.012,0c-1.65,0 -2.989,1.339 -2.989,2.989l0,34.021c0,1.65 1.339,2.989 2.989,2.989l9.012,0Zm24.991,-39.999l-20.991,0l0,39.999l20.991,0c1.65,0 2.989,-1.339 2.989,-2.989l0,-34.021c0,-1.65 -1.339,-2.989 -2.989,-2.989Z">
+                                </path>
+                                <rect x="14.611" y="16.042" width="6.569" height="2" style="fill-rule:nonzero;"></rect>
+                                <rect x="14.611" y="24.042" width="6.569" height="2" style="fill-rule:nonzero;"></rect>
+                                <rect x="14.611" y="20.042" width="6.569" height="2" style="fill-rule:nonzero;"></rect>
+                            </g>
+                            <g id="Pen"> </g>
+                            <g id="Pen1" serif:id="Pen"> </g>
+                            <g id="clock"> </g>
+                            <g id="external-link"> </g>
+                            <g id="hr"> </g>
+                            <g id="info"> </g>
+                            <g id="warning"> </g>
+                            <g id="plus-circle"> </g>
+                            <g id="minus-circle"> </g>
+                            <g id="vue"> </g>
+                            <g id="cog"> </g>
+                            <g id="logo"> </g>
+                            <g id="radio-check"> </g>
+                            <g id="eye-slash"> </g>
+                            <g id="eye"> </g>
+                            <g id="toggle-off"> </g>
+                            <g id="shredder"> </g>
+                            <g id="spinner--loading--dots-" serif:id="spinner [loading, dots]"> </g>
+                            <g id="react"> </g>
+                            <g id="check-selected"> </g>
+                            <g id="turn-off"> </g>
+                            <g id="code-block"> </g>
+                            <g id="user"> </g>
+                            <g id="coffee-bean"> </g>
+                            <g id="coffee-beans">
+                                <g id="coffee-bean1" serif:id="coffee-bean"> </g>
+                            </g>
+                            <g id="coffee-bean-filled"> </g>
+                            <g id="coffee-beans-filled">
+                                <g id="coffee-bean2" serif:id="coffee-bean"> </g>
+                            </g>
+                            <g id="clipboard"> </g>
+                            <g id="clipboard-paste"> </g>
+                            <g id="clipboard-copy"> </g>
+                            <g id="Layer1"> </g>
+                        </g>
+                    </g>
+                </svg>
             </label>
             <!-- 许可证状态 -->
             <button
@@ -170,7 +302,11 @@ export default {
         }
     },
     methods: {
-
+        async open_dir(name) {
+            invoke("open_dir", {
+                name
+            });
+        },
         async start_agent() {
             console.log('start_agent')
             this.$refs.download_dialog.showModal();

@@ -1,10 +1,10 @@
 <template>
   <div class="bg-base-100 flex flex-col items-start p-4">
-    <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
-      <label class="font-bold text-right col-span-2">{{ $t('scheduledPublish') }}:</label>
+    <div class="flex w-full items-center gap-2 mb-2">
+      <label class="font-bold w-40">{{ $t('scheduledPublish') }}:</label>
       <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.auto_publish" true-value="1"
         false-value="0" />
-      <div role="alert" class="alert col-span-5">
+      <div role="alert" class="alert">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -13,9 +13,9 @@
       </div>
     </div>
     <div>
-      <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
-        <label class="font-bold text-right col-span-2">{{ $t('publishTimer') }}:</label>
-        <div class="col-span-6 flex flex-wrap gap-2">
+      <div class="flex w-full items-center gap-2 mb-2">
+        <label class="font-bold w-40">{{ $t('publishTimer') }}:</label>
+        <div class="flex flex-wrap gap-2">
           <div v-for="(time, index) in publishTimes" :key="index" class="flex items-center">
             <input type="time" class="border-2 border-gray-300 p-2 rounded" v-model="publishTimes[index]"
               :placeholder="'00:00'" />
@@ -32,9 +32,9 @@
           </button>
         </div>
       </div>
-      <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-        <label class="font-bold text-right col-span-1">{{ $t('publishType') }}:</label>
-        <div class="col-span-2 flex items-center gap-4">
+      <div class="flex w-full items-center gap-2 mb-2">
+        <label class="font-bold w-40">{{ $t('publishType') }}:</label>
+        <div class="flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="video" value="0" v-model="mygroup.publish_type"
               class="form-radio text-primary h-4 w-4">
@@ -52,9 +52,9 @@
         </div>
       </div>
       <!-- add sound start -->
-      <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
-        <label class="font-bold text-right col-span-2">{{ $t('addSound') }}:</label>
-        <div class="col-span-6 flex items-center gap-4">
+      <div class="flex w-full items-center gap-2 mb-2">
+        <label class="font-bold w-40">{{ $t('addSound') }}:</label>
+        <div class="flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="default" value="-1" v-model="mygroup.add_sound"
               class="form-radio text-primary h-4 w-4">
@@ -72,7 +72,7 @@
           </div>
           <!-- add sound tips -->
 
-          <div role="alert" class="alert col-span-5">
+          <div role="alert" class="alert">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
               class="stroke-info shrink-0 w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -82,30 +82,36 @@
           </div>
         </div>
       </div>
-      <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
-        <label class="font-bold text-right col-span-2">{{ $t('loadSoundWaitTime') }}:</label>
-        <div class="col-span-2 flex items-center gap-4">
-          <div class="flex items-center">
-            <input class="border-2 border-gray-300 p-2 rounded col-span-1 input-sm mr-2"
-              v-model="mygroup.sound_wait_time" type="number" /> {{ $t('second') }}
+      <div class="flex w-full items-center gap-2 mb-2">
+        <label class="font-bold w-40">{{ $t('loadSoundWaitTime') }}:</label>
+        <div class="flex flex-col">
+          <div class="flex justify-between items-center mb-1 gap-1">
+            <span class="text-sm font-bold text-primary">{{ mygroup.sound_wait_time }}</span>
+            <span class="text-sm text-info">{{ $t('second') }}</span>
+          </div>
+          <input type="range" min="5" max="30" step="1" class="range range-success range-sm"
+            v-model="mygroup.sound_wait_time" />
+          <div class="flex justify-between text-xs px-1">
+            <span>5</span>
+            <span>30</span>
           </div>
         </div>
       </div>
-      <div class="grid grid-cols-4 w-full items-center gap-2 mb-2" v-if="mygroup.add_sound == 1">
-        <label class="font-bold text-right col-span-1">{{ $t('soundVolume') }}:</label>
-        <div class="flex items-center col-span-3">
-          <label class="ml-2 text-right">{{ $t('originSound') }}: </label>
+      <div class="flex w-full items-center gap-2 mb-2" v-if="mygroup.add_sound == 1">
+        <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
+        <div class="flex items-center">
+          <label class="ml-2">{{ $t('originSound') }}: </label>
           <input type="range" min="0" max="100" value="25" class="range range-xs range-success w-32" step="25"
             v-model="mygroup.origin_sound_volume" />
-          <label class="ml-2 text-right">{{ $t('addSound') }}: </label>
+          <label class="ml-2">{{ $t('addSound') }}: </label>
           <input type="range" min="0" max="100" value="25" class="range range-xs range-success w-32" step="25"
             v-model="mygroup.add_sound_volume" />
         </div>
       </div>
       <!-- add sound end-->
-      <div class="grid grid-cols-8 w-full items-center gap-2 mb-2">
-        <label class="font-bold text-right col-span-2">{{ $t('addProductLink') }}:</label>
-        <div class="col-span-6 flex items-center gap-4">
+      <div class="flex w-full items-center gap-2 mb-2">
+        <label class="font-bold w-40">{{ $t('addProductLink') }}:</label>
+        <div class="flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="disable" value="0" v-model="mygroup.add_product_link"
               class="form-radio text-primary h-4 w-4">
@@ -117,7 +123,7 @@
             <label for="enable" class="ml-2">{{ $t('enable') }}</label>
           </div>
 
-          <div role="alert" class="alert col-span-5">
+          <div role="alert" class="alert">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
               class="stroke-info shrink-0 w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -127,8 +133,8 @@
           </div>
         </div>
       </div>
-      <div class="grid grid-cols-4 w-full items-center gap-2 mb-2">
-        <label class="font-bold text-right col-span-1">{{ $t('titles') }}:</label>
+      <div class="flex w-full items-center gap-2 mb-2">
+        <label class="font-bold w-40">{{ $t('titles') }}:</label>
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
           :placeholder="$t('titlesTips')" autocomplete="off" v-model="mygroup.title"> </textarea>
       </div>
@@ -175,6 +181,9 @@ export default {
     },
     'mygroup.add_sound_volume': function (val) {
       this.mygroup.add_sound_volume = Number(val)
+    },
+    'mygroup.sound_wait_time': function (val) {
+      this.mygroup.sound_wait_time = Number(val)
     },
 
   },

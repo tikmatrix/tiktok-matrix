@@ -1,23 +1,22 @@
 <template>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'accounts' })">
-        <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-primary-content" />
+        {{ $t('openTiktok') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
-        <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('tiktokSettings') }}
+    <button class="btn btn-sm btn-primary  ml-1 mb-1"
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
+        {{ $t('stopTiktok') }}
     </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.clear_cache_dialog.showModal()">
+        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
+        {{ $t('clearData') }}
+    </button>
+    
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="grantTikTok">
         <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />
         {{ $t('grantTikTok') }}
-    </button>
-
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="enableFastInput">
-        <font-awesome-icon icon="fa fa-keyboard" class="h-3 w-3 text-primary-content" />
-        {{ $t('enableFastInput') }}
-    </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" :data-tip="$t('enableTCP')"
-        @click="enableTCP">
-        <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />
-        {{ $t('enableTCP') }}
     </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.proxy_dialog.show()">
         <font-awesome-icon icon="fa fa-server" class="h-3 w-3" />
@@ -27,7 +26,22 @@
         <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-primary-content" />
         {{ $t('screenOff') }}
     </button>
-
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="app_install">
+        <font-awesome-icon icon="fa fa-download" class="h-3 w-3 text-primary-content" />
+        {{ $t('installApk') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.uninstall_dialog.showModal()">
+        <font-awesome-icon icon="fa-brands fa-android" class="h-3 w-3 text-primary-content" />
+        {{ $t('uninstallApk') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="uploadVideo">
+        <font-awesome-icon icon="fa fa-upload" class="h-3 w-3 text-primary-content" />
+        {{ $t('uploadToGallery') }}
+    </button>
+    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="clearGallery">
+        <font-awesome-icon icon="fa fa-eraser" class="h-3 w-3 text-primary-content" />
+        {{ $t('clearGallery') }}
+    </button>
     <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('initDevice')">
         <font-awesome-icon icon="fa fa-undo" class="h-3 w-3 text-pink-500" />
         {{ $t('initAppAgent') }}
@@ -38,10 +52,7 @@
         {{ $t('openAppAgent') }}
     </button>
 
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="open_dir('')">
-        <font-awesome-icon icon="fa fa-folder" class="h-3 w-3" />
-        {{ $t('openAppDir') }}
-    </button>
+  
 
     <button class="btn btn-sm btn-primary ml-1 mb-1" @click="$refs.screen_size_dialog.show()">
         <font-awesome-icon icon="fa fa-expand" class="h-3 w-3" />
@@ -52,7 +63,20 @@
         <font-awesome-icon icon="fa fa-tv" class="h-3 w-3" />
         {{ $t('adjustResolution') }}
     </button>
+    <dialog ref="uninstall_dialog" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">{{ $t('inputPackageName') }}</h3>
+            <div class="flex flex-row items-center p-2">
+                <input class="input input-bordered input-sm" type="text" v-model="uninstall_package" />
+            </div>
+            <button class="btn btn-sm btn-success ml-2" @click="uninstallApk">{{
+                $t('confirm') }}</button>
 
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
     <dialog ref="proxy_dialog" class="modal">
         <div class="modal-box bg-base-300">
             <h3 class="font-bold text-lg">{{ $t('proxyServer') }}</h3>
@@ -141,6 +165,20 @@
             <button>close</button>
         </form>
     </dialog>
+
+    <dialog ref="clear_cache_dialog" class="modal">
+        <div class="modal-box bg-base-300">
+            <h3 class="font-bold text-lg">{{ $t('clearData') }}</h3>
+            <p class="py-4">{{ $t('clearCacheConfirm') }}</p>
+            <div class="modal-action">
+                <button class="btn btn-sm btn-success" @click="confirmClearCache">{{ $t('confirm') }}</button>
+                <button class="btn btn-sm" @click="$refs.clear_cache_dialog.close()">{{ $t('cancel') }}</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
 </template>
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
@@ -168,12 +206,28 @@ export default {
         }
     },
     methods: {
-        async enableTCP() {
-            await this.$emiter('adbEventData', { args: ['tcpip', '5555'] })
+        async app_install() {
+            await this.$emiter('installApks', {})
         },
-        async enableFastInput() {
-            await this.$emiter('adbEventData', { args: ['shell', 'ime', 'set', 'com.github.tikmatrix/.FastInputIME'] })
+        async uploadVideo() {
+            await this.$emiter('uploadFiles', {})
         },
+        async uninstallApk() {
+            this.$refs.uninstall_dialog.close()
+            await this.$emiter('adbEventData', { args: ['shell', 'pm', 'uninstall', this.uninstall_package] })
+        },
+        async clearGallery() {
+            await this.$emiter('clearGallery', {})
+        },
+        async clearCache() {
+            this.$refs.clear_cache_dialog.showModal();
+        },
+        async confirmClearCache() {
+            this.$refs.clear_cache_dialog.close();
+            await this.$emiter('adbEventData', { args: ['shell', 'pm', 'clear', this.settings.packagename] });
+        },
+       
+        
         async grantTikTok() {
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.READ_EXTERNAL_STORAGE'] })
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.WRITE_EXTERNAL_STORAGE'] })

@@ -5,7 +5,12 @@
         <div class="flex items-center space-x-3">
           <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired"
             class="btn-primary" />
-
+          <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'accounts' })">
+            <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
+          </button>
+          <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
+            <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
+          </button>
           <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-sm flex-row items-center">
             <label class="label cursor-pointer flex items-center space-x-2">
               <span class="text-sm font-medium">{{ $t('autoWakeUp') }}</span>
@@ -211,8 +216,8 @@ export default {
   },
   watch: {
     groups(val) {
-        this.mydevices.forEach(device => {
-            device.group_name = this.groups.find(group => group.id === device.group_id)?.name
+      this.mydevices.forEach(device => {
+        device.group_name = this.groups.find(group => group.id === device.group_id)?.name
       })
     },
     listMode(val) {
@@ -250,8 +255,8 @@ export default {
     refreshPage() {
       this.$emiter('refreshDevice', {})
     },
-    
-    
+
+
 
     async scan() {
       this.scaning = true

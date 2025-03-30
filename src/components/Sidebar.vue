@@ -2,21 +2,21 @@
   <div class="sidebar bg-base-100 m-1 flex flex-col rounded-lg shadow w-1/4 h-screen overflow-y-scroll no-scrollbar">
     <div class="pl-2 pr-2 pt-2 pb-14">
       
-      <div class="tabs tabs-lift">
+      <div class="tabs tabs-sm tabs-border border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
         <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('general')" checked="checked" />
-        <div class="tab-content">
+          <div class="tab-content mt-2">
           <General :settings="settings" />
         </div>
-        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('quickActions')" />
-        <div class="tab-content">
-          <QuickActions :settings="settings" />
+        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('customCommands')" />
+        <div class="tab-content mt-2">
+          <CustomCommands :settings="settings" />
         </div>
         <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('scripts')" />
-        <div class="tab-content">
+        <div class="tab-content mt-2">
           <Scripts :settings="settings" />
         </div>
       </div>
-     
+
       <div class="flex flex-col">
         <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('tasks') }}</span>
         <div class="flex flex-row flex-wrap border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
@@ -145,6 +145,7 @@ import General from './General.vue'
 import Scripts from './Scripts.vue'
 import Tasks from './Tasks.vue'
 import QuickActions from './QuickActions.vue';
+import CustomCommands from './CustomCommands.vue';
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
 
@@ -169,7 +170,8 @@ export default {
     General,
     Tasks,
     Scripts,
-    QuickActions
+    QuickActions,
+    CustomCommands
   },
   computed: {
     sortedGroups() {
@@ -323,6 +325,14 @@ export default {
     },
 
     async uploadFiles() {
+      if (this.selection.length == 0) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
+        return
+      }
       const filePath = await open({
         multiple: true, // 是否允许多选文件
         directory: false, // 是否选择目录
@@ -330,8 +340,14 @@ export default {
           { name: 'Upload Files', extensions: ['mp4', 'jpg', 'png', 'jpeg'] },
         ]
       });
-
-      console.log('Selected file path:', filePath);
+      if (!filePath) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noFilesSelected'),
+          timeout: 2000
+        });
+        return
+      }
       this.$service
         .upload_video({
           files: filePath,
@@ -357,8 +373,14 @@ export default {
           { name: 'Apk Files', extensions: ['apk'] },
         ]
       });
-
-      console.log('Selected file path:', filePath);
+      if (!filePath) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noFilesSelected'),
+          timeout: 2000
+        });
+        return
+      }
       let args = {
         apk_path: filePath,
       }
