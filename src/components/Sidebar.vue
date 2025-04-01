@@ -1,10 +1,10 @@
 <template>
   <div class="sidebar bg-base-100 m-1 flex flex-col rounded-lg shadow w-1/4 h-screen overflow-y-scroll no-scrollbar">
     <div class="pl-2 pr-2 pt-2 pb-14">
-      
+
       <div class="tabs tabs-sm tabs-border border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
         <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('general')" checked="checked" />
-          <div class="tab-content mt-2">
+        <div class="tab-content mt-2">
           <General :settings="settings" />
         </div>
         <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('customCommands')" />
@@ -45,10 +45,12 @@
               <span class="text-xs">{{ $t('moveToGroup') }}</span>
               <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
             </div>
-            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow ring">
-              <li v-for="(item, index) in groups" :key="item.id">
-                <a @click="moveToGroup(0, item.id)">{{
-                  item.name }}</a>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow ring max-h-96 overflow-y-auto whitespace-nowrap">
+              <li v-for="(item, index) in groups" :key="item.id" class="w-full">
+                <a @click="moveToGroup(0, item.id)" >
+                  <span class="text-xs">{{ item.id }}.</span>
+                  <span class="font-bold">{{ item.name }}</span>
+                </a>
               </li>
             </ul>
           </div>
@@ -128,16 +130,7 @@
     </div>
   </div>
 
-  <dialog ref="init_dialog" class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">{{ $t('initing') }}{{ init_progress }}</h3>
-      <div class="modal-body">
-        <div class="flex flex-row justify-between text-center items-center">
-          <progress class="progress progress-success w-full"></progress>
-        </div>
-      </div>
-    </div>
-  </dialog>
+  
 </template>
 <script>
 
@@ -196,7 +189,6 @@ export default {
         0: [],
       },
       port: -1,
-      init_progress: '0/0',
       listeners: [],
       adImage: '',
       adLink: '',
@@ -548,14 +540,22 @@ export default {
         });
         return
       }
-      this.$refs.init_dialog.showModal()
       for (let i = 0; i < this.selection.length; i++) {
-        this.init_progress = `${i + 1}/${this.selection.length}`
-        await this.$service.init({
+        this.$emiter('NOTIFY', {
+          type: 'info',
+          message: `${this.$t('initing')} ${this.selection[i]}`,
+          timeout: 2000
+        });
+        this.$service.init({
           serials: [this.selection[i]],
+        }).then(async res => {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${this.$t('initSuccess')}`,
+            timeout: 2000
+          });
         })
       }
-      this.$refs.init_dialog.close()
     },
 
 
