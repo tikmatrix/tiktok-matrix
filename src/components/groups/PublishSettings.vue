@@ -46,7 +46,7 @@
             <label for="image" class="ml-2">{{ $t('image') }}</label>
           </div>
           <div class="flex items-center" v-if="mygroup.publish_type == 1">
-            <input class="border-2 border-gray-300 p-2 rounded col-span-1 input-sm" v-model="mygroup.image_count"
+            <input class="border-2 border-gray-300 p-2 rounded col-span-1 input-md" v-model="mygroup.image_count"
               :placeholder="$t('imageCount')" type="number" />
           </div>
         </div>
@@ -86,12 +86,12 @@
         <label class="font-bold w-40">{{ $t('loadSoundWaitTime') }}:</label>
         <div class="flex flex-col">
           <div class="flex justify-between items-center mb-1 gap-1">
-            <span class="text-sm font-bold text-primary">{{ mygroup.sound_wait_time }}</span>
-            <span class="text-sm text-info">{{ $t('second') }}</span>
+            <span class="text-md font-bold text-primary">{{ mygroup.sound_wait_time }}</span>
+            <span class="text-md text-info">{{ $t('second') }}</span>
           </div>
-          <input type="range" min="5" max="30" step="1" class="range range-success range-sm"
+          <input type="range" min="5" max="30" step="1" class="range range-success range-md"
             v-model="mygroup.sound_wait_time" />
-          <div class="flex justify-between text-xs px-1">
+          <div class="flex justify-between text-md px-1">
             <span>5</span>
             <span>30</span>
           </div>

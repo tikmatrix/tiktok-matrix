@@ -109,6 +109,25 @@ export default {
             }
           })
           await this.$emiter('reload_tasks', {})
+        }else if (json.action === 'agent_status') {
+          let serial = json.serial
+          let status = json.status
+          this.devices.forEach(device => {
+            if (device.real_serial === serial) {
+              if(status === -1){
+                device.task_status = -1
+              }else if(status === 0&&device.task_status !== 1){
+                //task is not running
+                device.task_status = 0
+              }else{
+                //task is running,do nothing
+                console.log('task is running,do nothing')
+              }
+            }
+          })
+          await this.$emiter('reload_tasks', {})
+        }else if (json.action === 'heartbeat') {
+          await this.$emiter('heartbeat', {})
         }
       }
       this.ws.onclose = async () => {

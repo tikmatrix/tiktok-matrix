@@ -2,26 +2,27 @@
   <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
     <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage">
       <template v-slot:buttons>
-        <div class="flex items-center space-x-3">
-          <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired"
-            class="btn-primary" />
-          <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'accounts' })">
+        <div class="flex items-center space-x-2 ml-2">
+          <button class="btn btn-md btn-primary" @click="$refs.scan_dialog.show()">
+            <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
+          </button>
+          <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
             <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
           </button>
-          <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
+          <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
             <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
           </button>
-          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-sm flex-row items-center">
+          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
             <label class="label cursor-pointer flex items-center space-x-2">
-              <span class="text-sm font-medium">{{ $t('autoWakeUp') }}</span>
-              <input type="checkbox" class="toggle toggle-primary toggle-sm" v-model="settings.uiautomator_status"
+              <span class="text-md font-medium">{{ $t('autoWakeUp') }}</span>
+              <input type="checkbox" class="toggle toggle-primary toggle-md" v-model="settings.uiautomator_status"
                 true-value="1" false-value="0" @change="update_settings" />
             </label>
           </div>
 
-          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-sm flex-row items-center">
+          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
             <label class="label cursor-pointer flex items-center space-x-2">
-              <span class="text-sm font-medium">{{ $t('displayMode') }}</span>
+              <span class="text-md font-medium">{{ $t('displayMode') }}</span>
               <label class="swap swap-rotate">
                 <input type="checkbox" v-model="listMode" />
                 <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-5 h-5 text-primary" />
@@ -35,7 +36,7 @@
         <div class="flex flex-wrap gap-2 p-4">
           <div class="flex flex-wrap gap-2 flex-1" v-if="listMode">
             <div class="overflow-x-auto">
-              <table class="table table-sm">
+              <table class="table table-md">
                 <thead>
                   <tr>
                     <th>{{ $t('no') }}</th>
@@ -59,16 +60,16 @@
                     <td>{{ device.mode }}</td>
                     <td>{{ device.real_serial }}</td>
                     <td>
-                      <div class="badge badge-neutral badge-sm" v-if="device.connect_type == '0'">USB</div>
-                      <div class="badge badge-primary badge-sm" v-else>TCP</div>
+                      <div class="badge badge-neutral badge-md" v-if="device.connect_type == '0'">USB</div>
+                      <div class="badge badge-primary badge-md" v-else>TCP</div>
                     </td>
                     <td>{{ device.group_name }}</td>
                     <td>
-                      <div class="badge badge-success badge-sm" v-if="device.task_status == '1'">
+                      <div class="badge badge-success badge-md" v-if="device.task_status == '1'">
                         {{ $t('running') }}
                       </div>
-                      <div class="badge badge-primary badge-sm" v-else>
-                        {{ $t('idle') }}
+                      <div class="badge badge-primary badge-md" v-else>
+                        {{ $t('ready') }}
                       </div>
                     </td>
                     <td>{{ device.sort }}</td>
@@ -126,25 +127,25 @@
   </div>
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
     :z="20" drag-handle=".drag"
-    class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-sm">
+    class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
     <Miniremote :device="device" :no="device.key" :big="true" :key="device.real_serial + '_big'" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300">
       <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
       <div class="flex flex-row items-center">
-        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_1" />
+        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_1" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_2" />
+        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_2" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_3" />
+        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_3" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20 ring ring-info" type="number" v-model="ip_4" />
+        <input class="input input-bordered input-md w-20 ring ring-info" type="number" v-model="ip_4" />
         <span class="font-bold p-2 mr-1 ml-1 text-lg">-</span>
-        <input class="input input-bordered input-sm w-20 ring ring-success" type="number" v-model="ip_5" />
+        <input class="input input-bordered input-md w-20 ring ring-success" type="number" v-model="ip_5" />
       </div>
       <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
-      <input class="input input-bordered input-sm w-24 ring" type="number" v-model="port" />
+      <input class="input input-bordered input-md w-24 ring" type="number" v-model="port" />
       <MyButton @click="scan" label="startScan" :showLoading="scaning" icon="fa fa-search" />
       <span class="label-text ml-2">{{ scanResult }}</span>
     </div>

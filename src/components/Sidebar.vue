@@ -2,7 +2,7 @@
   <div class="sidebar bg-base-100 m-1 flex flex-col rounded-lg shadow w-1/4 h-screen overflow-y-scroll no-scrollbar">
     <div class="pl-2 pr-2 pt-2 pb-14">
 
-      <div class="tabs tabs-sm tabs-border border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
+      <div class="tabs tabs-md tabs-border border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
         <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('general')" checked="checked" />
         <div class="tab-content mt-2">
           <General :settings="settings" />
@@ -25,82 +25,77 @@
       </div>
       <div class="flex flex-col">
         <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('groups') }}</span>
-        <button class="btn btn-sm btn-primary border-1 border-success text-primary-content p-0 mt-1" @click="addGroup">
+        <button class="btn btn-md btn-primary border-1 border-success text-primary-content p-0 mt-1" @click="addGroup">
           <font-awesome-icon icon="fa-solid fa-plus" class="h-4 w-4" />
-          <span class="text-xs">{{ $t('addGroup') }}</span>
+          <span class="text-md">{{ $t('addGroup') }}</span>
         </button>
         <input ref="groupNameInput" v-if="showAddGroup"
-          class="input input-sm input-bordered w-full max-w-xs mt-2 ring-1 ring-success" type="text"
+          class="input input-md input-bordered w-full max-w-xs mt-2 ring-1 ring-success" type="text"
           v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
-        <div class="flex flex-row form-control items-center">
-          <label class="label cursor-pointer">
-            <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(0)"
+        <div class="bg-base-300 rounded-md mt-2 shadow-lg ring-1">
+          <label class="label cursor-pointer m-1">
+            <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(0)"
               :checked="isSelectAll(0)" />
-            <span class="label-text text-primary text-xs">{{ $t('allDevices') }} ({{ groupDevices[0].length
+            <span class="label-text text-primary text-md">{{ $t('allDevices') }} ({{ groupDevices[0].length
             }})</span>
           </label>
 
-          <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-xs text-right flex-1">
+          <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-md text-right flex-1">
             <div tabindex="0" role="button" class="btn bg-transparent hover:bg-transparent border-none text-primary">
-              <span class="text-xs">{{ $t('moveToGroup') }}</span>
+              <span class="text-md">{{ $t('moveToGroup') }}</span>
               <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
             </div>
-            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow ring max-h-96 overflow-y-auto whitespace-nowrap">
-              <li v-for="(item, index) in groups" :key="item.id" class="w-full">
-                <a @click="moveToGroup(0, item.id)" >
-                  <span class="text-xs">{{ item.id }}.</span>
-                  <span class="font-bold">{{ item.name }}</span>
-                </a>
+            
+            <ul tabindex="0"
+              class="dropdown-content flex-col bg-base-100 max-h-96 max-w-48 overflow-y-auto text-left p-2 rounded-md shadow-lg ring-1 space-y-1">
+              <li v-for="(item, index) in groups" :key="item.id" :class="['px-2 py-1 link w-full border-b border-base-300 last:border-none rounded-md', index % 2 == 0 ? 'bg-primary/10' : 'bg-primary/20']">
+                  {{ item.name }}
               </li>
             </ul>
           </div>
-          <span class="label-text text-xs text-right">{{ $t('selected') }}
+          <span class="label-text text-md text-right">{{ $t('selected') }}
             {{ selections[0].length }}
             {{ $t('units') }}
           </span>
-
+          <drag-select v-model="selection">
+            <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
+              {{ index + 1 }}
+            </drag-select-option>
+          </drag-select>
         </div>
-        <drag-select v-model="selection">
-          <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
-            {{ index + 1 }}
-          </drag-select-option>
-        </drag-select>
-        <div class="border border-base-300 bg-base-500 rounded-md mt-2 shadow-lg" v-for="(item, index) in sortedGroups"
-          :key="item.id">
+
+        <div class="bg-base-300 rounded-md mt-2 shadow-lg ring-1" v-for="(item, index) in sortedGroups" :key="item.id">
           <div class="flex flex-row form-control items-center">
-            <label class="label cursor-pointer">
-              <input type="checkbox" class="checkbox checkbox-sm ring-1 mr-1" @change="selectAll(item.id)"
+            <label class="label cursor-pointer m-1">
+              <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(item.id)"
                 :checked="isSelectAll(item.id)" />
-              <span class="label-text text-primary  text-xs">{{ item.name }}({{ groupDevices[item.id].length
+              <span class="label-text text-primary  text-md">{{ item.name }}({{ groupDevices[item.id].length
               }})</span>
             </label>
             <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
               @click="renameGroup(item)"></font-awesome-icon>
-
-
-
             <div class="tooltip" :data-tip="$t('deleteGroup')">
               <font-awesome-icon icon="fa-solid fa-trash" class="text-error cursor-pointer ml-2"
                 @click="deleteGroup(item.id)"></font-awesome-icon>
             </div>
 
-            <span class="label-text text-xs text-right flex-1 mr-2">{{ $t('selected') }}
+            <span class="label-text text-md text-right flex-1 mr-2">{{ $t('selected') }}
               {{ selections[item.id].length }}
               {{ $t('units') }}
             </span>
 
           </div>
 
-          <div class="flex flex-row form-control items-center">
-            <button class="btn btn-sm btn-primary ml-1 mb-1"
+          <div class="flex flex-row form-control items-center mt-1">
+            <button class="btn btn-md btn-primary ml-1 mb-1"
               @click="$emiter('showDialog', { name: 'trainSettings', group: item })">
               <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
             </button>
-            <button class="btn btn-sm btn-primary ml-1 mb-1"
+            <button class="btn btn-md btn-primary ml-1 mb-1"
               @click="$emiter('showDialog', { name: 'publishSettings', group: item })">
               <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
             </button>
-            <button class="btn btn-sm btn-primary ml-1 mb-1"
+            <button class="btn btn-md btn-primary ml-1 mb-1"
               @click="$emiter('showDialog', { name: 'materials', group: item })">
               <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
             </button>
@@ -116,13 +111,13 @@
           <img src="https://gou.niaozun.com/media/product/1/image/2024/06/26/e4c4d51d0598b76eeb0e2f4ef84bdea2.png"
             class="w-full h-full object-cover" />
         </a>
-        <div class="absolute top-10 bg-black/50 text-white text-xs p-1 text-center">
-          <span class="text-sm font-bold">
+        <div class="absolute top-10 bg-black/50 text-white text-md p-1 text-center">
+          <span class="text-md font-bold">
             {{ $t('adTips') }}
           </span>
         </div>
         <div class="absolute top-0 right-0">
-          <button class="btn btn-sm btn-primary" @click="hideAd = true">
+          <button class="btn btn-md btn-primary" @click="hideAd = true">
             {{ $t('close') }}
           </button>
         </div>
@@ -130,7 +125,7 @@
     </div>
   </div>
 
-  
+
 </template>
 <script>
 

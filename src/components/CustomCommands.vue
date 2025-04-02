@@ -2,11 +2,11 @@
     <div class="custom-commands">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <button class="btn btn-sm btn-primary" @click="showCreateDialog">
+                <button class="btn btn-md btn-primary" @click="showCreateDialog">
                     <font-awesome-icon icon="fa-plus" class="h-3 w-3 mr-1" />
                     {{ $t('addCommand') }}
                 </button>
-                <button class="btn btn-sm btn-outline btn-warning ml-2" @click="confirmReset">
+                <button class="btn btn-md btn-outline btn-warning ml-2" @click="confirmReset">
                     <font-awesome-icon icon="fa-refresh" class="h-3 w-3 mr-1" />
                     {{ $t('resetCommands') }}
                 </button>
@@ -16,7 +16,7 @@
         <div class="saved-commands" v-if="commands.length > 0">
             <div v-for="(cmd, index) in commands" :key="index" class="bg-base-300 p-2 rounded-md mb-1">
                 <div class="flex justify-between items-center">
-                    <h3 class="font-bold text-sm">{{ cmd.name }}</h3>
+                    <h3 class="font-bold text-md">{{ cmd.name }}</h3>
                     <div>
                         <button class="btn btn-xs btn-primary mr-1" @click="executeCommand(cmd)">
                             <font-awesome-icon icon="fa-play" class="h-3 w-3" />
@@ -31,7 +31,7 @@
                 </div>
             </div>
         </div>
-        <div v-else class="text-center text-sm py-4 text-base-content opacity-70">
+        <div v-else class="text-center text-md py-4 text-base-content opacity-70">
             {{ $t('noSavedCommands') }}
         </div>
 
@@ -46,17 +46,17 @@
                     <label class="label">
                         <span class="label-text">{{ $t('commandName') }}</span>
                     </label>
-                    <input type="text" class="input input-bordered input-sm w-full" v-model="newCommand.name" 
+                    <input type="text" class="input input-bordered input-md w-full" v-model="newCommand.name" 
                            :placeholder="$t('enterCommandName')" />
                     
                     <label class="label mt-2">
                         <span class="label-text">{{ $t('commandArgs') }}</span>
                     </label>
-                    <textarea class="textarea textarea-bordered h-20 w-full text-xs" v-model="newCommand.args" 
+                    <textarea class="textarea textarea-bordered h-20 w-full text-md" v-model="newCommand.args" 
                               :placeholder="$t('enterCommandArgs')"></textarea>
 
                     <div class="divider">{{ $t('tips') }}</div>
-                    <div class="bg-base-200 p-3 rounded-md text-xs mb-4">
+                    <div class="bg-base-200 p-3 rounded-md text-md mb-4">
                         <p>{{ $t('adbCommandTips') }}</p>
                         <p>{{ $t('multiCommandTips') }}</p>
                         <p class="mt-2">{{ $t('adbCommandExamples') }}:</p>
@@ -69,10 +69,10 @@
                 </div>
                 
                 <div class="modal-action">
-                    <button class="btn btn-sm btn-primary" @click="addCommand" :disabled="!isValidCommand">
+                    <button class="btn btn-md btn-primary" @click="addCommand" :disabled="!isValidCommand">
                         {{ editing ? $t('updateCommand') : $t('addCommand') }}
                     </button>
-                    <button class="btn btn-sm" @click="closeDialog">
+                    <button class="btn btn-md" @click="closeDialog">
                         {{ $t('cancel') }}
                     </button>
                 </div>
@@ -88,10 +88,10 @@
                 <h3 class="font-bold text-lg mb-4">{{ $t('resetConfirmTitle') }}</h3>
                 <p>{{ $t('resetConfirmMessage') }}</p>
                 <div class="modal-action">
-                    <button class="btn btn-sm btn-error" @click="resetCommands">
+                    <button class="btn btn-md btn-error" @click="resetCommands">
                         {{ $t('reset') }}
                     </button>
-                    <button class="btn btn-sm" @click="$refs.resetDialog.close()">
+                    <button class="btn btn-md" @click="$refs.resetDialog.close()">
                         {{ $t('cancel') }}
                     </button>
                 </div>

@@ -9,7 +9,7 @@
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
-          <table class="table table-sm">
+          <table class="table table-md">
             <thead>
               <tr>
                 <th>{{ $t('id') }}</th>
@@ -48,12 +48,12 @@
                 </td>
                 <td>
                   <div class="space-x-4">
-                    <button class="btn btn-sm" :class="account.status == 0 ? 'btn-warning' : 'btn-success'"
+                    <button class="btn btn-md" :class="account.status == 0 ? 'btn-warning' : 'btn-success'"
                       @click="toggleStatus(account)">
                       {{ account.status == 0 ? $t('disable') : $t('enable') }}
                     </button>
-                    <button class="btn btn-sm btn-primary" @click="editAccount(account)">{{ $t('edit') }}</button>
-                    <button class="btn btn-sm btn-error" @click="deleteAccount(account)">
+                    <button class="btn btn-md btn-primary" @click="editAccount(account)">{{ $t('edit') }}</button>
+                    <button class="btn btn-md btn-error" @click="deleteAccount(account)">
                       {{ $t('delete') }}
                     </button>
                   </div>

@@ -2,7 +2,7 @@
   <dialog ref="buy_liscense_dialog" class="modal">
     <div class="modal-box w-11/12 max-w-5xl overflow-hidden">
       <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <div class="modal-body">
         <div class="relative isolate px-6 py-6 w-full">
@@ -15,10 +15,10 @@
             <div class="flex items-center flex-row gap-2 w-full">
               <label class="font-bold w-28">{{ $t('mid') }}: </label>
               <div class="relative grow">
-                <input id="mid" type="text" placeholder="mid" class="input input-sm w-full input-bordered ring-1 pr-20"
+                <input id="mid" type="text" placeholder="mid" class="input input-md w-full input-bordered ring-1 pr-20"
                   v-model="license.mid" readonly disabled />
                 <button @click="copyText(license.mid, $event)"
-                  class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none">
+                  class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none">
                   {{ $t('copy') }}
                 </button>
               </div>
@@ -33,29 +33,29 @@
               <label class="font-bold w-28">{{ $t('licenseCode') }}: </label>
               <div class="relative grow">
                 <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" :disabled="license.leftdays > 0"
-                  class="input input-sm w-full input-bordered ring-1 pr-20" v-model="license.license" />
-                <button @click="activate" class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none"
+                  class="input input-md w-full input-bordered ring-1 pr-20" v-model="license.license" />
+                <button @click="activate" class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none"
                   v-if="license.leftdays <= 0">
                   {{ $t('activate') }}
                 </button>
                 <button @click="copyText(license.license, $event)"
-                  class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none" v-else>
+                  class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none" v-else>
                   {{ $t('copy') }}
                 </button>
               </div>
               <div class="relative grow">
                 <input type="text" :placeholder="$t('affiliateCode')" :disabled="license.affiliate_discount > 0"
-                  class="input input-sm w-full input-bordered ring-1 pr-20" v-model="license.affiliate_code" />
+                  class="input input-md w-full input-bordered ring-1 pr-20" v-model="license.affiliate_code" />
                 <span v-if="license.affiliate_discount > 0"
                   class="absolute right-24 top-1/2 -translate-y-1/2 badge badge-success">
                   -{{ license.affiliate_discount }}%
                 </span>
                 <button @click="applyAffiliateCode" v-if="license.affiliate_discount == 0"
-                  class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none">
+                  class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none">
                   {{ $t('apply') }}
                 </button>
                 <button @click="copyText(license.affiliate_code, $event)"
-                  class="absolute right-0 top-0 btn btn-sm btn-primary h-full rounded-l-none" v-else>
+                  class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none" v-else>
                   {{ $t('copy') }}
                 </button>
               </div>
@@ -76,9 +76,9 @@
             <img :src="order.qrcode" class="w-50 h-50" />
             <div class="flex items-center flex-row gap-2 w-full mt-2">
               <label class="font-bold text-right col-span-1">{{ $t('depositAddress') }}:</label>
-              <input type="text" class="input input-sm grow input-bordered ring-1" v-model="order.to_address" readonly
+              <input type="text" class="input input-md grow input-bordered ring-1" v-model="order.to_address" readonly
                 disabled />
-              <button @click="copyText(order.to_address, $event)" class="btn btn-sm btn-primary">
+              <button @click="copyText(order.to_address, $event)" class="btn btn-md btn-primary">
                 {{ $t('copy') }}
               </button>
             </div>
@@ -116,7 +116,7 @@
                 {{ $t(tier.description) }}
               </p>
               <ul role="list"
-                :class="[tier.featured ? 'text-neutral-content' : 'text-base-content', 'mt-8 space-y-3 text-sm/6']">
+                :class="[tier.featured ? 'text-neutral-content' : 'text-base-content', 'mt-8 space-y-3 text-md/6']">
                 <li v-for="feature in tier.features" :key="feature" class="flex gap-x-3">
                   <CheckIcon :class="[tier.featured ? 'text-accent' : 'text-primary', 'h-6 w-5 flex-none']"
                     aria-hidden="true" />
@@ -126,7 +126,7 @@
               <button @click="tier.onclicks[0]" :aria-describedby="tier.id"
                 :class="[tier.featured ? 'btn-primary text-primary-content shadow-xs' :
                   'btn-accent text-accent-content shadow-xs',
-                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-8 rounded-md px-3.5 py-2.5 text-center text-sm font-semibold']">
+                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-8 rounded-md px-3.5 py-2.5 text-center text-md font-semibold']">
                 <!-- github icon -->
                 <font-awesome-icon v-if="tier.name === 'free'" icon="fab fa-github" class="h-6 w-6" />
 
@@ -143,7 +143,7 @@
               <button @click="tier.onclicks[1]" :aria-describedby="tier.id" v-if="tier.buttons[1]"
                 :class="[tier.featured ? 'btn-secondary text-secondary-content shadow-xs' :
                   'btn-neutral text-neutral-content shadow-xs',
-                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-1 py-2 text-center text-xs font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
+                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
                 <!-- bsc network icon -->
 
                 <svg class="fill-current text-orange-300 h-6 w-6" xmlns="http://www.w3.org/2000/svg"

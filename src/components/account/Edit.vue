@@ -45,8 +45,8 @@
     <div class="flex w-full items-center gap-2 mb-2">
       <label class="font-bold w-32">{{ $t('device') }}:</label>
         <form class="filter" v-if="devices.length > 0">
-          <input class="btn btn-sm btn-error" type="reset" value="×" />
-          <input class="btn btn-sm btn-success" type="radio" name="frameworks" :aria-label="device.key" v-for="(device, index) in devices"
+          <input class="btn btn-md btn-error" type="reset" value="×" />
+          <input class="btn btn-md btn-success" type="radio" name="frameworks" :aria-label="device.key" v-for="(device, index) in devices"
             :key="device.serial" @click="selectDevice(device)" :checked="device.key === myaccount.device_index" />
         </form>
         <div v-else class="text-gray-500">{{ $t('noDevice') }}  </div>

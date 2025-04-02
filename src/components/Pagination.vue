@@ -1,13 +1,13 @@
 <template>
   <div class="bg-base-200">
     <div class="w-full flex items-center p-4 fixed bg-base-200 z-10 shadow-md">
-      <span class="font-bold p-2 text-sm">{{ $t('total') }}: {{ filteredItems.length }}</span>
+      <span class="font-bold p-2 text-md">{{ $t('total') }}: {{ filteredItems.length }}</span>
 
       <div class="join ring-1" v-if="pageCount > 1">
-        <button class="join-item btn btn-sm" @click="prevPage" :disabled="currentPage === 1">{{
+        <button class="join-item btn btn-md" @click="prevPage" :disabled="currentPage === 1">{{
           $t('previous') }}</button>
-        <button class="join-item btn btn-disabled btn-sm">{{ currentPage }} / {{ pageCount }}</button>
-        <button class="join-item btn btn-sm" @click="nextPage" :disabled="currentPage === pageCount">{{ $t('next')
+        <button class="join-item btn btn-disabled btn-md">{{ currentPage }} / {{ pageCount }}</button>
+        <button class="join-item btn btn-md" @click="nextPage" :disabled="currentPage === pageCount">{{ $t('next')
         }}</button>
       </div>
 
@@ -15,10 +15,10 @@
       <div class="relative ml-2" v-if="searchKeys">
         <font-awesome-icon :icon="['fas', 'search']" class="absolute left-3 top-1/2 transform -translate-y-1/2" />
         <input type="search" v-model="searchTerm" :placeholder="$t('enterTips')"
-          class="input input-bordered w-full max-w-xs pl-8 input-sm ring-1" />
+          class="input input-bordered w-full max-w-xs pl-8 input-md ring-1" />
       </div>
       <template v-if="uniqueGroupNames.length > 0">
-        <select v-model="searchGroup" class="select select-bordered max-w-xs ml-2 select-sm">
+        <select v-model="searchGroup" class="select select-bordered max-w-xs ml-2 select-md">
           <option value="">{{ $t('allGroups') }}</option>
           <option v-for="item in uniqueGroupNames" :key="item.group_name" :value="item.group_name">
             {{ item.group_name }}
@@ -28,7 +28,7 @@
       <MyButton icon="fa fa-refresh" @click="$emit('refresh')" label="refresh" v-if="showRefBtn" />
       <slot name="buttons"></slot>
     </div>
-    <div class="pt-16">
+    <div class="pt-20">
       <slot :items="paginatedItems"></slot>
     </div>
 

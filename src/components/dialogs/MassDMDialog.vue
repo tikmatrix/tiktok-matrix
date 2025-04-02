@@ -18,8 +18,8 @@
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('targetUsernamesPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/usernames.txt"
-        class="input input-sm grow input-bordered" v-model="target_username_path" />
-      <button class="btn btn-sm btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
+        class="input input-md grow input-bordered" v-model="target_username_path" />
+      <button class="btn btn-md btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
     </div>
     
 </template>

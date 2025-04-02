@@ -39,13 +39,13 @@
     </div>
     
     <!-- 单账号模式下显示的附加说明 -->
-    <div v-if="comment_mode === 'single-to-single'" class="mt-2 text-sm text-gray-500">
+    <div v-if="comment_mode === 'single-to-single'" class="mt-2 text-md text-gray-500">
       <font-awesome-icon icon="fa-solid fa-info-circle" class="mr-1" />
       <span>{{ $t('singleAccountModeTip') }}</span>
     </div>
     
     <!-- 多账号模式下显示的附加说明 -->
-    <div v-if="comment_mode === 'multi-to-single'" class="mt-2 text-sm text-gray-500">
+    <div v-if="comment_mode === 'multi-to-single'" class="mt-2 text-md text-gray-500">
       <font-awesome-icon icon="fa-solid fa-info-circle" class="mr-1" />
       <span>{{ $t('multiAccountModeTip') }}</span>
     </div>

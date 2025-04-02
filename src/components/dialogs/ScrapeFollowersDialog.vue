@@ -8,7 +8,7 @@
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('targetUsername') }}: </span>
-      <input class="input input-bordered input-sm" type="text" v-model="target_username"
+      <input class="input input-bordered input-md" type="text" v-model="target_username"
         :placeholder="$t('targetUsername')" />
     </div>
     

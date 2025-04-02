@@ -7,7 +7,7 @@
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
-          <table class="table table-sm">
+          <table class="table table-md">
             <thead>
               <tr>
                 <th>{{ $t('id') }}</th>
@@ -37,21 +37,21 @@
                   </div>
                 </td>
                 <td>
-                  <span class="text-sm">{{ material.no }}</span>
+                  <span class="text-md">{{ material.no }}</span>
                 </td>
                 <td>
-                  <span class="text-sm">{{ material.title ? material.title.substring(0, 10) + (material.title.length >
+                  <span class="text-md">{{ material.title ? material.title.substring(0, 10) + (material.title.length >
                     10 ? '...' : '')
                     + (material.title.length > 20 ? '...' : '') : '' }}</span>
                 </td>
                 <td>
-                  <span class="text-xs">{{ material.md5.substring(0,
+                  <span class="text-md">{{ material.md5.substring(0,
                     4) + '...' + material.md5.substring(material.md5.length - 4) }}</span>
                 </td>
                 <td>
-                  <button class="btn btn-sm btn-success" @click="showEditTitle(material)">{{ $t('editTitle')
+                  <button class="btn btn-md btn-success" @click="showEditTitle(material)">{{ $t('editTitle')
                   }}</button>
-                  <button class="bg-error hover:bg-red-700 text-primary-content btn btn-sm"
+                  <button class="bg-error hover:bg-red-700 text-primary-content btn btn-md"
                     @click="delete_material(material)">
                     {{ $t('delete') }}
                   </button>
@@ -66,7 +66,7 @@
     <dialog ref="detail_modal" class="modal">
       <div class="modal-box">
         <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
         <Detail :material="currentMaterial" />
       </div>
@@ -77,7 +77,7 @@
   <dialog ref="upload_dialog" class="modal">
     <div class="modal-box">
       <form method="dialog">
-        <!-- <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button> -->
+        <!-- <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button> -->
       </form>
       <h3 class="font-bold text-lg">Uploading...</h3>
       <div class="py-4">
@@ -89,7 +89,7 @@
   <dialog ref="edit_title_dialog" class="modal">
     <div class="modal-box">
       <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="font-bold text-lg">{{ $t('editTitle') }}</h3>
       <label class="input input-bordered flex items-center gap-2 my-4">

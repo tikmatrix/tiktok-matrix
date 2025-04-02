@@ -1,5 +1,5 @@
 <template>
-  <button :class="`btn btn-sm ${color} ml-2 mb-1 mt-1`" :disabled="disabled || loading" @click="handleClick">
+  <button :class="`btn btn-md ${color} ml-2 mb-1 mt-1`" :disabled="disabled || loading" @click="handleClick">
     <span class="loading loading-spinner" v-if="loading"></span>
     <font-awesome-icon v-if="icon && !loading" :icon="icon" class="h-4 w-4" />
     {{ $t(`${label}`) }}

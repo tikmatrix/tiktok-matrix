@@ -8,7 +8,7 @@
     </div>
       <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
         <span class="font-bold">{{ $t('maxViews') }}: </span>
-        <input class="input ring input-sm ml-2" type="number" v-model="maxViews"
+        <input class="input ring input-md ml-2" type="number" v-model="maxViews"
                     :placeholder="$t('maxViews')" />
       </div>
       

@@ -8,21 +8,21 @@
               <span class="font-bold bg-secondary px-3 py-1 rounded-lg text-secondary-content" v-if="big">
                 {{ no }}
               </span>
-              <span class="px-2 py-0.5 rounded-md font-medium" :class="[device.task_status == 1 ? 'bg-success/20 text-success' : 'bg-info/20 text-info',
-                getScaledFontSize]">
-                {{ device.task_status == 1 ? $t('running') : $t('idle') }}
+              <div :class="['status animate-bounce',getTaskStatusColor]"></div>
+              <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor,getScaledFontSize]">
+                {{ getTaskStatus }}
               </span>
             </div>
-            <span class="text-sm font-semibold" v-if="big">{{ name }}</span>
-            <div class="flex items-center gap-2">
+            <span class="text-md font-semibold" v-if="big">{{ name }}</span>
+            <div class="flex items-center gap-2"  v-if="big">
               <span class="px-2 py-0.5 bg-base-200 rounded" :class="getScaledFontSize">
                 {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
               </span>
-              <span class="font-medium" v-if="big">FPS: {{ fps.toFixed(0) }}</span>
+              <span class="font-medium">FPS: {{ fps.toFixed(0) }}</span>
             </div>
           </div>
-          <button class="btn btn-ghost btn-sm hover:text-error" @click="$emiter('closeDevice', this.device)" v-if="big">
-            <font-awesome-icon icon="fa fa-times" class="h-4 w-4" />
+          <button class="btn btn-ghost btn-md hover:text-error" @click="$emiter('closeDevice', this.device)" v-if="big">
+            <font-awesome-icon icon="fa fa-times" class="h-6 w-6" />
           </button>
         </div>
 
@@ -34,11 +34,11 @@
                 @mousemove="mouseMoveListener"></video>
               <div @click="$emiter('openDevice', this.device)"
                 class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center" v-if="!big">
-                <div class="bg-base-content p-2 rounded-md text-center opacity-70">
-                  <div class="font-bold text-primary-content text-xl">
-                    {{ no }}
+                <div class="bg-base-100 p-2 rounded-md text-center opacity-70 ">
+                  <div class="font-bold text-base-content text-md">
+                    {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
                   </div>
-                  <div class="text-primary-content font-bold">
+                  <div class="text-base-content font-bold">
                     {{ name }}
                   </div>
                 </div>
@@ -136,12 +136,7 @@ export default {
       real_height: 0,
       scaled: 1,
       connect_count: 0,
-      unlisten_closeDevice: null,
-      unlisten_openDevice: null,
-      unlisten_syncEventData: null,
-      unlisten_refreshDevice: null,
-      unlisten_screenScaled: null,
-      unlisten_screenResolution: null,
+      listeners: [],
       periodStartTime: 0,
       periodTime: 0,
       screenScaled: this.big ? 1 : (Number(localStorage.getItem('screenScaled')) || 100) / 100,
@@ -149,13 +144,51 @@ export default {
     }
   },
   computed: {
+    getTaskStatus() {
+      if (this.device.task_status == -1) {
+        return this.$t('preparing')
+      }
+      if (this.device.task_status == 1) {
+        return this.$t('running')
+      }
+      if (this.device.task_status == 0||this.device.task_status==2||this.device.task_status==3) {
+        return this.$t('ready')
+      }
+      return this.$t('preparing')
+    },
+    
     getScaledFontSize() {
-      if (this.big) return 'text-sm';
+      if (this.big) return 'text-md';
       if (this.screenScaled <= 0.65) return 'text-[0.6rem]';
       if (this.screenScaled <= 0.75) return 'text-[0.7rem]';
       if (this.screenScaled <= 0.85) return 'text-[0.8rem]';
-      if (this.screenScaled <= 1) return 'text-xs';
-      return 'text-sm';
+      if (this.screenScaled <= 1) return 'text-md';
+      return 'text-md';
+    },
+    getTaskStatusColor() {
+      if (this.device.task_status == -1) {
+        return 'status-warning'
+      }
+      if (this.device.task_status == 1) {
+        return 'status-success'
+      }
+      if (this.device.task_status == 0) {
+        return 'status-info'
+      }
+      return 'status-warning'
+    },
+    getTaskStatusTextColor() {
+      console.log('device.task_status:', this.device.task_status)
+      if (this.device.task_status == -1) {
+        return 'text-warning'
+      }
+      if (this.device.task_status == 1) {
+        return 'text-success'
+      }
+      if (this.device.task_status == 0) {
+        return 'text-info'
+      }
+      return 'text-warning'
     }
   },
   watch: {
@@ -179,6 +212,7 @@ export default {
     }
   },
   methods: {
+   
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -303,7 +337,7 @@ export default {
             case 0:
               this.name = message.data.replace(/[\x00]+$/g, '');
               // limit max length 5, other with ...
-              const max_length = this.big ? 10 : 5
+              const max_length = this.big ? 10 : 6
               if (this.name.length > max_length) {
                 this.name = this.name.substring(0, max_length) + '...'
               }
@@ -373,13 +407,13 @@ export default {
   },
   async mounted() {
     if (!this.big) {
-      this.unlisten_closeDevice = await this.$listen('closeDevice', (e) => {
+      this.listeners.push(await this.$listen('closeDevice', (e) => {
         if (e.payload.serial === this.device.serial) {
           this.operating = false
           this.$refs.display.play();
         }
-      });
-      this.unlisten_openDevice = await this.$listen('openDevice', (e) => {
+      }))
+      this.listeners.push(await this.$listen('openDevice', (e) => {
         if (e.payload.serial === this.device.serial) {
           this.operating = true
           this.$refs.display.play();
@@ -387,32 +421,33 @@ export default {
         if (e.payload.serial !== this.device.serial && this.operating) {
           this.operating = false
         }
-      });
-      this.unlisten_syncEventData = await this.$listen('syncEventData', (e) => {
+      }))
+      this.listeners.push(await this.$listen('syncEventData', (e) => {
         if (!e.payload.devices.includes(this.device.real_serial)) {
           return
         }
         if (this.scrcpy) {
           this.scrcpy.send(e.payload.data)
         }
-      });
-      this.unlisten_refreshDevice = await this.$listen('refreshDevice', (e) => {
+      }))
+      this.listeners.push(await this.$listen('refreshDevice', (e) => {
         console.log('refreshDevice', e.payload)
         this.closeScrcpy()
         this.closeJmuxer()
         this.syncDisplay()
-      });
-      this.unlisten_screenScaled = await this.$listen('screenScaled', (e) => {
+      }))
+      this.listeners.push(await this.$listen('screenScaled', (e) => {
         this.screenScaled = e.payload.scaled
 
 
-      });
-      this.unlisten_screenResolution = await this.$listen('screenResolution', (e) => {
+      }))
+      this.listeners.push(await this.$listen('screenResolution', (e) => {
         this.screenResolution = e.payload.resolution;
         this.closeScrcpy();
         this.closeJmuxer();
         this.syncDisplay();
-      });
+      }))
+      
       // 获取视频元素
       var video = this.$refs.display;
 
@@ -435,29 +470,21 @@ export default {
         }
       })
     }
+    //heartbeat
+    this.listeners.push(await this.$listen('heartbeat', (e) => {
+        let data = JSON.stringify({
+          type: 'heartbeat',
+        });
+        this.scrcpy.send(data)
+      }))
     this.syncDisplay()
   },
   async unmounted() {
     this.closeScrcpy()
     this.closeJmuxer()
-    if (this.unlisten_closeDevice) {
-      this.unlisten_closeDevice()
-    }
-    if (this.unlisten_openDevice) {
-      this.unlisten_openDevice()
-    }
-    if (this.unlisten_syncEventData) {
-      this.unlisten_syncEventData()
-    }
-    if (this.unlisten_refreshDevice) {
-      this.unlisten_refreshDevice()
-    }
-    if (this.unlisten_screenScaled) {
-      this.unlisten_screenScaled()
-    }
-    if (this.unlisten_screenResolution) {
-      this.unlisten_screenResolution()
-    }
+    this.listeners.forEach(listener => {
+      listener()
+    })
   },
 
 }

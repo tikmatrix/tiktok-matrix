@@ -228,7 +228,7 @@ export const i18n = createI18n({
       successRate: 'Success Rate',
       isRunning: 'Is Running',
       task: 'Task',
-      idle: 'Idle',
+      ready: 'Ready',
       running: 'Running',
       hideTips: 'Hide this device',
       installAPK: 'Install APK',
@@ -603,6 +603,7 @@ export const i18n = createI18n({
       resetConfirmMessage: 'This will delete all custom commands and restore default commands. Are you sure?',
       commandsResetSuccess: 'Commands reset successfully',
       reset: 'Reset',
+      preparing: 'Preparing',
     },
     'zh-CN': {
       viewDurationTips: '观看每个视频的时长范围, 系统会在这个范围内随机选择一个时长',
@@ -989,7 +990,7 @@ export const i18n = createI18n({
       successRate: '成功率',
       isRunning: '运行中',
       task: '任务',
-      idle: '空闲',
+      ready: '准备就绪',
       running: '运行中',
       remark: '备注',
       trainTimer: '养号定时器',
@@ -1156,6 +1157,7 @@ export const i18n = createI18n({
       resetConfirmMessage: '这将删除所有自定义命令并恢复默认命令。确定要继续吗？',
       commandsResetSuccess: '命令重置成功',
       reset: '重置',
+      preparing: '准备中',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1383,7 +1385,7 @@ export const i18n = createI18n({
       successRate: 'Уровень успеха',
       isRunning: 'Запущено',
       task: 'Задача',
-      idle: 'Простой',
+      ready: 'Готово',
       running: 'Выполняется',
       hideTips: 'Скрыть это устройство',
       installAPK: 'Установить APK',
@@ -1755,6 +1757,7 @@ export const i18n = createI18n({
       resetConfirmMessage: 'Это удалит все пользовательские команды и восстановит команды по умолчанию. Вы уверены?',
       commandsResetSuccess: 'Команды успешно сброшены',
       reset: 'Сбросить',
+      preparing: 'Подготовка',
     }
   }
 })

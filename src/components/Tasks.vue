@@ -25,11 +25,11 @@
                 <Countup :end="taskCounts[3] || 0" :options="{ duration: 3 }" />
             </div>
         </div>
-        <button class="btn btn-sm btn-primary mt-1 mb-1" @click="$emiter('showDialog', { name: 'tasks' })">
+        <button class="btn btn-md btn-primary mt-1 mb-1" @click="$emiter('showDialog', { name: 'tasks' })">
             <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('tasks') }}
         </button>
 
-        <button class="btn btn-sm btn-primary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
+        <button class="btn btn-md btn-primary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
             <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-error" />{{ $t('stopTask') }}
         </button>
         <fieldset class="fieldset p-1 bg-base-100 border border-base-300 rounded-box text-center align-middle flex flex-row items-center">

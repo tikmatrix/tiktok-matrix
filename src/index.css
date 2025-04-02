@@ -25,11 +25,11 @@
 }
 
 .drag-select__wrapper {
-  width: 100%;
   border: 1px solid #ccc;
   padding: 5px;
   margin: 2px;
   border-radius: 1px;
+  background: #fff;
 }
 
 .drag-select__area {

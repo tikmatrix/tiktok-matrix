@@ -38,13 +38,13 @@
         <!-- 最小观看时长 -->
         <div class="flex flex-col">
           <div class="flex justify-between items-center mb-1 gap-1">
-            <span class="text-sm">{{ $t('minDuration') }}:</span>
-            <span class="text-sm font-bold text-primary">{{ mygroup.min_duration }}</span>
-            <span class="text-sm text-info">{{ $t('second') }}</span>
+            <span class="text-md">{{ $t('minDuration') }}:</span>
+            <span class="text-md font-bold text-primary">{{ mygroup.min_duration }}</span>
+            <span class="text-md text-info">{{ $t('second') }}</span>
           </div>
           <input type="range" min="10" max="180" step="1" :max="Math.min(180, mygroup.max_duration)"
-            class="range range-success range-sm" v-model="mygroup.min_duration" />
-          <div class="flex justify-between text-xs px-1">
+            class="range range-success range-md" v-model="mygroup.min_duration" />
+          <div class="flex justify-between text-md px-1">
             <span>10</span>
             <span>{{ Math.min(180, mygroup.max_duration) }}</span>
           </div>
@@ -53,13 +53,13 @@
         <!-- 最大观看时长 -->
         <div class="flex flex-col">
           <div class="flex justify-between items-center mb-1 gap-1">
-            <span class="text-sm">{{ $t('maxDuration') }}:</span>
-            <span class="text-sm font-bold text-warning">{{ mygroup.max_duration }}</span>
-            <span class="text-sm text-info">{{ $t('second') }}</span>
+            <span class="text-md">{{ $t('maxDuration') }}:</span>
+            <span class="text-md font-bold text-warning">{{ mygroup.max_duration }}</span>
+            <span class="text-md text-info">{{ $t('second') }}</span>
           </div>
           <input type="range" min="10" max="180" step="1" :min="Math.max(10, mygroup.min_duration)"
-            class="range range-success range-sm" v-model="mygroup.max_duration" />
-          <div class="flex justify-between text-xs px-1">
+            class="range range-success range-md" v-model="mygroup.max_duration" />
+          <div class="flex justify-between text-md px-1">
             <span>{{ Math.max(10, mygroup.min_duration) }}</span>
             <span>180</span>
           </div>
@@ -76,12 +76,12 @@
         <label class="font-bold w-40">{{ $t('trainDuration') }}:</label>
         <div class="flex flex-col w-96">
           <div class="flex justify-between items-center mb-1 gap-1">
-            <span class="text-sm font-bold text-primary">{{ trainDurationInMinutes }}</span>
-            <span class="text-sm text-info">{{ $t('minute') }}</span>
+            <span class="text-md font-bold text-primary">{{ trainDurationInMinutes }}</span>
+            <span class="text-md text-info">{{ $t('minute') }}</span>
           </div>
-          <input type="range" min="10" max="60" step="1" class="range range-success range-sm"
+          <input type="range" min="10" max="60" step="1" class="range range-success range-md"
             v-model="trainDurationInMinutes" />
-          <div class="flex justify-between text-xs px-1">
+          <div class="flex justify-between text-md px-1">
             <span>10</span>
             <span>60</span>
           </div>
@@ -109,40 +109,40 @@
           <!-- 关注概率滑块 -->
           <div class="flex flex-col">
             <div class="flex justify-between items-center mb-1">
-              <label class="text-sm">{{ $t('follow') }}: </label>
-              <span class="text-sm font-medium">{{ mygroup.floow_probable }}%</span>
+              <label class="text-md">{{ $t('follow') }}: </label>
+              <span class="text-md font-medium">{{ mygroup.floow_probable }}%</span>
             </div>
-            <input type="range" min="0" max="100" step="1" class="range range-success range-sm"
+            <input type="range" min="0" max="100" step="1" class="range range-success range-md"
               v-model="mygroup.floow_probable" />
           </div>
 
           <!-- 点赞概率滑块 -->
           <div class="flex flex-col">
             <div class="flex justify-between items-center mb-1">
-              <label class="text-sm">{{ $t('like') }}: </label>
-              <span class="text-sm font-medium">{{ mygroup.like_probable }}%</span>
+              <label class="text-md">{{ $t('like') }}: </label>
+              <span class="text-md font-medium">{{ mygroup.like_probable }}%</span>
             </div>
-            <input type="range" min="0" max="100" step="1" class="range range-success range-sm"
+            <input type="range" min="0" max="100" step="1" class="range range-success range-md"
               v-model="mygroup.like_probable" />
           </div>
 
           <!-- 收藏概率滑块 -->
           <div class="flex flex-col">
             <div class="flex justify-between items-center mb-1">
-              <label class="text-sm">{{ $t('favorite') }}: </label>
-              <span class="text-sm font-medium">{{ mygroup.collect_probable }}%</span>
+              <label class="text-md">{{ $t('favorite') }}: </label>
+              <span class="text-md font-medium">{{ mygroup.collect_probable }}%</span>
             </div>
-            <input type="range" min="0" max="100" step="1" class="range range-success range-sm"
+            <input type="range" min="0" max="100" step="1" class="range range-success range-md"
               v-model="mygroup.collect_probable" />
           </div>
 
           <!-- 评论概率滑块 -->
           <div class="flex flex-col">
             <div class="flex justify-between items-center mb-1">
-              <label class="text-sm">{{ $t('comment') }}: </label>
-              <span class="text-sm font-medium">{{ mygroup.comment_probable }}%</span>
+              <label class="text-md">{{ $t('comment') }}: </label>
+              <span class="text-md font-medium">{{ mygroup.comment_probable }}%</span>
             </div>
-            <input type="range" min="0" max="100" step="1" class="range range-success range-sm"
+            <input type="range" min="0" max="100" step="1" class="range range-success range-md"
               v-model="mygroup.comment_probable" />
           </div>
         </div>

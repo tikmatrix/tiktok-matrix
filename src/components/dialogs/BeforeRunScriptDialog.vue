@@ -4,14 +4,14 @@
       
       <!-- 添加选中设备信息 -->
       <div class="mt-2 w-full">
-        <div class="text-sm font-medium">
+        <div class="text-md font-medium">
           {{ $t('selectedDevices') }}: {{ selecedDevices.length }} {{ $t('units') }}
         </div>
         <div class="flex flex-wrap gap-2 mt-1 max-h-24 overflow-y-auto bg-base-200 p-2 rounded-md">
           <div v-for="real_serial in selecedDevices" :key="real_serial" class="badge badge-outline">
             {{ devices.find(d => d.real_serial === real_serial).key }}
           </div>
-          <div v-if="selecedDevices.length === 0" class="text-error text-sm px-2">
+          <div v-if="selecedDevices.length === 0" class="text-error text-md px-2">
             {{ $t('noDevicesSelected') }}
           </div>
         </div>

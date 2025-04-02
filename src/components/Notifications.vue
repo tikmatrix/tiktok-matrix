@@ -2,7 +2,7 @@
     <div class="fixed top-14 right-4 z-50 space-y-2">
         <transition-group name="notification">
             <div v-for="notification in notifications" :key="notification.id"
-                class="bg-base-100 shadow-lg rounded-lg p-3 max-w-sm flex items-start"
+                class="bg-base-100 shadow-lg rounded-lg p-3 max-w-md flex items-start"
                 :class="notificationClass(notification.type)">
                 <div class="flex-shrink-0 mr-3">
                     <font-awesome-icon :icon="notificationIcon(notification.type)" class="text-lg" />

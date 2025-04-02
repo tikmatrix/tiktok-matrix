@@ -5,26 +5,26 @@
         <div class="flex items-center space-x-2">
             <img src="../assets/app-icon.png" class="h-10 w-10" />
             <span class="text-2xl text-base-content font-bold">{{ name }}</span>
-            <span class="text-sm text-base-content">v{{ version }}</span>
+            <span class="text-md text-base-content">v{{ version }}</span>
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
-                class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline">
+                class="flex items-center space-x-1 text-md text-info ml-2 hover:underline">
                 <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
                 <span>{{ $t('checkUpdate') }}</span>
             </button>
         </div>
         <!-- 教程链接 -->
-        <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline"
+        <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline"
             :href="$t('siteUrl') + '/docs/intro'" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
-        <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline" @click="open_dir('')">
+        <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" @click="open_dir('')">
             <font-awesome-icon icon="fa fa-folder" class="h-4 w-4" />
             <span>{{ $t('openAppDir') }}</span>
         </a>
         <!-- Rewards-->
-        <!-- <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
+        <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
             target="_blank">
             <font-awesome-icon icon="fa-solid fa-gift" class="h-4 w-4" />
             <span>{{ $t('rewards') }}</span>
@@ -169,7 +169,7 @@
             </label>
             <!-- 许可证状态 -->
             <button
-                class="btn btn-sm flex items-center gap-1 px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
+                class="btn btn-md flex items-center gap-1 px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
                 :class="[
                     isLoadingLicense ? 'btn-neutral' :
                         licenseData.leftdays > 0 ? 'btn-success text-white' : 'btn-error text-white'
@@ -185,7 +185,7 @@
                 <span v-else>{{ $t('unlicensed') }}</span>
             </button>
             <!-- 语言选择 -->
-            <select class="select select-info select-sm" v-model="currentLocale" @change="changeLocale">
+            <select class="select select-info select-md" v-model="currentLocale" @change="changeLocale">
                 <option selected value="en">English</option>
                 <option value="zh-CN">简体中文</option>
                 <option value="ru">Русский</option>
@@ -201,13 +201,13 @@
             <!-- 窗口控制按钮 -->
             <div class="flex space-x-2">
                 <button @click="minimizeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa-solid fa-minus" class="h-5 w-5 text-base-content" />
+                    <font-awesome-icon icon="fa-solid fa-minus" class="h-8 w-8 text-base-content" />
                 </button>
                 <button @click="maximizeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa fa-window-restore" class="h-5 w-5 text-base-content" />
+                    <font-awesome-icon icon="fa fa-window-restore" class="h-8 w-8 text-base-content" />
                 </button>
                 <button @click="closeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-5 w-5 text-base-content" />
+                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-8 w-8 text-base-content" />
                 </button>
             </div>
         </div>
@@ -226,8 +226,8 @@
                     v-if="download_progress.filesize > 0">
                     <progress class="progress progress-success w-full" :value="download_progress.transfered"
                         :max="download_progress.filesize"></progress>
-                    <span class="text-sm ml-1">{{ (download_progress.transfered / 1024 / 1024).toFixed(2) }}Mb</span> /
-                    <span class="text-sm">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
+                    <span class="text-md ml-1">{{ (download_progress.transfered / 1024 / 1024).toFixed(2) }}Mb</span> /
+                    <span class="text-md">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
                 </div>
                 <div class="flex flex-row justify-between text-center items-center" v-else>
                     <progress class="progress progress-success w-full"></progress>
@@ -236,11 +236,11 @@
                 <div class="flex justify-between">
                     <div class="text-md" v-if="download_progress.transfer_rate > 0">
                         {{ $t('transferRate') }}:
-                        <span class="text-sm">{{ (download_progress.transfer_rate / 1024).toFixed(2) }} KB/s</span>
+                        <span class="text-md">{{ (download_progress.transfer_rate / 1024).toFixed(2) }} KB/s</span>
                     </div>
                     <div class="text-md" v-if="download_progress.percentage > 0">
                         {{ $t('percentage') }}:
-                        <span class="text-sm">{{ download_progress.percentage }} %</span>
+                        <span class="text-md">{{ download_progress.percentage }} %</span>
                     </div>
                 </div>
             </div>
