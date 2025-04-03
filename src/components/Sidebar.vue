@@ -48,7 +48,7 @@
             
             <ul tabindex="0"
               class="dropdown-content flex-col bg-base-100 max-h-96 max-w-48 overflow-y-auto text-left p-2 rounded-md shadow-lg ring-1 space-y-1">
-              <li v-for="(item, index) in groups" :key="item.id" :class="['px-2 py-1 link w-full border-b border-base-300 last:border-none rounded-md', index % 2 == 0 ? 'bg-primary/10' : 'bg-primary/20']">
+              <li @click="moveToGroup(0, item.id)" v-for="(item, index) in groups" :key="item.id" :class="['px-2 py-1 link w-full border-b border-base-300 last:border-none rounded-md', index % 2 == 0 ? 'bg-primary/10' : 'bg-primary/20']">
                   {{ item.name }}
               </li>
             </ul>

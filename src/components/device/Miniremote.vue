@@ -172,7 +172,7 @@ export default {
       if (this.device.task_status == 1) {
         return 'status-success'
       }
-      if (this.device.task_status == 0) {
+      if (this.device.task_status == 0||this.device.task_status==2||this.device.task_status==3) {
         return 'status-info'
       }
       return 'status-warning'
@@ -185,7 +185,7 @@ export default {
       if (this.device.task_status == 1) {
         return 'text-success'
       }
-      if (this.device.task_status == 0) {
+      if (this.device.task_status == 0||this.device.task_status==2||this.device.task_status==3) {
         return 'text-info'
       }
       return 'text-warning'
@@ -331,6 +331,10 @@ export default {
       }
       this.scrcpy.onmessage = message => {
         this.loading = false
+        //check if message is empty
+        // if (message.data.length == 0) {
+        //   return
+        // }
         if (this.message_index < 2) {
           // console.log(message)
           switch (this.message_index) {
