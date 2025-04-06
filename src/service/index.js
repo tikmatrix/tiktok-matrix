@@ -480,5 +480,12 @@ export function clear_gallery(data) {
   })
 }
 
+export function scrape_now(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.scrape_now
+  })
+}
 
 

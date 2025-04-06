@@ -6,12 +6,11 @@
         <span>{{ $t('scrapeFollowersWarning') }}</span>
       </div>
     </div>
-    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-      <span class="font-bold">{{ $t('targetUsername') }}: </span>
-      <input class="input input-bordered input-md" type="text" v-model="target_username"
-        :placeholder="$t('targetUsername')" />
-    </div>
     
+    <div class="flex flex-row items-center p-2 w-full">
+          <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
+              :placeholder="$t('targetUsernameTips')" autocomplete="off" v-model="target_username"> </textarea>
+      </div>
 
     <button class="btn btn-primary" @click="openDownloadDir">{{ $t('openDownloadDir') }}</button>
 </template>
@@ -58,7 +57,9 @@ export default {
       if (!this.filterTargetUsername()) {
         return;
       }
-      await this.$emiter('run_task_now', { name: 'scrape_fans', args: { target_username: this.target_username } })
+      await this.$emiter('massScrape', {
+        target_username: this.target_username,
+      })
     },
   },
   async mounted() {

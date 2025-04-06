@@ -761,6 +761,29 @@ export default {
         timeout: 2000
       });
     },
+    async massScrape(args) {
+      if (this.selection.length == 0) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
+        return
+      }
+      this.$service
+        .scrape_now({
+          serials: this.selection,
+          target_username: args.target_username,
+        })
+        .then(async (res) => {
+          await this.$emiter('reload_tasks', {})
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${res.data} ${this.$t('taskCreated')}`,
+            timeout: 2000
+          });
+        })
+    },
 
 
   },
@@ -835,6 +858,9 @@ export default {
     }))
     this.listeners.push(document.addEventListener('paste', () => {
       this.pasteToPhone()
+    }))
+    this.listeners.push(await this.$listen('massScrape', (e) => {
+      this.massScrape(e.payload);
     }))
 
   },

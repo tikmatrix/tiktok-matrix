@@ -49,5 +49,6 @@ const api = {
   reset_all_index: '/api/device/reset_all_index',
   edit_title: '/api/material/update_title',
   clear_gallery: '/api/clear_gallery',
+  scrape_now: '/api/scrape_now',
 }
 export default api

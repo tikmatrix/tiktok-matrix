@@ -33,12 +33,12 @@
                 @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
                 @mousemove="mouseMoveListener"></video>
               <div @click="$emiter('openDevice', this.device)"
-                class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center" v-if="!big">
-                <div class="bg-base-100 p-2 rounded-md text-center opacity-70 ">
-                  <div class="font-bold text-base-content text-md">
+                class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
+                <div class="bg-transparent p-2 rounded-md text-center">
+                  <div class="font-bold text-white/80 text-md">
                     {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
                   </div>
-                  <div class="text-base-content font-bold">
+                  <div class="text-white/80 font-bold">
                     {{ name }}
                   </div>
                 </div>
