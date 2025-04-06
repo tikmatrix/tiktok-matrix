@@ -185,6 +185,7 @@ export default {
       await this.getDevices();
       await this.connectAgent();
       await this.getRunningTasks();
+      await this.$emiter('reload_tasks', {})
     }));
     this.listeners.push(await this.$listen('reload_devices', async (e) => {
       await this.getDevices();

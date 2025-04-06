@@ -8,13 +8,13 @@
               <span class="font-bold bg-secondary px-3 py-1 rounded-lg text-secondary-content" v-if="big">
                 {{ no }}
               </span>
-              <div :class="['status animate-bounce',getTaskStatusColor]"></div>
-              <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor,getScaledFontSize]">
+              <div :class="['status animate-bounce', getTaskStatusColor]"></div>
+              <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
                 {{ getTaskStatus }}
               </span>
             </div>
             <span class="text-md font-semibold" v-if="big">{{ name }}</span>
-            <div class="flex items-center gap-2"  v-if="big">
+            <div class="flex items-center gap-2" v-if="big">
               <span class="px-2 py-0.5 bg-base-200 rounded" :class="getScaledFontSize">
                 {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
               </span>
@@ -94,6 +94,7 @@
 import JMuxer from 'jmuxer'
 import RightBars from './RightBars.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+import { writeText } from '@tauri-apps/api/clipboard'
 export default {
   name: 'Miniremote',
   components: {
@@ -118,6 +119,7 @@ export default {
   },
   data() {
     return {
+      visible: true,
       rotation: 0,
       fps: 0,
       periodImageCount: 0,
@@ -151,12 +153,12 @@ export default {
       if (this.device.task_status == 1) {
         return this.$t('running')
       }
-      if (this.device.task_status == 0||this.device.task_status==2||this.device.task_status==3) {
+      if (this.device.task_status == 0 || this.device.task_status == 2 || this.device.task_status == 3) {
         return this.$t('ready')
       }
       return this.$t('preparing')
     },
-    
+
     getScaledFontSize() {
       if (this.big) return 'text-md';
       if (this.screenScaled <= 0.65) return 'text-[0.6rem]';
@@ -172,7 +174,7 @@ export default {
       if (this.device.task_status == 1) {
         return 'status-success'
       }
-      if (this.device.task_status == 0||this.device.task_status==2||this.device.task_status==3) {
+      if (this.device.task_status == 0 || this.device.task_status == 2 || this.device.task_status == 3) {
         return 'status-info'
       }
       return 'status-warning'
@@ -185,7 +187,7 @@ export default {
       if (this.device.task_status == 1) {
         return 'text-success'
       }
-      if (this.device.task_status == 0||this.device.task_status==2||this.device.task_status==3) {
+      if (this.device.task_status == 0 || this.device.task_status == 2 || this.device.task_status == 3) {
         return 'text-info'
       }
       return 'text-warning'
@@ -194,7 +196,7 @@ export default {
   watch: {
     scaled(newVal) {
       console.log(`scaled: ${newVal}, screenScaled: ${this.screenScaled}`)
-      if(this.real_width==0||this.real_height==0||this.screenScaled==0||newVal==0){
+      if (this.real_width == 0 || this.real_height == 0 || this.screenScaled == 0 || newVal == 0) {
         return
       }
       const newScaled = newVal * this.screenScaled
@@ -203,7 +205,7 @@ export default {
       console.log(`newScaled: ${newScaled}, width: ${this.width}, height: ${this.height}`)
     },
     screenScaled(newVal) {
-      if(this.real_width==0||this.real_height==0||this.screenScaled==0||newVal==0){
+      if (this.real_width == 0 || this.real_height == 0 || this.screenScaled == 0 || newVal == 0) {
         return
       }
       const newScaled = this.scaled * newVal
@@ -212,7 +214,6 @@ export default {
     }
   },
   methods: {
-   
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -407,7 +408,36 @@ export default {
         this.jmuxer = null
       }
     },
-
+    async copyFromPhone() {
+      if (!document.hasFocus()) {
+        return
+      }
+      if (!this.visible) {
+        return
+      }
+      
+      // 检查是否有对话框打开
+      const activeDialog = document.querySelector('dialog.modal[open]');
+      if (activeDialog) {
+        return;
+      }
+      
+      this.$service
+        .read_clipboard({
+          serial: this.device.real_serial
+        })
+        .then(async res => {
+          if (!res.data) {
+            return
+          }
+          await writeText(res.data)
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('copySuccess'),
+            timeout: 2000
+          });
+        })
+    },
   },
   async mounted() {
     if (!this.big) {
@@ -451,7 +481,7 @@ export default {
         this.closeJmuxer();
         this.syncDisplay();
       }))
-      
+
       // 获取视频元素
       var video = this.$refs.display;
 
@@ -473,14 +503,19 @@ export default {
           video.playbackRate = 2;
         }
       })
+    } else {
+      this.listeners.push(document.addEventListener('copy', () => {
+        this.copyFromPhone()
+      }))
     }
     //heartbeat
     this.listeners.push(await this.$listen('heartbeat', (e) => {
-        let data = JSON.stringify({
-          type: 'heartbeat',
-        });
-        this.scrcpy.send(data)
-      }))
+      let data = JSON.stringify({
+        type: 'heartbeat',
+      });
+      this.scrcpy.send(data)
+    }))
+
     this.syncDisplay()
   },
   async unmounted() {

@@ -718,37 +718,16 @@ export default {
         })
     },
 
-    async copyFromPhone() {
-      if (!document.hasFocus()) {
-        return
-      }
-      if (this.selection.length == 0) {
-        return
-      }
-
-      if (this.selection.length > 1) {
-        return
-      }
-      this.$service
-        .read_clipboard({
-          serial: this.selection[0],
-        })
-        .then(async res => {
-          if (!res.data) {
-            return
-          }
-          await writeText(res.data)
-          await this.$emiter('NOTIFY', {
-            type: 'success',
-            message: this.$t('copySuccess'),
-            timeout: 2000
-          });
-        })
-    },
+    
     async pasteToPhone() {
       //check visibility
       if (!document.hasFocus()) {
         return
+      }
+      // 检查是否有对话框打开
+      const activeDialog = document.querySelector('dialog.modal[open]');
+      if (activeDialog) {
+        return;
       }
       if (this.selection.length == 0) {
         return
@@ -853,9 +832,7 @@ export default {
     this.listeners.push(await this.$listen('clearGallery', () => {
       this.clearGallery()
     }))
-    this.listeners.push(document.addEventListener('copy', () => {
-      this.copyFromPhone()
-    }))
+    
     this.listeners.push(document.addEventListener('paste', () => {
       this.pasteToPhone()
     }))
