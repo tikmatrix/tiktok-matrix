@@ -76,7 +76,7 @@ export default {
    
    
     async runScript() {
-      await this.$emiter('run_task_now', { name: 'profile', args: {
+      await this.$emiter('run_now_by_account', { name: 'profile', args: {
         nicknames: this.nicknames,
         usernames: this.usernames,
         bios: this.bios,

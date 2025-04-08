@@ -1,9 +1,9 @@
 <template>
   <dialog ref="buy_liscense_dialog" class="modal">
     <div class="modal-box w-11/12 max-w-5xl overflow-hidden">
-      <form method="dialog">
-        <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button>
-      </form>
+      <!-- <form method="dialog">
+        <button class="btn btn-md absolute right-2 top-2 p-2">✕</button>
+      </form> -->
       <div class="modal-body">
         <div class="relative isolate px-6 py-6 w-full">
           <div class="absolute inset-x-0 -z-10 transform-gpu overflow-hidden px-36 blur-3xl" aria-hidden="true">
@@ -166,6 +166,9 @@
 
       </div>
     </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
   </dialog>
 </template>
 <script>

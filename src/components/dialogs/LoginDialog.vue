@@ -16,7 +16,7 @@ export default {
   },
   methods: {
     async runScript() {
-      await this.$emiter('run_task_now', { name: 'login', args: { count: 1 } })
+      await this.$emiter('run_now_by_account', { name: 'login', args: { count: 1 } })
     },
   },
   async mounted() {

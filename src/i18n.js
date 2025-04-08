@@ -604,6 +604,12 @@ export const i18n = createI18n({
       commandsResetSuccess: 'Commands reset successfully',
       reset: 'Reset',
       preparing: 'Preparing',
+      commentOrder: 'Comment Order',
+      random: 'Random',
+      sequential: 'Sequential',
+      afterScriptAction: 'After Script Action',
+      stayOnProfile: 'Stay on Profile',
+      exitTikTok: 'Exit TikTok',
     },
     'zh-CN': {
       viewDurationTips: '观看每个视频的时长范围, 系统会在这个范围内随机选择一个时长',
@@ -1158,6 +1164,12 @@ export const i18n = createI18n({
       commandsResetSuccess: '命令重置成功',
       reset: '重置',
       preparing: '准备中',
+      commentOrder: '评论顺序',
+      random: '随机',
+      sequential: '按顺序',
+      afterScriptAction: '脚本执行完毕后',
+      stayOnProfile: '停留在个人资料页',
+      exitTikTok: '退出 TikTok',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1758,6 +1770,12 @@ export const i18n = createI18n({
       commandsResetSuccess: 'Команды успешно сброшены',
       reset: 'Сбросить',
       preparing: 'Подготовка',
+      commentOrder: '评论顺序',
+      random: '随机',
+      sequential: '按顺序',
+      afterScriptAction: 'Действие после скрипта',
+      stayOnProfile: 'Остаться в профиле',
+      exitTikTok: 'Выйти из TikTok',
     }
   }
 })

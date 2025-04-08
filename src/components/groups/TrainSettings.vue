@@ -96,12 +96,26 @@
         <label class="font-bold w-40">{{ $t('comments') }}:</label>
         <textarea class="textarea textarea-success w-xl" :placeholder="$t('commentsTips')" autocomplete="off"
           v-model="mygroup.comment"> </textarea>
-        <div class="flex flex-row items-center gap-2">
-          <label class="font-bold">{{ $t('insertEmoji') }}:</label>
-          <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.insert_emoji" :true-value=1
-            :false-value=0 />
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-row items-center gap-2">
+            <label class="font-bold">{{ $t('insertEmoji') }}:</label>
+            <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.insert_emoji" :true-value=1
+              :false-value=0 />
+          </div>
+          <div class="flex flex-row items-center gap-2">
+            <label class="font-bold">{{ $t('commentOrder') }}:</label>
+            <div class="flex items-center gap-2">
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="radio" name="commentOrder" value="random" class="radio radio-sm radio-primary" v-model="mygroup.comment_order" />
+                <span>{{ $t('random') }}</span>
+              </label>
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="radio" name="commentOrder" value="sequential" class="radio radio-sm radio-primary" v-model="mygroup.comment_order" />
+                <span>{{ $t('sequential') }}</span>
+              </label>
+            </div>
+          </div>
         </div>
-
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('interact') }}:</label>
@@ -216,8 +230,11 @@ export default {
     'mygroup.floow_probable': function (val) {
       this.mygroup.floow_probable = Number(val)
     },
-
-
+    'mygroup.comment_order': function (val) {
+      if (val !== 'random' && val !== 'sequential') {
+        this.mygroup.comment_order = 'random'
+      }
+    },
   },
   methods: {
     addTime() {
@@ -255,6 +272,9 @@ export default {
     this.mygroup = this.group
     if (this.mygroup.train_start_time) {
       this.trainTimes = this.mygroup.train_start_time.split(',')
+    }
+    if (!this.mygroup.comment_order) {
+      this.mygroup.comment_order = 'random'
     }
   },
 }

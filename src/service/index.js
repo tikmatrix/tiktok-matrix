@@ -416,13 +416,6 @@ export function set_text(data) {
   })
 }
 
-export function run_task_now(data) {
-  return request({
-    method: 'post',
-    data,
-    url: api.run_task_now
-  })
-}
 export function run_now_by_account(data) {
   return request({
     method: 'post',

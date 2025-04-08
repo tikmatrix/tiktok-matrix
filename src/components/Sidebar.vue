@@ -33,30 +33,33 @@
           class="input input-md input-bordered w-full max-w-xs mt-2 ring-1 ring-success" type="text"
           v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
         <div class="bg-base-300 rounded-md mt-2 shadow-lg ring-1">
-          <label class="label cursor-pointer m-1">
-            <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(0)"
-              :checked="isSelectAll(0)" />
-            <span class="label-text text-primary text-md">{{ $t('allDevices') }} ({{ groupDevices[0].length
-            }})</span>
-          </label>
+          <div class="flex flex-row form-control items-center">
+            <label class="label cursor-pointer m-1">
+              <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(0)"
+                :checked="isSelectAll(0)" />
+              <span class="label-text text-primary text-md">{{ $t('allDevices') }} ({{ groupDevices[0].length
+                }})</span>
+            </label>
 
-          <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-md text-right flex-1">
-            <div tabindex="0" role="button" class="btn bg-transparent hover:bg-transparent border-none text-primary">
-              <span class="text-md">{{ $t('moveToGroup') }}</span>
-              <font-awesome-icon icon="fa-solid fa-share" class="text-primary"></font-awesome-icon>
-            </div>
-            
-            <ul tabindex="0"
-              class="dropdown-content flex-col bg-base-100 max-h-96 max-w-48 overflow-y-auto text-left p-2 rounded-md shadow-lg ring-1 space-y-1">
-              <li @click="moveToGroup(0, item.id)" v-for="(item, index) in groups" :key="item.id" :class="['px-2 py-1 link w-full border-b border-base-300 last:border-none rounded-md', index % 2 == 0 ? 'bg-primary/10' : 'bg-primary/20']">
+            <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-md text-right flex-1">
+              <div tabindex="0" role="button" class="text-primary cursor-pointer">
+                <span class="text-md">{{ $t('moveToGroup') }}</span>
+                <font-awesome-icon icon="fa-solid fa-share" class="text-primary ml-1"></font-awesome-icon>
+              </div>
+
+              <ul tabindex="0"
+                class="dropdown-content flex-col bg-base-100 max-h-96 max-w-48 overflow-y-auto text-left p-2 rounded-md shadow-lg ring-1 space-y-1">
+                <li @click="moveToGroup(0, item.id)" v-for="(item, index) in groups" :key="item.id"
+                  :class="['px-2 py-1 link w-full border-b border-base-300 last:border-none rounded-md', index % 2 == 0 ? 'bg-primary/10' : 'bg-primary/20']">
                   {{ item.name }}
-              </li>
-            </ul>
+                </li>
+              </ul>
+            </div>
+            <span class="label-text text-md text-right flex-1 mr-2">{{ $t('selected') }}
+              {{ selections[0].length }}
+              {{ $t('units') }}
+            </span>
           </div>
-          <span class="label-text text-md text-right">{{ $t('selected') }}
-            {{ selections[0].length }}
-            {{ $t('units') }}
-          </span>
           <drag-select v-model="selection">
             <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
               {{ index + 1 }}
@@ -371,7 +374,7 @@ export default {
       let args = {
         apk_path: filePath,
       }
-      await this.run_task_now('install', args)
+      await this.run_now_by_account('install', args)
     },
     async adb_command(args) {
       if (this.selection.length == 0) {
@@ -396,34 +399,7 @@ export default {
           });
         })
     },
-    async run_task_now(name, args = {}) {
-      if (this.selection.length == 0) {
-        await this.$emiter('NOTIFY', {
-          type: 'error',
-          message: this.$t('noDevicesSelected'),
-          timeout: 2000
-        });
-        return
-      }
-      this.$service
-        .run_task_now({
-          script_name: name,
-          serials: this.selection,
-          script_args: JSON.stringify(args)
-        })
-        .then(async (res) => {
-          if (res.code === 40003) {
-            await message(this.$t('needLicense'), { title: 'NeedLicense', type: 'error' });
-            return
-          }
-          await this.$emiter('reload_tasks', {})
-          await this.$emiter('NOTIFY', {
-            type: 'success',
-            message: `${res.data} ${this.$t('taskCreated')}`,
-            timeout: 2000
-          });
-        })
-    },
+    
     async run_now_by_account(name, args = {}) {
       if (this.selection.length == 0) {
         await this.$emiter('NOTIFY', {
@@ -718,7 +694,7 @@ export default {
         })
     },
 
-    
+
     async pasteToPhone() {
       //check visibility
       if (!document.hasFocus()) {
@@ -781,10 +757,7 @@ export default {
       this.adb_command(e.payload.args)
 
     }))
-    this.listeners.push(await this.$listen('run_task_now', async (e) => {
-      console.log("receive run_task_now: ", e.payload)
-      await this.run_task_now(e.payload.name, e.payload.args)
-    }))
+   
     this.listeners.push(await this.$listen('run_now_by_account', (e) => {
       console.log("receive run_now_by_account: ", e.payload)
       this.run_now_by_account(e.payload.name, e.payload.args)
@@ -832,7 +805,7 @@ export default {
     this.listeners.push(await this.$listen('clearGallery', () => {
       this.clearGallery()
     }))
-    
+
     this.listeners.push(document.addEventListener('paste', () => {
       this.pasteToPhone()
     }))

@@ -29,7 +29,6 @@ const api = {
   count_task_by_status: '/api/task/count_by_status',
   retry_all_failed_tasks: '/api/task/retry_all',
   delete_all_tasks: '/api/task/delete_all',
-  run_task_now: '/api/task/run_now',
   run_now_by_account: '/api/task/run_now_by_account',
   read_clipboard: '/api/get_clipboard',
   delete_all_materials: '/api/material/delete_all',

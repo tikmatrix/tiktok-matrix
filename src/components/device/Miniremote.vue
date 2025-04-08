@@ -318,7 +318,7 @@ export default {
         // control
         this.scrcpy.send(this.big ? 'false' : 'true')
         //fps
-        this.scrcpy.send(this.big ? 30 : 15)
+        this.scrcpy.send(this.big ? 30 : 30)
 
       }
       this.scrcpy.onclose = () => {
@@ -380,8 +380,9 @@ export default {
       this.jmuxer = new JMuxer({
         node: this.$refs.display,
         mode: 'video',
-        flushingTime: 1,
+        flushingTime: 100,
         maxDelay: 0,
+        fps: 30,
         debug: false,
         onError: function () {
           console.log('onError')
@@ -487,6 +488,7 @@ export default {
 
       // 添加播放事件监听器
       video.addEventListener('play', () => {
+        console.log(`device${this.no}-${this.device.serial} playing`)
         //set progress to newest
         video.currentTime = 999999
         video.playbackRate = 2;
@@ -494,19 +496,22 @@ export default {
 
       // 添加暂停事件监听器
       video.addEventListener('pause', () => {
+        console.log(`device${this.no}-${this.device.serial} paused`)
       });
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
+          console.log(`device${this.no}-${this.device.serial} hidden`)
         } else {
+          console.log(`device${this.no}-${this.device.serial} visible`)
           var video = this.$refs.display;
           video.currentTime = 999999
           video.playbackRate = 2;
         }
       })
     } else {
-      this.listeners.push(document.addEventListener('copy', () => {
+      document.addEventListener('copy', () => {
         this.copyFromPhone()
-      }))
+      })
     }
     //heartbeat
     this.listeners.push(await this.$listen('heartbeat', (e) => {

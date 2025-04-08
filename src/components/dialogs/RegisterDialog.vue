@@ -42,7 +42,7 @@ export default {
       await this.$service.update_settings(this.settings)
       //reload settings
       await this.$emiter('reload_settings', {})
-      await this.$emiter('run_task_now', { name: 'register', args: { count: 1 } })
+      await this.$emiter('run_now_by_account', { name: 'register', args: { count: 1 } })
     },
 
   },
