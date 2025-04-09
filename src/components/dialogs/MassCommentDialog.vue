@@ -63,7 +63,7 @@
       <!-- 添加评论间隔时间设置 -->
       <div class="flex flex-row items-center">
         <label class="font-bold mr-4">{{ $t('commentInterval') }}:</label>
-        <VueSlider v-model="comment_interval" :width="200" :min="0" :max="10" :marks="{0: '0'+$t('second'),5: '5'+$t('second'),10: '10'+$t('second')}" />
+        <VueSlider v-model="comment_interval" :width="200" :min="0" :max="10" :marks="{0: '0'+$t('minute'),5: '5'+$t('minute'),10: '10'+$t('minute')}" />
       </div>
     </div>
   </div>
