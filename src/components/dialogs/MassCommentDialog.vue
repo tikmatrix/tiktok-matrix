@@ -23,10 +23,20 @@
       </label>
     </div>
   </div>
+  <!-- 单账号模式下显示的附加说明 -->
+  <div v-if="comment_mode === 'single-to-single'" class="mt-2 text-md text-gray-500">
+    <font-awesome-icon icon="fa-solid fa-info-circle" class="mr-1" />
+    <span>{{ $t('singleAccountModeTip') }}</span>
+  </div>
 
+  <!-- 多账号模式下显示的附加说明 -->
+  <div v-if="comment_mode === 'multi-to-single'" class="mt-2 text-md text-gray-500">
+    <font-awesome-icon icon="fa-solid fa-info-circle" class="mr-1" />
+    <span>{{ $t('multiAccountModeTip') }}</span>
+  </div>
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-    <span class="font-bold">{{ $t('commentContent') }}: </span>
-    <textarea class="textarea textarea-success max-w-xl  w-full h-32 leading-tight"
+    <span class="font-bold">{{ $t('comments') }}: </span>
+    <textarea class="textarea textarea-success w-lg h-32 leading-tight"
       :placeholder="$t('commentContentTips')" autocomplete="off" v-model="comment_content"> </textarea>
     <div class="flex flex-col gap-2">
       <div class="flex flex-row items-center gap-2">
@@ -49,38 +59,40 @@
           </label>
         </div>
       </div>
+      
+      <!-- 添加评论间隔时间设置 -->
+      <div class="flex flex-row items-center">
+        <label class="font-bold mr-4">{{ $t('commentInterval') }}:</label>
+        <VueSlider v-model="comment_interval" :width="200" :min="0" :max="10" :marks="{0: '0'+$t('second'),5: '5'+$t('second'),10: '10'+$t('second')}" />
+      </div>
     </div>
   </div>
 
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('targetPostUrls') }}: </span>
-    <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
+    <textarea class="textarea textarea-success w-lg h-32 leading-tight"
       :placeholder="$t('targetPostUrlTips')" autocomplete="off" v-model="target_post_urls"> </textarea>
   </div>
 
-  <!-- 单账号模式下显示的附加说明 -->
-  <div v-if="comment_mode === 'single-to-single'" class="mt-2 text-md text-gray-500">
-    <font-awesome-icon icon="fa-solid fa-info-circle" class="mr-1" />
-    <span>{{ $t('singleAccountModeTip') }}</span>
-  </div>
 
-  <!-- 多账号模式下显示的附加说明 -->
-  <div v-if="comment_mode === 'multi-to-single'" class="mt-2 text-md text-gray-500">
-    <font-awesome-icon icon="fa-solid fa-info-circle" class="mr-1" />
-    <span>{{ $t('multiAccountModeTip') }}</span>
-  </div>
 
 </template>
 <script>
+import VueSlider from "vue-3-slider-component";
 export default {
   name: 'MassCommentDialog',
+  components: {
+    VueSlider
+  },
   data() {
     return {
+     
       comment_mode: localStorage.getItem('comment_mode') || 'multi-to-single',
       comment_content: localStorage.getItem('comment_content') || '',
       insert_emoji: localStorage.getItem('insert_emoji') === 'true' || false,
       target_post_urls: localStorage.getItem('target_post_urls') || '',
       comment_order: localStorage.getItem('comment_order') || 'random',
+      comment_interval: [localStorage.getItem('min_interval') || 0, localStorage.getItem('max_interval') || 10]
     }
   },
   watch: {
@@ -98,6 +110,10 @@ export default {
     },
     comment_order(newVal) {
       localStorage.setItem('comment_order', newVal)
+    },
+    comment_interval(newVal) {
+      localStorage.setItem('min_interval', newVal[0])
+      localStorage.setItem('max_interval', newVal[1])
     },
   },
   methods: {
@@ -132,14 +148,18 @@ export default {
           insert_emoji: this.insert_emoji,
           target_post_urls: this.target_post_urls,
           comment_order: this.comment_order,
+          min_interval: Number(this.comment_interval[0]),
+          max_interval: Number(this.comment_interval[1]),
         })
       } else {
         await this.$emiter('run_now_by_account', {
           name: 'comment', args: {
-            comment_content: this.comment_content,
+            comment_contents: this.comment_content,
             insert_emoji: this.insert_emoji,
             target_post_urls: this.target_post_urls,
             comment_order: this.comment_order,
+            min_interval: Number(this.comment_interval[0]),
+            max_interval: Number(this.comment_interval[1]),
           }
         })
       }

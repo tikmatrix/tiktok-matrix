@@ -84,18 +84,8 @@
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('loadSoundWaitTime') }}:</label>
-        <div class="flex flex-col">
-          <div class="flex justify-between items-center mb-1 gap-1">
-            <span class="text-md font-bold text-primary">{{ mygroup.sound_wait_time }}</span>
-            <span class="text-md text-info">{{ $t('second') }}</span>
-          </div>
-          <input type="range" min="5" max="30" step="1" class="range range-success range-md"
-            v-model="mygroup.sound_wait_time" />
-          <div class="flex justify-between text-md px-1">
-            <span>5</span>
-            <span>30</span>
-          </div>
-        </div>
+        <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1" :marks="{5: '5'+$t('second'),  10: '10'+$t('second'),  15: '15'+$t('second'),  20: '20'+$t('second'),  25: '25'+$t('second'),  30: '30'+$t('second')}" />
+        
       </div>
       <div class="flex w-full items-center gap-2 mb-2" v-if="mygroup.add_sound == 1">
         <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
@@ -150,7 +140,11 @@
 </template>
 
 <script>
+import VueSlider from "vue-3-slider-component";
 export default {
+  components: {
+    VueSlider
+  },
   props: {
     group: {
       type: Object,

@@ -17,20 +17,7 @@
       </div>
     </div>
 
-    <!-- 添加脚本执行完毕后行为选择器 -->
-    <div class="mt-4 w-full">
-      <div class="text-md font-medium">{{ $t('afterScriptAction') }}</div>
-      <div class="mt-1 flex gap-4">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" value="profile" v-model="settings.post_script_action" class="radio radio-sm" />
-          <span>{{ $t('stayOnProfile') }}</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" value="exit" v-model="settings.post_script_action" class="radio radio-sm" />
-          <span>{{ $t('exitTikTok') }}</span>
-        </label>
-      </div>
-    </div>
+    
 
     <RegisterDialog v-if="script.name === 'register'" ref="currentDialog" :settings="settings" />
     <ProfileDialog v-if="script.name === 'profile'" ref="currentDialog" :settings="settings" />
@@ -111,13 +98,6 @@ export default {
     }
   },
   watch: {
-    'settings.post_script_action': {
-      handler(newVal) {
-        console.log('settings.post_script_action', newVal)
-        this.update_settings()
-      },
-      immediate: true
-    }
   },
   methods: {
     async update_settings() {

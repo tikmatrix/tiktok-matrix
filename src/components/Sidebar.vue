@@ -570,9 +570,7 @@ export default {
       this.$service
         .comment_now({
           serials: this.selection,
-          comment_content: args.comment_content,
-          insert_emoji: args.insert_emoji,
-          target_post_urls: args.target_post_urls,
+          ...args
         })
         .then(async (res) => {
           await this.$emiter('reload_tasks', {})
