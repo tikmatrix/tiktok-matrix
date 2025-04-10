@@ -473,7 +473,7 @@ export const i18n = createI18n({
       massDM: 'Mass DM',
       usdttrc20: 'Pay With USDT-TRC20',
       usdtbep20: 'Pay With USDT-BEP20',
-      loadSoundWaitTime: 'Load Sound Wait Time',
+      loadSoundWaitTime: 'Loading Sound Time',
       massDMTips: 'If there are 1000 target accounts, and there are 100 accounts in the currently selected device, then each account will DM 10 target accounts, so the tasks will be evenly distributed to each selected account',
       noAccount: 'No account found, did you forget to add the account to the account list?',
       grantSuccess: 'Permission granted successfully',

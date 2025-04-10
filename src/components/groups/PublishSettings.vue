@@ -82,20 +82,18 @@
           </div>
         </div>
       </div>
-      <div class="flex w-full items-center gap-2 mb-2">
+      <div class="flex w-full items-center gap-2 mb-4">
         <label class="font-bold w-40">{{ $t('loadSoundWaitTime') }}:</label>
         <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1" :marks="{5: '5'+$t('second'),  10: '10'+$t('second'),  15: '15'+$t('second'),  20: '20'+$t('second'),  25: '25'+$t('second'),  30: '30'+$t('second')}" />
         
       </div>
-      <div class="flex w-full items-center gap-2 mb-2" v-if="mygroup.add_sound == 1">
+      <div class="flex w-full items-center gap-2 mb-4" v-if="mygroup.add_sound == 1">
         <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
         <div class="flex items-center">
-          <label class="ml-2">{{ $t('originSound') }}: </label>
-          <input type="range" min="0" max="100" value="25" class="range range-xs range-success w-32" step="25"
-            v-model="mygroup.origin_sound_volume" />
-          <label class="ml-2">{{ $t('addSound') }}: </label>
-          <input type="range" min="0" max="100" value="25" class="range range-xs range-success w-32" step="25"
-            v-model="mygroup.add_sound_volume" />
+          <label class="ml-2 mr-2">{{ $t('originSound') }}: </label>
+          <VueSlider v-model="mygroup.origin_sound_volume" :width="100" :min="0" :max="100" :step="25" :marks="{0: '0',  100: '100'}" />
+          <label class="ml-8 mr-2">{{ $t('addSound') }}: </label>
+          <VueSlider v-model="mygroup.add_sound_volume" :width="100" :min="0" :max="100" :step="25" :marks="{0: '0',  100: '100'}" />
         </div>
       </div>
       <!-- add sound end-->
