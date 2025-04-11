@@ -1,7 +1,5 @@
-# 2.3.7
+# 2.4.2
 
-1. Add support for custom ADB commands - create, edit and execute frequently used ADB operations 
-2. Add comprehensive documentation for custom ADB commands feature
-3. Improve resolution control with presets and custom options
-4. Add screen size scaling functionality
-5. Enhance command execution with multi-line support for batch operations
+**TikMatrix v2.4.2 Update Notes**
+1. Optimized `boostPost` feature: Added wait and retry mechanisms to improve task success rate.
+2. Comment function upgrade: New sorting options allow choosing between *random* or *sequential* comment usage. Added customizable intervals for comment tasks, with a minimum unit of *minutes*.
