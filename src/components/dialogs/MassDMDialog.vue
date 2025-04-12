@@ -7,6 +7,10 @@
       </div>
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+      <span class="font-bold">{{ $t('sendProfileCard') }}: </span>
+      <input type="text" class="input input-md grow input-bordered" v-model="send_profile_card" :placeholder="$t('sendProfileCardTips')" />
+    </div>
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('messageContent') }}: </span>
       <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('messageContentTips')"
         autocomplete="off" v-model="message_content"> </textarea>
@@ -32,6 +36,7 @@ export default {
       message_content: localStorage.getItem('message_content') || '',
       insert_emoji: localStorage.getItem('insert_emoji') === 'true' || false,
       target_username_path: localStorage.getItem('target_username_path') || '',
+      send_profile_card: localStorage.getItem('send_profile_card') || '',
     }
   },
   watch: {
@@ -43,6 +48,9 @@ export default {
     },
     target_username_path(newVal) {
       localStorage.setItem('target_username_path', newVal)
+    },
+    send_profile_card(newVal) {
+      localStorage.setItem('send_profile_card', newVal)
     },
   },
   methods: {
@@ -60,11 +68,18 @@ export default {
     },
 
 
+
     async runScript() {
+      this.send_profile_card = this.send_profile_card.trim()
+      //append @ to the start of send_profile_card if send_profile_card is not empty
+      if (this.send_profile_card.length > 0&&this.send_profile_card.charAt(0) !== '@') {
+        this.send_profile_card = '@' + this.send_profile_card
+      }
       await this.$emiter('massDM', {
         message_content: this.message_content,
         insert_emoji: this.insert_emoji,
         target_username_path: this.target_username_path,
+        send_profile_card: this.send_profile_card,
       })
     },
 

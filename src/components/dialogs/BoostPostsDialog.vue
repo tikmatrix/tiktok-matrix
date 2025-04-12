@@ -11,19 +11,46 @@
               :placeholder="$t('targetPostUrlTips')" autocomplete="off" v-model="target_post_urls"> </textarea>
       </div>
       <div class="flex flex-row items-center p-2 gap-2">
-        <label class="font-bold text-right col-span-1">{{ $t('boostType') }}:</label>
-        <input type="radio" id="like" v-model="boost_type" value="like" />
-        <label for="like">{{ $t('like') }}</label>
-        <input type="radio" id="favorite" v-model="boost_type" value="favorite" />
-        <label for="favorite">{{ $t('favorite') }}</label>
-        <input type="radio" id="view" v-model="boost_type" value="view" />
-        <label for="view">{{ $t('view') }}</label>
-        <input type="radio" id="share" v-model="boost_type" value="share" />
-        <label for="share">{{ $t('share') }}</label>
+        <label class="font-bold text-right col-span-1">{{ $t('boostOptions') }}:</label>
+        <div class="flex flex-wrap gap-4">
+          <div class="form-control">
+            <label class="label cursor-pointer gap-2">
+              <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_like" />
+              <span class="label-text">{{ $t('like') }}</span>
+            </label>
+          </div>
+          <div class="form-control">
+            <label class="label cursor-pointer gap-2">
+              <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_favorite" />
+              <span class="label-text">{{ $t('favorite') }}</span>
+            </label>
+          </div>
+          <div class="form-control">
+            <label class="label cursor-pointer gap-2">
+              <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_share" />
+              <span class="label-text">{{ $t('share') }}</span>
+            </label>
+          </div>
+          <div class="form-control">
+            <label class="label cursor-pointer gap-2">
+              <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_follow" />
+              <span class="label-text">{{ $t('follow') }}</span>
+            </label>
+          </div>
+        </div>
       </div>
-            
-  
-     
+      
+      <div class="flex flex-row items-center p-2 gap-2">
+        <label class="font-bold text-right">{{ $t('viewDuration') }}:</label>
+        <input 
+          type="number" 
+          class="input input-bordered w-24" 
+          v-model.number="view_duration" 
+          min="1" 
+          max="300"
+        />
+        <span class="ml-2">{{ $t('seconds') }}</span>
+      </div>
   </template>
   <script>
   export default {
@@ -31,16 +58,37 @@
     data() {
       return {
         target_post_urls: localStorage.getItem('target_post_urls') || '',
-        boost_type: localStorage.getItem('boost_type') || 'like',
+        enable_like: localStorage.getItem('enable_like') === 'true',
+        enable_favorite: localStorage.getItem('enable_favorite') === 'true',
+        enable_share: localStorage.getItem('enable_share') === 'true',
+        enable_follow: localStorage.getItem('enable_follow') === 'true',
+        view_duration: parseInt(localStorage.getItem('view_duration')) || 10
       }
     },
     watch: {
       target_post_urls(newVal) {
         localStorage.setItem('target_post_urls', newVal)
       },
-      boost_type(newVal) {
-        localStorage.setItem('boost_type', newVal)
+      enable_like(newVal) {
+        localStorage.setItem('enable_like', newVal)
+        console.log('enable_like', localStorage.getItem('enable_like')==='true')
       },
+      enable_favorite(newVal) {
+        localStorage.setItem('enable_favorite', newVal)
+        console.log('enable_favorite', localStorage.getItem('enable_favorite')==='true')
+      },
+      enable_share(newVal) {
+        localStorage.setItem('enable_share', newVal)
+        console.log('enable_share', localStorage.getItem('enable_share')==='true')
+      },
+      enable_follow(newVal) {
+        localStorage.setItem('enable_follow', newVal)
+        console.log('enable_follow', localStorage.getItem('enable_follow')==='true')
+      },
+      view_duration(newVal) {
+        localStorage.setItem('view_duration', newVal)
+        console.log('view_duration', localStorage.getItem('view_duration'))
+      }
     },
     methods: {
       filterTargetPostUrl() {
@@ -62,11 +110,21 @@
             this.target_post_urls = lines.join('\n')
             return true;
         },
-          async runScript() {
-            if (!this.filterTargetPostUrl()) {
-              return;
-            }
-            await this.$emiter('run_now_by_account', { name: this.boost_type, args: { post_url: this.target_post_urls } })
+        async runScript() {
+          if (!this.filterTargetPostUrl()) {
+            return;
+          }
+          await this.$emiter('run_now_by_account', { 
+            name: 'boost_post', 
+            args: { 
+              post_url: this.target_post_urls,
+              enable_like: this.enable_like,
+              enable_favorite: this.enable_favorite,
+              enable_share: this.enable_share,
+              enable_follow: this.enable_follow,
+              view_duration: this.view_duration
+            } 
+          })
         },
     },
     async mounted() {

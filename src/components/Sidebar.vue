@@ -543,9 +543,7 @@ export default {
       this.$service
         .message_now({
           serials: this.selection,
-          message_content: args.message_content,
-          insert_emoji: args.insert_emoji,
-          target_username_path: args.target_username_path,
+          ...args
         })
         .then(async (res) => {
           await this.$emiter('reload_tasks', {})

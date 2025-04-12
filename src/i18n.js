@@ -610,6 +610,9 @@ export const i18n = createI18n({
       afterScriptAction: 'After Script Action',
       stayOnProfile: 'Stay on Profile',
       exitTikTok: 'Exit TikTok',
+      boostOptions: 'Boost Options',
+      sendProfileCard: 'Send Profile Card',
+      sendProfileCardTips: 'Enter the username of the profile card to send',
     },
     'zh-CN': {
       viewDurationTips: '观看每个视频的时长范围, 系统会在这个范围内随机选择一个时长',
@@ -1170,6 +1173,9 @@ export const i18n = createI18n({
       afterScriptAction: '脚本执行完毕后',
       stayOnProfile: '停留在个人资料页',
       exitTikTok: '退出 TikTok',
+      boostOptions: '提升选项',
+      sendProfileCard: '发送个人资料卡片',
+      sendProfileCardTips: '输入要发送的个人资料卡片的用户名',
     },
     'ru': {
       boostType: 'Тип повышения',
@@ -1770,12 +1776,15 @@ export const i18n = createI18n({
       commandsResetSuccess: 'Команды успешно сброшены',
       reset: 'Сбросить',
       preparing: 'Подготовка',
-      commentOrder: '评论顺序',
-      random: '随机',
-      sequential: '按顺序',
+      commentOrder: 'Порядок комментариев',
+      random: 'Случайный',
+      sequential: 'Последовательный',
       afterScriptAction: 'Действие после скрипта',
       stayOnProfile: 'Остаться в профиле',
       exitTikTok: 'Выйти из TikTok',
+      boostOptions: 'Настройки повышения',
+      sendProfileCard: 'Отправлять личные сообщения',
+      sendProfileCardTips: 'Введите имя пользователя, которому вы хотите отправить личное сообщение',
     }
   }
 })
