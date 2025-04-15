@@ -20,7 +20,7 @@
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@tauri-apps/api": "^1.5.2",
-    "@types/jmuxer": "^2.0.6",
+    "@types/jmuxer": "^2.0.7",
     "bluebird": "^3.7.2",
     "canvas-confetti": "^1.9.3",
     "countup.js": "^2.8.0",
@@ -32,6 +32,7 @@
     "vue": "^3.3.4",
     "vue-3-slider-component": "^1.0.2",
     "vue-draggable-resizable": "^3.0.0",
+    "vue-flex-waterfall": "^2.3.1",
     "vue-i18n": "^9.8.0",
     "xlsx": "^0.18.5"
   },

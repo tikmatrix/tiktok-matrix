@@ -85,11 +85,16 @@
               </table>
             </div>
           </div>
-          <div class="flex flex-wrap gap-2 flex-1" v-else>
+          <div class="grid [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] auto-rows-auto gap-2 flex-1" v-else>
+              <Miniremote :device="device" :key="device.real_serial" :no="device.key" v-for="(device, index) in slotProps.items" />
+          </div>
+
+          <!-- <VueFlexWaterfall class="mdui-container mdui-m-b-4 mdui-p-a-0" align-content="center" col="5" col-spacing="15"
+            :break-at="breakAt" :break-by-container="true">
             <div v-for="(device, index) in slotProps.items" :key="device.real_serial">
               <Miniremote :device="device" :key="device.real_serial" :no="device.key" />
             </div>
-          </div>
+          </VueFlexWaterfall> -->
         </div>
       </template>
     </Pagination>
@@ -175,7 +180,7 @@ import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
-
+import { VueFlexWaterfall } from 'vue-flex-waterfall';
 
 
 export default {
@@ -195,6 +200,7 @@ export default {
     Miniremote,
     Modal,
     Pagination,
+    VueFlexWaterfall
   },
   data() {
     return {
@@ -235,6 +241,13 @@ export default {
     }
   },
   methods: {
+    breakAt() {
+      const obj = {};
+      for (let i = 1; i <= 4; i++) {
+        obj[200 * (i + 1) + 15 * i] = i;
+      }
+      return obj;
+    },
     showSetSortDialog(device) {
       if (device) {
         this.currentDevice = device
@@ -286,18 +299,18 @@ export default {
 
   async mounted() {
     this.mydevices = this.devices
-    await this.$listen('openDevice', async (e) => {
-      this.device = e.payload
-      for (let i = 0; i < this.mydevices.length; i++) {
-        if (this.mydevices[i].serial === this.device.serial) {
-          this.mydevices[i] = this.device
-          break
-        }
-      }
-    });
-    await this.$listen('closeDevice', (e) => {
-      this.device = null
-    });
+    // await this.$listen('openDevice', async (e) => {
+    //   this.device = e.payload
+    //   for (let i = 0; i < this.mydevices.length; i++) {
+    //     if (this.mydevices[i].serial === this.device.serial) {
+    //       this.mydevices[i] = this.device
+    //       break
+    //     }
+    //   }
+    // });
+    // await this.$listen('closeDevice', (e) => {
+    //   this.device = null
+    // });
 
   },
 }

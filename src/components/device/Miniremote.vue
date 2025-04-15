@@ -1,5 +1,5 @@
 <template>
-  <div class="relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md">
+  <div :class="[big?'col-span-2 row-span-2':'col-span-1 row-span-1', 'relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md']">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag bg-base-300 p-2">
@@ -13,7 +13,7 @@
                 {{ getTaskStatus }}
               </span>
             </div>
-            <span class="text-md font-semibold" v-if="big">{{ name }}</span>
+            <!-- <span class="text-md font-semibold" v-if="big">{{ name }}</span> -->
             <div class="flex items-center gap-2" v-if="big">
               <span class="px-2 py-0.5 bg-base-200 rounded" :class="getScaledFontSize">
                 {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
@@ -26,7 +26,7 @@
           </button>
         </div>
 
-        <div class="flex flex-row flex-1 ">
+        <div class="flex flex-row flex-1"  :style="'width:' + width + 'px;height:' + height + 'px'">
           <div>
             <div class="relative flex-1 object-fill" :style="'width:' + width + 'px;height:' + height + 'px'">
               <video class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="display" autoplay muted
@@ -105,10 +105,10 @@ export default {
       type: Number,
       default: 1
     },
-    big: {
-      type: Boolean,
-      default: false
-    },
+    // big: {
+    //   type: Boolean,
+    //   default: false
+    // },
     device: {
       type: Object,
       default: () => {
@@ -119,6 +119,9 @@ export default {
   },
   data() {
     return {
+      default_width:150,
+      default_height:300,
+      big: false,
       visible: true,
       rotation: 0,
       fps: 0,
@@ -132,8 +135,8 @@ export default {
       input_callback: null,
       message_index: 0,
       name: 'Loading...',
-      height: this.big ? window.innerHeight * 3 / 4 : window.innerHeight * 1 / 4,
-      width: this.big ? 320 : 120,
+      height: 300,
+      width: 150,
       real_width: 0,
       real_height: 0,
       scaled: 1,
@@ -141,7 +144,7 @@ export default {
       listeners: [],
       periodStartTime: 0,
       periodTime: 0,
-      screenScaled: this.big ? 1 : (Number(localStorage.getItem('screenScaled')) || 100) / 100,
+      screenScaled: (Number(localStorage.getItem('screenScaled')) || 100) / 100,
       screenResolution: Number(localStorage.getItem('screenResolution')) || 512,
     }
   },
@@ -305,18 +308,19 @@ export default {
       this.touchSync('d', event)
     },
     async connect() {
+      console.log('connect');
       const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
       const wsUrl = `ws://127.0.0.1:${wsPort}`
       this.scrcpy = new WebSocket(wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        // console.log('onopen,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
+        console.log('onopen')
         let max_size = this.big ? 1024 : this.screenResolution
         this.scrcpy.send(`${this.device.serial}`)
         // max size
         this.scrcpy.send(max_size)
         // control
-        this.scrcpy.send(this.big ? 'false' : 'true')
+        this.scrcpy.send('true')
         //fps
         this.scrcpy.send(this.big ? 30 : 30)
 
@@ -337,7 +341,7 @@ export default {
         //   return
         // }
         if (this.message_index < 2) {
-          // console.log(message)
+          console.log(message)
           switch (this.message_index) {
             case 0:
               this.name = message.data.replace(/[\x00]+$/g, '');
@@ -352,7 +356,7 @@ export default {
               this.real_width = message.data.split('x')[0]
               this.real_height = message.data.split('x')[1]
               this.scaled = this.height / this.real_height
-              console.log(`real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
+              console.log(`height: ${this.height},real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
               break
           }
           this.message_index += 1
@@ -375,6 +379,9 @@ export default {
       }
     },
     syncDisplay() {
+      console.log('syncDisplay');
+      this.height= this.big ? this.default_height*2 : this.default_height,
+      this.width= this.big ? this.default_width*2 : this.default_width
       this.connect_count += 1
       this.loading = true
       this.jmuxer = new JMuxer({
@@ -401,6 +408,8 @@ export default {
         this.scrcpy.onclose = null
         this.scrcpy.onopen = null
         this.scrcpy = null
+        this.message_index=0
+       
       }
     },
     closeJmuxer() {
@@ -441,17 +450,20 @@ export default {
     },
   },
   async mounted() {
-    if (!this.big) {
       this.listeners.push(await this.$listen('closeDevice', (e) => {
         if (e.payload.serial === this.device.serial) {
-          this.operating = false
-          this.$refs.display.play();
+          this.big=false;
+          this.closeScrcpy();
+          this.closeJmuxer();
+          this.syncDisplay();
         }
       }))
       this.listeners.push(await this.$listen('openDevice', (e) => {
         if (e.payload.serial === this.device.serial) {
-          this.operating = true
-          this.$refs.display.play();
+          this.big=true;
+          this.closeScrcpy();
+          this.closeJmuxer();
+          this.syncDisplay();
         }
         if (e.payload.serial !== this.device.serial && this.operating) {
           this.operating = false
@@ -508,11 +520,12 @@ export default {
           video.playbackRate = 2;
         }
       })
-    } else {
       document.addEventListener('copy', () => {
-        this.copyFromPhone()
+        if (this.big){
+          this.copyFromPhone()
+        }
+        
       })
-    }
     //heartbeat
     this.listeners.push(await this.$listen('heartbeat', (e) => {
       let data = JSON.stringify({

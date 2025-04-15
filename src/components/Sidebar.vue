@@ -775,6 +775,7 @@ export default {
         devices: [...this.selection],
         data: e.payload
       }
+      
       await this.$emiter('syncEventData', new_data)
     }))
 

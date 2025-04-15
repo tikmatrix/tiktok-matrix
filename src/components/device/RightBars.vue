@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col justify-start">
+  <div class="flex flex-col justify-start z-10 bg-base-100 shadow-2xl rounded-2xl">
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('send_keycode', 'task')">
       <font-awesome-icon icon="fa fa-window-restore" class="h-6 w-6 text-primary" />
