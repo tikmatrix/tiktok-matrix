@@ -85,16 +85,11 @@
               </table>
             </div>
           </div>
-          <div class="grid [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] auto-rows-auto gap-2 flex-1" v-else>
-              <Miniremote :device="device" :key="device.real_serial" :no="device.key" v-for="(device, index) in slotProps.items" />
+          <div :style="gridStyle" v-else>
+              <Miniremote :device="device" :key="device.real_serial" :no="device.key" v-for="(device, index) in slotProps.items" @sizeChanged="sizeChanged" />
           </div>
 
-          <!-- <VueFlexWaterfall class="mdui-container mdui-m-b-4 mdui-p-a-0" align-content="center" col="5" col-spacing="15"
-            :break-at="breakAt" :break-by-container="true">
-            <div v-for="(device, index) in slotProps.items" :key="device.real_serial">
-              <Miniremote :device="device" :key="device.real_serial" :no="device.key" />
-            </div>
-          </VueFlexWaterfall> -->
+        
         </div>
       </template>
     </Pagination>
@@ -130,11 +125,7 @@
       <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
     </div>
   </div>
-  <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
-    :z="20" drag-handle=".drag"
-    class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
-    <Miniremote :device="device" :no="device.key" :big="true" :key="device.real_serial + '_big'" />
-  </vue-draggable-resizable>
+ 
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300">
       <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
@@ -172,15 +163,11 @@
     </form>
   </dialog>
 </template>
-<style>
-@import "vue-draggable-resizable/style.css";
-</style>
 <script>
 import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
-import { VueFlexWaterfall } from 'vue-flex-waterfall';
 
 
 export default {
@@ -199,12 +186,10 @@ export default {
     MyButton,
     Miniremote,
     Modal,
-    Pagination,
-    VueFlexWaterfall
+    Pagination
   },
   data() {
     return {
-      device: null,
       listMode: localStorage.getItem('listMode') === 'true' || false,
       mydevices: [],
       ip_1: localStorage.getItem('ip_1')?.replace(/"/g, '') || 192,
@@ -219,6 +204,7 @@ export default {
       scanResult: '',
       groups: [],
       currentDevice: null,
+      cardMinWidth: 150,
     }
   },
   watch: {
@@ -294,23 +280,25 @@ export default {
       //reload settings
       await this.$emiter('reload_settings', {})
     },
-
+    sizeChanged(cardWidth) {
+      this.cardMinWidth=cardWidth
+      console.log("sizeChanged:",this.cardMinWidth)
+    },
   },
-
+  computed: {
+    gridStyle() {
+      return {
+        display: 'grid',
+        gridTemplateColumns: `repeat(auto-fit, minmax(${this.cardMinWidth}px, 1fr))`,
+        autoRows: 'auto',
+        gap: '0.5rem',
+        flex: 1
+      }
+    }
+  },
   async mounted() {
     this.mydevices = this.devices
-    // await this.$listen('openDevice', async (e) => {
-    //   this.device = e.payload
-    //   for (let i = 0; i < this.mydevices.length; i++) {
-    //     if (this.mydevices[i].serial === this.device.serial) {
-    //       this.mydevices[i] = this.device
-    //       break
-    //     }
-    //   }
-    // });
-    // await this.$listen('closeDevice', (e) => {
-    //   this.device = null
-    // });
+   
 
   },
 }

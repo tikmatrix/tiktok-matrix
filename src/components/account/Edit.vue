@@ -7,7 +7,7 @@
     </div>
     <div class="flex w-full items-center gap-2 mb-2">
       <label class="font-bold w-32">{{ $t('password') }}:</label>
-      <input class="input" type="password" v-model="myaccount.pwd" />
+      <input class="input" type="text" v-model="myaccount.pwd" />
     </div>
     <div class="flex w-full items-center gap-2 mb-2">
       <label class="font-bold w-32">{{ $t('username') }}:</label>

@@ -613,10 +613,12 @@ export const i18n = createI18n({
       boostOptions: 'Boost Options',
       sendProfileCard: 'Send Profile Card',
       sendProfileCardTips: 'Enter the username of the profile card to send',
+      boostPostInterval: 'Boost Post Interval',
     },
     'zh-CN': {
       viewDurationTips: '观看每个视频的时长范围, 系统会在这个范围内随机选择一个时长',
       boostType: '提升类型',
+      boostPostInterval: '提升帖子间隔',
       adjustResolution: '调整分辨率',
       lowResolution: '低分辨率',
       highResolution: '高分辨率',
@@ -1179,6 +1181,7 @@ export const i18n = createI18n({
     },
     'ru': {
       boostType: 'Тип повышения',
+      boostPostInterval: 'Интервал повышения поста',
       siteName: 'TikMatrix',
       siteUrl: 'https://www.tikmatrix.com',
       devices: 'Устройства',

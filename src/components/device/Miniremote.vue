@@ -1,5 +1,6 @@
 <template>
-  <div :class="[big?'col-span-2 row-span-2':'col-span-1 row-span-1', 'relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md']">
+  <div
+    :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md']">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag bg-base-300 p-2">
@@ -14,44 +15,46 @@
               </span>
             </div>
             <!-- <span class="text-md font-semibold" v-if="big">{{ name }}</span> -->
-            <div class="flex items-center gap-2" v-if="big">
+            <!-- <div class="flex items-center gap-2" v-if="big">
               <span class="px-2 py-0.5 bg-base-200 rounded" :class="getScaledFontSize">
                 {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
               </span>
               <span class="font-medium">FPS: {{ fps.toFixed(0) }}</span>
-            </div>
+            </div> -->
           </div>
           <button class="btn btn-ghost btn-md hover:text-error" @click="$emiter('closeDevice', this.device)" v-if="big">
             <font-awesome-icon icon="fa fa-times" class="h-6 w-6" />
           </button>
         </div>
 
-        <div class="flex flex-row flex-1"  :style="'width:' + width + 'px;height:' + height + 'px'">
+        <div class="flex flex-row flex-1 relative"
+          :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
           <div>
-            <div class="relative flex-1 object-fill" :style="'width:' + width + 'px;height:' + height + 'px'">
+            <div class="relative flex-1 object-fill"
+              :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
               <video class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="display" autoplay muted
                 @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
                 @mousemove="mouseMoveListener"></video>
               <div @click="$emiter('openDevice', this.device)"
                 class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
                 <div class="bg-transparent p-2 rounded-md text-center">
-                  <div class="font-bold text-white/80 text-md">
+                  <div class="font-bold text-info text-md">
                     {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
                   </div>
-                  <div class="text-white/80 font-bold">
+                  <div class="text-info font-bold text-sm">
                     {{ name }}
                   </div>
                 </div>
               </div>
               <div
-                class="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-gradient-to-tr from-secondary/30 to-neutral/30 opacity-90"
+                class="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-gradient-to-tr from-secondary/30 to-neutral/30 opacity-100"
                 v-if="loading">
-                <font-awesome-icon icon="fa-solid fa-hourglass-end" class="h-6 w-6 text-primary rotate" />
+                <font-awesome-icon icon="fa-solid fa-hourglass-end" class="w-24 h-24 text-primary rotate" />
               </div>
               <div
                 class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300 opacity-90"
                 v-if="operating">
-                <font-awesome-icon icon="fa fa-hand-pointer" class="h-6 w-6 text-primary" />
+                <font-awesome-icon icon="fa fa-hand-pointer" class="w-24 h-24 text-primary" />
                 <span class="text-primary font-bold">{{ $t('operating') }}</span>
               </div>
 
@@ -119,8 +122,8 @@ export default {
   },
   data() {
     return {
-      default_width:150,
-      default_height:300,
+      default_width: 150,
+      default_height: 300,
       big: false,
       visible: true,
       rotation: 0,
@@ -214,6 +217,9 @@ export default {
       const newScaled = this.scaled * newVal
       this.width = this.real_width * newScaled
       this.height = this.real_height * newScaled
+    },
+    width(newVal) {
+      this.$emit('sizeChanged', newVal)
     }
   },
   methods: {
@@ -353,6 +359,11 @@ export default {
 
               break
             case 1:
+              if(this.big||this.width!=this.default_width){
+                this.message_index += 1
+                return;
+              }
+
               this.real_width = message.data.split('x')[0]
               this.real_height = message.data.split('x')[1]
               this.scaled = this.height / this.real_height
@@ -380,8 +391,6 @@ export default {
     },
     syncDisplay() {
       console.log('syncDisplay');
-      this.height= this.big ? this.default_height*2 : this.default_height,
-      this.width= this.big ? this.default_width*2 : this.default_width
       this.connect_count += 1
       this.loading = true
       this.jmuxer = new JMuxer({
@@ -408,8 +417,8 @@ export default {
         this.scrcpy.onclose = null
         this.scrcpy.onopen = null
         this.scrcpy = null
-        this.message_index=0
-       
+        this.message_index = 0
+
       }
     },
     closeJmuxer() {
@@ -425,13 +434,13 @@ export default {
       if (!this.visible) {
         return
       }
-      
+
       // 检查是否有对话框打开
       const activeDialog = document.querySelector('dialog.modal[open]');
       if (activeDialog) {
         return;
       }
-      
+
       this.$service
         .read_clipboard({
           serial: this.device.real_serial
@@ -450,82 +459,82 @@ export default {
     },
   },
   async mounted() {
-      this.listeners.push(await this.$listen('closeDevice', (e) => {
-        if (e.payload.serial === this.device.serial) {
-          this.big=false;
-          this.closeScrcpy();
-          this.closeJmuxer();
-          this.syncDisplay();
-        }
-      }))
-      this.listeners.push(await this.$listen('openDevice', (e) => {
-        if (e.payload.serial === this.device.serial) {
-          this.big=true;
-          this.closeScrcpy();
-          this.closeJmuxer();
-          this.syncDisplay();
-        }
-        if (e.payload.serial !== this.device.serial && this.operating) {
-          this.operating = false
-        }
-      }))
-      this.listeners.push(await this.$listen('syncEventData', (e) => {
-        if (!e.payload.devices.includes(this.device.real_serial)) {
-          return
-        }
-        if (this.scrcpy) {
-          this.scrcpy.send(e.payload.data)
-        }
-      }))
-      this.listeners.push(await this.$listen('refreshDevice', (e) => {
-        console.log('refreshDevice', e.payload)
-        this.closeScrcpy()
-        this.closeJmuxer()
-        this.syncDisplay()
-      }))
-      this.listeners.push(await this.$listen('screenScaled', (e) => {
-        this.screenScaled = e.payload.scaled
-
-
-      }))
-      this.listeners.push(await this.$listen('screenResolution', (e) => {
-        this.screenResolution = e.payload.resolution;
+    this.listeners.push(await this.$listen('closeDevice', (e) => {
+      if (e.payload.serial === this.device.serial) {
+        this.big = false;
         this.closeScrcpy();
         this.closeJmuxer();
         this.syncDisplay();
-      }))
+      }
+    }))
+    this.listeners.push(await this.$listen('openDevice', (e) => {
+      if (e.payload.serial === this.device.serial) {
+        this.big = true;
+        this.closeScrcpy();
+        this.closeJmuxer();
+        this.syncDisplay();
+      }
+      if (e.payload.serial !== this.device.serial && this.operating) {
+        this.operating = false
+      }
+    }))
+    this.listeners.push(await this.$listen('syncEventData', (e) => {
+      if (!e.payload.devices.includes(this.device.real_serial)) {
+        return
+      }
+      if (this.scrcpy) {
+        this.scrcpy.send(e.payload.data)
+      }
+    }))
+    this.listeners.push(await this.$listen('refreshDevice', (e) => {
+      console.log('refreshDevice', e.payload)
+      this.closeScrcpy()
+      this.closeJmuxer()
+      this.syncDisplay()
+    }))
+    this.listeners.push(await this.$listen('screenScaled', (e) => {
+      this.screenScaled = e.payload.scaled
 
-      // 获取视频元素
-      var video = this.$refs.display;
 
-      // 添加播放事件监听器
-      video.addEventListener('play', () => {
-        console.log(`device${this.no}-${this.device.serial} playing`)
-        //set progress to newest
+    }))
+    this.listeners.push(await this.$listen('screenResolution', (e) => {
+      this.screenResolution = e.payload.resolution;
+      this.closeScrcpy();
+      this.closeJmuxer();
+      this.syncDisplay();
+    }))
+
+    // 获取视频元素
+    var video = this.$refs.display;
+
+    // 添加播放事件监听器
+    video.addEventListener('play', () => {
+      console.log(`device${this.no}-${this.device.serial} playing`)
+      //set progress to newest
+      video.currentTime = 999999
+      video.playbackRate = 2;
+    });
+
+    // 添加暂停事件监听器
+    video.addEventListener('pause', () => {
+      console.log(`device${this.no}-${this.device.serial} paused`)
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        console.log(`device${this.no}-${this.device.serial} hidden`)
+      } else {
+        console.log(`device${this.no}-${this.device.serial} visible`)
+        var video = this.$refs.display;
         video.currentTime = 999999
         video.playbackRate = 2;
-      });
+      }
+    })
+    document.addEventListener('copy', () => {
+      if (this.big) {
+        this.copyFromPhone()
+      }
 
-      // 添加暂停事件监听器
-      video.addEventListener('pause', () => {
-        console.log(`device${this.no}-${this.device.serial} paused`)
-      });
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          console.log(`device${this.no}-${this.device.serial} hidden`)
-        } else {
-          console.log(`device${this.no}-${this.device.serial} visible`)
-          var video = this.$refs.display;
-          video.currentTime = 999999
-          video.playbackRate = 2;
-        }
-      })
-      document.addEventListener('copy', () => {
-        if (this.big){
-          this.copyFromPhone()
-        }
-        
-      })
+    })
     //heartbeat
     this.listeners.push(await this.$listen('heartbeat', (e) => {
       let data = JSON.stringify({
