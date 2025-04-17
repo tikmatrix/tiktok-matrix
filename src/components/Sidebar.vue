@@ -742,7 +742,7 @@ export default {
     this.refreshSelections()
     this.listeners.push(await this.$listen('openDevice', async (e) => {
       console.log("receive openDevice: ", e.payload)
-      this.selection.push(e.payload.real_serial)
+      this.selection=[...this.selection.filter(serial => serial !== e.payload.real_serial),e.payload.real_serial]
       this.refreshSelections()
     }))
     this.listeners.push(await this.$listen('closeDevice', (e) => {
