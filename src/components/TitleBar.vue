@@ -425,35 +425,38 @@ export default {
             }
             this.check_update_dialog_title = 'Checking update...';
             this.$refs.download_dialog.showModal();
-            try {
-                const { shouldUpdate, manifest } = await checkUpdate();
-                if (shouldUpdate) {
-                    console.log(
-                        `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
-                    );
-                    const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
-                    if (yes) {
-                        this.check_update_dialog_title = 'Downloading update...';
-                        await this.shutdown();
-                        await installUpdate();
-                        await relaunch();
-                        return;
+            const osType = await os.type();
+            console.log('osType:', osType);
+            const platform = osType === 'Darwin' ? 'mac os x' : 'windows';
+            console.log('platform:', platform);
+            if (platform === 'windows') {
+                try {
+                    const { shouldUpdate, manifest } = await checkUpdate();
+                    if (shouldUpdate) {
+                        console.log(
+                            `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
+                        );
+                        const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
+                        if (yes) {
+                            this.check_update_dialog_title = 'Downloading update...';
+                            await this.shutdown();
+                            await installUpdate();
+                            await relaunch();
+                            return;
+                        }
+                    } else {
+                        console.log('No update available');
                     }
-                } else {
-                    console.log('No update available');
+                } catch (e) {
+                    await message(e, { title: 'Start Error', type: 'error' });
+                    this.$refs.download_dialog.close();
+                    return;
                 }
-            } catch (e) {
-                await message(e, { title: 'Start Error', type: 'error' });
-                this.$refs.download_dialog.close();
-                return;
             }
 
             let response = null;
             try {
-                const osType = await os.type();
-                console.log('osType:', osType);
-                const platform = osType === 'Darwin' ? 'mac os x' : 'windows';
-                console.log('platform:', platform);
+
                 response = await fetch(`https://pro.api.tikmatrix.com/front-api/check_libs?time=${new Date().getTime()}`, {
                     method: 'GET',
                     timeout: 10,

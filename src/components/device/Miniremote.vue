@@ -98,6 +98,7 @@ import JMuxer from 'jmuxer'
 import RightBars from './RightBars.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
+import { os } from '@tauri-apps/api';
 export default {
   name: 'Miniremote',
   components: {
@@ -331,7 +332,7 @@ export default {
         // control
         this.scrcpy.send('true')
         //fps
-        this.scrcpy.send(30)
+        this.scrcpy.send(120)
 
       }
       this.scrcpy.onclose = () => {
@@ -456,14 +457,8 @@ export default {
         // 跳转到缓冲区末尾略微前一点的位置（避免缓冲）
         const endTime = buffered.end(buffered.length - 1);
         video.currentTime = Math.max(0, endTime - 0.1);
+        video.play();
       }
-
-      video.play();
-      // await this.$emiter('NOTIFY', {
-      //   type: 'success',
-      //   message: `${this.no} jump to latest frame`,
-      //   timeout: 2000
-      // });
     }
   },
   async mounted() {
@@ -518,20 +513,13 @@ export default {
     // 添加播放事件监听器
     video.addEventListener('play', async () => {
       console.log(`device${this.no}-${this.device.serial} playing`)
-      // await this.jumpToLatestFrame()
+
     });
 
     // 添加暂停事件监听器
     video.addEventListener('pause', async () => {
-      // await this.$emiter('NOTIFY', {
-      //   type: 'success',
-      //   message: `${this.no} paused`,
-      //   timeout: 2000
-      // });
-      // 1000ms后跳转到最新帧
-      setTimeout(async () => {
-        await this.jumpToLatestFrame()
-      }, 1000)
+      await this.jumpToLatestFrame()
+
     });
     document.addEventListener('visibilitychange', async () => {
       if (document.hidden) {
@@ -549,12 +537,21 @@ export default {
 
     })
     //heartbeat
-    this.listeners.push(await this.$listen('heartbeat', (e) => {
-      let data = JSON.stringify({
-        type: 'heartbeat',
-      });
-      this.scrcpy.send(data)
-    }))
+    // this.listeners.push(await this.$listen('heartbeat', (e) => {
+
+    //   this.scrcpy.send(JSON.stringify({
+    //     type: 'keycode',//type=keycode
+    //     operation: 'd',//operation=down
+    //     keycode: 'dpad_up',
+    //   }))
+    //   setTimeout(async () => {
+    //     this.scrcpy.send(JSON.stringify({
+    //       type: 'keycode',//type=keycode
+    //       operation: 'u',//operation=down
+    //       keycode: 'dpad_down',
+    //     }))
+    //   }, 100);
+    // }))
 
     this.syncDisplay()
   },
