@@ -388,8 +388,8 @@ export default {
       this.jmuxer = new JMuxer({
         node: this.$refs.display,
         mode: 'video',
-        flushingTime: 100,
-        maxDelay: 3000,
+        flushingTime: 0,
+        maxDelay: 8000,
         debug: false,
         onError: function () {
           console.log('onError')
@@ -455,15 +455,15 @@ export default {
       if (buffered.length > 0) {
         // 跳转到缓冲区末尾略微前一点的位置（避免缓冲）
         const endTime = buffered.end(buffered.length - 1);
-        video.currentTime = Math.max(0, endTime - 0.5);
+        video.currentTime = Math.max(0, endTime - 0.1);
       }
 
       video.play();
-      await this.$emiter('NOTIFY', {
-        type: 'success',
-        message: `${this.no} jump to latest frame`,
-        timeout: 2000
-      });
+      // await this.$emiter('NOTIFY', {
+      //   type: 'success',
+      //   message: `${this.no} jump to latest frame`,
+      //   timeout: 2000
+      // });
     }
   },
   async mounted() {
@@ -518,13 +518,20 @@ export default {
     // 添加播放事件监听器
     video.addEventListener('play', async () => {
       console.log(`device${this.no}-${this.device.serial} playing`)
-      await this.jumpToLatestFrame()
+      // await this.jumpToLatestFrame()
     });
 
     // 添加暂停事件监听器
     video.addEventListener('pause', async () => {
-      console.log(`device${this.no}-${this.device.serial} paused`)
-      await this.jumpToLatestFrame()
+      // await this.$emiter('NOTIFY', {
+      //   type: 'success',
+      //   message: `${this.no} paused`,
+      //   timeout: 2000
+      // });
+      // 1000ms后跳转到最新帧
+      setTimeout(async () => {
+        await this.jumpToLatestFrame()
+      }, 1000)
     });
     document.addEventListener('visibilitychange', async () => {
       if (document.hidden) {
