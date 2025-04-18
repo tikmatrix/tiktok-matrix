@@ -319,9 +319,11 @@ export default {
                     console.log('agent is not running')
                     this.check_update_dialog_title = 'Starting agent...';
                     //check agent.exe is exists
-                    let agent_exists = await exists('bin/agent.exe', { dir: BaseDirectory.AppData })
+                    const osType = await os.type();
+                    const agentFilename = osType === 'Darwin' ? 'agent' : 'agent.exe';
+                    let agent_exists = await exists(`bin/${agentFilename}`, { dir: BaseDirectory.AppData })
                     if (!agent_exists) {
-                        console.log('agent.exe not found')
+                        console.log(`${agentFilename} not found`)
                         return;
                     }
                     const command = new Command('start-agent', [])
@@ -448,157 +450,69 @@ export default {
 
             let response = null;
             try {
-                response = await fetch('https://pro.api.tikmatrix.com/front-api/check_core_update?time=' + new Date().getTime(), {
+                const osType = await os.type();
+                console.log('osType:', osType);
+                const platform = osType === 'Darwin' ? 'mac os x' : 'windows';
+                console.log('platform:', platform);
+                response = await fetch(`https://pro.api.tikmatrix.com/front-api/check_libs?time=${new Date().getTime()}`, {
                     method: 'GET',
                     timeout: 10,
                     responseType: ResponseType.JSON,
+                    headers: {
+                        'User-Agent': platform,
+                        'X-App-Id': this.name
+                    }
                 });
                 console.log('response:', response);
             } catch (e) {
-                await message(e, { title: 'Check Core Update Error', type: 'error' });
+                await message(e, { title: 'Check Libs Error', type: 'error' });
             }
 
-            if (response.ok) {
-                this.remote_version = response.data;
-                await this.check_platform_tools();
-                await this.check_ocr();
-                await this.check_apk();
-                await this.check_test_apk();
-                await this.check_scrcpy();
-                await this.check_script();
-                await this.check_agent();
+            if (response?.ok && response?.data?.code === 20000) {
+                const platform = response.data.data.platform;
+                const libs = response.data.data.libs;
+
+                for (const lib of libs) {
+                    if (lib.name === 'platform-tools') {
+                        await this.download_and_update_lib(lib, 'platform_tools');
+                    } else if (lib.name === 'PaddleOCR') {
+                        await this.download_and_update_lib(lib, 'PaddleOCR');
+                    } else if (lib.name === 'apk') {
+                        await this.download_and_update_lib(lib, 'apk');
+                    } else if (lib.name === 'test-apk') {
+                        await this.download_and_update_lib(lib, 'test_apk');
+                    } else if (lib.name === 'scrcpy') {
+                        await this.download_and_update_lib(lib, 'scrcpy');
+                    } else if (lib.name === 'script') {
+                        await this.download_and_update_lib(lib, 'script');
+                    } else if (lib.name === 'agent') {
+                        await this.download_and_update_lib(lib, 'agent');
+                    }
+                }
+
                 await this.start_agent();
                 localStorage.setItem('hasCheckedUpdate', 'true');
-            }
-        },
-        async check_ocr() {
-            let work_path = await appDataDir();
-            let url = this.remote_version.ocr_windows_url;
-            let { path, updated } = await this.check_file_update('PaddleOCR', this.remote_version.ocr_version, url);
-            //check paddle file exists
-            let paddle_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData });
-            if (updated || !paddle_exists) {
-                this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
-                //kill PaddleOCR-json.exe
-                await invoke("kill_process", { name: "PaddleOCR-json" });
-                await invoke("unzip_file", { zipPath: path, destDir: work_path });
-            }
-        },
-        async check_platform_tools() {
-            let work_path = await appDataDir();
-            let url = "";
-            const osType = await os.type();
-            if (osType === 'Darwin') {
-                url = this.remote_version.platform_tools_mac_url;
-            } else if (osType === 'Windows_NT') {
-                url = this.remote_version.platform_tools_windows_url;
             } else {
-                console.log('Unknown OS type');
-                return;
-            }
-            let { path, updated } = await this.check_file_update('platform_tools', this.remote_version.platform_tools_version, url);
-            let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData });
-            if (updated || !adb_exists) {
-                this.check_update_dialog_title = 'Uziping platform-tools-latest-windows.zip';
-                //kill adb.exe
-                await invoke("kill_process", { name: "adb" });
-                //wait for adb to be killed
-                await new Promise(r => setTimeout(r, 3000));
-                //unzip to platform-tools
-                await invoke("unzip_file", { zipPath: path, destDir: work_path });
-                await invoke("grant_permission", { path: "platform-tools/adb" });
+                this.$refs.download_dialog.close();
+                await message('Failed to check for updates', { title: 'Error', type: 'error' });
             }
         },
-        async check_apk() {
-            let url = this.remote_version.apk_url;
-            let { path, updated } = await this.check_file_update('apk', this.remote_version.apk_version, url);
-            if (updated) {
-                //copy apk to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-                //set agent_verision
-                await invoke("set_env", { key: "agent_version", value: this.remote_version.apk_version });
-            }
-        },
-        async check_test_apk() {
-            let url = this.remote_version.test_apk_url;
-            let { path, updated } = await this.check_file_update('test_apk', this.remote_version.test_apk_version, url);
-            if (updated) {
-                //copy test_apk to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-                //set agent_verision
-                await invoke("set_env", { key: "agent_version", value: this.remote_version.test_apk_version });
-            }
-        },
-        async check_scrcpy() {
-            let url = this.remote_version.scrcpy_url;
-            let { path, updated } = await this.check_file_update('scrcpy', this.remote_version.scrcpy_version, url);
-            if (updated) {
-                //copy scrcpy to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-            }
-        },
-        async check_script() {
-            let url = "";
-            const osType = await os.type();
-            if (osType === 'Darwin') {
-                url = this.remote_version.script_mac_url;
-            } else if (osType === 'Windows_NT') {
-                url = this.remote_version.script_windows_url;
-            } else {
-                console.log('Unknown OS type');
-                return;
-            }
-            let { path, updated } = await this.check_file_update('script', this.remote_version.script_version, url);
-            if (updated) {
-                //kill script.exe
-                await invoke("kill_process", { name: "script" });
-                //wait for script to be killed
-                await new Promise(r => setTimeout(r, 3000));
-                //copy script to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-                //grant permission
-                await invoke("grant_permission", { path: "bin/script" });
-            }
-        },
-        async check_agent() {
-            let url = "";
-            const osType = await os.type();
-            if (osType === 'Darwin') {
-                url = this.remote_version.agent_mac_url;
-            } else if (osType === 'Windows_NT') {
-                url = this.remote_version.agent_windows_url;
-            } else {
-                console.log('Unknown OS type');
-                return;
-            }
-            let { path, updated } = await this.check_file_update('agent', this.remote_version.agent_version, url);
-            if (updated) {
-                //kill agent.exe
-                console.log('kill agent');
-                await invoke("kill_process", { name: "agent" });
-                //wait for agent to be killed
-                await new Promise(r => setTimeout(r, 3000));
-                console.log('copy agent to bin');
-                //copy agent to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-                //grant permission
-                await invoke("grant_permission", { path: "bin/agent" });
-            }
-        },
-        async check_file_update(filename, remoteVersion, downloadUrl) {
+        // 新增方法：统一处理库的下载和更新
+        async download_and_update_lib(lib, localStorageKey) {
             let updated = false;
-            this.check_update_dialog_title = `Checking ${filename} update...`;
-            let localversion = localStorage.getItem(filename) || '0';
+            this.check_update_dialog_title = `Checking ${lib.name} update...`;
+            let localversion = localStorage.getItem(localStorageKey) || '0';
             localversion = localversion.replace(/"/g, '');
-            let url = downloadUrl;
+            let url = lib.downloadUrl;
             let work_path = await appDataDir();
             let name = url.split('/').pop();
             //先下载到tmp目录
             let path = work_path + 'tmp/' + name;
             let downloaded = await exists('tmp/' + name, { dir: BaseDirectory.AppData });
-            console.log(`check_file_update: ${filename} localversion: ${localversion} remoteVersion: ${remoteVersion}`);
-            if (!downloaded || localversion !== remoteVersion) {
-                console.log("downloading " + filename + " from " + downloadUrl + " to " + path);
+            console.log(`check_file_update: ${lib.name} localversion: ${localversion} remoteVersion: ${lib.version}`);
+
+            if (!downloaded || localversion !== lib.version) {
+                console.log(`downloading ${lib.name} from ${url} to ${path}`);
                 url = url + '?t=' + new Date().getTime();
                 await invoke('download_file', { url, path }).catch(async (e) => {
                     console.error(e);
@@ -607,11 +521,46 @@ export default {
                 });
                 updated = true;
             } else {
-                console.log(filename + " no need to update");
+                console.log(`${lib.name} no need to update`);
             }
-            localStorage.setItem(filename, remoteVersion);
+
+            localStorage.setItem(localStorageKey, lib.version);
+
+            // 根据不同类型的库执行特定的更新操作
+            if (lib.name === 'platform-tools') {
+                let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData });
+                if (updated || !adb_exists) {
+                    this.check_update_dialog_title = 'Uziping platform-tools.zip';
+                    await invoke("kill_process", { name: "adb" });
+                    await new Promise(r => setTimeout(r, 3000));
+                    await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                    await invoke("grant_permission", { path: "platform-tools/adb" });
+                }
+            } else if (lib.name === 'PaddleOCR') {
+                let paddle_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData });
+                if (updated || !paddle_exists) {
+                    this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
+                    await invoke("kill_process", { name: "PaddleOCR-json" });
+                    await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                }
+            } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
+                if (updated) {
+                    await copyFile(path, path.replace('tmp', 'bin'));
+                    if (lib.name === 'apk' || lib.name === 'test-apk') {
+                        await invoke("set_env", { key: "agent_version", value: lib.version });
+                    }
+                }
+            } else if (lib.name === 'script' || lib.name === 'agent') {
+                if (updated) {
+                    await invoke("kill_process", { name: lib.name });
+                    await new Promise(r => setTimeout(r, 3000));
+                    await copyFile(path, path.replace('tmp', 'bin'));
+                    await invoke("grant_permission", { path: `bin/${lib.name}` });
+                }
+            }
+
             return { path, updated };
-        }
+        },
     },
     async mounted() {
         // 获取版本号

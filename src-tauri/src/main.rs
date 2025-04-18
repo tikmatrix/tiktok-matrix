@@ -151,7 +151,7 @@ fn grant_permission(app: tauri::AppHandle, path: String) {
         //chmod +x
         let mut command = Command::new("chmod");
         command
-            .args(&["+x", path])
+            .args(&["+x", &path])
             .status()
             .expect("failed to chmod");
         log::info!("grant_permission: {}", path);

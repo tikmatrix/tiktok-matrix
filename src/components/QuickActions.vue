@@ -82,7 +82,7 @@
 <script>
 import { ask } from '@tauri-apps/api/dialog';
 export default {
-    name: 'Tools',
+    name: 'QuickActions',
     props: ['settings'],
     data() {
         return {

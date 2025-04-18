@@ -19,7 +19,7 @@
         {{ $t('grantTikTok') }}
     </button>
 
-    
+
     <button class="btn btn-md btn-primary  ml-1 mb-1" @click="app_install">
         <font-awesome-icon icon="fa fa-download" class="h-3 w-3 text-primary-content" />
         {{ $t('installApk') }}
@@ -176,7 +176,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 
 import MyButton from './Button.vue'
 export default {
-    name: 'Tools',
+    name: 'General',
     props: ['settings'],
     components: {
         MyButton
@@ -188,6 +188,7 @@ export default {
             screenScaled: Number(localStorage.getItem('screenScaled')) || 100,
             resolution: Number(localStorage.getItem('screenResolution')) || 512,
             customResolution: 512,
+            uninstall_package: '',
         }
     },
     computed: {

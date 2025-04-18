@@ -32,13 +32,14 @@
         <button class="btn btn-md btn-primary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
             <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-error" />{{ $t('stopTask') }}
         </button>
-        <fieldset class="fieldset p-1 bg-base-100 border border-base-300 rounded-box text-center align-middle flex flex-row items-center">
+        <fieldset
+            class="fieldset p-1 bg-base-100 border border-base-300 rounded-box text-center align-middle flex flex-row items-center">
             <label class="fieldset-label">
                 {{ $t('autoRetry') }}:
-                <input type="checkbox" checked="checked" class="toggle toggle-primary" v-model="autoRetry"/>
+                <input type="checkbox" checked="checked" class="toggle toggle-primary" v-model="autoRetry" />
             </label>
         </fieldset>
-        
+
     </div>
 
 
@@ -46,7 +47,7 @@
 <script>
 import Countup from './Countup.vue'
 export default {
-    name: 'Tools',
+    name: 'Tasks',
     props: ['settings'],
     components: {
         Countup

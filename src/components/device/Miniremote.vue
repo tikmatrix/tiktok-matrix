@@ -154,15 +154,15 @@ export default {
   computed: {
     getTaskStatus() {
       if (this.device.task_status == -1) {
-        return this.$t('preparing')
+        return this.getTranslation('preparing')
       }
       if (this.device.task_status == 1) {
-        return this.$t('running')
+        return this.getTranslation('running')
       }
       if (this.device.task_status == 0 || this.device.task_status == 2 || this.device.task_status == 3) {
-        return this.$t('ready')
+        return this.getTranslation('ready')
       }
-      return this.$t('preparing')
+      return this.getTranslation('preparing')
     },
 
     getScaledFontSize() {
@@ -223,6 +223,9 @@ export default {
     }
   },
   methods: {
+    getTranslation(key) {
+      return this.$t(key)
+    },
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -328,7 +331,7 @@ export default {
         // control
         this.scrcpy.send('true')
         //fps
-        this.scrcpy.send(this.big ? 30 : 30)
+        this.scrcpy.send(30)
 
       }
       this.scrcpy.onclose = () => {
@@ -342,10 +345,6 @@ export default {
       }
       this.scrcpy.onmessage = message => {
         this.loading = false
-        //check if message is empty
-        // if (message.data.length == 0) {
-        //   return
-        // }
         if (this.message_index < 2) {
           console.log(message)
           switch (this.message_index) {
@@ -359,7 +358,7 @@ export default {
 
               break
             case 1:
-              if(this.big||this.width!=this.default_width){
+              if (this.big || this.width != this.default_width) {
                 this.message_index += 1
                 return;
               }
@@ -373,19 +372,12 @@ export default {
           this.message_index += 1
           return
         }
-        //fps
-        this.periodImageCount += 1
-        const currentTime = Date.now()
-
-        // 每秒更新一次FPS
-        if (currentTime - this.periodStartTime >= 1000) {
-          this.fps = (this.periodImageCount * 1000) / (currentTime - this.periodStartTime)
-          this.periodImageCount = 0
-          this.periodStartTime = currentTime
+        // 检查数据包不为空且长度足够
+        if (message.data && message.data.byteLength > 4) {
+          this.jmuxer.feed({
+            video: new Uint8Array(message.data)
+          })
         }
-        this.jmuxer.feed({
-          video: new Uint8Array(message.data)
-        })
 
       }
     },
@@ -397,8 +389,7 @@ export default {
         node: this.$refs.display,
         mode: 'video',
         flushingTime: 100,
-        maxDelay: 0,
-        fps: 30,
+        maxDelay: 3000,
         debug: false,
         onError: function () {
           console.log('onError')
@@ -457,6 +448,23 @@ export default {
           });
         })
     },
+    async jumpToLatestFrame() {
+      const video = this.$refs.display;
+      const buffered = video.buffered;
+
+      if (buffered.length > 0) {
+        // 跳转到缓冲区末尾略微前一点的位置（避免缓冲）
+        const endTime = buffered.end(buffered.length - 1);
+        video.currentTime = Math.max(0, endTime - 0.5);
+      }
+
+      video.play();
+      await this.$emiter('NOTIFY', {
+        type: 'success',
+        message: `${this.no} jump to latest frame`,
+        timeout: 2000
+      });
+    }
   },
   async mounted() {
     this.listeners.push(await this.$listen('closeDevice', (e) => {
@@ -508,27 +516,25 @@ export default {
     var video = this.$refs.display;
 
     // 添加播放事件监听器
-    video.addEventListener('play', () => {
+    video.addEventListener('play', async () => {
       console.log(`device${this.no}-${this.device.serial} playing`)
-      //set progress to newest
-      video.currentTime = 999999
-      video.playbackRate = 2;
+      await this.jumpToLatestFrame()
     });
 
     // 添加暂停事件监听器
-    video.addEventListener('pause', () => {
+    video.addEventListener('pause', async () => {
       console.log(`device${this.no}-${this.device.serial} paused`)
+      await this.jumpToLatestFrame()
     });
-    document.addEventListener('visibilitychange', () => {
+    document.addEventListener('visibilitychange', async () => {
       if (document.hidden) {
         console.log(`device${this.no}-${this.device.serial} hidden`)
       } else {
         console.log(`device${this.no}-${this.device.serial} visible`)
-        var video = this.$refs.display;
-        video.currentTime = 999999
-        video.playbackRate = 2;
+        await this.jumpToLatestFrame()
       }
     })
+
     document.addEventListener('copy', () => {
       if (this.big) {
         this.copyFromPhone()

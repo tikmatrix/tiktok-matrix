@@ -86,10 +86,11 @@
             </div>
           </div>
           <div :style="gridStyle" v-else>
-              <Miniremote :device="device" :key="device.real_serial" :no="device.key" v-for="(device, index) in slotProps.items" @sizeChanged="sizeChanged" />
+            <Miniremote :device="device" :key="device.real_serial" :no="device.key"
+              v-for="(device, index) in slotProps.items" @sizeChanged="sizeChanged" />
           </div>
 
-        
+
         </div>
       </template>
     </Pagination>
@@ -125,7 +126,7 @@
       <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
     </div>
   </div>
- 
+
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300">
       <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
@@ -281,12 +282,24 @@ export default {
       await this.$emiter('reload_settings', {})
     },
     sizeChanged(cardWidth) {
-      this.cardMinWidth=cardWidth
-      console.log("sizeChanged:",this.cardMinWidth)
+      this.cardMinWidth = cardWidth
+      console.log("sizeChanged:", this.cardMinWidth)
     },
   },
   computed: {
     gridStyle() {
+      // 当只有一个元素时，限制最大宽度而不是占满整行
+      if (this.mydevices.length === 1) {
+        return {
+          display: 'grid',
+          gridTemplateColumns: `minmax(${this.cardMinWidth}px, auto)`,
+          justifyContent: 'flex-start',
+          autoRows: 'auto',
+          gap: '0.5rem',
+          flex: 1
+        }
+      }
+      // 多个元素时保持原来的自适应布局
       return {
         display: 'grid',
         gridTemplateColumns: `repeat(auto-fit, minmax(${this.cardMinWidth}px, 1fr))`,
@@ -298,7 +311,7 @@ export default {
   },
   async mounted() {
     this.mydevices = this.devices
-   
+
 
   },
 }

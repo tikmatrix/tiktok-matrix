@@ -11,6 +11,10 @@ const updateJson = {
         "windows-x86_64": {
             "signature": signature,
             "url": `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.msi.zip`
+        },
+        "darwin-x86_64": {
+            "signature": signature,
+            "url": `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.dmg`
         }
     }
 }
