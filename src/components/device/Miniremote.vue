@@ -145,8 +145,6 @@ export default {
       frameQueue: [],
       isRenderingFrame: false,
       buffer: new Uint8Array(),
-      bufferedPPS: false,
-      bufferedSPS: false,
     }
   },
   computed: {
@@ -320,11 +318,6 @@ export default {
       this.canvasCtx = this.$refs.canvas.getContext('2d');
       this.keyFrameReceived = false;
 
-      if (this.videoDecoder) {
-        this.videoDecoder.close();
-        this.videoDecoder = null;
-      }
-
       try {
         this.videoDecoder = new VideoDecoder({
           output: (frame) => {
@@ -341,9 +334,7 @@ export default {
           codec: 'avc1.42001E', // 高级H.264配置：High Profile, Level 4.0
           optimizeForLatency: true,
         };
-        console.log('config:', config)
         this.videoDecoder.configure(config);
-        console.log("VideoDecoder configured successfully");
       } catch (e) {
         console.error("Error initializing VideoDecoder:", e);
       }
@@ -377,59 +368,58 @@ export default {
       }
     },
     processH264Data(data) {
+      //       [. . . . . . . .|. . . .]. . . . . . . . . . . . . . . ...
+      //      <-------------> <-----> <-----------------------------...
+      //            PTS        packet        raw packet
+      //                        size
+      //      <--------------------->
+      //            frame header
+
+      // The most significant bits of the PTS are used for packet flags:
+
+      //      byte 7   byte 6   byte 5   byte 4   byte 3   byte 2   byte 1   byte 0
+      //     CK...... ........ ........ ........ ........ ........ ........ ........
+      //     ^^<------------------------------------------------------------------->
+      //     ||                                PTS
+      //     | `- key frame
+      //      `-- config packet
       try {
+        // console.log('processH264Data', data)
         // 处理完整的帧数据(包含12字节头部)
         const fullData = new Uint8Array(data);
         if (!fullData || fullData.length < 4) {
           return;
         }
-        const type = data[4] & 31;
-        const isIDR = type === NALU.IDR;
+        // 获取CK
+        const CK = fullData[0].toString(2).padStart(8, '0');
+        const isIDR = CK[1] === '1';
+        const isConfig = CK[0] === '1';
 
-        if (type === NALU.SPS) {
-          console.log('收到SPS')
-          const { codec, width, height } = WebCodecsPlayer.parseSPS(data.subarray(4));
-          console.log('codec:', codec, 'width:', width, 'height:', height)
-          this.scaleCanvas(width, height);
-          const config = {
-            codec,
-            optimizeForLatency: true,
-          }
-          this.videoDecoder.configure(config);
-          this.bufferedSPS = true;
-          this.addToBuffer(data);
-          this.hadIDR = false;
-          return;
-        } else if (type === NALU.PPS) {
-          console.log('收到PPS')
-          this.bufferedPPS = true;
-          this.addToBuffer(data);
-          return;
-        } else if (type === NALU.SEI) {
-          console.log('收到SEI')
-          // Workaround for lonely SEI from ws-qvh
-          if (!this.bufferedSPS || !this.bufferedPPS) {
-            return;
-          }
+
+        if (isConfig) {
+          console.log('收到PTS')
+          this.hadIDR = false
+        } else if (isIDR) {
+          console.log('收到关键帧')
+        } else {
+          console.log("收到非关键帧");
         }
-        const array = this.addToBuffer(data);
-        if (array && this.videoDecoder.state === 'configured' && !this.hadIDR && isIDR) {
+        const array = this.addToBuffer(fullData.subarray(13));
+        this.hadIDR = this.hadIDR || isIDR;
+        if (array && this.videoDecoder.state === 'configured' && this.hadIDR) {
           this.buffer = undefined;
-          this.bufferedPPS = false;
-          this.bufferedSPS = false;
-          console.log("收到关键帧");
           const chunk = new EncodedVideoChunk({
             type: 'key',
             timestamp: 0,
             data: array.buffer
           });
-
           this.videoDecoder.decode(chunk);
         } else {
-          console.log("收到非关键帧");
+          console.log('解码失败,state:', this.videoDecoder.state, 'hadIDR:', this.hadIDR)
+          if (this.videoDecoder.state === 'closed') {
+            this.initializeWebCodecs()
+          }
         }
-
-
       } catch (e) {
         console.error("解码H.264数据出错:", e);
       }
@@ -538,8 +528,11 @@ export default {
     },
     closeDecoder() {
       if (this.videoDecoder) {
-        this.videoDecoder.close();
-        this.videoDecoder = null;
+        if (this.videoDecoder.state === 'closed') {
+          this.videoDecoder = null;
+        } else {
+          this.videoDecoder.close();
+        }
       }
 
       // 清空帧队列
