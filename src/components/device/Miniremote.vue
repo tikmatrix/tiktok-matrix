@@ -14,13 +14,7 @@
                 {{ getTaskStatus }}
               </span>
             </div>
-            <!-- <span class="text-md font-semibold" v-if="big">{{ name }}</span> -->
-            <!-- <div class="flex items-center gap-2" v-if="big">
-              <span class="px-2 py-0.5 bg-base-200 rounded" :class="getScaledFontSize">
-                {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
-              </span>
-              <span class="font-medium">FPS: {{ fps.toFixed(0) }}</span>
-            </div> -->
+
           </div>
           <button class="btn btn-ghost btn-md hover:text-error" @click="$emiter('closeDevice', this.device)" v-if="big">
             <font-awesome-icon icon="fa fa-times" class="h-6 w-6" />
@@ -32,9 +26,9 @@
           <div>
             <div class="relative flex-1 object-fill"
               :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
-              <video class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="display" autoplay muted
+              <canvas class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="canvas"
                 @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
-                @mousemove="mouseMoveListener"></video>
+                @mousemove="mouseMoveListener"></canvas>
               <div @click="$emiter('openDevice', this.device)"
                 class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
                 <div class="bg-transparent p-2 rounded-md text-center">
@@ -94,11 +88,11 @@
 }
 </style>
 <script>
-import JMuxer from 'jmuxer'
 import RightBars from './RightBars.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { os } from '@tauri-apps/api';
+import NALU from 'h264-converter';
 export default {
   name: 'Miniremote',
   components: {
@@ -128,9 +122,8 @@ export default {
       big: false,
       visible: true,
       rotation: 0,
-      fps: 0,
-      periodImageCount: 0,
-      jmuxer: null,
+      videoDecoder: null,
+      hadIDR: false,
       scrcpy: null,
       loading: true,
       operating: false,
@@ -144,12 +137,16 @@ export default {
       real_width: 0,
       real_height: 0,
       scaled: 1,
-      connect_count: 0,
       listeners: [],
-      periodStartTime: 0,
-      periodTime: 0,
+      touch: false,
       screenScaled: (Number(localStorage.getItem('screenScaled')) || 100) / 100,
       screenResolution: Number(localStorage.getItem('screenResolution')) || 512,
+      canvasCtx: null,
+      frameQueue: [],
+      isRenderingFrame: false,
+      buffer: new Uint8Array(),
+      bufferedPPS: false,
+      bufferedSPS: false,
     }
   },
   computed: {
@@ -317,6 +314,138 @@ export default {
       this.touch = true
       this.touchSync('d', event)
     },
+    initializeWebCodecs() {
+      if (!this.$refs.canvas) return;
+
+      this.canvasCtx = this.$refs.canvas.getContext('2d');
+      this.keyFrameReceived = false;
+
+      if (this.videoDecoder) {
+        this.videoDecoder.close();
+        this.videoDecoder = null;
+      }
+
+      try {
+        this.videoDecoder = new VideoDecoder({
+          output: (frame) => {
+            this.frameQueue.push(frame);
+            this.processFrameQueue();
+          },
+          error: (error) => {
+            console.error(error, `code: ${error.code}`);
+          },
+        });
+
+        // 支持的编解码器配置
+        const config = {
+          codec: 'avc1.42001E', // 高级H.264配置：High Profile, Level 4.0
+          optimizeForLatency: true,
+        };
+        console.log('config:', config)
+        this.videoDecoder.configure(config);
+        console.log("VideoDecoder configured successfully");
+      } catch (e) {
+        console.error("Error initializing VideoDecoder:", e);
+      }
+    },
+
+    processFrameQueue() {
+      if (this.isRenderingFrame || this.frameQueue.length === 0) return;
+
+      this.isRenderingFrame = true;
+      const frame = this.frameQueue.shift();
+
+      if (frame) {
+        if (this.$refs.canvas) {
+          // 确保canvas尺寸与视频帧匹配
+          if (this.$refs.canvas.width !== frame.displayWidth ||
+            this.$refs.canvas.height !== frame.displayHeight) {
+            this.$refs.canvas.width = frame.displayWidth;
+            this.$refs.canvas.height = frame.displayHeight;
+          }
+
+          this.canvasCtx.drawImage(frame, 0, 0);
+        }
+        frame.close(); // 重要：使用完毕后释放资源
+      }
+
+      this.isRenderingFrame = false;
+
+      // 如果队列中还有帧，继续处理
+      if (this.frameQueue.length > 0) {
+        requestAnimationFrame(() => this.processFrameQueue());
+      }
+    },
+    processH264Data(data) {
+      try {
+        // 处理完整的帧数据(包含12字节头部)
+        const fullData = new Uint8Array(data);
+        if (!fullData || fullData.length < 4) {
+          return;
+        }
+        const type = data[4] & 31;
+        const isIDR = type === NALU.IDR;
+
+        if (type === NALU.SPS) {
+          console.log('收到SPS')
+          const { codec, width, height } = WebCodecsPlayer.parseSPS(data.subarray(4));
+          console.log('codec:', codec, 'width:', width, 'height:', height)
+          this.scaleCanvas(width, height);
+          const config = {
+            codec,
+            optimizeForLatency: true,
+          }
+          this.videoDecoder.configure(config);
+          this.bufferedSPS = true;
+          this.addToBuffer(data);
+          this.hadIDR = false;
+          return;
+        } else if (type === NALU.PPS) {
+          console.log('收到PPS')
+          this.bufferedPPS = true;
+          this.addToBuffer(data);
+          return;
+        } else if (type === NALU.SEI) {
+          console.log('收到SEI')
+          // Workaround for lonely SEI from ws-qvh
+          if (!this.bufferedSPS || !this.bufferedPPS) {
+            return;
+          }
+        }
+        const array = this.addToBuffer(data);
+        if (array && this.videoDecoder.state === 'configured' && !this.hadIDR && isIDR) {
+          this.buffer = undefined;
+          this.bufferedPPS = false;
+          this.bufferedSPS = false;
+          console.log("收到关键帧");
+          const chunk = new EncodedVideoChunk({
+            type: 'key',
+            timestamp: 0,
+            data: array.buffer
+          });
+
+          this.videoDecoder.decode(chunk);
+        } else {
+          console.log("收到非关键帧");
+        }
+
+
+      } catch (e) {
+        console.error("解码H.264数据出错:", e);
+      }
+    },
+    addToBuffer(data) {
+      let array;
+      if (this.buffer) {
+        array = new Uint8Array(this.buffer.byteLength + data.byteLength);
+        array.set(new Uint8Array(this.buffer));
+        array.set(new Uint8Array(data), this.buffer.byteLength);
+      } else {
+        array = data;
+      }
+      this.buffer = array.buffer;
+      return array;
+    },
     async connect() {
       console.log('connect');
       const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
@@ -331,18 +460,27 @@ export default {
         this.scrcpy.send(max_size)
         // control
         this.scrcpy.send('true')
-        //fps
+        // fps
         this.scrcpy.send(120)
-
       }
       this.scrcpy.onclose = () => {
         this.loading = true
         console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
+        // 关闭解码器
+        if (this.videoDecoder) {
+          this.videoDecoder.close();
+          this.videoDecoder = null;
+        }
       }
       this.scrcpy.onerror = () => {
         this.loading = true
+        console.error('WebSocket error occurred')
         console.log('onerror,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
-
+        // 关闭解码器
+        if (this.videoDecoder) {
+          this.videoDecoder.close();
+          this.videoDecoder = null;
+        }
       }
       this.scrcpy.onmessage = message => {
         this.loading = false
@@ -356,50 +494,36 @@ export default {
               if (this.name.length > max_length) {
                 this.name = this.name.substring(0, max_length) + '...'
               }
-
               break
             case 1:
               if (this.big || this.width != this.default_width) {
                 this.message_index += 1
                 return;
               }
-
+              console.log('message.data:', message.data)
               this.real_width = message.data.split('x')[0]
               this.real_height = message.data.split('x')[1]
               this.scaled = this.height / this.real_height
               console.log(`height: ${this.height},real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
+
               break
           }
           this.message_index += 1
           return
         }
-        // 检查数据包不为空且长度足够
-        if (message.data && message.data.byteLength > 4) {
-          this.jmuxer.feed({
-            video: new Uint8Array(message.data)
-          })
-        }
 
+        // 使用WebCodecs处理视频数据
+        this.processH264Data(message.data);
       }
     },
     syncDisplay() {
       console.log('syncDisplay');
-      this.connect_count += 1
       this.loading = true
-      this.jmuxer = new JMuxer({
-        node: this.$refs.display,
-        mode: 'video',
-        flushingTime: 0,
-        maxDelay: 8000,
-        debug: false,
-        onError: function () {
-          console.log('onError')
-          if (/Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor)) {
-            this.jmuxer.reset()
-          }
-        }
-      })
-      this.connect()
+      this.keyFrameReceived = false;
+
+      // 初始化WebCodecs
+      this.initializeWebCodecs();
+      this.connect();
     },
     closeScrcpy() {
       if (this.scrcpy) {
@@ -410,13 +534,18 @@ export default {
         this.scrcpy.onopen = null
         this.scrcpy = null
         this.message_index = 0
-
       }
     },
-    closeJmuxer() {
-      if (this.jmuxer) {
-        this.jmuxer.destroy()
-        this.jmuxer = null
+    closeDecoder() {
+      if (this.videoDecoder) {
+        this.videoDecoder.close();
+        this.videoDecoder = null;
+      }
+
+      // 清空帧队列
+      while (this.frameQueue.length > 0) {
+        const frame = this.frameQueue.shift();
+        if (frame) frame.close();
       }
     },
     async copyFromPhone() {
@@ -448,17 +577,6 @@ export default {
             timeout: 2000
           });
         })
-    },
-    async jumpToLatestFrame() {
-      const video = this.$refs.display;
-      const buffered = video.buffered;
-
-      if (buffered.length > 0) {
-        // 跳转到缓冲区末尾略微前一点的位置（避免缓冲）
-        const endTime = buffered.end(buffered.length - 1);
-        video.currentTime = Math.max(0, endTime - 0.1);
-        video.play();
-      }
     }
   },
   async mounted() {
@@ -466,7 +584,7 @@ export default {
       if (e.payload.serial === this.device.serial) {
         this.big = false;
         this.closeScrcpy();
-        this.closeJmuxer();
+        this.closeDecoder();
         this.syncDisplay();
       }
     }))
@@ -474,7 +592,7 @@ export default {
       if (e.payload.serial === this.device.serial) {
         this.big = true;
         this.closeScrcpy();
-        this.closeJmuxer();
+        this.closeDecoder();
         this.syncDisplay();
       }
       if (e.payload.serial !== this.device.serial && this.operating) {
@@ -492,41 +610,24 @@ export default {
     this.listeners.push(await this.$listen('refreshDevice', (e) => {
       console.log('refreshDevice', e.payload)
       this.closeScrcpy()
-      this.closeJmuxer()
+      this.closeDecoder()
       this.syncDisplay()
     }))
     this.listeners.push(await this.$listen('screenScaled', (e) => {
       this.screenScaled = e.payload.scaled
-
-
     }))
     this.listeners.push(await this.$listen('screenResolution', (e) => {
       this.screenResolution = e.payload.resolution;
       this.closeScrcpy();
-      this.closeJmuxer();
+      this.closeDecoder();
       this.syncDisplay();
     }))
 
-    // 获取视频元素
-    var video = this.$refs.display;
-
-    // 添加播放事件监听器
-    video.addEventListener('play', async () => {
-      console.log(`device${this.no}-${this.device.serial} playing`)
-
-    });
-
-    // 添加暂停事件监听器
-    video.addEventListener('pause', async () => {
-      await this.jumpToLatestFrame()
-
-    });
-    document.addEventListener('visibilitychange', async () => {
+    document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         console.log(`device${this.no}-${this.device.serial} hidden`)
       } else {
         console.log(`device${this.no}-${this.device.serial} visible`)
-        await this.jumpToLatestFrame()
       }
     })
 
@@ -534,30 +635,13 @@ export default {
       if (this.big) {
         this.copyFromPhone()
       }
-
     })
-    //heartbeat
-    // this.listeners.push(await this.$listen('heartbeat', (e) => {
-
-    //   this.scrcpy.send(JSON.stringify({
-    //     type: 'keycode',//type=keycode
-    //     operation: 'd',//operation=down
-    //     keycode: 'dpad_up',
-    //   }))
-    //   setTimeout(async () => {
-    //     this.scrcpy.send(JSON.stringify({
-    //       type: 'keycode',//type=keycode
-    //       operation: 'u',//operation=down
-    //       keycode: 'dpad_down',
-    //     }))
-    //   }, 100);
-    // }))
 
     this.syncDisplay()
   },
   async unmounted() {
     this.closeScrcpy()
-    this.closeJmuxer()
+    this.closeDecoder()
     this.listeners.forEach(listener => {
       listener()
     })
