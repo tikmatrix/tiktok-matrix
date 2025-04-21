@@ -328,7 +328,7 @@ export default {
                     }
                     const command = new Command('start-agent', [])
                     command.on('close', data => {
-                        console.log(`command finished with code ${data.code} and signal ${data.signal}`)
+                        console.log(`command exit: ${JSON.stringify(data)}`)
                     });
                     // command.on('error', error => console.error(`command error: "${error}"`));
                     // command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
@@ -426,9 +426,19 @@ export default {
             this.check_update_dialog_title = 'Checking update...';
             this.$refs.download_dialog.showModal();
             const osType = await os.type();
-            console.log('osType:', osType);
-            const platform = osType === 'Darwin' ? 'mac os x' : 'windows';
+            const arch = await os.arch();
+            console.log('osType:', osType, 'arch:', arch);
+
+            let platform = 'windows';
+            if (osType === 'Darwin') {
+                if (arch === 'aarch64') {
+                    platform = 'mac-arm';
+                } else {
+                    platform = 'mac-intel';
+                }
+            }
             console.log('platform:', platform);
+
             if (platform === 'windows') {
                 try {
                     const { shouldUpdate, manifest } = await checkUpdate();
