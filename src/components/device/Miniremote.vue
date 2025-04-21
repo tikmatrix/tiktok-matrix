@@ -102,10 +102,6 @@ export default {
       type: Number,
       default: 1
     },
-    // big: {
-    //   type: Boolean,
-    //   default: false
-    // },
     device: {
       type: Object,
       default: () => {
@@ -143,20 +139,25 @@ export default {
       frameQueue: [],
       isRenderingFrame: false,
       configBuffer: undefined,
+      i18n: {
+        preparing: '',
+        running: '',
+        ready: ''
+      }
     }
   },
   computed: {
     getTaskStatus() {
       if (this.device.task_status == -1) {
-        return this.getTranslation('preparing')
+        return this.i18n.preparing
       }
       if (this.device.task_status == 1) {
-        return this.getTranslation('running')
+        return this.i18n.running
       }
       if (this.device.task_status == 0 || this.device.task_status == 2 || this.device.task_status == 3) {
-        return this.getTranslation('ready')
+        return this.i18n.ready
       }
-      return this.getTranslation('preparing')
+      return this.i18n.preparing
     },
 
     getScaledFontSize() {
@@ -217,9 +218,6 @@ export default {
     }
   },
   methods: {
-    getTranslation(key) {
-      return this.$t(key)
-    },
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -414,6 +412,7 @@ export default {
             codec: codec,
             optimizeForLatency: true,
           });
+          console.log(`${this.no}-${this.device.serial} configure`)
           return
         }
 
@@ -424,6 +423,7 @@ export default {
         if (this.videoDecoder.state === 'configured') {
           //check queue length
           if (this.frameQueue.length > 5 && !isIDR) {
+            console.log(`${this.no}-${this.device.serial} frameQueue is full(${this.frameQueue.length}), skip`)
             return
           }
           const chunk = new EncodedVideoChunk({
@@ -432,8 +432,6 @@ export default {
             data: h264Data
           });
           this.videoDecoder.decode(chunk);
-          //release memory
-          h264Data = null
         } else {
           if (this.videoDecoder.state === 'closed' && !this.loading) {
             this.loading = true
@@ -445,13 +443,12 @@ export default {
     },
 
     async connect() {
-      console.log('connect');
       const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
       const wsUrl = `ws://127.0.0.1:${wsPort}`
       this.scrcpy = new WebSocket(wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        console.log('onopen')
+        console.log(`${this.no}-${this.device.serial} onopen`)
         let max_size = this.big ? 1024 : this.screenResolution
         this.scrcpy.send(`${this.device.serial}`)
         // max size
@@ -463,7 +460,7 @@ export default {
       }
       this.scrcpy.onclose = () => {
         this.loading = true
-        console.log('onclose,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
+        console.log(`${this.no}-${this.device.serial} onclose`)
         // 关闭解码器
         if (this.videoDecoder) {
           this.videoDecoder.close();
@@ -472,8 +469,7 @@ export default {
       }
       this.scrcpy.onerror = () => {
         this.loading = true
-        console.error('WebSocket error occurred')
-        console.log('onerror,big:', this.big, 'operating:', this.operating, 'index:', this.device.index)
+        console.error(`${this.no}-${this.device.serial} onerror`)
         // 关闭解码器
         if (this.videoDecoder) {
           this.videoDecoder.close();
@@ -498,11 +494,10 @@ export default {
                 this.message_index += 1
                 return;
               }
-              console.log('message.data:', message.data)
               this.real_width = message.data.split('x')[0]
               this.real_height = message.data.split('x')[1]
               this.scaled = this.height / this.real_height
-              console.log(`height: ${this.height},real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
+              console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
 
               break
           }
@@ -515,9 +510,7 @@ export default {
       }
     },
     syncDisplay() {
-      console.log('syncDisplay');
       this.loading = true
-
       // 初始化WebCodecs
       this.initializeWebCodecs();
       this.connect();
@@ -580,6 +573,10 @@ export default {
     }
   },
   async mounted() {
+    this.i18n.preparing = this.$t('preparing');
+    this.i18n.running = this.$t('running');
+    this.i18n.ready = this.$t('ready');
+
     this.listeners.push(await this.$listen('closeDevice', (e) => {
       if (e.payload.serial === this.device.serial) {
         this.big = false;
@@ -625,9 +622,11 @@ export default {
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        console.log(`device${this.no}-${this.device.serial} hidden`)
+        console.log(`${this.no}-${this.device.serial} hidden`)
+        this.visible = false
       } else {
-        console.log(`device${this.no}-${this.device.serial} visible`)
+        console.log(`${this.no}-${this.device.serial} visible`)
+        this.visible = true
       }
     })
 
