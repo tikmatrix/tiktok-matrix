@@ -360,347 +360,7 @@ export default {
         requestAnimationFrame(() => this.processFrameQueue());
       }
     },
-    // h264ParseSequenceParameterSet(nalu) {
-    //   const reader = new NaluSodbBitReader(nalu);
-    //   if (reader.next() !== 0) {
-    //     throw new Error("Invalid data");
-    //   }
 
-    //   const nal_ref_idc = reader.read(2);
-    //   const nal_unit_type = reader.read(5);
-
-    //   if (nal_unit_type !== 7) {
-    //     throw new Error("Invalid data");
-    //   }
-
-    //   if (nal_ref_idc === 0) {
-    //     throw new Error("Invalid data");
-    //   }
-
-    //   const profile_idc = reader.read(8);
-    //   const constraint_set = reader.peek(8);
-
-    //   const constraint_set0_flag = !!reader.next();
-    //   const constraint_set1_flag = !!reader.next();
-    //   const constraint_set2_flag = !!reader.next();
-    //   const constraint_set3_flag = !!reader.next();
-    //   const constraint_set4_flag = !!reader.next();
-    //   const constraint_set5_flag = !!reader.next();
-
-    //   // reserved_zero_2bits
-    //   if (reader.read(2) !== 0) {
-    //     throw new Error("Invalid data");
-    //   }
-
-    //   const level_idc = reader.read(8);
-    //   const seq_parameter_set_id = reader.decodeExponentialGolombNumber();
-
-    //   if (
-    //     profile_idc === 100 ||
-    //     profile_idc === 110 ||
-    //     profile_idc === 122 ||
-    //     profile_idc === 244 ||
-    //     profile_idc === 44 ||
-    //     profile_idc === 83 ||
-    //     profile_idc === 86 ||
-    //     profile_idc === 118 ||
-    //     profile_idc === 128 ||
-    //     profile_idc === 138 ||
-    //     profile_idc === 139 ||
-    //     profile_idc === 134
-    //   ) {
-    //     const chroma_format_idc = reader.decodeExponentialGolombNumber();
-    //     if (chroma_format_idc === 3) {
-    //       // separate_colour_plane_flag
-    //       reader.next();
-    //     }
-
-    //     // bit_depth_luma_minus8
-    //     reader.decodeExponentialGolombNumber();
-    //     // bit_depth_chroma_minus8
-    //     reader.decodeExponentialGolombNumber();
-
-    //     // qpprime_y_zero_transform_bypass_flag
-    //     reader.next();
-
-    //     const seq_scaling_matrix_present_flag = !!reader.next();
-    //     if (seq_scaling_matrix_present_flag) {
-    //       const seq_scaling_list_present_flag = [];
-    //       for (let i = 0; i < (chroma_format_idc !== 3 ? 8 : 12); i += 1) {
-    //         seq_scaling_list_present_flag[i] = !!reader.next();
-    //         if (seq_scaling_list_present_flag[i])
-    //           if (i < 6) {
-    //             // TODO
-    //             // scaling_list( ScalingList4x4[ i ], 16,
-    //             //               UseDefaultScalingMatrix4x4Flag[ i ])
-    //           } else {
-    //             // TODO
-    //             // scaling_list( ScalingList8x8[ i − 6 ], 64,
-    //             //               UseDefaultScalingMatrix8x8Flag[ i − 6 ] )
-    //           }
-    //       }
-    //     }
-    //   }
-
-    //   // log2_max_frame_num_minus4
-    //   reader.decodeExponentialGolombNumber();
-    //   const pic_order_cnt_type = reader.decodeExponentialGolombNumber();
-    //   if (pic_order_cnt_type === 0) {
-    //     // log2_max_pic_order_cnt_lsb_minus4
-    //     reader.decodeExponentialGolombNumber();
-    //   } else if (pic_order_cnt_type === 1) {
-    //     // delta_pic_order_always_zero_flag
-    //     reader.next();
-    //     // offset_for_non_ref_pic
-    //     reader.decodeExponentialGolombNumber();
-    //     // offset_for_top_to_bottom_field
-    //     reader.decodeExponentialGolombNumber();
-    //     const num_ref_frames_in_pic_order_cnt_cycle =
-    //       reader.decodeExponentialGolombNumber();
-    //     const offset_for_ref_frame = [];
-    //     for (let i = 0; i < num_ref_frames_in_pic_order_cnt_cycle; i += 1) {
-    //       offset_for_ref_frame[i] = reader.decodeExponentialGolombNumber();
-    //     }
-    //   }
-
-    //   // max_num_ref_frames
-    //   reader.decodeExponentialGolombNumber();
-    //   // gaps_in_frame_num_value_allowed_flag
-    //   reader.next();
-    //   const pic_width_in_mbs_minus1 = reader.decodeExponentialGolombNumber();
-    //   const pic_height_in_map_units_minus1 =
-    //     reader.decodeExponentialGolombNumber();
-
-    //   const frame_mbs_only_flag = reader.next();
-    //   if (!frame_mbs_only_flag) {
-    //     // mb_adaptive_frame_field_flag
-    //     reader.next();
-    //   }
-
-    //   // direct_8x8_inference_flag
-    //   reader.next();
-
-    //   const frame_cropping_flag = !!reader.next();
-    //   let frame_crop_left_offset;
-    //   let frame_crop_right_offset;
-    //   let frame_crop_top_offset;
-    //   let frame_crop_bottom_offset;
-    //   if (frame_cropping_flag) {
-    //     frame_crop_left_offset = reader.decodeExponentialGolombNumber();
-    //     frame_crop_right_offset = reader.decodeExponentialGolombNumber();
-    //     frame_crop_top_offset = reader.decodeExponentialGolombNumber();
-    //     frame_crop_bottom_offset = reader.decodeExponentialGolombNumber();
-    //   } else {
-    //     frame_crop_left_offset = 0;
-    //     frame_crop_right_offset = 0;
-    //     frame_crop_top_offset = 0;
-    //     frame_crop_bottom_offset = 0;
-    //   }
-
-    //   const vui_parameters_present_flag = !!reader.next();
-    //   if (vui_parameters_present_flag) {
-    //     // TODO
-    //     // vui_parameters( )
-    //   }
-
-    //   return {
-    //     profile_idc,
-    //     constraint_set,
-    //     constraint_set0_flag,
-    //     constraint_set1_flag,
-    //     constraint_set2_flag,
-    //     constraint_set3_flag,
-    //     constraint_set4_flag,
-    //     constraint_set5_flag,
-    //     level_idc,
-    //     seq_parameter_set_id,
-    //     pic_width_in_mbs_minus1,
-    //     pic_height_in_map_units_minus1,
-    //     frame_mbs_only_flag,
-    //     frame_cropping_flag,
-    //     frame_crop_left_offset,
-    //     frame_crop_right_offset,
-    //     frame_crop_top_offset,
-    //     frame_crop_bottom_offset,
-    //   };
-    // },
-    // *annexBSplitNalu(buffer) {
-    //   // -1 means we haven't found the first start code
-    //   let start = -1;
-    //   // How many `0x00`s in a row we have counted
-    //   let zeroCount = 0;
-    //   let inEmulation = false;
-
-    //   console.log('Starting NAL unit split, buffer length:', buffer.length);
-    //   console.log('First few bytes:', Array.from(buffer.slice(0, 10)).map(b => b.toString(16).padStart(2, '0')).join(' '));
-
-    //   // 跳过前面的额外字节，直到找到起始码
-    //   let i = 0;
-    //   while (i < buffer.length - 2) {
-    //     if (buffer[i] === 0x00 && buffer[i + 1] === 0x00 && buffer[i + 2] === 0x01) {
-    //       start = i + 3;
-    //       console.log('Found first start code at:', i);
-    //       break;
-    //     }
-    //     i++;
-    //   }
-
-    //   if (start === -1) {
-    //     console.error('Buffer does not start with start code');
-    //     throw new Error("Invalid data");
-    //   }
-
-    //   for (i = start; i < buffer.length; i += 1) {
-    //     const byte = buffer[i];
-
-    //     if (inEmulation) {
-    //       if (byte > 0x03) {
-    //         // `0x00000304` or larger are invalid
-    //         console.error('Invalid emulation prevention byte:', byte.toString(16));
-    //         throw new Error("Invalid data");
-    //       }
-
-    //       inEmulation = false;
-    //       continue;
-    //     }
-
-    //     if (byte === 0x00) {
-    //       zeroCount += 1;
-    //       continue;
-    //     }
-
-    //     const prevZeroCount = zeroCount;
-    //     zeroCount = 0;
-
-    //     if (prevZeroCount < 2) {
-    //       // zero or one `0x00`s are acceptable
-    //       continue;
-    //     }
-
-    //     if (byte === 0x01) {
-    //       // Found another NAL unit
-    //       console.log('Found NAL unit from', start, 'to', i - prevZeroCount);
-    //       yield buffer.subarray(start, i - prevZeroCount);
-
-    //       start = i + 1;
-    //       continue;
-    //     }
-
-    //     if (prevZeroCount > 2) {
-    //       // Too much `0x00`s
-    //       console.error('Too many zeros:', prevZeroCount);
-    //       throw new Error("Invalid data");
-    //     }
-
-    //     switch (byte) {
-    //       case 0x02:
-    //         // Didn't find why, but 7.4.1 NAL unit semantics forbids `0x000002` appearing in NAL units
-    //         console.error('Invalid byte sequence: 0x000002');
-    //         throw new Error("Invalid data");
-    //       case 0x03:
-    //         // `0x000003` is the "emulation_prevention_three_byte"
-    //         // `0x00000300`, `0x00000301`, `0x00000302` and `0x00000303` represent
-    //         // `0x000000`, `0x000001`, `0x000002` and `0x000003` respectively
-    //         inEmulation = true;
-    //         break;
-    //       default:
-    //         // `0x000004` or larger are as-is
-    //         break;
-    //     }
-    //   }
-
-    //   if (inEmulation) {
-    //     console.error('Buffer ends with emulation prevention byte');
-    //     throw new Error("Invalid data");
-    //   }
-
-    //   console.log('Yielding final NAL unit from', start, 'to', buffer.length);
-    //   yield buffer.subarray(start, buffer.length);
-    // },
-    // h264SearchConfiguration(buffer) {
-    //   let sequenceParameterSet;
-    //   let pictureParameterSet;
-
-    //   console.log('Searching for SPS and PPS in buffer:', buffer);
-      
-    //   for (const nalu of this.annexBSplitNalu(buffer)) {
-    //     const naluType = nalu[0] & 0x1f;
-    //     console.log('Found NAL unit type:', naluType, 'length:', nalu.length);
-        
-    //     switch (naluType) {
-    //       case 7: // Sequence parameter set
-    //         console.log('Found SPS');
-    //         sequenceParameterSet = nalu;
-    //         if (pictureParameterSet) {
-    //           return {
-    //             sequenceParameterSet,
-    //             pictureParameterSet,
-    //           };
-    //         }
-    //         break;
-    //       case 8: // Picture parameter set
-    //         console.log('Found PPS');
-    //         pictureParameterSet = nalu;
-    //         if (sequenceParameterSet) {
-    //           return {
-    //             sequenceParameterSet,
-    //             pictureParameterSet,
-    //           };
-    //         }
-    //         break;
-    //       default:
-    //         console.log('Ignoring NAL unit type:', naluType);
-    //         break;
-    //     }
-    //   }
-
-    //   console.log('Failed to find both SPS and PPS');
-    //   throw new Error("Invalid data");
-    // },
-    // h264ParseConfiguration(data) {
-    //   const { sequenceParameterSet, pictureParameterSet } =
-    //     this.h264SearchConfiguration(data);
-
-    //   const {
-    //     profile_idc: profileIndex,
-    //     constraint_set: constraintSet,
-    //     level_idc: levelIndex,
-    //     pic_width_in_mbs_minus1,
-    //     pic_height_in_map_units_minus1,
-    //     frame_mbs_only_flag,
-    //     frame_crop_left_offset,
-    //     frame_crop_right_offset,
-    //     frame_crop_top_offset,
-    //     frame_crop_bottom_offset,
-    //   } = this.h264ParseSequenceParameterSet(sequenceParameterSet);
-
-    //   const encodedWidth = (pic_width_in_mbs_minus1 + 1) * 16;
-    //   const encodedHeight =
-    //     (pic_height_in_map_units_minus1 + 1) * (2 - frame_mbs_only_flag) * 16;
-    //   const cropLeft = frame_crop_left_offset * 2;
-    //   const cropRight = frame_crop_right_offset * 2;
-    //   const cropTop = frame_crop_top_offset * 2;
-    //   const cropBottom = frame_crop_bottom_offset * 2;
-
-    //   const croppedWidth = encodedWidth - cropLeft - cropRight;
-    //   const croppedHeight = encodedHeight - cropTop - cropBottom;
-
-    //   return {
-    //     pictureParameterSet,
-    //     sequenceParameterSet,
-    //     profileIndex,
-    //     constraintSet,
-    //     levelIndex,
-    //     encodedWidth,
-    //     encodedHeight,
-    //     cropLeft,
-    //     cropRight,
-    //     cropTop,
-    //     cropBottom,
-    //     croppedWidth,
-    //     croppedHeight,
-    //   };
-    // },
     hexTwoDigits(value) {
       return value.toString(16).toUpperCase().padStart(2, "0");
     },
@@ -721,15 +381,14 @@ export default {
       //     | `- key frame
       //      `-- config packet
       try {
-        // console.log('processH264Data', data)
         // 处理完整的帧数据(包含12字节头部)
         let fullData = new Uint8Array(data);
         if (!fullData || fullData.length < 4) {
           return;
         }
-        const pts = BigInt(fullData[0]) << 56n | BigInt(fullData[1]) << 48n | BigInt(fullData[2]) << 40n | BigInt(fullData[3]) << 32n | 
-                   BigInt(fullData[4]) << 24n | BigInt(fullData[5]) << 16n | BigInt(fullData[6]) << 8n | BigInt(fullData[7])
-        
+        const pts = BigInt(fullData[0]) << 56n | BigInt(fullData[1]) << 48n | BigInt(fullData[2]) << 40n | BigInt(fullData[3]) << 32n |
+          BigInt(fullData[4]) << 24n | BigInt(fullData[5]) << 16n | BigInt(fullData[6]) << 8n | BigInt(fullData[7])
+
         // 检查最高位是否为1（配置包标记）
         const isConfig = (pts & (1n << 63n)) !== 0n
         // 检查次高位是否为1（关键帧标记）
@@ -757,27 +416,31 @@ export default {
           });
           return
         }
-        
+
         if (this.configBuffer !== undefined) {
           h264Data = new Uint8Array([...this.configBuffer, ...h264Data])
           this.configBuffer = undefined
         }
         if (this.videoDecoder.state === 'configured') {
+          //check queue length
+          if (this.frameQueue.length > 5 && !isIDR) {
+            return
+          }
           const chunk = new EncodedVideoChunk({
             type: isIDR ? 'key' : 'delta',
             timestamp: 0,
             data: h264Data
           });
           this.videoDecoder.decode(chunk);
+          //release memory
+          h264Data = null
         } else {
-          console.error(`${this.no},state:${this.videoDecoder.state}`)
-          if (this.videoDecoder.state === 'closed') {
-            // this.initializeWebCodecs()
+          if (this.videoDecoder.state === 'closed' && !this.loading) {
+            this.loading = true
           }
         }
       } catch (e) {
         console.error(`${this.no}解码H.264数据出错:`, e);
-        // this.syncDisplay()
       }
     },
 
@@ -796,7 +459,7 @@ export default {
         // control
         this.scrcpy.send('true')
         // fps
-        this.scrcpy.send(120)
+        this.scrcpy.send(this.big ? 30 : 15)
       }
       this.scrcpy.onclose = () => {
         this.loading = true

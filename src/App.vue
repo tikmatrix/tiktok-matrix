@@ -84,7 +84,7 @@ export default {
         console.log('ws open')
       }
       this.ws.onmessage = async (e) => {
-        console.log(e.data)
+        // console.log(e.data)
         const json = JSON.parse(e.data)
         if (json.action === 'reload_devices') {
           let data = json.data
