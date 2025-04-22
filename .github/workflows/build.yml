@@ -1,0 +1,117 @@
+name: Release
+run-name: ${{ github.actor }} is building Release 🚀
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: write
+jobs:
+  deploy-windows:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+    steps:  
+      - name: Checkout main repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: setup rust
+        id: setup-rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      - name: build
+        run: |
+          npm install
+          .\build.ps1
+      - name: update version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-version_v2.js
+      # - name: release
+      #   id: create_release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: ./src-tauri/target/release/bundle/msi/*.msi
+      #     body_path: ./CHANGELOG
+      - name: upload to r2
+        uses: ryand56/r2-upload-action@v1.2.3
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: tikmatrix
+          source-dir: ./src-tauri/target/release/bundle/msi
+          destination-dir: ./
+
+  deploy-macos:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: macos-12
+    strategy:
+      fail-fast: true
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: setup rust
+        id: setup-rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: universal-apple-darwin
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      - name: build
+        run: |
+          npm install
+          chmod +x ./build.sh
+          ./build.sh
+      - name: update version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-version_v2.js
+      # - name: release
+      #   id: create_release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: ./src-tauri/target/release/bundle/dmg/*.dmg
+      #     body_path: ./CHANGELOG
+      - name: upload to r2
+        uses: ryand56/r2-upload-action@v1.2.3
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: tikmatrix
+          source-dir: ./src-tauri/target/release/bundle/dmg
+          destination-dir: ./
