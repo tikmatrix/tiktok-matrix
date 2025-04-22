@@ -28,30 +28,3 @@ let response = await fetch('https://pro.api.tikmatrix.com/ci/update_version_info
     body: body
 })
 console.log(`update_version_info: ${response.status} ${response.statusText}`)
-//update windows download url
-body = `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.msi`
-//put https://pro.api.tikmatrix.com/download
-response = await fetch('https://pro.api.tikmatrix.com/ci/update_download_url', {
-    method: 'PUT',
-    headers: {
-        'Content-Type': 'text/plain',
-        'Content-Length': body.length,
-        'Authorization': 'Bearer ' + process.env.API_KEY,
-        'X-Platform': 'windows'
-    },
-    body: body
-})
-console.log(`update_download_url: ${response.status} ${response.statusText}`)
-//update mac download url
-body = `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.dmg`
-response = await fetch('https://pro.api.tikmatrix.com/ci/update_download_url', {
-    method: 'PUT',
-    headers: {
-        'Content-Type': 'text/plain',
-        'Content-Length': body.length,
-        'Authorization': 'Bearer ' + process.env.API_KEY,
-        'X-Platform': 'mac'
-    },
-    body: body
-})
-console.log(`update_download_url: ${response.status} ${response.statusText}`)

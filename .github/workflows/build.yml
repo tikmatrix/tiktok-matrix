@@ -43,7 +43,8 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-version_v2.js
+          node scripts/update-version.js
+          node scripts/update-download-windows.js
       # - name: release
       #   id: create_release
       #   uses: softprops/action-gh-release@v1
@@ -99,7 +100,7 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-version_v2.js
+          node scripts/update-download-mac.js
       # - name: release
       #   id: create_release
       #   uses: softprops/action-gh-release@v1
@@ -113,5 +114,5 @@ jobs:
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: tikmatrix
-          source-dir: ./src-tauri/target/release/bundle/dmg
+          source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
           destination-dir: ./
