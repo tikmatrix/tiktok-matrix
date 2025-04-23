@@ -308,10 +308,11 @@ export default {
             });
         },
         async start_agent() {
-            console.log('start_agent')
-            this.$refs.download_dialog.showModal();
-            this.check_update_dialog_title = 'Checking agent...';
             try {
+                console.log('start_agent')
+                this.$refs.download_dialog.showModal();
+                this.check_update_dialog_title = 'Checking agent...';
+
                 //check agent.exe is running
                 let pname = await invoke("is_agent_running");
                 console.log('agent_running:', pname)
@@ -542,7 +543,9 @@ export default {
 
                 // 根据不同类型的库执行特定的更新操作
                 if (lib.name === 'platform-tools') {
-                    let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData });
+                    const osType = await os.type();
+                    const adbFileName = osType === 'Darwin' ? 'adb' : 'adb.exe';
+                    let adb_exists = await exists(`platform-tools/${adbFileName}`, { dir: BaseDirectory.AppData });
                     if (updated || !adb_exists) {
                         this.check_update_dialog_title = 'Uziping platform-tools.zip';
                         await invoke("kill_process", { name: "adb" });
@@ -551,7 +554,9 @@ export default {
                         await invoke("grant_permission", { path: "platform-tools/adb" });
                     }
                 } else if (lib.name === 'PaddleOCR') {
-                    let paddle_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData });
+                    const osType = await os.type();
+                    const paddleFileName = osType === 'Darwin' ? 'PaddleOCR-json' : 'PaddleOCR-json.exe';
+                    let paddle_exists = await exists(`PaddleOCR-json/${paddleFileName}`, { dir: BaseDirectory.AppData });
                     if (updated || !paddle_exists) {
                         this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
                         await invoke("kill_process", { name: "PaddleOCR-json" });
@@ -572,8 +577,6 @@ export default {
                         await invoke("grant_permission", { path: `bin/${lib.name}` });
                     }
                 }
-
-                return { path, updated };
             } catch (e) {
                 console.error(e);
                 await this.$emiter('NOTIFY', {

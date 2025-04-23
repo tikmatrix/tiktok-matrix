@@ -27,7 +27,7 @@ app.config.errorHandler = (err, vm, info) => {
     console.error('错误信息:', info);
     emit('NOTIFY', {
         type: 'error',
-        message: `Vue错误: ${err.message}`,
+        message: `Vue Error: ${err.message}, Info: ${info}`,
         timeout: 2000
     });
 };
@@ -45,7 +45,7 @@ window.onerror = function (message, source, lineno, colno, error) {
     console.error('全局JS错误:', error);
     emit('NOTIFY', {
         type: 'error',
-        message: `全局JS错误: ${message}`,
+        message: `Global JS Error: ${message}, Source: ${source}, Line: ${lineno}, Column: ${colno}, Error: ${error}`,
         timeout: 2000
     });
 };
@@ -55,7 +55,7 @@ window.addEventListener('unhandledrejection', event => {
     console.error('未处理的Promise错误:', event.reason);
     emit('NOTIFY', {
         type: 'error',
-        message: `未处理的Promise错误: ${event.reason?.message || '未知Promise错误'}`,
+        message: `Unhandled Promise Error: ${event.reason?.message || 'Unknown Promise Error'}`,
         timeout: 2000
     });
 });
