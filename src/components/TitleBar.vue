@@ -512,67 +512,76 @@ export default {
         },
         // 新增方法：统一处理库的下载和更新
         async download_and_update_lib(lib, localStorageKey) {
-            let updated = false;
-            this.check_update_dialog_title = `Checking ${lib.name} update...`;
-            let localversion = localStorage.getItem(localStorageKey) || '0';
-            localversion = localversion.replace(/"/g, '');
-            let url = lib.downloadUrl;
-            let work_path = await appDataDir();
-            let name = url.split('/').pop();
-            //先下载到tmp目录
-            let path = work_path + 'tmp/' + name;
-            let downloaded = await exists('tmp/' + name, { dir: BaseDirectory.AppData });
-            console.log(`check_file_update: ${lib.name} localversion: ${localversion} remoteVersion: ${lib.version}`);
+            try {
+                let updated = false;
+                this.check_update_dialog_title = `Checking ${lib.name} update...`;
+                let localversion = localStorage.getItem(localStorageKey) || '0';
+                localversion = localversion.replace(/"/g, '');
+                let url = lib.downloadUrl;
+                let work_path = await appDataDir();
+                let name = url.split('/').pop();
+                //先下载到tmp目录
+                let path = work_path + 'tmp/' + name;
+                let downloaded = await exists('tmp/' + name, { dir: BaseDirectory.AppData });
+                console.log(`check_file_update: ${lib.name} localversion: ${localversion} remoteVersion: ${lib.version}`);
 
-            if (!downloaded || localversion !== lib.version) {
-                console.log(`downloading ${lib.name} from ${url} to ${path}`);
-                url = url + '?t=' + new Date().getTime();
-                await invoke('download_file', { url, path }).catch(async (e) => {
-                    console.error(e);
-                    await message('Download Error', { title: 'Error', type: 'error' });
-                    return;
-                });
-                updated = true;
-            } else {
-                console.log(`${lib.name} no need to update`);
-            }
-
-            localStorage.setItem(localStorageKey, lib.version);
-
-            // 根据不同类型的库执行特定的更新操作
-            if (lib.name === 'platform-tools') {
-                let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData });
-                if (updated || !adb_exists) {
-                    this.check_update_dialog_title = 'Uziping platform-tools.zip';
-                    await invoke("kill_process", { name: "adb" });
-                    await new Promise(r => setTimeout(r, 3000));
-                    await invoke("unzip_file", { zipPath: path, destDir: work_path });
-                    await invoke("grant_permission", { path: "platform-tools/adb" });
+                if (!downloaded || localversion !== lib.version) {
+                    console.log(`downloading ${lib.name} from ${url} to ${path}`);
+                    url = url + '?t=' + new Date().getTime();
+                    await invoke('download_file', { url, path }).catch(async (e) => {
+                        console.error(e);
+                        await message('Download Error', { title: 'Error', type: 'error' });
+                        return;
+                    });
+                    updated = true;
+                } else {
+                    console.log(`${lib.name} no need to update`);
                 }
-            } else if (lib.name === 'PaddleOCR') {
-                let paddle_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData });
-                if (updated || !paddle_exists) {
-                    this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
-                    await invoke("kill_process", { name: "PaddleOCR-json" });
-                    await invoke("unzip_file", { zipPath: path, destDir: work_path });
-                }
-            } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
-                if (updated) {
-                    await copyFile(path, path.replace('tmp', 'bin'));
-                    if (lib.name === 'apk' || lib.name === 'test-apk') {
-                        await invoke("set_env", { key: "agent_version", value: lib.version });
+
+                localStorage.setItem(localStorageKey, lib.version);
+
+                // 根据不同类型的库执行特定的更新操作
+                if (lib.name === 'platform-tools') {
+                    let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData });
+                    if (updated || !adb_exists) {
+                        this.check_update_dialog_title = 'Uziping platform-tools.zip';
+                        await invoke("kill_process", { name: "adb" });
+                        await new Promise(r => setTimeout(r, 3000));
+                        await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                        await invoke("grant_permission", { path: "platform-tools/adb" });
+                    }
+                } else if (lib.name === 'PaddleOCR') {
+                    let paddle_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData });
+                    if (updated || !paddle_exists) {
+                        this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
+                        await invoke("kill_process", { name: "PaddleOCR-json" });
+                        await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                    }
+                } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
+                    if (updated) {
+                        await copyFile(path, path.replace('tmp', 'bin'));
+                        if (lib.name === 'apk' || lib.name === 'test-apk') {
+                            await invoke("set_env", { key: "agent_version", value: lib.version });
+                        }
+                    }
+                } else if (lib.name === 'script' || lib.name === 'agent') {
+                    if (updated) {
+                        await invoke("kill_process", { name: lib.name });
+                        await new Promise(r => setTimeout(r, 3000));
+                        await copyFile(path, path.replace('tmp', 'bin'));
+                        await invoke("grant_permission", { path: `bin/${lib.name}` });
                     }
                 }
-            } else if (lib.name === 'script' || lib.name === 'agent') {
-                if (updated) {
-                    await invoke("kill_process", { name: lib.name });
-                    await new Promise(r => setTimeout(r, 3000));
-                    await copyFile(path, path.replace('tmp', 'bin'));
-                    await invoke("grant_permission", { path: `bin/${lib.name}` });
-                }
-            }
 
-            return { path, updated };
+                return { path, updated };
+            } catch (e) {
+                console.error(e);
+                await this.$emiter('NOTIFY', {
+                    type: 'error',
+                    message: `Download and Update Lib Error: ${e.message}`,
+                    timeout: 2000
+                });
+            }
         },
     },
     async mounted() {
