@@ -68,6 +68,12 @@ Need to install Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019
 Need to install Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019.
 <https://tikmatrix.com/blog/how-to-fix-vcruntime140.dll-not-found-when-open-TikMatrix>
 
+### Fix unable to start TikMatrix on Mac
+
+```shell
+xattr -cr /Applications/TikMatrix.app
+```
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=tikmatrix/tiktok-matrix&type=Date)](https://star-history.com/#tikmatrix/tiktok-matrix&Date)

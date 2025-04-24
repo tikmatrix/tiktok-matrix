@@ -1,10 +1,12 @@
 <template>
   <div class="w-full">
-    <Pagination :items="filter_tasks" :searchKeys="['id', 'device_index']" @refresh="get_tasks">
+    <Pagination :items="filter_tasks" :searchKeys="['id', 'device_index', 'script_name']" 
+    :searchTermPlaceholder="$t('searchTaskPlaceholder')"
+    @refresh="get_tasks">
       <template v-slot:buttons>
         <MyButton @click="retry_all_failed" label="retryAllFaied" icon="fa fa-repeat" />
         <MyButton @click="clearAll" label="clearAll" icon="fa fa-trash" />
-        <select v-model="searchStatus" class="select select-sm select-bordered max-w-xs ml-2">
+        <select v-model="searchStatus" class="select select-md w-32 select-bordered ml-2">
           <option value="">{{ $t('allStatus') }}</option>
           <option value="0">{{ $t('waiting') }}</option>
           <option value="1">{{ $t('execing') }}</option>
@@ -14,7 +16,7 @@
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
-          <table class="table table-sm">
+          <table class="table table-md">
             <thead>
               <tr>
                 <th>{{ $t('id') }}</th>
@@ -30,20 +32,20 @@
             <tbody>
               <tr v-for="(task, index) in slotProps.items" :key="index">
                 <td>{{ task.id }}</td>
-                <td><span class="badge badge-ghost badge-sm">{{ task.script_name }}</span></td>
+                <td><span class="badge badge-ghost badge-md">{{ task.script_name }}</span></td>
                 <td>
-                  <span class="badge badge-ghost badge-sm">{{ truncateScriptArgs(task.script_args) }}</span>
+                  <span class="badge badge-ghost badge-md">{{ truncateScriptArgs(task.script_args) }}</span>
                 </td>
                 <td>
-                  <span class="badge badge-ghost badge-sm">{{ task.start_time }}</span>
+                  <span class="badge badge-ghost badge-md">{{ task.start_time }}</span>
                 </td>
                 <td>
-                  <div class="badge badge-neutral badge-sm" v-if="task.status == '0'">{{ $t('waiting') }}</div>
-                  <div class="badge badge-primary badge-sm" v-else-if="task.status == '1'">{{ $t('execing') }}</div>
-                  <div class="badge badge-success badge-sm" v-else-if="task.status == '2'">{{ $t('success') }}</div>
-                  <div class="badge badge-error badge-sm" v-else-if="task.status == '3'">{{ $t('failed') }}</div>
+                  <div class="badge badge-neutral badge-md" v-if="task.status == '0'">{{ $t('waiting') }}</div>
+                  <div class="badge badge-primary badge-md" v-else-if="task.status == '1'">{{ $t('execing') }}</div>
+                  <div class="badge badge-success badge-md" v-else-if="task.status == '2'">{{ $t('success') }}</div>
+                  <div class="badge badge-error badge-md" v-else-if="task.status == '3'">{{ $t('failed') }}</div>
                 </td>
-                <!-- <td><span class="badge badge-ghost badge-sm">{{ task.remark }}</span></td> -->
+                <!-- <td><span class="badge badge-ghost badge-md">{{ task.remark }}</span></td> -->
                 <td>
                   <a class="link link-primary" @click="show_device(task.serial)" v-if="task.device_index">{{
                     task.device_index }}</a>
@@ -51,9 +53,9 @@
                 </td>
                 <td>
                   <div class="space-x-4">
-                    <button class="btn btn-sm btn-primary rounded" @click="retry(task)">{{
+                    <button class="btn btn-md btn-primary rounded" @click="retry(task)">{{
                       $t('retry') }}</button>
-                    <button class="btn btn-sm btn-error rounded" @click="deleteTask(task)">{{
+                    <button class="btn btn-md btn-error rounded" @click="deleteTask(task)">{{
                       $t('delete') }}</button>
                   </div>
                 </td>

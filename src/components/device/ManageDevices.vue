@@ -1,22 +1,28 @@
 <template>
   <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
-    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage">
+    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true" :showBottomControls="false">
       <template v-slot:buttons>
-        <div class="flex items-center space-x-3">
-          <MyButton @click="$refs.scan_dialog.show()" label="scanTCPDevice" icon="fa-solid fa-network-wired"
-            class="btn-primary" />
-
-          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-sm flex-row items-center">
+        <div class="flex items-center space-x-2 ml-2">
+          <button class="btn btn-md btn-primary" @click="$refs.scan_dialog.show()">
+            <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
+          </button>
+          <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
+            <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
+          </button>
+          <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
+            <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
+          </button>
+          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
             <label class="label cursor-pointer flex items-center space-x-2">
-              <span class="text-sm font-medium">{{ $t('autoWakeUp') }}</span>
-              <input type="checkbox" class="toggle toggle-primary toggle-sm" v-model="settings.uiautomator_status"
+              <span class="text-md font-medium">{{ $t('autoWakeUp') }}</span>
+              <input type="checkbox" class="toggle toggle-primary toggle-md" v-model="settings.uiautomator_status"
                 true-value="1" false-value="0" @change="update_settings" />
             </label>
           </div>
 
-          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-sm flex-row items-center">
+          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
             <label class="label cursor-pointer flex items-center space-x-2">
-              <span class="text-sm font-medium">{{ $t('displayMode') }}</span>
+              <span class="text-md font-medium">{{ $t('displayMode') }}</span>
               <label class="swap swap-rotate">
                 <input type="checkbox" v-model="listMode" />
                 <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-5 h-5 text-primary" />
@@ -30,7 +36,7 @@
         <div class="flex flex-wrap gap-2 p-4">
           <div class="flex flex-wrap gap-2 flex-1" v-if="listMode">
             <div class="overflow-x-auto">
-              <table class="table table-sm">
+              <table class="table table-md">
                 <thead>
                   <tr>
                     <th>{{ $t('no') }}</th>
@@ -54,16 +60,16 @@
                     <td>{{ device.mode }}</td>
                     <td>{{ device.real_serial }}</td>
                     <td>
-                      <div class="badge badge-neutral badge-sm" v-if="device.connect_type == '0'">USB</div>
-                      <div class="badge badge-primary badge-sm" v-else>TCP</div>
+                      <div class="badge badge-neutral badge-md" v-if="device.connect_type == '0'">USB</div>
+                      <div class="badge badge-primary badge-md" v-else>TCP</div>
                     </td>
                     <td>{{ device.group_name }}</td>
                     <td>
-                      <div class="badge badge-success badge-sm" v-if="device.task_status == '1'">
+                      <div class="badge badge-success badge-md" v-if="device.task_status == '1'">
                         {{ $t('running') }}
                       </div>
-                      <div class="badge badge-primary badge-sm" v-else>
-                        {{ $t('idle') }}
+                      <div class="badge badge-primary badge-md" v-else>
+                        {{ $t('ready') }}
                       </div>
                     </td>
                     <td>{{ device.sort }}</td>
@@ -79,11 +85,12 @@
               </table>
             </div>
           </div>
-          <div class="flex flex-wrap gap-2 flex-1" v-else>
-            <div v-for="(device, index) in slotProps.items" :key="device.real_serial">
-              <Miniremote :device="device" :key="device.real_serial" :no="device.key" />
-            </div>
+          <div :style="gridStyle" v-else>
+            <Miniremote :device="device" :key="device.real_serial" :no="device.key"
+              v-for="(device, index) in slotProps.items" @sizeChanged="sizeChanged" />
           </div>
+
+
         </div>
       </template>
     </Pagination>
@@ -119,27 +126,23 @@
       <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
     </div>
   </div>
-  <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
-    :z="20" drag-handle=".drag"
-    class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-sm">
-    <Miniremote :device="device" :no="device.key" :big="true" :key="device.real_serial + '_big'" />
-  </vue-draggable-resizable>
+
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300">
       <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
       <div class="flex flex-row items-center">
-        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_1" />
+        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_1" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_2" />
+        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_2" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20 ring" type="number" v-model="ip_3" />
+        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_3" />
         <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-sm w-20 ring ring-info" type="number" v-model="ip_4" />
+        <input class="input input-bordered input-md w-20 ring ring-info" type="number" v-model="ip_4" />
         <span class="font-bold p-2 mr-1 ml-1 text-lg">-</span>
-        <input class="input input-bordered input-sm w-20 ring ring-success" type="number" v-model="ip_5" />
+        <input class="input input-bordered input-md w-20 ring ring-success" type="number" v-model="ip_5" />
       </div>
       <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
-      <input class="input input-bordered input-sm w-24 ring" type="number" v-model="port" />
+      <input class="input input-bordered input-md w-24 ring" type="number" v-model="port" />
       <MyButton @click="scan" label="startScan" :showLoading="scaning" icon="fa fa-search" />
       <span class="label-text ml-2">{{ scanResult }}</span>
     </div>
@@ -161,15 +164,11 @@
     </form>
   </dialog>
 </template>
-<style>
-@import "vue-draggable-resizable/style.css";
-</style>
 <script>
 import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
-
 
 
 export default {
@@ -188,11 +187,10 @@ export default {
     MyButton,
     Miniremote,
     Modal,
-    Pagination,
+    Pagination
   },
   data() {
     return {
-      device: null,
       listMode: localStorage.getItem('listMode') === 'true' || false,
       mydevices: [],
       ip_1: localStorage.getItem('ip_1')?.replace(/"/g, '') || 192,
@@ -207,12 +205,13 @@ export default {
       scanResult: '',
       groups: [],
       currentDevice: null,
+      cardMinWidth: 150,
     }
   },
   watch: {
     groups(val) {
-        this.mydevices.forEach(device => {
-            device.group_name = this.groups.find(group => group.id === device.group_id)?.name
+      this.mydevices.forEach(device => {
+        device.group_name = this.groups.find(group => group.id === device.group_id)?.name
       })
     },
     listMode(val) {
@@ -229,6 +228,13 @@ export default {
     }
   },
   methods: {
+    breakAt() {
+      const obj = {};
+      for (let i = 1; i <= 4; i++) {
+        obj[200 * (i + 1) + 15 * i] = i;
+      }
+      return obj;
+    },
     showSetSortDialog(device) {
       if (device) {
         this.currentDevice = device
@@ -250,8 +256,8 @@ export default {
     refreshPage() {
       this.$emiter('refreshDevice', {})
     },
-    
-    
+
+
 
     async scan() {
       this.scaning = true
@@ -275,23 +281,37 @@ export default {
       //reload settings
       await this.$emiter('reload_settings', {})
     },
-
+    sizeChanged(cardWidth) {
+      this.cardMinWidth = cardWidth
+      console.log("sizeChanged:", this.cardMinWidth)
+    },
   },
-
-  async mounted() {
-    this.mydevices = this.devices
-    await this.$listen('openDevice', async (e) => {
-      this.device = e.payload
-      for (let i = 0; i < this.mydevices.length; i++) {
-        if (this.mydevices[i].serial === this.device.serial) {
-          this.mydevices[i] = this.device
-          break
+  computed: {
+    gridStyle() {
+      // 当只有一个元素时，限制最大宽度而不是占满整行
+      if (this.mydevices.length === 1) {
+        return {
+          display: 'grid',
+          gridTemplateColumns: `minmax(${this.cardMinWidth}px, auto)`,
+          justifyContent: 'flex-start',
+          autoRows: 'auto',
+          gap: '0.5rem',
+          flex: 1
         }
       }
-    });
-    await this.$listen('closeDevice', (e) => {
-      this.device = null
-    });
+      // 多个元素时保持原来的自适应布局
+      return {
+        display: 'grid',
+        gridTemplateColumns: `repeat(auto-fit, minmax(${this.cardMinWidth}px, 1fr))`,
+        autoRows: 'auto',
+        gap: '0.5rem',
+        flex: 1
+      }
+    }
+  },
+  async mounted() {
+    this.mydevices = this.devices
+
 
   },
 }

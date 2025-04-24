@@ -93,7 +93,7 @@
           <div class="stat-value">{{ group.name }}</div>
           <div class="stat-title text-primary-content">{{ $t('accountCount') }}: {{ group.account_count }}</div>
           <div class="stat-actions">
-            <button class="btn btn-sm btn-success" @click="addMaterial(group)">{{ $t('addMaterial') }}:{{
+            <button class="btn btn-md btn-success" @click="addMaterial(group)">{{ $t('addMaterial') }}:{{
               group.unused_material_count }}</button>
           </div>
         </div>
@@ -106,7 +106,7 @@
   <dialog ref="upload_dialog" class="modal">
     <div class="modal-box">
       <form method="dialog">
-        <!-- <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button> -->
+        <!-- <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button> -->
       </form>
       <h3 class="font-bold text-lg">Upload Progress</h3>
       <div class="py-4">

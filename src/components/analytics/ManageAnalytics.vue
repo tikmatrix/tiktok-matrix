@@ -4,7 +4,7 @@
       <template v-slot:buttons> </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
-          <table class="table table-sm">
+          <table class="table table-md">
             <thead>
               <tr>
                 <!-- <th>{{ $t('id') }}</th> -->

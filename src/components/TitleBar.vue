@@ -5,22 +5,26 @@
         <div class="flex items-center space-x-2">
             <img src="../assets/app-icon.png" class="h-10 w-10" />
             <span class="text-2xl text-base-content font-bold">{{ name }}</span>
-            <span class="text-sm text-base-content">v{{ version }}</span>
+            <span class="text-md text-base-content">v{{ version }}</span>
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
-                class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline">
+                class="flex items-center space-x-1 text-md text-info ml-2 hover:underline">
                 <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
                 <span>{{ $t('checkUpdate') }}</span>
             </button>
         </div>
         <!-- 教程链接 -->
-        <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline"
+        <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline"
             :href="$t('siteUrl') + '/docs/intro'" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
+        <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" @click="open_dir('')">
+            <font-awesome-icon icon="fa fa-folder" class="h-4 w-4" />
+            <span>{{ $t('openAppDir') }}</span>
+        </a>
         <!-- Rewards-->
-        <!-- <a class="flex items-center space-x-1 text-sm text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
+        <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
             target="_blank">
             <font-awesome-icon icon="fa-solid fa-gift" class="h-4 w-4" />
             <span>{{ $t('rewards') }}</span>
@@ -32,15 +36,143 @@
             <!-- 侧边栏切换 -->
             <label class="swap swap-rotate" :title="$t('toggleSidebar')">
                 <input type="checkbox" value="true" v-model="sidebarVisible" />
-                <font-awesome-icon icon="fa fa-bars" class="swap-off fill-current w-6 h-6 text-base-content" />
-                <font-awesome-icon icon="fa fa-bars" class="swap-on fill-current w-6 h-6 text-base-content" />
+                <svg class="swap-off fill-current w-6 h-6 text-base-content" fill="#000000" viewBox="0 0 64 64"
+                    version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier">
+                        <rect id="Icons" x="0" y="-64" width="1280" height="800" style="fill:none;"></rect>
+                        <g id="Icons1" serif:id="Icons">
+                            <g id="Strike"> </g>
+                            <g id="H1"> </g>
+                            <g id="H2"> </g>
+                            <g id="H3"> </g>
+                            <g id="list-ul"> </g>
+                            <g id="hamburger-1"> </g>
+                            <g id="hamburger-2"> </g>
+                            <g id="list-ol"> </g>
+                            <g id="list-task"> </g>
+                            <g id="trash"> </g>
+                            <g id="vertical-menu"> </g>
+                            <g id="horizontal-menu"> </g>
+                            <g id="sidebar-2"> </g>
+                            <g id="Pen"> </g>
+                            <g id="Pen1" serif:id="Pen"> </g>
+                            <g id="clock"> </g>
+                            <g id="external-link"> </g>
+                            <g id="hr"> </g>
+                            <g id="info"> </g>
+                            <g id="warning"> </g>
+                            <g id="plus-circle"> </g>
+                            <g id="minus-circle"> </g>
+                            <g id="vue"> </g>
+                            <g id="cog"> </g>
+                            <g id="logo"> </g>
+                            <g id="radio-check"> </g>
+                            <g id="eye-slash"> </g>
+                            <g id="eye"> </g>
+                            <g id="toggle-off"> </g>
+                            <path id="sidebar"
+                                d="M50.01,56.074l-35.989,0c-3.309,0 -5.995,-2.686 -5.995,-5.995l0,-36.011c0,-3.308 2.686,-5.994 5.995,-5.994l35.989,0c3.309,0 5.995,2.686 5.995,5.994l0,36.011c0,3.309 -2.686,5.995 -5.995,5.995Zm-25.984,-4l0,-40l-9.012,0c-1.65,0.001 -2.989,1.34 -2.989,2.989l0,34.022c0,1.649 1.339,2.989 2.989,2.989l9.012,0Zm24.991,-40l-20.991,0l0,40l20.991,0c1.65,0 2.989,-1.34 2.989,-2.989l0,-34.022c0,-1.649 -1.339,-2.988 -2.989,-2.989Z">
+                            </path>
+                            <g id="shredder"> </g>
+                            <g id="spinner--loading--dots-" serif:id="spinner [loading, dots]"> </g>
+                            <g id="react"> </g>
+                            <g id="check-selected"> </g>
+                            <g id="turn-off"> </g>
+                            <g id="code-block"> </g>
+                            <g id="user"> </g>
+                            <g id="coffee-bean"> </g>
+                            <g id="coffee-beans">
+                                <g id="coffee-bean1" serif:id="coffee-bean"> </g>
+                            </g>
+                            <g id="coffee-bean-filled"> </g>
+                            <g id="coffee-beans-filled">
+                                <g id="coffee-bean2" serif:id="coffee-bean"> </g>
+                            </g>
+                            <g id="clipboard"> </g>
+                            <g id="clipboard-paste"> </g>
+                            <g id="clipboard-copy"> </g>
+                            <g id="Layer1"> </g>
+                        </g>
+                    </g>
+                </svg>
+                <svg class="swap-on fill-current w-6 h-6 text-base-content" fill="#000000" viewBox="0 0 64 64"
+                    version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier">
+                        <rect id="Icons" x="-128" y="-192" width="1280" height="800" style="fill:none;"></rect>
+                        <g id="Icons1" serif:id="Icons">
+                            <g id="Strike"> </g>
+                            <g id="H1"> </g>
+                            <g id="H2"> </g>
+                            <g id="H3"> </g>
+                            <g id="list-ul"> </g>
+                            <g id="hamburger-1"> </g>
+                            <g id="hamburger-2"> </g>
+                            <g id="list-ol"> </g>
+                            <g id="list-task"> </g>
+                            <g id="trash"> </g>
+                            <g id="vertical-menu"> </g>
+                            <g id="horizontal-menu"> </g>
+                            <g id="sidebar-2">
+                                <path
+                                    d="M50.008,56.043l-35.989,0c-3.309,0 -5.995,-2.686 -5.995,-5.995l0,-36.011c0,-3.308 2.686,-5.994 5.995,-5.995l35.989,0c3.309,0.001 5.995,2.687 5.995,5.995l0,36.011c0,3.309 -2.686,5.995 -5.995,5.995Zm-25.984,-4.001l0,-39.999l-9.012,0c-1.65,0 -2.989,1.339 -2.989,2.989l0,34.021c0,1.65 1.339,2.989 2.989,2.989l9.012,0Zm24.991,-39.999l-20.991,0l0,39.999l20.991,0c1.65,0 2.989,-1.339 2.989,-2.989l0,-34.021c0,-1.65 -1.339,-2.989 -2.989,-2.989Z">
+                                </path>
+                                <rect x="14.611" y="16.042" width="6.569" height="2" style="fill-rule:nonzero;"></rect>
+                                <rect x="14.611" y="24.042" width="6.569" height="2" style="fill-rule:nonzero;"></rect>
+                                <rect x="14.611" y="20.042" width="6.569" height="2" style="fill-rule:nonzero;"></rect>
+                            </g>
+                            <g id="Pen"> </g>
+                            <g id="Pen1" serif:id="Pen"> </g>
+                            <g id="clock"> </g>
+                            <g id="external-link"> </g>
+                            <g id="hr"> </g>
+                            <g id="info"> </g>
+                            <g id="warning"> </g>
+                            <g id="plus-circle"> </g>
+                            <g id="minus-circle"> </g>
+                            <g id="vue"> </g>
+                            <g id="cog"> </g>
+                            <g id="logo"> </g>
+                            <g id="radio-check"> </g>
+                            <g id="eye-slash"> </g>
+                            <g id="eye"> </g>
+                            <g id="toggle-off"> </g>
+                            <g id="shredder"> </g>
+                            <g id="spinner--loading--dots-" serif:id="spinner [loading, dots]"> </g>
+                            <g id="react"> </g>
+                            <g id="check-selected"> </g>
+                            <g id="turn-off"> </g>
+                            <g id="code-block"> </g>
+                            <g id="user"> </g>
+                            <g id="coffee-bean"> </g>
+                            <g id="coffee-beans">
+                                <g id="coffee-bean1" serif:id="coffee-bean"> </g>
+                            </g>
+                            <g id="coffee-bean-filled"> </g>
+                            <g id="coffee-beans-filled">
+                                <g id="coffee-bean2" serif:id="coffee-bean"> </g>
+                            </g>
+                            <g id="clipboard"> </g>
+                            <g id="clipboard-paste"> </g>
+                            <g id="clipboard-copy"> </g>
+                            <g id="Layer1"> </g>
+                        </g>
+                    </g>
+                </svg>
             </label>
             <!-- 许可证状态 -->
             <button
-                class="flex items-center space-x-1 text-sm px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
+                class="btn btn-md flex items-center gap-1 px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
                 :class="[
-                    isLoadingLicense ? 'bg-gray-500 text-white' :
-                        licenseData.leftdays > 0 ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                    isLoadingLicense ? 'btn-neutral' :
+                        licenseData.leftdays > 0 ? 'btn-success text-white' : 'btn-error text-white'
                 ]" @click="showLicenseDialog" :title="isLoadingLicense ? $t('loadingLicense') :
                     licenseData.leftdays > 0 ? $t('licenseValid', { days: licenseData.leftdays }) :
                         $t('activateLicense')">
@@ -53,7 +185,7 @@
                 <span v-else>{{ $t('unlicensed') }}</span>
             </button>
             <!-- 语言选择 -->
-            <select class="select select-info select-sm" v-model="currentLocale" @change="changeLocale">
+            <select class="select select-info select-md" v-model="currentLocale" @change="changeLocale">
                 <option selected value="en">English</option>
                 <option value="zh-CN">简体中文</option>
                 <option value="ru">Русский</option>
@@ -69,13 +201,13 @@
             <!-- 窗口控制按钮 -->
             <div class="flex space-x-2">
                 <button @click="minimizeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa-solid fa-minus" class="h-5 w-5 text-base-content" />
+                    <font-awesome-icon icon="fa-solid fa-minus" class="h-8 w-8 text-base-content" />
                 </button>
                 <button @click="maximizeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa fa-window-restore" class="h-5 w-5 text-base-content" />
+                    <font-awesome-icon icon="fa fa-window-restore" class="h-8 w-8 text-base-content" />
                 </button>
                 <button @click="closeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-5 w-5 text-base-content" />
+                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-8 w-8 text-base-content" />
                 </button>
             </div>
         </div>
@@ -94,8 +226,8 @@
                     v-if="download_progress.filesize > 0">
                     <progress class="progress progress-success w-full" :value="download_progress.transfered"
                         :max="download_progress.filesize"></progress>
-                    <span class="text-sm ml-1">{{ (download_progress.transfered / 1024 / 1024).toFixed(2) }}Mb</span> /
-                    <span class="text-sm">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
+                    <span class="text-md ml-1">{{ (download_progress.transfered / 1024 / 1024).toFixed(2) }}Mb</span> /
+                    <span class="text-md">{{ (download_progress.filesize / 1024 / 1024).toFixed(2) }}Mb</span>
                 </div>
                 <div class="flex flex-row justify-between text-center items-center" v-else>
                     <progress class="progress progress-success w-full"></progress>
@@ -104,11 +236,11 @@
                 <div class="flex justify-between">
                     <div class="text-md" v-if="download_progress.transfer_rate > 0">
                         {{ $t('transferRate') }}:
-                        <span class="text-sm">{{ (download_progress.transfer_rate / 1024).toFixed(2) }} KB/s</span>
+                        <span class="text-md">{{ (download_progress.transfer_rate / 1024).toFixed(2) }} KB/s</span>
                     </div>
                     <div class="text-md" v-if="download_progress.percentage > 0">
                         {{ $t('percentage') }}:
-                        <span class="text-sm">{{ download_progress.percentage }} %</span>
+                        <span class="text-md">{{ download_progress.percentage }} %</span>
                     </div>
                 </div>
             </div>
@@ -170,12 +302,16 @@ export default {
         }
     },
     methods: {
-
-        async start_agent() {
-            console.log('start_agent')
-            this.$refs.download_dialog.showModal();
-            this.check_update_dialog_title = 'Checking agent...';
+        async open_dir(name) {
+            invoke("open_dir", {
+                name
+            });
+        },
+        async startAgent() {
             try {
+                this.$refs.download_dialog.showModal();
+                this.check_update_dialog_title = 'Checking agent...';
+
                 //check agent.exe is running
                 let pname = await invoke("is_agent_running");
                 console.log('agent_running:', pname)
@@ -183,14 +319,16 @@ export default {
                     console.log('agent is not running')
                     this.check_update_dialog_title = 'Starting agent...';
                     //check agent.exe is exists
-                    let agent_exists = await exists('bin/agent.exe', { dir: BaseDirectory.AppData })
+                    const osType = await os.type();
+                    const agentFilename = osType === 'Darwin' ? 'agent' : 'agent.exe';
+                    let agent_exists = await exists(`bin/${agentFilename}`, { dir: BaseDirectory.AppData })
                     if (!agent_exists) {
-                        console.log('agent.exe not found')
+                        console.log(`${agentFilename} not found`)
                         return;
                     }
                     const command = new Command('start-agent', [])
                     command.on('close', data => {
-                        console.log(`command finished with code ${data.code} and signal ${data.signal}`)
+                        console.log(`command exit: ${JSON.stringify(data)}`)
                     });
                     // command.on('error', error => console.error(`command error: "${error}"`));
                     // command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
@@ -282,200 +420,176 @@ export default {
         async check_update(force) {
             let hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate');
             if (hasCheckedUpdate && !force) {
-                await this.start_agent();
+                await this.startAgent();
                 return;
             }
             this.check_update_dialog_title = 'Checking update...';
             this.$refs.download_dialog.showModal();
-            try {
-                const { shouldUpdate, manifest } = await checkUpdate();
-                if (shouldUpdate) {
-                    console.log(
-                        `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
-                    );
-                    const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
-                    if (yes) {
-                        this.check_update_dialog_title = 'Downloading update...';
-                        await this.shutdown();
-                        await installUpdate();
-                        await relaunch();
-                        return;
-                    }
+            const osType = await os.type();
+            const arch = await os.arch();
+            console.log('osType:', osType, 'arch:', arch);
+
+            let platform = 'windows';
+            if (osType === 'Darwin') {
+                if (arch === 'aarch64') {
+                    platform = 'mac-arm';
                 } else {
-                    console.log('No update available');
+                    platform = 'mac-intel';
                 }
-            } catch (e) {
-                await message(e, { title: 'Start Error', type: 'error' });
-                this.$refs.download_dialog.close();
-                return;
+            }
+            console.log('platform:', platform);
+
+            if (platform === 'windows') {
+                try {
+                    const { shouldUpdate, manifest } = await checkUpdate();
+                    if (shouldUpdate) {
+                        console.log(
+                            `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
+                        );
+                        const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
+                        if (yes) {
+                            this.check_update_dialog_title = 'Downloading update...';
+                            await this.shutdown();
+                            await installUpdate();
+                            await relaunch();
+                            return;
+                        }
+                    } else {
+                        console.log('No update available');
+                    }
+                } catch (e) {
+                    await message(e, { title: 'Start Error', type: 'error' });
+                    this.$refs.download_dialog.close();
+                    return;
+                }
             }
 
             let response = null;
             try {
-                response = await fetch('https://pro.api.tikmatrix.com/front-api/check_core_update?time=' + new Date().getTime(), {
+
+                response = await fetch(`https://pro.api.tikmatrix.com/front-api/check_libs?time=${new Date().getTime()}`, {
                     method: 'GET',
                     timeout: 10,
                     responseType: ResponseType.JSON,
+                    headers: {
+                        'User-Agent': platform,
+                        'X-App-Id': this.name
+                    }
                 });
                 console.log('response:', response);
             } catch (e) {
-                await message(e, { title: 'Check Core Update Error', type: 'error' });
+                await message(e, { title: 'Check Libs Error', type: 'error' });
             }
 
-            if (response.ok) {
-                this.remote_version = response.data;
-                await this.check_platform_tools();
-                await this.check_ocr();
-                await this.check_apk();
-                await this.check_test_apk();
-                await this.check_scrcpy();
-                await this.check_script();
-                await this.check_agent();
-                await this.start_agent();
+            if (response?.ok && response?.data?.code === 20000) {
+                const libs = response.data.data.libs;
+
+                for (const lib of libs) {
+                    if (lib.name === 'platform-tools') {
+                        await this.download_and_update_lib(lib, 'platform-tools');
+                    } else if (lib.name === 'PaddleOCR') {
+                        await this.download_and_update_lib(lib, 'PaddleOCR');
+                    } else if (lib.name === 'apk') {
+                        await this.download_and_update_lib(lib, 'apk');
+                    } else if (lib.name === 'test-apk') {
+                        await this.download_and_update_lib(lib, 'test-apk');
+                    } else if (lib.name === 'scrcpy') {
+                        await this.download_and_update_lib(lib, 'scrcpy');
+                    } else if (lib.name === 'script') {
+                        await this.download_and_update_lib(lib, 'script');
+                    } else if (lib.name === 'agent') {
+                        await this.download_and_update_lib(lib, 'agent');
+                    }
+                }
+                if (!force) {
+                    await this.startAgent();
+                }
                 localStorage.setItem('hasCheckedUpdate', 'true');
-            }
-        },
-        async check_ocr() {
-            let work_path = await appDataDir();
-            let url = this.remote_version.ocr_windows_url;
-            let { path, updated } = await this.check_file_update('PaddleOCR', this.remote_version.ocr_version, url);
-            //check paddle file exists
-            let paddle_exists = await exists('PaddleOCR-json/PaddleOCR-json.exe', { dir: BaseDirectory.AppData });
-            if (updated || !paddle_exists) {
-                this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
-                //kill PaddleOCR-json.exe
-                await invoke("kill_process", { name: "PaddleOCR-json" });
-                await invoke("unzip_file", { zipPath: path, destDir: work_path });
-            }
-        },
-        async check_platform_tools() {
-            let work_path = await appDataDir();
-            let url = "";
-            const osType = await os.type();
-            if (osType === 'Darwin') {
-                url = this.remote_version.platform_tools_mac_url;
-            } else if (osType === 'Windows_NT') {
-                url = this.remote_version.platform_tools_windows_url;
+                this.$refs.download_dialog.close();
             } else {
-                console.log('Unknown OS type');
-                return;
-            }
-            let { path, updated } = await this.check_file_update('platform_tools', this.remote_version.platform_tools_version, url);
-            let adb_exists = await exists('platform-tools/adb.exe', { dir: BaseDirectory.AppData });
-            if (updated || !adb_exists) {
-                this.check_update_dialog_title = 'Uziping platform-tools-latest-windows.zip';
-                //kill adb.exe
-                await invoke("kill_process", { name: "adb" });
-                //wait for adb to be killed
-                await new Promise(r => setTimeout(r, 3000));
-                //unzip to platform-tools
-                await invoke("unzip_file", { zipPath: path, destDir: work_path });
-                await invoke("grant_permission", { path: "platform-tools/adb" });
+                this.$refs.download_dialog.close();
+                await message('Failed to check for updates', { title: 'Error', type: 'error' });
             }
         },
-        async check_apk() {
-            let url = this.remote_version.apk_url;
-            let { path, updated } = await this.check_file_update('apk', this.remote_version.apk_version, url);
-            if (updated) {
-                //copy apk to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-                //set agent_verision
-                await invoke("set_env", { key: "agent_version", value: this.remote_version.apk_version });
-            }
-        },
-        async check_test_apk() {
-            let url = this.remote_version.test_apk_url;
-            let { path, updated } = await this.check_file_update('test_apk', this.remote_version.test_apk_version, url);
-            if (updated) {
-                //copy test_apk to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-                //set agent_verision
-                await invoke("set_env", { key: "agent_version", value: this.remote_version.test_apk_version });
-            }
-        },
-        async check_scrcpy() {
-            let url = this.remote_version.scrcpy_url;
-            let { path, updated } = await this.check_file_update('scrcpy', this.remote_version.scrcpy_version, url);
-            if (updated) {
-                //copy scrcpy to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-            }
-        },
-        async check_script() {
-            let url = "";
-            const osType = await os.type();
-            if (osType === 'Darwin') {
-                url = this.remote_version.script_mac_url;
-            } else if (osType === 'Windows_NT') {
-                url = this.remote_version.script_windows_url;
-            } else {
-                console.log('Unknown OS type');
-                return;
-            }
-            let { path, updated } = await this.check_file_update('script', this.remote_version.script_version, url);
-            if (updated) {
-                //kill script.exe
-                await invoke("kill_process", { name: "script" });
-                //wait for script to be killed
-                await new Promise(r => setTimeout(r, 3000));
-                //copy script to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-                //grant permission
-                await invoke("grant_permission", { path: "bin/script" });
-            }
-        },
-        async check_agent() {
-            let url = "";
-            const osType = await os.type();
-            if (osType === 'Darwin') {
-                url = this.remote_version.agent_mac_url;
-            } else if (osType === 'Windows_NT') {
-                url = this.remote_version.agent_windows_url;
-            } else {
-                console.log('Unknown OS type');
-                return;
-            }
-            let { path, updated } = await this.check_file_update('agent', this.remote_version.agent_version, url);
-            if (updated) {
-                //kill agent.exe
-                console.log('kill agent');
-                await invoke("kill_process", { name: "agent" });
-                //wait for agent to be killed
-                await new Promise(r => setTimeout(r, 3000));
-                console.log('copy agent to bin');
-                //copy agent to bin
-                await copyFile(path, path.replace('tmp', 'bin'));
-                //grant permission
-                await invoke("grant_permission", { path: "bin/agent" });
-            }
-        },
-        async check_file_update(filename, remoteVersion, downloadUrl) {
-            let updated = false;
-            this.check_update_dialog_title = `Checking ${filename} update...`;
-            let localversion = localStorage.getItem(filename) || '0';
-            localversion = localversion.replace(/"/g, '');
-            let url = downloadUrl;
-            let work_path = await appDataDir();
-            let name = url.split('/').pop();
-            //先下载到tmp目录
-            let path = work_path + 'tmp/' + name;
-            let downloaded = await exists('tmp/' + name, { dir: BaseDirectory.AppData });
-            console.log(`check_file_update: ${filename} localversion: ${localversion} remoteVersion: ${remoteVersion}`);
-            if (!downloaded || localversion !== remoteVersion) {
-                console.log("downloading " + filename + " from " + downloadUrl + " to " + path);
-                url = url + '?t=' + new Date().getTime();
-                await invoke('download_file', { url, path }).catch(async (e) => {
-                    console.error(e);
-                    await message('Download Error', { title: 'Error', type: 'error' });
-                    return;
+        // 新增方法：统一处理库的下载和更新
+        async download_and_update_lib(lib, localStorageKey) {
+            try {
+                let updated = false;
+                this.check_update_dialog_title = `Checking ${lib.name} update...`;
+                let localversion = localStorage.getItem(localStorageKey) || '0';
+                localversion = localversion.replace(/"/g, '');
+                let url = lib.downloadUrl;
+                let work_path = await appDataDir();
+                let name = url.split('/').pop();
+                //先下载到tmp目录
+                let path = work_path + 'tmp/' + name;
+                let downloaded = await exists('tmp/' + name, { dir: BaseDirectory.AppData });
+                console.log(`check_file_update: ${lib.name} localversion: ${localversion} remoteVersion: ${lib.version}`);
+
+                if (!downloaded || localversion !== lib.version) {
+                    console.log(`downloading ${lib.name} from ${url} to ${path}`);
+                    url = url + '?t=' + new Date().getTime();
+                    await invoke('download_file', { url, path }).catch(async (e) => {
+                        console.error(e);
+                        await message('Download Error', { title: 'Error', type: 'error' });
+                        return;
+                    });
+                    updated = true;
+                } else {
+                    console.log(`${lib.name} no need to update`);
+                    this.check_update_dialog_title = `${lib.name} is up to date`;
+                }
+
+                localStorage.setItem(localStorageKey, lib.version);
+
+                // 根据不同类型的库执行特定的更新操作
+                if (lib.name === 'platform-tools') {
+                    const osType = await os.type();
+                    const adbFileName = osType === 'Darwin' ? 'adb' : 'adb.exe';
+                    let adb_exists = await exists(`platform-tools/${adbFileName}`, { dir: BaseDirectory.AppData });
+                    if (updated || !adb_exists) {
+                        this.check_update_dialog_title = 'Uziping platform-tools.zip';
+                        await invoke("kill_process", { name: "adb" });
+                        await new Promise(r => setTimeout(r, 3000));
+                        await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                        await invoke("grant_permission", { path: "platform-tools/adb" });
+                    }
+                } else if (lib.name === 'PaddleOCR') {
+                    const osType = await os.type();
+                    const paddleFileName = osType === 'Darwin' ? 'PaddleOCR-json' : 'PaddleOCR-json.exe';
+                    let paddle_exists = await exists(`PaddleOCR-json/${paddleFileName}`, { dir: BaseDirectory.AppData });
+                    if (updated || !paddle_exists) {
+                        this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
+                        await invoke("kill_process", { name: "PaddleOCR-json" });
+                        await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                    }else{
+                        this.check_update_dialog_title = 'PaddleOCR-json is exists';
+                    }
+                } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
+                    if (updated) {
+                        await copyFile(path, path.replace('tmp', 'bin'));
+                        if (lib.name === 'apk' || lib.name === 'test-apk') {
+                            await invoke("set_env", { key: "agent_version", value: lib.version });
+                        }
+                    }
+                } else if (lib.name === 'script' || lib.name === 'agent') {
+                    if (updated) {
+                        await invoke("kill_process", { name: lib.name });
+                        await new Promise(r => setTimeout(r, 3000));
+                        await copyFile(path, path.replace('tmp', 'bin'));
+                        await invoke("grant_permission", { path: `bin/${lib.name}` });
+                        
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                await this.$emiter('NOTIFY', {
+                    type: 'error',
+                    message: `Download and Update Lib Error: ${e.message}`,
+                    timeout: 2000
                 });
-                updated = true;
-            } else {
-                console.log(filename + " no need to update");
             }
-            localStorage.setItem(filename, remoteVersion);
-            return { path, updated };
-        }
+        },
     },
     async mounted() {
         // 获取版本号

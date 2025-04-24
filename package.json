@@ -20,7 +20,8 @@
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@tauri-apps/api": "^1.5.2",
-    "@types/jmuxer": "^2.0.6",
+    "@types/jmuxer": "^2.0.7",
+    "@yume-chan/scrcpy": "^2.0.1",
     "bluebird": "^3.7.2",
     "canvas-confetti": "^1.9.3",
     "countup.js": "^2.8.0",
@@ -30,18 +31,20 @@
     "qrcode": "^1.5.4",
     "tiktok-matrix": "file:",
     "vue": "^3.3.4",
+    "vue-3-slider-component": "^1.0.2",
     "vue-draggable-resizable": "^3.0.0",
+    "vue-flex-waterfall": "^2.3.1",
     "vue-i18n": "^9.8.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.17",
     "@tauri-apps/cli": "^1.5.9",
     "@vitejs/plugin-vue": "^4.2.3",
-    "autoprefixer": "^10.4.19",
-    "daisyui": "^4.9.0",
+    "daisyui": "^5.0.9",
     "postcss": "^8.4.38",
     "shx": "^0.3.4",
-    "tailwindcss": "^3.4.3",
+    "tailwindcss": "^4.0.17",
     "vite": "^5.0.0"
   }
 }

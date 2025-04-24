@@ -27,8 +27,8 @@
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold">{{ $t('avatarsPath') }}: </span>
       <input type="text" placeholder="example: C:/Users/Administrator/Desktop/avatars"
-        class="input input-sm grow input-bordered" v-model="avatars_path" />
-      <button class="btn btn-sm btn-info ml-2" @click="selectAvatars">{{ $t('select') }}</button>
+        class="input input-md grow input-bordered" v-model="avatars_path" />
+      <button class="btn btn-md btn-info ml-2" @click="selectAvatars">{{ $t('select') }}</button>
     </div>
 </template>
 <script>
@@ -76,7 +76,7 @@ export default {
    
    
     async runScript() {
-      await this.$emiter('run_task_now', { name: 'profile', args: {
+      await this.$emiter('run_now_by_account', { name: 'profile', args: {
         nicknames: this.nicknames,
         usernames: this.usernames,
         bios: this.bios,

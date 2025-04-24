@@ -24,14 +24,14 @@
   <div class="flex flex-row items-center justify-start p-1 gap-4">
     <div class="form-control">
       <label class="label cursor-pointer gap-2 py-1">
-        <input type="checkbox" v-model="live_enable_like" class="checkbox checkbox-success checkbox-sm" />
+        <input type="checkbox" v-model="live_enable_like" class="checkbox checkbox-success checkbox-md" />
         <span class="label-text">{{ $t('likeLive') }}</span>
       </label>
     </div>
 
     <div class="form-control">
       <label class="label cursor-pointer gap-2 py-1">
-        <input type="checkbox" v-model="live_enable_comment" class="checkbox checkbox-success checkbox-sm" />
+        <input type="checkbox" v-model="live_enable_comment" class="checkbox checkbox-success checkbox-md" />
         <span class="label-text">{{ $t('commentLive') }}</span>
       </label>
     </div>
@@ -39,7 +39,7 @@
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('viewDuration') }}:</label>
       <input type="number" min="30" max="3600" v-model="live_view_duration"
-        class="input input-bordered input-sm w-20" />
+        class="input input-bordered input-md w-20" />
       <span>{{ $t('second') }}</span>
     </div>
   </div>
@@ -51,14 +51,14 @@
     <!-- 点赞间隔输入 -->
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('likeInterval') }}:</label>
-      <input type="number" min="3" max="60" v-model="live_like_interval" class="input input-bordered input-sm w-20" />
+      <input type="number" min="3" max="60" v-model="live_like_interval" class="input input-bordered input-md w-20" />
       <span>{{ $t('second') }}</span>
     </div>
 
     <!-- 点赞连击次数输入 -->
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('likeTapCount') }}:</label>
-      <input type="number" min="1" max="10" v-model="live_like_count" class="input input-bordered input-sm w-20" />
+      <input type="number" min="1" max="10" v-model="live_like_count" class="input input-bordered input-md w-20" />
       <span>{{ $t('times') }}</span>
     </div>
   </div>
@@ -66,7 +66,7 @@
   <!-- 评论间隔输入 -->
   <div class="flex flex-row items-center p-1 gap-2">
     <label class="font-bold text-right">{{ $t('commentInterval') }}:</label>
-    <input type="number" min="5" max="120" v-model="live_comment_interval" class="input input-bordered input-sm w-20" />
+    <input type="number" min="5" max="120" v-model="live_comment_interval" class="input input-bordered input-md w-20" />
     <span>{{ $t('second') }}</span>
   </div>
 
@@ -84,8 +84,8 @@ export default {
   data() {
     return {
       live_target_username: localStorage.getItem('live_target_username') || '',
-      live_enable_like: Boolean(localStorage.getItem('live_enable_like')) || true,
-      live_enable_comment: Boolean(localStorage.getItem('live_enable_comment')) || true,
+      live_enable_like: localStorage.getItem('live_enable_like') === 'true' || false,
+      live_enable_comment: localStorage.getItem('live_enable_comment') === 'true' || false,
       live_view_duration: Number(localStorage.getItem('live_view_duration')) || 120,
       live_like_interval: Number(localStorage.getItem('live_like_interval')) || 10,
       live_like_count: Number(localStorage.getItem('live_like_count')) || 10,
@@ -107,7 +107,6 @@ export default {
     },
     live_enable_comment: {
       handler(newVal) {
-        console.log('live_enable_comment', newVal)
         localStorage.setItem('live_enable_comment', newVal)
       },
     },

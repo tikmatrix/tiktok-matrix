@@ -9,17 +9,11 @@ export default {
     extend: {
     },
   },
-  plugins: [
-    daisyui,
-  ],
   variants: {
     extend: {
       opacity: ['responsive', 'hover', 'focus', 'active', 'group-hover'],
     },
   },
-  daisyui: {
-    themes: false,
-    darkTheme: false,
-  },
+
 }
 
