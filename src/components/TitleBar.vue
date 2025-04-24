@@ -487,13 +487,13 @@ export default {
 
                 for (const lib of libs) {
                     if (lib.name === 'platform-tools') {
-                        await this.download_and_update_lib(lib, 'platform_tools');
+                        await this.download_and_update_lib(lib, 'platform-tools');
                     } else if (lib.name === 'PaddleOCR') {
                         await this.download_and_update_lib(lib, 'PaddleOCR');
                     } else if (lib.name === 'apk') {
                         await this.download_and_update_lib(lib, 'apk');
                     } else if (lib.name === 'test-apk') {
-                        await this.download_and_update_lib(lib, 'test_apk');
+                        await this.download_and_update_lib(lib, 'test-apk');
                     } else if (lib.name === 'scrcpy') {
                         await this.download_and_update_lib(lib, 'scrcpy');
                     } else if (lib.name === 'script') {
