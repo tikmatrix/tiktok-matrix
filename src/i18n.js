@@ -4,10 +4,12 @@ export const i18n = createI18n({
   locale: 'en', // 设置默认语言
   messages: {
     en: {
+      searchAccountPlaceholder: 'email, username or device',
       siteName: 'TikMatrix',
       siteUrl: 'https://www.tikmatrix.com',
       devices: 'Devices',
       accounts: 'Accounts',
+      number: 'NO.',
       scheduledPublish: 'Scheduled Publish',
       scheduledTrain: 'Scheduled Train',
       dialogWatcher: 'Dialog Watcher',
@@ -614,8 +616,22 @@ export const i18n = createI18n({
       sendProfileCard: 'Send Profile Card',
       sendProfileCardTips: 'Enter the username of the profile card to send',
       boostPostInterval: 'Boost Post Interval',
+      goTo: 'Go to',
+      page: 'page',
+      searchTaskPlaceholder: 'id, device, scriptName',
+      // 标签相关
+      tags: 'Tags',
+      tag: 'Tag',
+      newTag: 'New Tag',
+      enterNewTag: 'Enter new tag',
+      existingTags: 'Existing Tags',
+      filterByTag: 'Filter by Tag',
+      filteredBy: 'Filtered by',
+      allTags: 'All Tags',
     },
     'zh-CN': {
+      searchAccountPlaceholder: '邮箱、用户名或设备',
+      number: 'NO.',
       viewDurationTips: '观看每个视频的时长范围, 系统会在这个范围内随机选择一个时长',
       boostType: '提升类型',
       boostPostInterval: '提升帖子间隔',
@@ -1178,8 +1194,22 @@ export const i18n = createI18n({
       boostOptions: '提升选项',
       sendProfileCard: '发送个人资料卡片',
       sendProfileCardTips: '输入要发送的个人资料卡片的用户名',
+      goTo: '跳转',
+      page: '页',
+      searchTaskPlaceholder: 'id, 设备序号, 脚本名称',
+      // 标签相关
+      tags: '标签',
+      tag: '标签',
+      newTag: '新标签',
+      enterNewTag: '输入新标签',
+      existingTags: '已有标签',
+      filterByTag: '按标签筛选',
+      filteredBy: '筛选条件',
+      allTags: '所有标签',
     },
     'ru': {
+      searchTaskPlaceholder: 'id, устройство, имя скрипта',
+      searchAccountPlaceholder: 'email, имя пользователя или устройство',
       boostType: 'Тип повышения',
       boostPostInterval: 'Интервал повышения поста',
       siteName: 'TikMatrix',
@@ -1788,6 +1818,17 @@ export const i18n = createI18n({
       boostOptions: 'Настройки повышения',
       sendProfileCard: 'Отправлять личные сообщения',
       sendProfileCardTips: 'Введите имя пользователя, которому вы хотите отправить личное сообщение',
+      goTo: 'Перейти к',
+      page: 'страница',
+      // 标签相关
+      tags: 'Теги',
+      tag: 'Тег',
+      newTag: 'Новый тег',
+      enterNewTag: 'Введите новый тег',
+      existingTags: 'Существующие теги',
+      filterByTag: 'Фильтр по тегу',
+      filteredBy: 'Отфильтровано по',
+      allTags: 'Все теги',
     }
   }
 })

@@ -1,6 +1,8 @@
 <template>
   <div class="w-full">
-    <Pagination :items="filter_tasks" :searchKeys="['id', 'device_index']" @refresh="get_tasks">
+    <Pagination :items="filter_tasks" :searchKeys="['id', 'device_index', 'script_name']" 
+    :searchTermPlaceholder="$t('searchTaskPlaceholder')"
+    @refresh="get_tasks">
       <template v-slot:buttons>
         <MyButton @click="retry_all_failed" label="retryAllFaied" icon="fa fa-repeat" />
         <MyButton @click="clearAll" label="clearAll" icon="fa fa-trash" />

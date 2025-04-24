@@ -1,30 +1,51 @@
 <template>
   <div class="w-full">
-    <Pagination :items="accounts" :searchKeys="['email', 'username', 'device', 'device_index']" @refresh="get_accounts">
+    <Pagination 
+    :items="filteredAccounts" 
+    :searchKeys="['email', 'username', 'device', 'device_index', 'tags']"
+    :searchTermPlaceholder="$t('searchAccountPlaceholder')"
+    :showRefBtn="false"
+    @refresh="get_accounts">
       <template v-slot:buttons>
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="import_accounts" label="import" icon="fa fa-download" />
         <MyButton @click="export_accounts" label="export" icon="fa fa-upload" />
-        <MyButton @click="delete_all" label="clearAll" icon="fa fa-trash" />
+        
+        <!-- 标签筛选下拉列表 -->
+        <select class="select ml-2 w-32" v-model="selectedTag">
+          <option selected value="">{{ $t('allTags') }}</option>
+          <option v-for="tag in allUniqueTags" :key="tag" :value="tag">
+            {{ tag }} ({{ tagCounts[tag] || 0 }})
+          </option>
+        </select>
+        <!-- 批量操作 -->
+        <select class="select ml-2 w-48" v-model="batchAction">
+          <option selected value="">{{ $t('batchAction') }}</option>
+          <option value="disable" >{{ $t('disable') }}</option>
+          <option value="enable" >{{ $t('enable') }}</option>
+          <option value="delete" >{{ $t('delete') }}</option>
+        </select>
+
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
           <table class="table table-md">
             <thead>
               <tr>
-                <th>{{ $t('id') }}</th>
+                <th>{{ $t('number') }}</th>
                 <th>{{ $t('email') }}</th>
                 <th>{{ $t('username') }}</th>
                 <!-- <th>{{ $t('fans') }}</th> -->
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('loginStatus') }}</th>
                 <th>{{ $t('status') }}</th>
+                <th>{{ $t('tags') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(account, _index) in slotProps.items">
-                <td>{{ account.id }}</td>
+              <tr v-for="(account, index) in slotProps.items">
+                <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
                 <td>{{ account.email }}</td>
                 <td>
                   <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">{{
@@ -45,6 +66,44 @@
                 <td>
                   <span v-if="account.status == 0" class="text text-success">{{ $t('enable') }}</span>
                   <span v-else class="text text-error">{{ $t('disable') }}</span>
+                </td>
+                <td>
+                  <div class="flex flex-wrap gap-1 max-w-xs">
+                    <div v-for="tag in accountTags[account.id] || []" :key="tag" 
+                      class="badge badge-primary badge-outline gap-1">
+                      {{ tag }}
+                      <button @click="removeTag(account.id, tag)" class="btn btn-xs btn-circle btn-ghost">×</button>
+                    </div>
+                    <div class="dropdown dropdown-hover">
+                      <label tabindex="0" class="btn btn-xs btn-circle btn-outline">+</label>
+                      <div tabindex="0" class="dropdown-content z-[1] card card-compact shadow bg-base-100 p-2">
+                        <div class="card-body p-2">
+                          <!-- 已存在的标签列表 -->
+                          <div class="mb-2" v-if="allUniqueTags.length > 0">
+                            <div class="text-xs font-semibold mb-1">{{ $t('existingTags') }}</div>
+                            <div class="flex flex-wrap gap-1">
+                              <div v-for="tag in allUniqueTags" :key="tag" 
+                                class="badge badge-sm badge-outline cursor-pointer hover:bg-primary hover:text-primary-content"
+                                @click="selectExistingTag(account.id, tag)">
+                                {{ tag }}
+                              </div>
+                            </div>
+                          </div>
+                          <!-- 添加新标签 -->
+                          <div>
+                            <div class="text-xs font-semibold mb-1">{{ $t('newTag') }}</div>
+                            <div class="join">
+                              <input v-model="newTagInput[account.id]" class="input input-bordered input-sm join-item" 
+                                :placeholder="$t('enterNewTag')" @keyup.enter="addTag(account.id)" />
+                              <button class="btn btn-sm btn-primary join-item" @click="addTag(account.id)">
+                                {{ $t('add') }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </td>
                 <td>
                   <div class="space-x-4">
@@ -91,8 +150,7 @@
 import MyButton from '../Button.vue'
 import Edit from './Edit.vue'
 import Pagination from '../Pagination.vue'
-import { ask } from '@tauri-apps/api/dialog';
-import { writeBinaryFile, BaseDirectory, createDir, exists } from '@tauri-apps/api/fs';
+import { writeBinaryFile, BaseDirectory } from '@tauri-apps/api/fs';
 import { invoke } from "@tauri-apps/api/tauri";
 import * as XLSX from 'xlsx'
 import { open } from '@tauri-apps/api/dialog'
@@ -116,16 +174,147 @@ export default {
       accounts: [],
       currentAccount: {},
       batchAccounts: '',
+      accountTags: {},
+      newTagInput: {},
+      selectedTag: '',
+      batchAction: '',
+    }
+  },
+  watch: {
+    batchAction(newVal) {
+      if (newVal) {
+        switch (newVal) {
+          case 'disable':
+            this.batchDisable()
+            break
+          case 'enable':
+            this.batchEnable()
+            break
+          case 'delete':
+            this.batchDelete()
+            break
+          default:
+            break
+        }
+      }
+    }
+  },
+  computed: {
+    // 获取所有已存在的标签（去重）
+    allUniqueTags() {
+      const tagsSet = new Set();
+      
+      // 收集所有账户的标签
+      Object.values(this.accountTags).forEach(tags => {
+        tags.forEach(tag => tagsSet.add(tag));
+      });
+      
+      return Array.from(tagsSet).sort();
+    },
+    
+    // 计算每个标签出现的账户数量
+    tagCounts() {
+      const counts = {};
+      
+      // 初始化所有标签的计数为0
+      this.allUniqueTags.forEach(tag => {
+        counts[tag] = 0;
+      });
+      
+      // 计算每个标签的出现次数
+      Object.entries(this.accountTags).forEach(([accountId, tags]) => {
+        tags.forEach(tag => {
+          if (counts[tag] !== undefined) {
+            counts[tag]++;
+          } else {
+            counts[tag] = 1;
+          }
+        });
+      });
+      
+      return counts;
+    },
+    
+    // 根据已选标签筛选账户
+    filteredAccounts() {
+      if (!this.selectedTag) {
+        return this.accounts;
+      }
+      
+      return this.accounts.filter(account => {
+        const accountTags = this.accountTags[account.id] || [];
+        return accountTags.includes(this.selectedTag);
+      });
     }
   },
   methods: {
-    async delete_all() {
-      const yes = await ask(this.$t('deleteAllConfirm'), this.$t('confirm'));
-      if (yes) {
-        await this.$service.delete_all_accounts()
+    batchDisable() {
+      const promises = this.filteredAccounts.map(account => {
+        return this.$service.update_account({
+          ...account,
+          status: 1
+        }).then(async () => {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${this.$t('disabled')} ${account.username}`,
+            timeout: 1000
+          })
+        })
+      })
+      
+      Promise.all(promises).then(() => {
+        this.batchAction = ''
         this.get_accounts()
-      }
+      })
     },
+    batchEnable() {
+      const promises = this.filteredAccounts.map(account => {
+        return this.$service.update_account({
+          ...account,
+          status: 0
+        }).then(async () => {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${this.$t('enabled')} ${account.username}`,
+            timeout: 1000
+          })
+        })
+      })
+      
+      Promise.all(promises).then(() => {
+        this.batchAction = ''
+        this.get_accounts()
+      })
+    },
+    batchDelete() {
+      const promises = this.filteredAccounts.map(account => {
+        return this.$service.delete_account({
+          id: account.id
+        }).then(async () => {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${this.$t('deleted')} ${account.username}`,
+            timeout: 1000
+          })
+        })
+      })
+      
+      Promise.all(promises).then(() => {
+        this.batchAction = ''
+        this.get_accounts()
+      })
+    },
+    // 根据标签筛选账户
+    filterByTag(tag) {
+      this.selectedTag = tag;
+    },
+    
+    // 清除标签筛选
+    clearTagFilter() {
+      this.selectedTag = '';
+    },
+
+   
     async import_accounts() {
       const filePath = await open({
         multiple: false, // 是否允许多选文件
@@ -216,6 +405,67 @@ export default {
       await this.$emiter('openDevice', mydevice)
     },
 
+    // 加载标签数据
+    loadAccountTags() {
+      try {
+        const savedTags = localStorage.getItem('accountTags')
+        if (savedTags) {
+          this.accountTags = JSON.parse(savedTags)
+        }
+      } catch (error) {
+        console.error('Error loading tags:', error)
+      }
+    },
+    
+    // 保存标签数据
+    saveAccountTags() {
+      try {
+        localStorage.setItem('accountTags', JSON.stringify(this.accountTags))
+      } catch (error) {
+        console.error('Error saving tags:', error)
+      }
+    },
+    
+    // 添加新标签
+    addTag(accountId) {
+      if (!this.newTagInput[accountId] || this.newTagInput[accountId].trim() === '') return
+      
+      if (!this.accountTags[accountId]) {
+        this.accountTags[accountId] = []
+      }
+      
+      const tag = this.newTagInput[accountId].trim()
+      if (!this.accountTags[accountId].includes(tag)) {
+        this.accountTags[accountId].push(tag)
+        this.saveAccountTags()
+      }
+      
+      this.newTagInput[accountId] = ''
+    },
+    
+    // 选择已有标签
+    selectExistingTag(accountId, tag) {
+      if (!this.accountTags[accountId]) {
+        this.accountTags[accountId] = []
+      }
+      
+      if (!this.accountTags[accountId].includes(tag)) {
+        this.accountTags[accountId].push(tag)
+        this.saveAccountTags()
+      }
+    },
+    
+    // 移除标签
+    removeTag(accountId, tag) {
+      if (this.accountTags[accountId]) {
+        const index = this.accountTags[accountId].indexOf(tag)
+        if (index > -1) {
+          this.accountTags[accountId].splice(index, 1)
+          this.saveAccountTags()
+        }
+      }
+    },
+
     async get_accounts() {
       this.currentAccount = null
       this.$service
@@ -224,6 +474,8 @@ export default {
           this.accounts = res.data
           this.accounts.forEach(account => {
             account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
+            // 添加tags字段用于搜索
+            account.tags = (this.accountTags[account.id] || []).join(' ')
           })
           //sort by device_index asc
           this.accounts.sort((a, b) => a.device_index - b.device_index)
@@ -284,6 +536,7 @@ export default {
     },
   },
   async mounted() {
+    this.loadAccountTags()
     this.get_accounts()
   }
 }

@@ -307,9 +307,8 @@ export default {
                 name
             });
         },
-        async start_agent() {
+        async startAgent() {
             try {
-                console.log('start_agent')
                 this.$refs.download_dialog.showModal();
                 this.check_update_dialog_title = 'Checking agent...';
 
@@ -421,7 +420,7 @@ export default {
         async check_update(force) {
             let hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate');
             if (hasCheckedUpdate && !force) {
-                await this.start_agent();
+                await this.startAgent();
                 return;
             }
             this.check_update_dialog_title = 'Checking update...';
@@ -483,7 +482,6 @@ export default {
             }
 
             if (response?.ok && response?.data?.code === 20000) {
-                const platform = response.data.data.platform;
                 const libs = response.data.data.libs;
 
                 for (const lib of libs) {
@@ -503,9 +501,11 @@ export default {
                         await this.download_and_update_lib(lib, 'agent');
                     }
                 }
-
-                await this.start_agent();
+                if (!force) {
+                    await this.startAgent();
+                }
                 localStorage.setItem('hasCheckedUpdate', 'true');
+                this.$refs.download_dialog.close();
             } else {
                 this.$refs.download_dialog.close();
                 await message('Failed to check for updates', { title: 'Error', type: 'error' });
@@ -537,6 +537,7 @@ export default {
                     updated = true;
                 } else {
                     console.log(`${lib.name} no need to update`);
+                    this.check_update_dialog_title = `${lib.name} is up to date`;
                 }
 
                 localStorage.setItem(localStorageKey, lib.version);
@@ -561,6 +562,8 @@ export default {
                         this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
                         await invoke("kill_process", { name: "PaddleOCR-json" });
                         await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                    }else{
+                        this.check_update_dialog_title = 'PaddleOCR-json is exists';
                     }
                 } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
                     if (updated) {
@@ -575,6 +578,7 @@ export default {
                         await new Promise(r => setTimeout(r, 3000));
                         await copyFile(path, path.replace('tmp', 'bin'));
                         await invoke("grant_permission", { path: `bin/${lib.name}` });
+                        
                     }
                 }
             } catch (e) {

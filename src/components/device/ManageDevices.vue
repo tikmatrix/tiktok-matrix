@@ -1,6 +1,6 @@
 <template>
   <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
-    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage">
+    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true" :showBottomControls="false">
       <template v-slot:buttons>
         <div class="flex items-center space-x-2 ml-2">
           <button class="btn btn-md btn-primary" @click="$refs.scan_dialog.show()">
