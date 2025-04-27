@@ -47,11 +47,11 @@
               </button>
               <label class="text-sm text-gray-500" v-if="license.stripe_cancel_at">{{ $t('cancelAt', {
                 date: new Date(license.stripe_cancel_at *
-                  1000).toLocaleString()
+                  1000).toLocaleDateString()
               }) }}</label>
               <label class="text-sm text-gray-500" v-else>{{ $t('renewAt', {
                 date: new Date(license.stripe_renew_at *
-                  1000).toLocaleString()
+                  1000).toLocaleDateString()
               }) }}</label>
             </div>
             <div class="flex items-center flex-row gap-2 w-full" v-else>
@@ -66,7 +66,7 @@
                 {{ $t('copy') }}
               </button>
               <label class="text-sm text-gray-500" v-if="license.leftdays > 0">{{ $t('expiredAt', {
-                date: new Date(new Date().getTime() + license.leftdays * 24 * 60 * 60 * 1000).toLocaleString()
+                date: new Date(new Date().getTime() + license.leftdays * 24 * 60 * 60 * 1000).toLocaleDateString()
               }) }}</label>
 
               <!-- <div class="relative grow">
@@ -131,7 +131,7 @@
                 <span class="text-primary-content text-5xl font-semibold tracking-tight">
                   $0
                 </span>
-                <span class=" text-primary-content">3 {{ $t('days') }}</span>
+                <span class=" text-primary-content">7 {{ $t('days') }}</span>
               </p>
               <p class="text-primary-content mt-6 text-base/7">
                 {{ $t('trialDescription') }}
@@ -163,7 +163,7 @@
                   <!-- American Express -->
                   <font-awesome-icon icon="fab fa-cc-amex" class="h-10 w-10 text-primary-content" />
                 </div>
-                {{ $t('card') }}
+                {{ $t('startTrial') }}
               </button>
 
 
@@ -174,13 +174,13 @@
                 {{ $t('monthly') }}
               </h3>
               <p class="mt-4 flex items-baseline gap-x-2">
-                <template v-if="license.affiliate_discount > 0">
+                <!-- <template v-if="license.affiliate_discount > 0">
                   <span class="text-accent/50 text-2xl line-through">$99</span>
                   <span class="text-accent text-5xl font-semibold tracking-tight">
                     ${{ (99 * (1 - license.affiliate_discount / 100)).toFixed(0) }}
                   </span>
-                </template>
-                <span v-else class="text-accent text-5xl font-semibold tracking-tight">
+                </template> -->
+                <span  class="text-accent text-5xl font-semibold tracking-tight">
                   $99
                 </span>
                 <span class=" text-accent">/ {{ $t('month') }}</span>
@@ -254,13 +254,13 @@
                 {{ $t('yearly') }}
               </h3>
               <p class="mt-4 flex items-baseline gap-x-2">
-                <template v-if="license.affiliate_discount > 0">
+                <!-- <template v-if="license.affiliate_discount > 0">
                   <span class="text-success-content/50 text-2xl line-through">$599</span>
                   <span class="text-success-content text-5xl font-semibold tracking-tight">
                     ${{ (599 * (1 - license.affiliate_discount / 100)).toFixed(0) }}
                   </span>
-                </template>
-                <span v-else class="text-success-content text-5xl font-semibold tracking-tight">
+                </template> -->
+                <span class="text-success-content text-5xl font-semibold tracking-tight">
                   $599
                 </span>
                 <span class=" text-success-content">/ {{ $t('year') }}</span>

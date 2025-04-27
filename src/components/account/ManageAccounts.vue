@@ -1,16 +1,12 @@
 <template>
   <div class="w-full">
-    <Pagination 
-    :items="filteredAccounts" 
-    :searchKeys="['email', 'username', 'device', 'device_index', 'tags']"
-    :searchTermPlaceholder="$t('searchAccountPlaceholder')"
-    :showRefBtn="false"
-    @refresh="get_accounts">
+    <Pagination :items="filteredAccounts" :searchKeys="['email', 'username', 'device', 'device_index', 'tags']"
+      :searchTermPlaceholder="$t('searchAccountPlaceholder')" :showRefBtn="false" @refresh="get_accounts">
       <template v-slot:buttons>
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="import_accounts" label="import" icon="fa fa-download" />
         <MyButton @click="export_accounts" label="export" icon="fa fa-upload" />
-        
+
         <!-- 标签筛选下拉列表 -->
         <select class="select ml-2 w-32" v-model="selectedTag">
           <option selected value="">{{ $t('allTags') }}</option>
@@ -21,10 +17,13 @@
         <!-- 批量操作 -->
         <select class="select ml-2 w-48" v-model="batchAction">
           <option selected value="">{{ $t('batchAction') }}</option>
-          <option value="disable" >{{ $t('disable') }}</option>
-          <option value="enable" >{{ $t('enable') }}</option>
-          <option value="delete" >{{ $t('delete') }}</option>
+          <option value="disable">{{ $t('disable') }}</option>
+          <option value="enable">{{ $t('enable') }}</option>
+          <option value="delete">{{ $t('delete') }}</option>
         </select>
+
+        <!-- 清空标签按钮 -->
+        <MyButton @click="clearAllTags" label="clearAllTags" icon="fa fa-trash" class="ml-2" />
 
       </template>
       <template v-slot:default="slotProps">
@@ -69,7 +68,7 @@
                 </td>
                 <td>
                   <div class="flex flex-wrap gap-1 max-w-xs">
-                    <div v-for="tag in accountTags[account.id] || []" :key="tag" 
+                    <div v-for="tag in accountTags[account.id] || []" :key="tag"
                       class="badge badge-primary badge-outline gap-1">
                       {{ tag }}
                       <button @click="removeTag(account.id, tag)" class="btn btn-xs btn-circle btn-ghost">×</button>
@@ -82,7 +81,7 @@
                           <div class="mb-2" v-if="allUniqueTags.length > 0">
                             <div class="text-xs font-semibold mb-1">{{ $t('existingTags') }}</div>
                             <div class="flex flex-wrap gap-1">
-                              <div v-for="tag in allUniqueTags" :key="tag" 
+                              <div v-for="tag in allUniqueTags" :key="tag"
                                 class="badge badge-sm badge-outline cursor-pointer hover:bg-primary hover:text-primary-content"
                                 @click="selectExistingTag(account.id, tag)">
                                 {{ tag }}
@@ -93,7 +92,7 @@
                           <div>
                             <div class="text-xs font-semibold mb-1">{{ $t('newTag') }}</div>
                             <div class="join">
-                              <input v-model="newTagInput[account.id]" class="input input-bordered input-sm join-item" 
+                              <input v-model="newTagInput[account.id]" class="input input-bordered input-sm join-item"
                                 :placeholder="$t('enterNewTag')" @keyup.enter="addTag(account.id)" />
                               <button class="btn btn-sm btn-primary join-item" @click="addTag(account.id)">
                                 {{ $t('add') }}
@@ -203,24 +202,24 @@ export default {
     // 获取所有已存在的标签（去重）
     allUniqueTags() {
       const tagsSet = new Set();
-      
+
       // 收集所有账户的标签
       Object.values(this.accountTags).forEach(tags => {
         tags.forEach(tag => tagsSet.add(tag));
       });
-      
+
       return Array.from(tagsSet).sort();
     },
-    
+
     // 计算每个标签出现的账户数量
     tagCounts() {
       const counts = {};
-      
+
       // 初始化所有标签的计数为0
       this.allUniqueTags.forEach(tag => {
         counts[tag] = 0;
       });
-      
+
       // 计算每个标签的出现次数
       Object.entries(this.accountTags).forEach(([accountId, tags]) => {
         tags.forEach(tag => {
@@ -231,16 +230,16 @@ export default {
           }
         });
       });
-      
+
       return counts;
     },
-    
+
     // 根据已选标签筛选账户
     filteredAccounts() {
       if (!this.selectedTag) {
         return this.accounts;
       }
-      
+
       return this.accounts.filter(account => {
         const accountTags = this.accountTags[account.id] || [];
         return accountTags.includes(this.selectedTag);
@@ -261,7 +260,7 @@ export default {
           })
         })
       })
-      
+
       Promise.all(promises).then(() => {
         this.batchAction = ''
         this.get_accounts()
@@ -280,7 +279,7 @@ export default {
           })
         })
       })
-      
+
       Promise.all(promises).then(() => {
         this.batchAction = ''
         this.get_accounts()
@@ -298,7 +297,7 @@ export default {
           })
         })
       })
-      
+
       Promise.all(promises).then(() => {
         this.batchAction = ''
         this.get_accounts()
@@ -308,13 +307,13 @@ export default {
     filterByTag(tag) {
       this.selectedTag = tag;
     },
-    
+
     // 清除标签筛选
     clearTagFilter() {
       this.selectedTag = '';
     },
 
-   
+
     async import_accounts() {
       const filePath = await open({
         multiple: false, // 是否允许多选文件
@@ -416,7 +415,7 @@ export default {
         console.error('Error loading tags:', error)
       }
     },
-    
+
     // 保存标签数据
     saveAccountTags() {
       try {
@@ -425,36 +424,36 @@ export default {
         console.error('Error saving tags:', error)
       }
     },
-    
+
     // 添加新标签
     addTag(accountId) {
       if (!this.newTagInput[accountId] || this.newTagInput[accountId].trim() === '') return
-      
+
       if (!this.accountTags[accountId]) {
         this.accountTags[accountId] = []
       }
-      
+
       const tag = this.newTagInput[accountId].trim()
       if (!this.accountTags[accountId].includes(tag)) {
         this.accountTags[accountId].push(tag)
         this.saveAccountTags()
       }
-      
+
       this.newTagInput[accountId] = ''
     },
-    
+
     // 选择已有标签
     selectExistingTag(accountId, tag) {
       if (!this.accountTags[accountId]) {
         this.accountTags[accountId] = []
       }
-      
+
       if (!this.accountTags[accountId].includes(tag)) {
         this.accountTags[accountId].push(tag)
         this.saveAccountTags()
       }
     },
-    
+
     // 移除标签
     removeTag(accountId, tag) {
       if (this.accountTags[accountId]) {
@@ -533,6 +532,17 @@ export default {
       };
       await this.$service.update_account(updatedAccount);
       this.get_accounts();
+    },
+    // 清空所有标签
+    clearAllTags() {
+      this.accountTags = {}
+      this.saveAccountTags()
+      this.$emiter('NOTIFY', {
+        type: 'success',
+        message: this.$t('allTagsCleared'),
+        timeout: 2000
+      })
+      this.get_accounts()
     },
   },
   async mounted() {
