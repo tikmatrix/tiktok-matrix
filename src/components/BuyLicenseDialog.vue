@@ -1,9 +1,7 @@
 <template>
   <dialog ref="buy_liscense_dialog" class="modal">
     <div class="modal-box w-11/12 max-w-5xl overflow-hidden">
-      <!-- <form method="dialog">
-        <button class="btn btn-md absolute right-2 top-2 p-2">✕</button>
-      </form> -->
+
       <div class="modal-body">
         <div class="relative isolate px-6 py-6 w-full">
           <div class="absolute inset-x-0 -z-10 transform-gpu overflow-hidden px-36 blur-3xl" aria-hidden="true">
@@ -14,36 +12,64 @@
           <div class="flex items-start flex-col w-full gap-3">
             <div class="flex items-center flex-row gap-2 w-full">
               <label class="font-bold w-28">{{ $t('mid') }}: </label>
-              <div class="relative grow">
-                <input id="mid" type="text" placeholder="mid" class="input input-md w-full input-bordered ring-1 pr-20"
-                  v-model="license.mid" readonly disabled />
-                <button @click="copyText(license.mid, $event)"
-                  class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none">
-                  {{ $t('copy') }}
-                </button>
-              </div>
+              <input id="mid" type="text" placeholder="mid" class="input input-md input-bordered ring-1"
+                v-model="license.mid" readonly disabled />
+              <button @click="copyText(license.mid, $event)" class=" btn btn-md btn-primary  rounded-l-none">
+                {{ $t('copy') }}
+              </button>
+
               <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-                href="https://t.me/+iGhozoBfAbI5YmE1" target="_blank">
+                href="https://t.me/tikmatrix_support" target="_blank">
                 <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
                 {{ $t('telegramCustom') }}
               </a>
+              <a class="link link-primary text-md flex items-center gap-1 min-w-max"
+                @click="copyText('support@tikmatrix.com', $event)" target="_blank">
+                <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
+                support@tikmatrix.com
+              </a>
             </div>
-
-            <div class="flex items-center flex-row gap-2 w-full">
+            <!-- 显示管理Stripe订阅按钮 -->
+            <div class="flex items-center flex-row gap-2 w-full" v-if="license.is_stripe_active == 1">
+              <button @click="manageStripeSubscription" class="btn btn-wide btn-primary">
+                <!-- 支付卡图标集合 -->
+                <div class="flex -space-x-2 overflow-hidden">
+                  <!-- 银行卡图标 -->
+                  <font-awesome-icon icon="fas fa-credit-card" class="h-6 w-6" />
+                  <!-- Visa图标 -->
+                  <font-awesome-icon icon="fab fa-cc-visa" class="h-6 w-6" />
+                  <!-- Mastercard图标 -->
+                  <font-awesome-icon icon="fab fa-cc-mastercard" class="h-6 w-6" />
+                  <!-- American Express -->
+                  <font-awesome-icon icon="fab fa-cc-amex" class="h-6 w-6" />
+                </div>
+                {{ $t('manageSubscription') }}
+              </button>
+              <label class="text-sm text-gray-500" v-if="license.stripe_cancel_at">{{ $t('cancelAt', {
+                date: new Date(license.stripe_cancel_at *
+                  1000).toLocaleString()
+              }) }}</label>
+              <label class="text-sm text-gray-500" v-else>{{ $t('renewAt', {
+                date: new Date(license.stripe_renew_at *
+                  1000).toLocaleString()
+              }) }}</label>
+            </div>
+            <div class="flex items-center flex-row gap-2 w-full" v-else>
               <label class="font-bold w-28">{{ $t('licenseCode') }}: </label>
-              <div class="relative grow">
-                <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" :disabled="license.leftdays > 0"
-                  class="input input-md w-full input-bordered ring-1 pr-20" v-model="license.license" />
-                <button @click="activate" class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none"
-                  v-if="license.leftdays <= 0">
-                  {{ $t('activate') }}
-                </button>
-                <button @click="copyText(license.license, $event)"
-                  class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none" v-else>
-                  {{ $t('copy') }}
-                </button>
-              </div>
-              <div class="relative grow">
+              <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" :disabled="license.leftdays > 0"
+                class="input input-md input-bordered ring-1" v-model="license.license_code" />
+              <button @click="activate" class="btn btn-md btn-primary rounded-l-none" v-if="license.leftdays <= 0">
+                {{ $t('activate') }}
+              </button>
+              <button @click="copyText(license.license_code, $event)" class="btn btn-md btn-primary rounded-l-none"
+                v-else>
+                {{ $t('copy') }}
+              </button>
+              <label class="text-sm text-gray-500" v-if="license.leftdays > 0">{{ $t('expiredAt', {
+                date: new Date(new Date().getTime() + license.leftdays * 24 * 60 * 60 * 1000).toLocaleString()
+              }) }}</label>
+
+              <!-- <div class="relative grow">
                 <input type="text" :placeholder="$t('affiliateCode')" :disabled="license.affiliate_discount > 0"
                   class="input input-md w-full input-bordered ring-1 pr-20" v-model="license.affiliate_code" />
                 <span v-if="license.affiliate_discount > 0"
@@ -58,10 +84,8 @@
                   class="absolute right-0 top-0 btn btn-md btn-primary h-full rounded-l-none" v-else>
                   {{ $t('copy') }}
                 </button>
-              </div>
+              </div> -->
             </div>
-
-
           </div>
           <div class="flex items-center flex-col w-full rounded-lg p-4" v-if="order && order.status == 0">
             <div class="flex items-center justify-center flex-row w-full">
@@ -82,71 +106,134 @@
                 {{ $t('copy') }}
               </button>
             </div>
-            <label class="text-error font-bold mt-2">{{ $t('usdtTip', {
-              network: order.network, amount: order.amount
-            }) }}</label>
+            <label class="text-error font-bold mt-2" v-if="order.network != 'STRIPE'">
+              {{ $t('usdtTip', { network: order.network, amount: order.amount }) }}
+            </label>
+            <label class="text-error font-bold mt-2" v-if="order.network == 'STRIPE'">
+              {{ $t('stripeTip') }}
+            </label>
             <label class="text-success font-bold mt-2">{{ $t('afterPayTip') }}</label>
             <div class="flex items-center justify-center flex-row w-full">
               <progress class="progress progress-primary" :value="refreshTime" max="10"></progress>
             </div>
 
           </div>
-          <div class="mx-auto mt-2 grid  grid-cols-3 items-center gap-y-6 w-full" v-else>
-            <div v-for="(tier, tierIdx) in tiers" :key="tier.id"
-              :class="[tier.featured ? 'relative bg-neutral shadow-2xl' : 'bg-base-100', 'rounded-3xl p-8 ring-1 ring-info ring-opacity-50']">
-              <h3 :id="tier.id" :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-base/7 font-semibold']">
-                {{ $t(tier.name) }}
+
+          <div class="mx-auto mt-2 grid  grid-cols-3 items-center gap-y-6 w-full gap-x-2"
+            v-else-if="license.is_stripe_active == 0">
+            <!-- 试用 -->
+            <div class="relative bg-primary shadow-2xl rounded-3xl p-8 ring-1 ring-info ring-opacity-50">
+              <h3 class="text-primary-content font-semibold">
+                {{ $t('trial') }}
               </h3>
               <p class="mt-4 flex items-baseline gap-x-2">
-                <template v-if="license.affiliate_discount > 0 && tier.price != '$0'">
-                  <span :class="[tier.featured ? 'text-accent/50' : 'text-primary/50', 'text-2xl line-through']">{{
-                    tier.price }}</span>
-                  <span
-                    :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-5xl font-semibold tracking-tight']">
-                    ${{ (tier.price.replace('$', '') * (1 - license.affiliate_discount / 100)).toFixed(0) }}
-                  </span>
-                </template>
-                <span v-else
-                  :class="[tier.featured ? 'text-accent' : 'text-primary', 'text-5xl font-semibold tracking-tight']">
-                  {{ tier.price }}
+
+                <span class="text-primary-content text-5xl font-semibold tracking-tight">
+                  $0
                 </span>
-                <span :class="[tier.featured ? 'text-accent' : 'text-primary']">/ {{ $t(tier.duration) }}</span>
+                <span class=" text-primary-content">3 {{ $t('days') }}</span>
               </p>
-              <p :class="[tier.featured ? 'text-neutral-content' : 'text-base-content', 'mt-6 text-base/7']">
-                {{ $t(tier.description) }}
+              <p class="text-primary-content mt-6 text-base/7">
+                {{ $t('trialDescription') }}
               </p>
-              <ul role="list"
-                :class="[tier.featured ? 'text-neutral-content' : 'text-base-content', 'mt-8 space-y-3 text-md/6']">
-                <li v-for="feature in tier.features" :key="feature" class="flex gap-x-3">
-                  <CheckIcon :class="[tier.featured ? 'text-accent' : 'text-primary', 'h-6 w-5 flex-none']"
-                    aria-hidden="true" />
-                  {{ $t(feature) }}
+              <ul role="list" class="mt-8 space-y-3 text-md/6 text-primary-content">
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-primary-content h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('unlimitedDevices') }}
+                </li>
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-primary-content h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('allFeatures') }}
+                </li>
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-primary-content h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('customerSupport') }}
                 </li>
               </ul>
-              <button @click="tier.onclicks[0]" :aria-describedby="tier.id"
-                :class="[tier.featured ? 'btn-primary text-primary-content shadow-xs' :
-                  'btn-accent text-accent-content shadow-xs',
-                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-8 rounded-md px-3.5 py-2.5 text-center text-md font-semibold']">
-                <!-- github icon -->
-                <font-awesome-icon v-if="tier.name === 'free'" icon="fab fa-github" class="h-6 w-6" />
+              <button @click="createTrialOrderStripe"
+                class="btn btn-wide btn-primary ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
+                <!-- 支付卡图标集合 -->
+                <div class="flex -space-x-4 overflow-hidden">
+                  <!-- 银行卡图标 -->
+                  <font-awesome-icon icon="fas fa-credit-card" class="h-10 w-10 text-primary-content" />
+                  <!-- Visa图标 -->
+                  <font-awesome-icon icon="fab fa-cc-visa" class="h-10 w-10 text-primary-content" />
+                  <!-- Mastercard图标 -->
+                  <font-awesome-icon icon="fab fa-cc-mastercard" class="h-10 w-10 text-primary-content" />
+                  <!-- American Express -->
+                  <font-awesome-icon icon="fab fa-cc-amex" class="h-10 w-10 text-primary-content" />
+                </div>
+                {{ $t('card') }}
+              </button>
 
+
+            </div>
+            <!-- 按月付费 -->
+            <div class="relative bg-neutral shadow-2xl rounded-3xl p-8 ring-1 ring-info ring-opacity-50">
+              <h3 class="text-accent font-semibold">
+                {{ $t('monthly') }}
+              </h3>
+              <p class="mt-4 flex items-baseline gap-x-2">
+                <template v-if="license.affiliate_discount > 0">
+                  <span class="text-accent/50 text-2xl line-through">$99</span>
+                  <span class="text-accent text-5xl font-semibold tracking-tight">
+                    ${{ (99 * (1 - license.affiliate_discount / 100)).toFixed(0) }}
+                  </span>
+                </template>
+                <span v-else class="text-accent text-5xl font-semibold tracking-tight">
+                  $99
+                </span>
+                <span class=" text-accent">/ {{ $t('month') }}</span>
+              </p>
+              <p class="text-neutral-content mt-6 text-base/7">
+                {{ $t('monthlyDescription') }}
+              </p>
+              <ul role="list" class="mt-8 space-y-3 text-md/6 text-neutral-content">
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-accent h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('unlimitedDevices') }}
+                </li>
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-accent h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('allFeatures') }}
+                </li>
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-accent h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('customerSupport') }}
+                </li>
+              </ul>
+              <button @click="createMonthOrderStripe"
+                class="btn btn-wide btn-primary ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
+                <!-- 支付卡图标集合 -->
+                <div class="flex -space-x-4 overflow-hidden">
+                  <!-- 银行卡图标 -->
+                  <font-awesome-icon icon="fas fa-credit-card" class="h-10 w-10 text-primary-content" />
+                  <!-- Visa图标 -->
+                  <font-awesome-icon icon="fab fa-cc-visa" class="h-10 w-10 text-primary-content" />
+                  <!-- Mastercard图标 -->
+                  <font-awesome-icon icon="fab fa-cc-mastercard" class="h-10 w-10 text-primary-content" />
+                  <!-- American Express -->
+                  <font-awesome-icon icon="fab fa-cc-amex" class="h-10 w-10 text-primary-content" />
+                </div>
+                {{ $t('card') }}
+              </button>
+              <button @click="createMonthOrderTrc20"
+                class="btn btn-wide btn-secondary ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-3.5 py-2.5 text-center text-md font-semibold">
                 <!-- tron network icon -->
-                <svg class="fill-current text-error h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
-                  v-else>
+                <svg class="fill-current text-secondary-content h-6 w-6" xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 64 64">
                   <g id="tron">
                     <path class="cls-1"
                       d="M61.55,19.28c-3-2.77-7.15-7-10.53-10l-.2-.14a3.82,3.82,0,0,0-1.11-.62l0,0C41.56,7,3.63-.09,2.89,0a1.4,1.4,0,0,0-.58.22L2.12.37a2.23,2.23,0,0,0-.52.84l-.05.13v.71l0,.11C5.82,14.05,22.68,53,26,62.14c.2.62.58,1.8,1.29,1.86h.16c.38,0,2-2.14,2-2.14S58.41,26.74,61.34,23a9.46,9.46,0,0,0,1-1.48A2.41,2.41,0,0,0,61.55,19.28ZM36.88,23.37,49.24,13.12l7.25,6.68Zm-4.8-.67L10.8,5.26l34.43,6.35ZM34,27.27l21.78-3.51-24.9,30ZM7.91,7,30.3,26,27.06,53.78Z" />
                   </g>
                 </svg>
-                {{ $t(tier.buttons[0]) }}
+                {{ $t('usdttrc20') }}
               </button>
-              <button @click="tier.onclicks[1]" :aria-describedby="tier.id" v-if="tier.buttons[1]"
-                :class="[tier.featured ? 'btn-secondary text-secondary-content shadow-xs' :
-                  'btn-neutral text-neutral-content shadow-xs',
-                  'btn btn-wide ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2']">
+              <button @click="createMonthOrderBep20"
+                class="btn btn-wide btn-success ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
                 <!-- bsc network icon -->
 
-                <svg class="fill-current text-orange-300 h-6 w-6" xmlns="http://www.w3.org/2000/svg"
+                <svg class="fill-current text-secondary-content h-6 w-6" xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 336.41 337.42">
                   <g id="Layer_2" data-name="Layer 2">
                     <g id="Layer_1-2" data-name="Layer 1">
@@ -157,8 +244,89 @@
                     </g>
                   </g>
                 </svg>
-                {{ $t(tier.buttons[1]) }}
+                {{ $t('usdtbep20') }}
               </button>
+
+            </div>
+            <!-- 按年付费 -->
+            <div class="relative bg-success shadow-2xl rounded-3xl p-8 ring-1 ring-info ring-opacity-50">
+              <h3 class="text-success-content font-semibold">
+                {{ $t('yearly') }}
+              </h3>
+              <p class="mt-4 flex items-baseline gap-x-2">
+                <template v-if="license.affiliate_discount > 0">
+                  <span class="text-success-content/50 text-2xl line-through">$599</span>
+                  <span class="text-success-content text-5xl font-semibold tracking-tight">
+                    ${{ (599 * (1 - license.affiliate_discount / 100)).toFixed(0) }}
+                  </span>
+                </template>
+                <span v-else class="text-success-content text-5xl font-semibold tracking-tight">
+                  $599
+                </span>
+                <span class=" text-success-content">/ {{ $t('year') }}</span>
+              </p>
+              <p class="text-success-content mt-6 text-base/7">
+                {{ $t('yearlyDescription') }}
+              </p>
+              <ul role="list" class="mt-8 space-y-3 text-md/6 text-success-content">
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-success-content h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('unlimitedDevices') }}
+                </li>
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-success-content h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('allFeatures') }}
+                </li>
+                <li class="flex gap-x-3">
+                  <CheckIcon class="text-success-content h-6 w-5 flex-none" aria-hidden="true" />
+                  {{ $t('customerSupport') }}
+                </li>
+              </ul>
+              <button @click="createYearOrderStripe"
+                class="btn btn-wide btn-primary ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
+                <!-- 支付卡图标集合 -->
+                <div class="flex -space-x-4 overflow-hidden">
+                  <!-- 银行卡图标 -->
+                  <font-awesome-icon icon="fas fa-credit-card" class="h-10 w-10 text-primary-content" />
+                  <!-- Visa图标 -->
+                  <font-awesome-icon icon="fab fa-cc-visa" class="h-10 w-10 text-primary-content" />
+                  <!-- Mastercard图标 -->
+                  <font-awesome-icon icon="fab fa-cc-mastercard" class="h-10 w-10 text-primary-content" />
+                  <!-- American Express -->
+                  <font-awesome-icon icon="fab fa-cc-amex" class="h-10 w-10 text-primary-content" />
+                </div>
+                {{ $t('card') }}
+              </button>
+              <button @click="createYearOrderTrc20"
+                class="btn btn-wide btn-secondary ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-3.5 py-2.5 text-center text-md font-semibold">
+                <!-- tron network icon -->
+                <svg class="fill-current text-secondary-content h-6 w-6" xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 64 64">
+                  <g id="tron">
+                    <path class="cls-1"
+                      d="M61.55,19.28c-3-2.77-7.15-7-10.53-10l-.2-.14a3.82,3.82,0,0,0-1.11-.62l0,0C41.56,7,3.63-.09,2.89,0a1.4,1.4,0,0,0-.58.22L2.12.37a2.23,2.23,0,0,0-.52.84l-.05.13v.71l0,.11C5.82,14.05,22.68,53,26,62.14c.2.62.58,1.8,1.29,1.86h.16c.38,0,2-2.14,2-2.14S58.41,26.74,61.34,23a9.46,9.46,0,0,0,1-1.48A2.41,2.41,0,0,0,61.55,19.28ZM36.88,23.37,49.24,13.12l7.25,6.68Zm-4.8-.67L10.8,5.26l34.43,6.35ZM34,27.27l21.78-3.51-24.9,30ZM7.91,7,30.3,26,27.06,53.78Z" />
+                  </g>
+                </svg>
+                {{ $t('usdttrc20') }}
+              </button>
+              <button @click="createYearOrderBep20"
+                class="btn btn-wide btn-success ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
+                <!-- bsc network icon -->
+
+                <svg class="fill-current text-secondary-content h-6 w-6" xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 336.41 337.42">
+                  <g id="Layer_2" data-name="Layer 2">
+                    <g id="Layer_1-2" data-name="Layer 1">
+                      <path class="cls-1" d="M168.2.71l41.5,42.5L105.2,147.71l-41.5-41.5Z" />
+                      <path class="cls-1" d="M231.2,63.71l41.5,42.5L105.2,273.71l-41.5-41.5Z" />
+                      <path class="cls-1" d="M42.2,126.71l41.5,42.5-41.5,41.5L.7,169.21Z" />
+                      <path class="cls-1" d="M294.2,126.71l41.5,42.5L168.2,336.71l-41.5-41.5Z" />
+                    </g>
+                  </g>
+                </svg>
+                {{ $t('usdtbep20') }}
+              </button>
+
             </div>
           </div>
         </div>
@@ -167,8 +335,8 @@
       </div>
     </div>
     <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
+      <button>close</button>
+    </form>
   </dialog>
 </template>
 <script>
@@ -201,68 +369,13 @@ export default {
   },
   data() {
     return {
-      tiers: [
-        {
-          name: 'free',
-          id: 'tier-free',
-          price: '$0',
-          duration: 'forever',
-          description: "freeDescription",
-          features: [
-            'freeLimited',
-            'allFeatures',
-          ],
-          featured: false,
-          buttons: [(this.license.github_starred == 1) ? 'authorized' : 'startWithGithub'],
-          onclicks: [this.startGitHubAuth]
-        },
-        {
-          name: 'monthly',
-          id: 'tier-monthly',
-          price: '$99',
-          duration: 'month',
-          description: 'monthlyDescription',
-          features: [
-            'unlimitedDevices',
-            'allFeatures',
-            'customerSupport',
-          ],
-          featured: true,
-          buttons: ['usdttrc20', 'usdtbep20'],
-          onclicks: [this.createMonthOrderTrc20, this.createMonthOrderBep20]
-        },
-        {
-          name: 'yearly',
-          id: 'tier-yearly',
-          price: '$599',
-          duration: 'year',
-          description: 'yearlyDescription',
-          features: [
-            'unlimitedDevices',
-            'allFeatures',
-            'customerSupport',
-          ],
-          featured: false,
-          buttons: ['usdttrc20', 'usdtbep20'],
-          onclicks: [this.createYearOrderTrc20, this.createYearOrderBep20]
-        },
-      ],
       remainingTime: 0,
       order: null,
       interval: null,
       refreshTime: 10,
     }
   },
-  watch: {
-    'license.github_starred': {
-      handler: function (val) {
-        console.log('github_starred:', val)
-        this.tiers[0].buttons[0] = (val == 1) ? 'authorized' : 'startWithGithub'
-      },
-      deep: true
-    },
 
-  },
   computed: {
 
     formattedTime() {
@@ -273,20 +386,7 @@ export default {
   },
   methods: {
 
-    async startGitHubAuth() {
-      try {
-        // 打开GitHub授权页面
-        const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-        const apiUrl = 'http://127.0.0.1:' + port;
-        await open(`https://github.com/login/oauth/authorize?client_id=Ov23lign745XEd3b71WI&redirect_uri=${apiUrl}/github_auth_callback&scope=user%20public_repo`);
-      } catch (error) {
-        await this.$emiter('NOTIFY', {
-          type: 'error',
-          message: this.$t('githubAuthErrorMessage'),
-          timeout: 2000
-        });
-      }
-    },
+
 
     async activate(event) {
       event.target.innerText = this.$t('activating')
@@ -415,12 +515,16 @@ export default {
 
     },
     async showOrder(order) {
-      console.log('showOrder:', order)
       //parse json
       this.order = JSON.parse(order)
+      console.log('showOrder:', this.order)
       if (this.order.status != 0) {
+        console.log('order status is not 0')
         return;
       }
+
+      console.log('start to get qrcode')
+
       if (this.interval) {
         clearInterval(this.interval);
       }
@@ -444,19 +548,57 @@ export default {
       }, 1000);
     },
     async createMonthOrderTrc20(event) {
-      await this.createOrder(99, 'monthly', 'TRC20', event)
+      await this.createOrder(99, 'month', 'TRC20', event)
     },
     async createMonthOrderBep20(event) {
-      await this.createOrder(99, 'monthly', 'BEP20', event)
+      await this.createOrder(99, 'month', 'BEP20', event)
     },
     async createYearOrderTrc20(event) {
-      await this.createOrder(599, 'yearly', 'TRC20', event)
+      await this.createOrder(599, 'year', 'TRC20', event)
     },
     async createYearOrderBep20(event) {
-      await this.createOrder(599, 'yearly', 'BEP20', event)
+      await this.createOrder(599, 'year', 'BEP20', event)
+    },
+    async createTrialOrderStripe(event) {
+      await this.createStripeOrder(99, 'month', true, event)
+    },
+    async createMonthOrderStripe(event) {
+      await this.createStripeOrder(99, 'month', false, event)
+    },
+    async createYearOrderStripe(event) {
+      await this.createStripeOrder(599, 'year', false, event)
+    },
+    async createStripeOrder(price, plan, trial, event) {
+      event.target.disabled = true
+      this.$service.get_stripe_checkout_url({
+        price: price,
+        plan: plan,
+        trial: trial
+      }).then(async (res) => {
+        event.target.disabled = false
+        console.log('createStripeOrder:', JSON.stringify(res))
+        if (res.code != 0) {
+          await this.$emiter('NOTIFY', {
+            type: 'error',
+            message: res.data,
+            timeout: 2000
+          });
+        } else {
+          console.log('get_stripe_checkout_url:', res.data)
+          event.target.disabled = false
+          await open(JSON.parse(res.data))
+        }
+      }).catch(async (err) => {
+        event.target.disabled = false
+        console.error('get_stripe_checkout_url error:', err)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('getStripeCheckoutUrlErrorMessage'),
+          timeout: 2000
+        });
+      });
     },
     async createOrder(price, plan, network, event) {
-      event.target.innerText = this.$t('fetching')
       event.target.disabled = true
       const finalPrice = Number(price * (1 - this.license.affiliate_discount / 100).toFixed(0));
       this.$service.create_order({
@@ -464,8 +606,7 @@ export default {
         amount: finalPrice,
         plan: plan
       }).then(async (res) => {
-        console.log(`create_order: ${JSON.stringify(res)}`);
-        event.target.innerText = this.$t('pay')
+        console.log('create_order:', res.data)
         event.target.disabled = false
         if (res.code != 0) {
           await message(res.data)
@@ -480,22 +621,20 @@ export default {
           timeout: 2000
         });
       });
-
-
     },
+
     async show() {
+      await this.$emiter('LICENSE', { reload: true })
       this.$refs.buy_liscense_dialog.showModal()
-      console.log('license:', this.license)
       await this.getOrder()
     },
     async copyText(text, event) {
       await writeText(text)
-      event.target.innerText = this.$t('copied')
-      event.target.classList.add('btn-success')
-      setTimeout(() => {
-        event.target.innerText = this.$t('copy')
-        event.target.classList.remove('btn-success')
-      }, 1000)
+      await this.$emiter('NOTIFY', {
+        type: 'success',
+        message: this.$t('copied'),
+        timeout: 2000
+      });
     },
     async applyAffiliateCode(event) {
       event.target.innerText = this.$t('fetching')
@@ -525,9 +664,43 @@ export default {
       event.target.innerText = this.$t('apply')
       event.target.disabled = false
     },
+
+    async manageStripeSubscription() {
+      try {
+        // 获取管理订阅的URL
+        this.$service.get_stripe_portal_url().then(async (res) => {
+          if (res.code === 0) {
+            const portalUrl = JSON.parse(res.data);
+            console.log('portalUrl:', portalUrl)
+            // 打开Stripe订阅管理页面
+            await open(portalUrl);
+          } else {
+            await this.$emiter('NOTIFY', {
+              type: 'error',
+              message: res.data,
+              timeout: 2000
+            });
+          }
+        });
+      } catch (error) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('manageSubscriptionErrorMessage'),
+          timeout: 2000
+        });
+      }
+    },
   },
   async mounted() {
-
+    await this.$listen('STRIPE_PAYMENT_SUCCESS', async (e) => {
+      console.log('STRIPE_PAYMENT_SUCCESS:', e)
+      await this.$emiter('LICENSE', { reload: true })
+      await this.paymentSuccess()
+      await message(this.$t('paymentSuccess'))
+    })
+    await this.$listen('STRIPE_PAYMENT_CANCEL', async (e) => {
+      console.log('STRIPE_PAYMENT_CANCEL:', e)
+    })
   }
 }
 </script>

@@ -102,7 +102,6 @@ export default {
     async mounted() {
         this.countTasks();
         await this.$listen('reload_tasks', async (e) => {
-            console.log('reload_tasks');
             this.countTasks();
         });
     }

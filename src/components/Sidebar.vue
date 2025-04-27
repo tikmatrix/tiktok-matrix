@@ -38,7 +38,7 @@
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(0)"
                 :checked="isSelectAll(0)" />
               <span class="label-text text-primary text-md">{{ $t('allDevices') }} ({{ groupDevices[0].length
-                }})</span>
+              }})</span>
             </label>
 
             <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-md text-right flex-1">
@@ -73,7 +73,7 @@
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(item.id)"
                 :checked="isSelectAll(item.id)" />
               <span class="label-text text-primary  text-md">{{ item.name }}({{ groupDevices[item.id].length
-              }})</span>
+                }})</span>
             </label>
             <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
               @click="renameGroup(item)"></font-awesome-icon>
@@ -399,7 +399,7 @@ export default {
           });
         })
     },
-    
+
     async run_now_by_account(name, args = {}) {
       if (this.selection.length == 0) {
         await this.$emiter('NOTIFY', {
@@ -473,7 +473,6 @@ export default {
       this.refreshSelections()
     },
     async refreshSelections() {
-      console.log('refreshSelections')
       this.groupDevices[0] = this.devices;
       for (let i = 0; i < this.groups.length; i++) {
         this.selections[this.groups[i].id] = []
@@ -742,7 +741,7 @@ export default {
     this.refreshSelections()
     this.listeners.push(await this.$listen('openDevice', async (e) => {
       console.log("receive openDevice: ", e.payload)
-      this.selection=[...this.selection.filter(serial => serial !== e.payload.real_serial),e.payload.real_serial]
+      this.selection = [...this.selection.filter(serial => serial !== e.payload.real_serial), e.payload.real_serial]
       this.refreshSelections()
     }))
     this.listeners.push(await this.$listen('closeDevice', (e) => {
@@ -753,7 +752,7 @@ export default {
       this.adb_command(e.payload.args)
 
     }))
-   
+
     this.listeners.push(await this.$listen('run_now_by_account', (e) => {
       console.log("receive run_now_by_account: ", e.payload)
       this.run_now_by_account(e.payload.name, e.payload.args)
@@ -775,7 +774,7 @@ export default {
         devices: [...this.selection],
         data: e.payload
       }
-      
+
       await this.$emiter('syncEventData', new_data)
     }))
 

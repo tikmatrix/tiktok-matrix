@@ -23,9 +23,9 @@ const request = async function request(config) {
     responseType: ResponseType.JSON,
     contentType: 'application/json'
   }
-  console.log(`request: ${queryUrl} options: ${JSON.stringify(options)}`)
+  // console.log(`request: ${queryUrl} options: ${JSON.stringify(options)}`)
   const response = await fetch(`${queryUrl}`, options,);
-  console.log(`response status: ${response.status}`)
+  // console.log(`response status: ${response.status}`)
   if (response.status == 500 || response.status == 400) {
     await emit('NOTIFY', {
       type: 'error',
