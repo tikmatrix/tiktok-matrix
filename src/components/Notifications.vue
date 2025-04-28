@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed top-14 right-4 z-50 space-y-2">
+    <div class="fixed top-14 right-4 z-[9999] space-y-2">
         <transition-group name="notification">
             <div v-for="notification in notifications" :key="notification.id"
                 class="bg-base-100 shadow-lg rounded-lg p-3 max-w-md flex items-start"

@@ -49,5 +49,7 @@ const api = {
   edit_title: '/api/material/update_title',
   clear_gallery: '/api/clear_gallery',
   scrape_now: '/api/scrape_now',
+  get_stripe_portal_url: '/api/get_stripe_portal_url',
+  get_stripe_checkout_url: '/api/get_stripe_checkout_url',
 }
 export default api

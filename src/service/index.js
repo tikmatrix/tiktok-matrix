@@ -481,4 +481,18 @@ export function scrape_now(data) {
   })
 }
 
+export function get_stripe_portal_url() {
+  return request({
+    method: 'get',
+    url: api.get_stripe_portal_url
+  })
+}
+
+export function get_stripe_checkout_url(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.get_stripe_checkout_url
+  })
+}
 

@@ -7,8 +7,9 @@
       <ManageDevices :devices="devices" :settings="settings" />
     </div>
     <AppDialog :devices="devices" :settings="settings" :selecedDevices="selecedDevices" />
-    <Notifications />
   </div>
+  <Notifications />
+
 </template>
 
 <script>
@@ -93,6 +94,10 @@ export default {
           }
         } else if (json.action === 'reload_license') {
           await this.$emiter('LICENSE', { reload: true })
+        } else if (json.action === 'stripe_payment_success') {
+          await this.$emiter('STRIPE_PAYMENT_SUCCESS', {})
+        } else if (json.action === 'stripe_payment_cancel') {
+          await this.$emiter('STRIPE_PAYMENT_CANCEL', {})
         } else if (json.action === 'task_status') {
           let serial = json.serial
           let status = json.status

@@ -25,6 +25,7 @@ app.use(VueDragSelect)
 app.config.errorHandler = (err, vm, info) => {
     console.error('Vue错误:', err);
     console.error('错误信息:', info);
+    console.error('错误堆栈:', err.stack);
     emit('NOTIFY', {
         type: 'error',
         message: `Vue Error: ${err.message}, Info: ${info}`,

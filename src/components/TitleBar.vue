@@ -169,19 +169,16 @@
             </label>
             <!-- 许可证状态 -->
             <button
-                class="btn btn-md flex items-center gap-1 px-3 py-1 rounded-full transition-transform duration-300 transform hover:scale-105"
+                class="btn btn-md flex items-center gap-2 px-4 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md"
                 :class="[
                     isLoadingLicense ? 'btn-neutral' :
-                        licenseData.leftdays > 0 ? 'btn-success text-white' : 'btn-error text-white'
-                ]" @click="showLicenseDialog" :title="isLoadingLicense ? $t('loadingLicense') :
-                    licenseData.leftdays > 0 ? $t('licenseValid', { days: licenseData.leftdays }) :
-                        $t('activateLicense')">
+                        is_licensed() ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-none' : 'btn-error text-white'
+                ]" @click="showLicenseDialog">
                 <font-awesome-icon v-if="isLoadingLicense" icon="fa-solid fa-spinner" class="h-4 w-4 animate-spin" />
-                <font-awesome-icon v-else :icon="licenseData.leftdays > 0 ? 'fa fa-key' : 'fa fa-lock'"
-                    class="h-4 w-4" />
+                <font-awesome-icon v-else-if="is_licensed()" icon="fa-solid fa-crown" class="h-5 w-5 text-yellow-200" />
+                <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense">{{ $t('loading') }}</span>
-                <span v-else-if="licenseData.leftdays > 0">{{ $t('licensed') }} ({{ licenseData.leftdays }} {{
-                    $t('days') }})</span>
+                <span v-else-if="is_licensed()" class="font-semibold">{{ $t('licensed') }}</span>
                 <span v-else>{{ $t('unlicensed') }}</span>
             </button>
             <!-- 语言选择 -->
@@ -302,6 +299,9 @@ export default {
         }
     },
     methods: {
+        is_licensed() {
+            return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active;
+        },
         async open_dir(name) {
             invoke("open_dir", {
                 name
@@ -401,18 +401,22 @@ export default {
             this.isLoadingLicense = true;
             try {
                 const res = await this.$service.get_license();
-                console.log(`loadLicense: ${JSON.stringify(res)}`);
                 if (res.code === 0) {
                     this.licenseData = JSON.parse(res.data);
-                    if (this.licenseData.leftdays <= 0 && !this.licenseData.github_starred) {
-                        this.showLicenseDialog();
-                    }
                 } else {
-                    await message(res.data, { title: 'Load License Error', type: 'error' });
+                    await this.$emiter('NOTIFY', {
+                        type: 'error',
+                        message: res.data,
+                        timeout: 2000
+                    });
                 }
                 console.log(`license: ${JSON.stringify(this.licenseData)}`);
             } catch (error) {
-                // await message(error, { title: 'Load License Error', type: 'error' });
+                await this.$emiter('NOTIFY', {
+                    type: 'error',
+                    message: error,
+                    timeout: 2000
+                });
             } finally {
                 this.isLoadingLicense = false;
             }
@@ -562,7 +566,7 @@ export default {
                         this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
                         await invoke("kill_process", { name: "PaddleOCR-json" });
                         await invoke("unzip_file", { zipPath: path, destDir: work_path });
-                    }else{
+                    } else {
                         this.check_update_dialog_title = 'PaddleOCR-json is exists';
                     }
                 } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
@@ -578,7 +582,7 @@ export default {
                         await new Promise(r => setTimeout(r, 3000));
                         await copyFile(path, path.replace('tmp', 'bin'));
                         await invoke("grant_permission", { path: `bin/${lib.name}` });
-                        
+
                     }
                 }
             } catch (e) {
@@ -622,7 +626,7 @@ export default {
             }
 
             if (e.payload.show) {
-                if (this.licenseData.leftdays <= 0 && !this.licenseData.github_starred) {
+                if (!this.is_licensed()) {
                     this.showLicenseDialog();
                 }
             }
@@ -630,7 +634,10 @@ export default {
 
         // 监听代理启动事件
         await this.$listen('agent_started', async (e) => {
-            this.loadLicense();
+            await this.loadLicense();
+            if (!this.is_licensed()) {
+                this.showLicenseDialog();
+            }
         });
 
         this.check_update();
