@@ -1,22 +1,22 @@
 <template>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
-        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-primary-content" />
-        {{ $t('openTiktok') }}
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.instagram.android.activity.MainTabActivity'] })">
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-primary-content" />
+        {{ $t('openInstagram') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
-        {{ $t('stopTiktok') }}
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-yellow-500" />
+        {{ $t('stopInstagram') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$refs.clear_cache_dialog.showModal()">
-        <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-pink-500" />
         {{ $t('clearData') }}
     </button>
 
-    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="grantTikTok">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="grantInstagram">
         <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />
-        {{ $t('grantTikTok') }}
+        {{ $t('grantInstagram') }}
     </button>
 
 
@@ -220,7 +220,7 @@ export default {
         },
 
 
-        async grantTikTok() {
+        async grantInstagram() {
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.READ_EXTERNAL_STORAGE'] })
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.WRITE_EXTERNAL_STORAGE'] })
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.RECORD_AUDIO'] })

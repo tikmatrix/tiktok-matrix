@@ -9,9 +9,9 @@
           <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
             <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
           </button>
-          <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
+          <!-- <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
             <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
-          </button>
+          </button> -->
           <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
             <label class="label cursor-pointer flex items-center space-x-2">
               <span class="text-md font-medium">{{ $t('autoWakeUp') }}</span>
