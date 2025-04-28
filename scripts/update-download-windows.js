@@ -11,7 +11,8 @@ let response = await fetch('https://pro.api.tikmatrix.com/ci/update_download_url
         'Content-Type': 'text/plain',
         'Content-Length': body.length,
         'Authorization': 'Bearer ' + process.env.API_KEY,
-        'X-Platform': 'windows'
+        'X-Platform': 'windows',
+        'X-App': 'tikmatrix'
     },
     body: body
 })
