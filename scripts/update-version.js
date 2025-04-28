@@ -14,7 +14,11 @@ let body = JSON.stringify({
         },
         "darwin-x86_64": {
             "signature": signature,
-            "url": `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.dmg`
+            "url": `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_universal.dmg`
+        },
+        "darwin-arm64": {
+            "signature": signature,
+            "url": `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_universal.dmg`
         }
     }
 }, null, 2)
@@ -23,7 +27,8 @@ let response = await fetch('https://pro.api.tikmatrix.com/ci/update_version_info
     headers: {
         'Content-Type': 'text/plain',
         'Content-Length': body.length,
-        'Authorization': 'Bearer ' + process.env.API_KEY
+        'Authorization': 'Bearer ' + process.env.API_KEY,
+        'X-App': 'tikmatrix'
     },
     body: body
 })
