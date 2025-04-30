@@ -9,6 +9,13 @@ export function auth({ password }) {
     }
   })
 }
+export function tiktok_query(data) {
+  return request({
+    method: 'post',
+    url: api.tiktok_query,
+    data: data
+  })
+}
 
 export function get_devices() {
   return request({

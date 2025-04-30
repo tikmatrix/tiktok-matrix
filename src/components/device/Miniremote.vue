@@ -181,7 +181,6 @@ export default {
       return 'status-warning'
     },
     getTaskStatusTextColor() {
-      console.log('device.task_status:', this.device.task_status)
       if (this.device.task_status == -1) {
         return 'text-warning'
       }

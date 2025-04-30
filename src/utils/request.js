@@ -26,10 +26,10 @@ const request = async function request(config) {
   // console.log(`request: ${queryUrl} options: ${JSON.stringify(options)}`)
   const response = await fetch(`${queryUrl}`, options,);
   // console.log(`response status: ${response.status}`)
-  if (response.status == 500 || response.status == 400) {
+  if (response.status >=400) {
     await emit('NOTIFY', {
       type: 'error',
-      message: response.data,
+      message: `code: ${response.status}, message: ${response.data}`,
       timeout: 2000
     });
     return { code: 500, data: [] }

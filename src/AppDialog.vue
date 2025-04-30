@@ -1,6 +1,6 @@
 <template>
     <dialog ref="page_dialog" class="modal">
-      <div class="modal-box w-11/12 max-w-6xl">
+      <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
         <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
         <TikTokSettings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open"/>
         <TrainSettings v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" :group="selectedItem.group" />
