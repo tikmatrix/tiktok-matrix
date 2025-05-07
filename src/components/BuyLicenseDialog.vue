@@ -392,7 +392,7 @@ export default {
       event.target.innerText = this.$t('activating')
       event.target.disabled = true
       this.$service.activate_license({
-        'license_code': this.license.license,
+        'license_code': this.license.license_code,
       }).then(async (res) => {
         console.log(`activate_license: ${JSON.stringify(res)}`);
         event.target.innerText = this.$t('activate')
