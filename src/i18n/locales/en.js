@@ -1,5 +1,10 @@
 export default {
   taskDuration: 'Task Duration',
+  taskArgs: 'Task Args',
+  custom: 'Custom',
+  enableSchedule: 'Enable Schedule',
+  enableScheduleTips: 'Enable schedule to run tasks at the specified time',
+  scheduleTime: 'Schedule Time',
   clickToSelectTags: 'Click to select tags',
   materialsTagsTips: 'If you do not select tags, all materials will be used',
   addTag: 'Add Tag',

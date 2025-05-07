@@ -3,8 +3,8 @@
       <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
         <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
         <TikTokSettings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open"/>
-        <TrainSettings v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" :group="selectedItem.group" />
-        <PublishSettings v-if="selectedItem.name === 'publishSettings' && $refs.page_dialog.open" :group="selectedItem.group" />
+        <TrainSettings v-if="selectedItem.name === 'accountWarmup' && $refs.page_dialog.open" :group="selectedItem.group" />
+        <PublishSettings v-if="selectedItem.name === 'post' && $refs.page_dialog.open" :group="selectedItem.group" />
         <ManageMaterials :group="selectedItem.group"
           v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
         <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />

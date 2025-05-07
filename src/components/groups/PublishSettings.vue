@@ -1,7 +1,7 @@
 <template>
   <div class="bg-base-100 flex flex-col items-start p-4">
     <div class="flex w-full items-center gap-2 mb-2">
-      <label class="font-bold w-40">{{ $t('scheduledPublish') }}:</label>
+      <label class="font-bold w-40">{{ $t('enableSchedule') }}:</label>
       <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.auto_publish" true-value="1"
         false-value="0" />
       <div role="alert" class="alert">
@@ -9,12 +9,12 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <span>{{ $t('publishTimeTips') }}</span>
+        <span>{{ $t('enableScheduleTips') }}</span>
       </div>
     </div>
     <div>
       <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('publishTimer') }}:</label>
+        <label class="font-bold w-40">{{ $t('scheduleTime') }}:</label>
         <div class="flex flex-wrap gap-2">
           <div v-for="(time, index) in publishTimes" :key="index" class="flex items-center">
             <input type="time" class="border-2 border-gray-300 p-2 rounded" v-model="publishTimes[index]"
@@ -33,7 +33,7 @@
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('publishType') }}:</label>
+        <label class="font-bold w-40">{{ $t('contentType') }}:</label>
         <div class="flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="video" value="0" v-model="mygroup.publish_type"
@@ -83,7 +83,7 @@
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-4">
-        <label class="font-bold w-40">{{ $t('loadSoundWaitTime') }}:</label>
+        <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
         <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1" :marks="{5: '5'+$t('second'),  10: '10'+$t('second'),  15: '15'+$t('second'),  20: '20'+$t('second'),  25: '25'+$t('second'),  30: '30'+$t('second')}" />
         
       </div>
@@ -122,7 +122,7 @@
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('titles') }}:</label>
+        <label class="font-bold w-40">{{ $t('captions') }}:</label>
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
           :placeholder="$t('titlesTips')" autocomplete="off" v-model="mygroup.title"> </textarea>
       </div>

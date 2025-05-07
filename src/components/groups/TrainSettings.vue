@@ -2,20 +2,20 @@
   <div class="bg-base-100 flex flex-col items-start p-4">
 
     <div class="flex w-full items-center gap-2 mb-2">
-      <label class="font-bold w-40">{{ $t('scheduledTrain') }}:</label>
+      <label class="font-bold w-40">{{ $t('enableSchedule') }}:</label>
       <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.auto_train" true-value="1" false-value="0" />
       <div role="alert" class="alert">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <span>{{ $t('trainTimeTips') }}</span>
+        <span>{{ $t('enableScheduleTips') }}</span>
       </div>
     </div>
 
     <div>
       <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('trainTimer') }}:</label>
+        <label class="font-bold w-40">{{ $t('scheduleTime') }}:</label>
         <div class="flex flex-wrap gap-2">
           <div v-for="(time, index) in trainTimes" :key="index" class="flex items-center">
             <input type="time" class="border-2 border-gray-300 p-2 rounded" v-model="trainTimes[index]"
@@ -46,7 +46,7 @@
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-8">
-        <label class="font-bold w-40">{{ $t('trainDuration') }}:</label>
+        <label class="font-bold w-40">{{ $t('taskDuration') }}:</label>
         <VueSlider v-model="trainDurationInMinutes" :width="500" :min="10" :max="60" :marks="{10: '10'+$t('minute'),20: '20'+$t('minute'),30: '30'+$t('minute'),40: '40'+$t('minute'),50: '50'+$t('minute'),60: '60'+$t('minute')}" />
       </div>
       <div class="flex w-full items-center gap-2 mb-2">

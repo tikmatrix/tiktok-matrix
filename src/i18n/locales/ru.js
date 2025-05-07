@@ -1,5 +1,10 @@
 export default {
   taskDuration: 'Продолжительность задания',
+  taskArgs: 'Аргументы задания',
+  custom: 'Пользовательский',
+  enableSchedule: 'Включить расписание',
+  enableScheduleTips: 'Включить расписание для выполнения заданий в указанное время',
+  scheduleTime: 'Время расписания',
   clickToSelectTags: 'Нажмите для выбора тегов',
   materialsTagsTips: 'Если вы не выберете теги, будут использоваться все материалы',
   addTag: 'Добавить тег',

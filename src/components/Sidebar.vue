@@ -88,6 +88,20 @@
             </span>
 
           </div>
+          <div class="flex flex-row form-control items-center mt-1">
+            <button class="btn btn-md btn-primary ml-1 mb-1"
+              @click="$emiter('showDialog', { name: 'accountWarmup', group: item })">
+              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('accountWarmup') }}
+            </button>
+            <button class="btn btn-md btn-primary ml-1 mb-1"
+              @click="$emiter('showDialog', { name: 'post', group: item })">
+              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('post') }}
+            </button>
+            <button class="btn btn-md btn-primary ml-1 mb-1"
+              @click="$emiter('showDialog', { name: 'materials', group: item })">
+              <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
+            </button>
+          </div>
         </div>
 
 

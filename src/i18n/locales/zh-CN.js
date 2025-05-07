@@ -1,5 +1,10 @@
 export default {
   taskDuration: '任务时长',
+  taskArgs: '任务参数',
+  custom: '自定义',
+  enableSchedule: '启用计划',
+  enableScheduleTips: '启用计划以在指定时间执行任务',
+  scheduleTime: '计划时间',
   clickToSelectTags: '点击选择标签',
   materialsTagsTips: '如果不选择标签，将默认使用素材库中的所有素材',
   addTag: '添加标签',
