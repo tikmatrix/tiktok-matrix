@@ -31,7 +31,7 @@
             </div>
             <!-- 显示管理Stripe订阅按钮 -->
             <div class="flex items-center flex-row gap-2 w-full" v-if="license.is_stripe_active == 1">
-              <button @click="manageStripeSubscription" class="btn btn-wide btn-primary">
+              <button @click="manageStripeSubscription" class="btn btn-wide btn-primary whitespace-nowrap">
                 <!-- 支付卡图标集合 -->
                 <div class="flex -space-x-2 overflow-hidden">
                   <!-- 银行卡图标 -->

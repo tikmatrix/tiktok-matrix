@@ -29,7 +29,7 @@ const request = async function request(config) {
   if (response.status >=400) {
     await emit('NOTIFY', {
       type: 'error',
-      message: `code: ${response.status}, message: ${response.data}`,
+      message: `url: ${queryUrl}, code: ${response.status}, message: ${response.data}`,
       timeout: 2000
     });
     return { code: 500, data: [] }

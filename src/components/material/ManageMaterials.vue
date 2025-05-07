@@ -1,56 +1,106 @@
 <template>
   <div class="w-full">
-    <Pagination :items="materials" :searchKeys="['name']" @refresh="get_materials">
+
+
+    <Pagination :items="filteredMaterials" :searchKeys="['name']" @refresh="get_materials">
       <template v-slot:buttons>
         <MyButton @click="selectMaterials" label="add" icon="fa fa-add" />
         <MyButton @click="delete_all" label="clearAll" icon="fa fa-trash" />
+        <div class="flex items-center ml-2">
+          <select class="select select-bordered w-48" v-model="selectedTagId" @change="filterByTagId">
+            <option value="">{{ $t('allTags') }}</option>
+            <option v-for="tag in tags" :key="tag.id" :value="tag.id">
+              {{ tag.name }} ({{ getTagCount(tag.id) }})
+            </option>
+          </select>
+          <div v-if="selectedTag" class="badge badge-primary py-3 px-4">
+            {{ selectedTag.name }}
+            <button class="btn btn-xs btn-ghost ml-1" @click="clearTagFilter"><i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <button class="btn ml-2 btn-primary" @click="showTagManager">{{ $t('manageTags') }}</button>
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
           <table class="table table-md">
             <thead>
               <tr>
-                <th>{{ $t('id') }}</th>
+                <th>{{ $t('number') }}</th>
                 <th>{{ $t('status') }}</th>
                 <th>{{ $t('preview') }}</th>
+                <th>{{ $t('tags') }}</th>
                 <th>{{ $t('sort') }}</th>
-                <th>{{ $t('title') }}</th>
-                <th>{{ $t('md5') }}</th>
+                <th>{{ $t('caption') }}</th>
+                <th>{{ $t('username') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(material, index) in slotProps.items" :key="index">
-                <td>{{ material.id }}</td>
+                <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
                 <td>
                   <div class="badge badge-success" v-if="material.used == '0'">{{ $t('unused') }}</div>
-                  <div class="badge badge-error" v-else>{{ $t('used') }}</div>
+                  <div class="badge badge-error" v-else @click="show_material(material)">{{ $t('used') }}</div>
                 </td>
                 <td @click="show_material(material)">
                   <div class="cursor-pointer border rounded items-center text-center flex align-middle">
                     <template v-if="material.name.endsWith('.mp4') || material.name.endsWith('.webm')">
-                      <video :src="material.name" class="w-[100px] h-[100px] max-w-none flex-1"></video>
+                      <video :src="material.preview" class="w-[90px] h-[160px] max-w-none flex-1"></video>
                     </template>
                     <template v-else>
-                      <img :src="material.name" class="w-[100px] h-[100px] max-w-none flex-1" />
+                      <img :src="material.preview" class="w-[90px] h-[160px] max-w-none flex-1" />
                     </template>
                   </div>
                 </td>
                 <td>
-                  <span class="text-md">{{ material.no }}</span>
+                  <div class="flex flex-wrap gap-1 max-w-xs">
+                    <div v-for="tag in material.tags" :key="tag.id" class="badge badge-primary badge-outline gap-1">
+                      {{ tag.name }}
+                      <button @click="removeTagFromMaterialDirect(material.id, tag.id)"
+                        class="btn btn-xs btn-circle btn-ghost">×</button>
+                    </div>
+                    <div class="dropdown dropdown-hover">
+                      <label tabindex="0" class="btn btn-xs btn-circle btn-outline">+</label>
+                      <div tabindex="0" class="dropdown-content z-[1] card card-compact shadow bg-base-100 p-2">
+                        <div class="card-body p-2 ring-info ring-1 rounded-md shadow-md">
+                          <!-- 已存在的标签列表 -->
+                          <div v-if="tags.length > 0">
+                            <div class="flex flex-wrap gap-1">
+                              <div v-for="tag in availableTagsForMaterial(material)" :key="tag.id"
+                                class="badge badge-sm badge-outline cursor-pointer hover:bg-primary hover:text-primary-content ring-primary ring-1"
+                                @click="addTagToMaterialDirect(material.id, tag.id)">
+                                {{ tag.name }}
+                              </div>
+                            </div>
+                          </div>
+                          <!-- 请先添加标签 -->
+                          <div v-else>
+                            <div class="text-xs text-warning mb-1">{{ $t('noTags') }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </td>
                 <td>
-                  <span class="text-md">{{ material.title ? material.title.substring(0, 10) + (material.title.length >
-                    10 ? '...' : '')
-                    + (material.title.length > 20 ? '...' : '') : '' }}</span>
+                  <input type="number" v-model="material.no" @change="update_material(material)"
+                    class="input input-bordered w-16" />
                 </td>
                 <td>
-                  <span class="text-md">{{ material.md5.substring(0,
-                    4) + '...' + material.md5.substring(material.md5.length - 4) }}</span>
+                  <span @click="showEditTitle(material)" class="text-md cursor-pointer" v-if="material.title">{{
+                    material.title.substring(0, 10) + (material.title.length >
+                      10 ? '...' : '')
+                    + (material.title.length > 20 ? '...' : '') }}</span>
+                  <span @click="showEditTitle(material)" class="text-md text-warning cursor-pointer" v-else>{{
+                    $t('unset') }}</span>
                 </td>
                 <td>
-                  <button class="btn btn-md btn-success" @click="showEditTitle(material)">{{ $t('editTitle')
-                  }}</button>
+                  <span @click="showEditUsername(material)" class="text-md cursor-pointer" v-if="material.username">{{
+                    material.username }}</span>
+                  <span class="text-md text-warning cursor-pointer" @click="showEditUsername(material)" v-else>{{
+                    $t('unset') }}</span>
+                </td>
+                <td>
                   <button class="bg-error hover:bg-red-700 text-primary-content btn btn-md"
                     @click="delete_material(material)">
                     {{ $t('delete') }}
@@ -63,12 +113,19 @@
       </template>
     </Pagination>
 
-    <dialog ref="detail_modal" class="modal">
+    <dialog ref="detail_modal" class="modal" @close="stopVideo">
       <div class="modal-box">
         <form method="dialog">
           <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <Detail :material="currentMaterial" />
+        <div class="m-4 flex max-h-60">
+          <template v-if="currentMaterial.name.endsWith('.mp4') || currentMaterial.name.endsWith('.webm')">
+            <video ref="video" :src="currentMaterial.name" class="rounded-lg" controls></video>
+          </template>
+          <template v-else>
+            <img :src="currentMaterial.name" class="rounded-lg" />
+          </template>
+        </div>
       </div>
     </dialog>
 
@@ -77,7 +134,6 @@
   <dialog ref="upload_dialog" class="modal">
     <div class="modal-box">
       <form method="dialog">
-        <!-- <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button> -->
       </form>
       <h3 class="font-bold text-lg">Uploading...</h3>
       <div class="py-4">
@@ -88,24 +144,89 @@
 
   <dialog ref="edit_title_dialog" class="modal">
     <div class="modal-box">
-      <form method="dialog">
-        <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button>
-      </form>
-      <h3 class="font-bold text-lg">{{ $t('editTitle') }}</h3>
+      <h3 class="font-bold text-lg">{{ $t('caption') }}</h3>
       <label class="input input-bordered flex items-center gap-2 my-4">
         <input type="text" class="grow" placeholder="" v-model="currentMaterial.title"
-          @keyup.enter="editTitle(currentMaterial)" />
+          @keyup.enter="update_material(currentMaterial)" />
       </label>
-      <div class="modal-action">
-        <form method="dialog">
-          <button class="btn btn-primary" @click="editTitle(currentMaterial)">{{ $t('save') }}</button>
-        </form>
+      <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+        <div class="flex flex-1"></div>
+        <button class="btn btn-primary" @click="update_material(currentMaterial)">{{ $t('save') }}</button>
       </div>
     </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
   </dialog>
+
+  <dialog ref="edit_username_dialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('username') }}</h3>
+
+      <label class="input">
+        @
+        <input type="text" class="grow" placeholder="" v-model="currentMaterial.username"
+          @keyup.enter="update_material(currentMaterial)" />
+
+      </label>
+      <ul class="menu bg-base-200 rounded-box w-56" v-if="usernameLikes(currentMaterial.username)">
+        <li v-for="account in usernameLikes(currentMaterial.username)" :key="account.id">
+          <a @click="currentMaterial.username = account.username.replace('@', '')">{{ account.username }}</a>
+        </li>
+      </ul>
+      <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+        <div class="flex flex-1"></div>
+        <button class="btn btn-primary" @click="update_material(currentMaterial)">{{ $t('save') }}</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
+
+  <!-- 标签管理对话框 -->
+  <dialog ref="tag_manager_dialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('manageTags') }}</h3>
+      <div class="py-4">
+        <div class="flex items-center gap-2 mb-4">
+          <input type="text" class="input input-bordered flex-1" v-model="newTagName" :placeholder="$t('newTagName')"
+            @keyup.enter="addTag" />
+          <button class="btn btn-primary" @click="addTag">{{ $t('add') }}</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>{{ $t('name') }}</th>
+                <th>{{ $t('actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="tag in tags" :key="tag.id">
+                <td>{{ tag.id }}</td>
+                <td>
+                  <input type="text" class="input input-bordered input-sm" v-model="tag.name" />
+                </td>
+                <td class="flex gap-2">
+                  <button class="btn btn-primary btn-sm" @click="updateTag(tag)">{{ $t('save') }}</button>
+                  <button class="btn btn-error btn-sm" @click="deleteTag(tag)">{{ $t('delete') }}</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
+
+
 </template>
 <script>
-import Detail from './Detail.vue'
 import MyButton from '../Button.vue'
 import Pagination from '../Pagination.vue'
 import { open } from '@tauri-apps/api/dialog';
@@ -114,7 +235,6 @@ import { convertFileSrc } from '@tauri-apps/api/tauri';
 export default {
   name: 'app',
   components: {
-    Detail,
     MyButton,
     Pagination
   },
@@ -131,29 +251,181 @@ export default {
       materials: [],
       currentMaterial: {
         name: '',
-        title: ''
+        title: '',
+        username: '',
+        tags: []
       },
       upload_progress: 10,
       max_upload_progress: 100,
+      // 新增数据
+      tags: [],
+      newTagName: '',
+      selectedTag: null,
+      currentMaterialId: null,
+      currentMaterialTags: [],
+      newTagInputs: {},
+      selectedTagId: '',
+      accounts: [],
+    }
+  },
+  computed: {
+
+    filteredMaterials() {
+      if (!this.selectedTag) {
+        return this.materials;
+      }
+      return this.materials.filter(material =>
+        material.tags && material.tags.some(tag => tag.id === this.selectedTag.id)
+      );
+    },
+    availableTags() {
+      if (!this.currentMaterialTags) return this.tags;
+      // 返回尚未添加到当前素材的标签
+      return this.tags.filter(tag =>
+        !this.currentMaterialTags.some(currentTag => currentTag.id === tag.id)
+      );
     }
   },
   methods: {
+    usernameLikes(keyword) {
+      return this.accounts.filter(account => account.username.includes(keyword)).slice(0, 10)
+    },
+    // 停止视频播放
+    stopVideo() {
+      if (this.$refs.video && this.currentMaterial.name.endsWith('.mp4') || this.currentMaterial.name.endsWith('.webm')) {
+        this.$refs.video.pause();
+        this.$refs.video.currentTime = 0;
+      }
+    },
+    // 获取所有标签
+    async getTags() {
+      try {
+        const res = await this.$service.get_tags();
+        this.tags = res.data || [];
+      } catch (err) {
+        console.error('获取标签失败', err);
+      }
+    },
+
+    // 添加新标签
+    async addTag() {
+      if (!this.newTagName.trim()) return;
+
+      try {
+        await this.$service.add_tag({
+          id: 0,
+          create_time: new Date().toISOString(),
+          name: this.newTagName.trim()
+        });
+        this.newTagName = '';
+        await this.getTags();
+      } catch (err) {
+        console.error('添加标签失败', err);
+      }
+    },
+
+    // 更新标签
+    async updateTag(tag) {
+      try {
+        await this.$service.update_tag({
+          id: tag.id,
+          name: tag.name
+        });
+        await this.getTags();
+      } catch (err) {
+        console.error('更新标签失败', err);
+      }
+    },
+
+    // 删除标签
+    async deleteTag(tag) {
+
+      try {
+        await this.$service.delete_tag({
+          id: tag.id
+        });
+        await this.getTags();
+
+        // 如果删除的是当前选中的标签，清除筛选
+        if (this.selectedTag && this.selectedTag.id === tag.id) {
+          this.clearTagFilter();
+        }
+      } catch (err) {
+        console.error('删除标签失败', err);
+      }
+    },
+
+    // 显示标签管理对话框
+    showTagManager() {
+      this.$refs.tag_manager_dialog.showModal();
+    },
+
+    // 关闭标签管理对话框
+    closeTagManager() {
+      this.$refs.tag_manager_dialog.close();
+    },
+
+    // 清除标签筛选
+    clearTagFilter() {
+      this.selectedTag = null;
+      this.selectedTagId = '';
+    },
+
+    // 根据标签筛选素材
+    filterByTag(tag) {
+      this.selectedTag = tag;
+      this.selectedTagId = tag.id;
+    },
+
+
+
+
+    // 给素材添加标签
+    async addTagToMaterial(tagId) {
+      try {
+        await this.$service.add_tag_to_material({
+          material_id: this.currentMaterialId,
+          tag_id: tagId
+        });
+
+        // 刷新当前素材的标签列表
+        const res = await this.$service.get_material_tags({
+          material_id: this.currentMaterialId
+        });
+        this.currentMaterialTags = res.data || [];
+      } catch (err) {
+        console.error('添加标签到素材失败', err);
+      }
+    },
+
+    // 从素材中移除标签
+    async removeTagFromMaterial(tagId) {
+      try {
+        await this.$service.remove_tag_from_material({
+          material_id: this.currentMaterialId,
+          tag_id: tagId
+        });
+
+        // 刷新当前素材的标签列表
+        const res = await this.$service.get_material_tags({
+          material_id: this.currentMaterialId
+        });
+        this.currentMaterialTags = res.data || [];
+      } catch (err) {
+        console.error('从素材中移除标签失败', err);
+      }
+    },
 
     showEditTitle(material) {
       this.currentMaterial = material
       this.$refs.edit_title_dialog.showModal()
     },
-    editTitle(material) {
-      this.$service
-        .edit_title({
-          id: material.id,
-          title: material.title
-        })
-        .then(() => {
-          this.$refs.edit_title_dialog.close()
-          this.get_materials()
-        })
+
+    showEditUsername(material) {
+      this.currentMaterial = material
+      this.$refs.edit_username_dialog.showModal()
     },
+
     async selectMaterials() {
       const content_type = this.group.content_type;
       const image_count = this.group.image_count;
@@ -192,26 +464,41 @@ export default {
           group_id: this.group.id
         })
         .then(() => {
+          this.$emiter('NOTIFY', {
+            type: 'success',
+            message: `${this.$t('deleted')}`,
+            timeout: 2000
+          });
           this.get_materials()
-        })
-        .catch(err => {
-          console.log(err)
         })
     },
     async get_materials() {
-      this.$service
-        .get_materials({
+      try {
+        // 获取所有素材列表
+        const all_materials = await this.$service.get_materials({
           group_id: this.group.id
-        })
-        .then(async (res) => {
-          console.log(res)
-          this.materials = res.data
-          let work_path = await appDataDir();
-          for (let i = 0; i < this.materials.length; i++) {
-            this.materials[i].name = convertFileSrc(await join(work_path, "upload", this.materials[i].name));
+        });
+        // 获取带标签的素材列表
+        const tags_materials = await this.$service.list_all_materials_with_tags();
+        this.materials = all_materials.data
+        this.materials = this.materials.map(item => {
+          const tag = tags_materials.data.find(tag => tag.material.id === item.id);
+          if (tag) {
+            item.tags = tag.tags;
+          } else {
+            item.tags = [];
           }
-        })
+          return item;
+        });
 
+        // 处理素材路径
+        let work_path = await appDataDir();
+        for (let i = 0; i < this.materials.length; i++) {
+          this.materials[i].preview = convertFileSrc(await join(work_path, "upload", this.materials[i].name));
+        }
+      } catch (err) {
+        console.error('获取素材列表失败', err);
+      }
     },
     show_material(material) {
       this.currentMaterial = material
@@ -229,10 +516,79 @@ export default {
           console.log(err)
         })
     },
+    update_material(material) {
+      this.$service
+        .update_material({
+          id: material.id,
+          no: material.no,
+          name: material.name,
+          title: material.title,
+          username: material.username,
+          used: material.used,
+          content_type: material.content_type,
+          group_id: material.group_id,
+          md5: material.md5
+        })
+        .then(() => {
+          this.get_materials()
+        })
+        .catch(err => {
+          console.error('更新素材失败', err);
+        });
+    },
 
+    availableTagsForMaterial(material) {
+      return this.tags.filter(tag =>
+        !material.tags.some(mtag => mtag.id === tag.id)
+      );
+    },
+    addTagToMaterialDirect(materialId, tagId) {
+      this.$service
+        .add_tag_to_material({
+          material_id: materialId,
+          tag_id: tagId
+        })
+        .then(() => {
+          this.get_materials();
+        })
+        .catch(err => {
+          console.error('添加标签到素材失败', err);
+        });
+    },
+    removeTagFromMaterialDirect(materialId, tagId) {
+      this.$service
+        .remove_tag_from_material({
+          material_id: materialId,
+          tag_id: tagId
+        })
+        .then(() => {
+          this.get_materials();
+        })
+        .catch(err => {
+          console.error('从素材中移除标签失败', err);
+        });
+    },
+
+    filterByTagId() {
+      this.selectedTag = this.tags.find(tag => tag.id === this.selectedTagId);
+    },
+    getTagCount(tagId) {
+      return this.materials.filter(material =>
+        material.tags && material.tags.some(tag => tag.id === tagId)
+      ).length;
+    },
+    async get_accounts() {
+      this.$service
+        .get_accounts()
+        .then(res => {
+          this.accounts = res.data
+        })
+    },
   },
   async mounted() {
-    this.get_materials()
+    await this.getTags();
+    await this.get_materials();
+    await this.get_accounts();
   }
 }
 </script>

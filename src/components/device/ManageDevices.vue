@@ -2,24 +2,23 @@
   <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
     <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true" :showBottomControls="false">
       <template v-slot:buttons>
-        <div class="flex items-center space-x-2 ml-2">
-          <button class="btn btn-md btn-primary" @click="$refs.scan_dialog.show()">
-            <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
-          </button>
-          <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
-            <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
-          </button>
-          <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
-            <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
-          </button>
-          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
-            <label class="label cursor-pointer flex items-center space-x-2">
-              <span class="text-md font-medium">{{ $t('autoWakeUp') }}</span>
-              <input type="checkbox" class="toggle toggle-primary toggle-md" v-model="settings.uiautomator_status"
-                true-value="1" false-value="0" @change="update_settings" />
-            </label>
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center space-x-2 ml-2">
+            <button class="btn btn-md btn-primary" @click="$refs.scan_dialog.show()">
+              <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
+            </button>
+            <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
+              <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
+            </button>
+            <button class="btn btn-md btn-primary ml-1 mb-1"
+                @click="$emiter('showDialog', { name: 'materials', group: item })">
+                <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
+              </button>
+            <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
+              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
+            </button>
           </div>
-
+          
           <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
             <label class="label cursor-pointer flex items-center space-x-2">
               <span class="text-md font-medium">{{ $t('displayMode') }}</span>

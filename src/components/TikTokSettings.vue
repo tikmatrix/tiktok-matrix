@@ -18,8 +18,15 @@
       </div>
 
     </div>
+    <div class="divider">{{ $t('autoWakeUp') }}</div>
+    <div class="form-control px-3 py-1 rounded-lg shadow-md flex-row items-center">
+      <label class="label cursor-pointer flex items-center space-x-2">
+        <span class="text-md font-bold">{{ $t('autoWakeUp') }}</span>
+        <input type="checkbox" class="toggle toggle-primary toggle-md" v-model="settings.uiautomator_status"
+          true-value="1" false-value="0" @change="update_settings" />
+      </label>
+    </div>
 
-   
   </div>
 </template>
 <script>
@@ -43,15 +50,15 @@ export default {
   },
   data() {
     return {
-      packagename:''
+      packagename: ''
     }
   },
   methods: {
-    async update_settings(){
-     await this.$service.update_settings(this.settings)
-     //reload settings
-     await this.$emiter('reload_settings', {})
-     
+    async update_settings() {
+      await this.$service.update_settings(this.settings)
+      //reload settings
+      await this.$emiter('reload_settings', {})
+
     }
   },
   async mounted() {

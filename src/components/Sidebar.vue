@@ -88,21 +88,6 @@
             </span>
 
           </div>
-
-          <div class="flex flex-row form-control items-center mt-1">
-            <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'trainSettings', group: item })">
-              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
-            </button>
-            <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'publishSettings', group: item })">
-              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
-            </button>
-            <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'materials', group: item })">
-              <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
-            </button>
-          </div>
         </div>
 
 

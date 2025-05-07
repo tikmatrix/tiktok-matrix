@@ -20,14 +20,14 @@
         {{ $t('matchAccount') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
-        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'train' } })">
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'accountWarmup' } })">
         <font-awesome-icon icon="robot" class="h-3 w-3 text-success" />
-        {{ $t('train') }}
+        {{ $t('accountWarmup') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
-        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'publish' } })">
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'post' } })">
         <font-awesome-icon icon="paper-plane" class="h-3 w-3 text-success" />
-        {{ $t('publish') }}
+        {{ $t('post') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'deletePost' } })">
