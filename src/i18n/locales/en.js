@@ -1,5 +1,9 @@
 export default {
   taskDuration: 'Task Duration',
+  screenSize: 'Screen Size',
+  bigScreen: 'Big Screen',
+  standardWindow: 'Standard Window',
+  dockedWindow: 'Docked Window',
   taskArgs: 'Task Args',
   custom: 'Custom',
   enableSchedule: 'Enable Schedule',

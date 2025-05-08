@@ -1,5 +1,9 @@
 export default {
   taskDuration: 'Продолжительность задания',
+  screenSize: 'Размер экрана',
+  bigScreen: 'Большой экран',
+  standardWindow: 'Стандартное окно',
+  dockedWindow: 'Прикрепленное окно',
   taskArgs: 'Аргументы задания',
   custom: 'Пользовательский',
   enableSchedule: 'Включить расписание',

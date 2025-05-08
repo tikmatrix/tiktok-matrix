@@ -1,5 +1,9 @@
 export default {
   taskDuration: '任务时长',
+  bigScreen: '大屏幕',
+  standardWindow: '标准窗口',
+  dockedWindow: '悬浮窗口',
+  screenSize: '屏幕尺寸',
   taskArgs: '任务参数',
   custom: '自定义',
   enableSchedule: '启用计划',

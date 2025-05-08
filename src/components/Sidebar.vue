@@ -37,7 +37,7 @@
             <label class="label cursor-pointer m-1">
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(0)"
                 :checked="isSelectAll(0)" />
-              <span class="label-text text-primary text-md">{{ $t('allDevices') }} ({{ groupDevices[0].length
+              <span class="label-text text-primary text-md select-none">{{ $t('allDevices') }} ({{ groupDevices[0].length
               }})</span>
             </label>
 
@@ -55,7 +55,7 @@
                 </li>
               </ul>
             </div>
-            <span class="label-text text-md text-right flex-1 mr-2">{{ $t('selected') }}
+            <span class="label-text text-md text-right flex-1 mr-2 select-none">{{ $t('selected') }}
               {{ selections[0].length }}
               {{ $t('units') }}
             </span>
@@ -72,7 +72,7 @@
             <label class="label cursor-pointer m-1">
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(item.id)"
                 :checked="isSelectAll(item.id)" />
-              <span class="label-text text-primary  text-md">{{ item.name }}({{ groupDevices[item.id].length
+              <span class="label-text text-primary  text-md select-none">{{ item.name }}({{ groupDevices[item.id].length
                 }})</span>
             </label>
             <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
@@ -82,7 +82,7 @@
                 @click="deleteGroup(item.id)"></font-awesome-icon>
             </div>
 
-            <span class="label-text text-md text-right flex-1 mr-2">{{ $t('selected') }}
+            <span class="label-text text-md text-right flex-1 mr-2 select-none">{{ $t('selected') }}
               {{ selections[item.id].length }}
               {{ $t('units') }}
             </span>
@@ -740,7 +740,9 @@ export default {
     this.refreshSelections()
     this.listeners.push(await this.$listen('openDevice', async (e) => {
       console.log("receive openDevice: ", e.payload)
-      this.selection = [...this.selection.filter(serial => serial !== e.payload.real_serial), e.payload.real_serial]
+      // this.selection = [...this.selection.filter(serial => serial !== e.payload.real_serial), e.payload.real_serial]
+      //only select one device
+      this.selection = [e.payload.real_serial]
       this.refreshSelections()
     }))
     this.listeners.push(await this.$listen('closeDevice', (e) => {

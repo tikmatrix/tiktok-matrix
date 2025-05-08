@@ -63,10 +63,10 @@
     </button>
     <div>
         <label class="label">
-            <span class="label-text">{{ $t('screenScaled') }}: {{ screenScaled }}%</span>
+            <span class="label-text">{{ $t('screenSize') }}: </span>
         </label>
-        <input type="range" min="50" max="150" v-model="screenScaled" class="range range-primary"
-            @change="updateScreenSize" />
+        <kbd class="kbd p-4 cursor-pointer ml-4 select-none" @click="screenSizePlus">+</kbd>
+        <kbd class="kbd p-4 cursor-pointer ml-4 select-none" @click="screenSizeMinus">-</kbd>
         <div role="alert" class="alert alert-info alert-sm mt-1">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                 class="h-6 w-6 shrink-0 stroke-current">
@@ -185,7 +185,7 @@ export default {
         return {
             proxy_host: localStorage.getItem('proxy_host') || '127.0.0.1',
             proxy_port: localStorage.getItem('proxy_port') || 8080,
-            screenScaled: Number(localStorage.getItem('screenScaled')) || 100,
+            screenScaled:  100,
             resolution: Number(localStorage.getItem('screenResolution')) || 512,
             customResolution: 512,
             uninstall_package: '',
@@ -240,10 +240,11 @@ export default {
             });
         },
 
-        async updateScreenSize() {
-            localStorage.setItem('screenScaled', this.screenScaled);
-            const scaled = this.screenScaled / 100
-            await this.$emiter('screenScaled', { scaled: scaled })
+        async screenSizePlus() {
+            await this.$emiter('screenScaled', { action: 'plus' })
+        },
+        async screenSizeMinus() {
+            await this.$emiter('screenScaled', { action: 'minus' })
         },
         async setResolution(value) {
             this.resolution = value;

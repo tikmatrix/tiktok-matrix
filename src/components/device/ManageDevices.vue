@@ -1,6 +1,7 @@
 <template>
   <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
-    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true" :showBottomControls="false">
+    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true"
+      :showBottomControls="false">
       <template v-slot:buttons>
         <div class="flex items-center justify-between w-full">
           <div class="flex items-center space-x-2 ml-2">
@@ -11,14 +12,14 @@
               <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
             </button>
             <button class="btn btn-md btn-primary ml-1 mb-1"
-                @click="$emiter('showDialog', { name: 'materials', group: item })">
-                <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
-              </button>
+              @click="$emiter('showDialog', { name: 'materials', group: item })">
+              <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
+            </button>
             <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
               <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
             </button>
           </div>
-          
+
           <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
             <label class="label cursor-pointer flex items-center space-x-2">
               <span class="text-md font-medium">{{ $t('displayMode') }}</span>
@@ -125,7 +126,11 @@
       <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
     </div>
   </div>
-
+  <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
+    :z="20" drag-handle=".drag"
+    class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
+    <Miniremote :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'" />
+  </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300">
       <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
@@ -163,6 +168,9 @@
     </form>
   </dialog>
 </template>
+<style>
+@import "vue-draggable-resizable/style.css";
+</style>
 <script>
 import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
@@ -190,6 +198,7 @@ export default {
   },
   data() {
     return {
+      device: null,
       listMode: localStorage.getItem('listMode') === 'true' || false,
       mydevices: [],
       ip_1: localStorage.getItem('ip_1')?.replace(/"/g, '') || 192,
@@ -204,7 +213,7 @@ export default {
       scanResult: '',
       groups: [],
       currentDevice: null,
-      cardMinWidth: 150,
+      cardMinWidth: Number(localStorage.getItem('deviceWidth')) || 150,
     }
   },
   watch: {
@@ -310,7 +319,21 @@ export default {
   },
   async mounted() {
     this.mydevices = this.devices
-
+    await this.$listen('openDevice', async (e) => {
+      const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+      if (bigScreen === 'standard') {
+        this.device = e.payload
+        for (let i = 0; i < this.mydevices.length; i++) {
+          if (this.mydevices[i].serial === this.device.serial) {
+            this.mydevices[i] = this.device
+            break
+          }
+        }
+      }
+    });
+    await this.$listen('closeDevice', (e) => {
+      this.device = null
+    });
 
   },
 }
