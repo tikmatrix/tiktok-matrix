@@ -1,5 +1,11 @@
 export default {
   taskDuration: '任务时长',
+  taskInterval: '任务间隔',
+  followBackWarning: '回关功能可以控制大规模农场账号对关注者列表进行回关操作，您也可以在回关后发送欢迎消息。',
+  followBack: '回关',
+  likeVideos: '点赞视频',
+  viewProfile: '浏览主页',
+  sendMessage: '发送消息',
   bigScreen: '大屏幕',
   standardWindow: '标准窗口',
   dockedWindow: '悬浮窗口',

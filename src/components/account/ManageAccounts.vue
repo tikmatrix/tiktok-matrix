@@ -117,8 +117,8 @@
                   <span v-else class="text text-error">{{ $t('unlogined') }}</span>
                 </td>
                 <td>
-                  <span v-if="account.status == 0" class="badge badge-success cursor-pointer" @click="toggleStatus(account)">{{ $t('enable') }}</span>
-                  <span v-else class="badge badge-error cursor-pointer" @click="toggleStatus(account)">{{ $t('disable') }}</span>
+                  <span v-if="account.status == 0" class="badge badge-success cursor-pointer" @click="toggleStatus(account)">{{ $t('enabled') }}</span>
+                  <span v-else class="badge badge-error cursor-pointer" @click="toggleStatus(account)">{{ $t('disabled') }}</span>
                 </td>
                 <td>
                   <div class="flex flex-wrap gap-1 max-w-xs">

@@ -72,15 +72,50 @@
 
 
   <!-- 评论文本输入区域 -->
-  <div class="flex flex-row items-center p-1 w-full">
-    <label class="font-bold">{{ $t('commentTexts') }}:</label>
-    <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-24 leading-tight flex-grow"
-      :placeholder="$t('commentTextsTips')" v-model="live_comment_texts" autocomplete="off"></textarea>
+  <div class="flex flex-row items-center p-1 w-full gap-2">
+    <label class="font-bold">{{ $t('comments') }}:</label>
+    <textarea class="textarea textarea-success w-lg h-32 leading-tight" :placeholder="$t('commentTextsTips')"
+      v-model="live_comment_texts" autocomplete="off"></textarea>
+    <div class="flex flex-col gap-2">
+      <div class="flex flex-row items-center gap-2">
+        <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
+        <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji"
+          title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
+      </div>
+      <div class="flex flex-row items-center gap-2">
+        <label class="font-bold">{{ $t('commentOrder') }}:</label>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input type="radio" name="commentOrder" value="random" class="radio radio-sm radio-primary"
+              v-model="comment_order" />
+            <span>{{ $t('random') }}</span>
+          </label>
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input type="radio" name="commentOrder" value="sequential" class="radio radio-sm radio-primary"
+              v-model="comment_order" />
+            <span>{{ $t('sequential') }}</span>
+          </label>
+        </div>
+      </div>
+
+
+    </div>
+
+  </div>
+  <!-- 添加任务间隔时间设置 -->
+  <div class="flex flex-row items-center">
+    <label class="font-bold mr-4">{{ $t('taskInterval') }}:</label>
+    <VueSlider v-model="task_interval" :width="500" :min="0" :max="10"
+      :marks="{ 0: '0' + $t('minute'), 5: '5' + $t('minute'), 10: '10' + $t('minute') }" />
   </div>
 </template>
 <script>
+import VueSlider from "vue-3-slider-component";
 export default {
   name: 'BoostLives',
+  components: {
+    VueSlider
+  },
   data() {
     return {
       live_target_username: localStorage.getItem('live_target_username') || '',
@@ -91,7 +126,10 @@ export default {
       live_like_count: Number(localStorage.getItem('live_like_count')) || 10,
       live_comment_interval: Number(localStorage.getItem('live_comment_interval')) || 30, // 默认评论间隔30秒
       live_comment_texts: localStorage.getItem('live_comment_texts') || '', // 评论文本，多行
-      enter_method: localStorage.getItem('enter_method') || 'search', // 默认搜索用户
+      enter_method: localStorage.getItem('live_enter_method') || 'search', // 默认搜索用户
+      insert_emoji: localStorage.getItem('live_insert_emoji') === 'true' || false,
+      comment_order: localStorage.getItem('live_comment_order') || 'random',
+      task_interval: [localStorage.getItem('live_min_interval') || 0, localStorage.getItem('live_max_interval') || 10]
     }
   },
   watch: {
@@ -137,9 +175,19 @@ export default {
     },
     enter_method: {
       handler(newVal) {
-        localStorage.setItem('enter_method', newVal)
+        localStorage.setItem('live_enter_method', newVal)
       },
-    }
+    },
+    insert_emoji(newVal) {
+      localStorage.setItem('live_insert_emoji', newVal)
+    },
+    comment_order(newVal) {
+      localStorage.setItem('live_comment_order', newVal)
+    },
+    task_interval(newVal) {
+      localStorage.setItem('live_min_interval', newVal[0])
+      localStorage.setItem('live_max_interval', newVal[1])
+    },
   },
   methods: {
     filterTargetUsername() {
@@ -176,7 +224,7 @@ export default {
 
       // 修改为传递更多参数，包括点赞连击次数和评论相关
       await this.$emiter('run_now_by_account', {
-        name: 'view_live',
+        name: 'boost_live',
         args: {
           target_username: this.live_target_username,
           enter_method: this.enter_method,
@@ -186,7 +234,11 @@ export default {
           like_count: this.live_like_count,
           enable_comment: this.live_enable_comment,
           comment_interval: this.live_comment_interval,
-          comment_texts: this.live_comment_texts
+          comment_texts: this.live_comment_texts,
+          insert_emoji: this.insert_emoji,
+          comment_order: this.comment_order,
+          min_interval: Number(this.task_interval[0]),
+          max_interval: Number(this.task_interval[1]),
         }
       })
     },

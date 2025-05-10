@@ -147,6 +147,7 @@ export default {
         .update_task({
           id: task.id,
           status: 0,
+          serial: task.serial
         })
         .then(() => {
           this.get_tasks()
