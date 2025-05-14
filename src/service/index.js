@@ -113,11 +113,11 @@ export function delete_task({ id }) {
     params: { id }
   })
 }
-export function update_task({ id, status }) {
+export function update_task(data) {
   return request({
     method: 'put',
     url: api.task,
-    data: { id, status }
+    data
   })
 }
 

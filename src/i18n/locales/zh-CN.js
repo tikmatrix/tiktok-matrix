@@ -1,5 +1,6 @@
 export default {
   taskDuration: '任务时长',
+  telegramSupport: 'Telegram 支持',
   taskInterval: '任务间隔',
   followBackWarning: '回关功能可以控制大规模农场账号对关注者列表进行回关操作，您也可以在回关后发送欢迎消息。',
   followBack: '回关',

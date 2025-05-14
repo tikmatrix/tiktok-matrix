@@ -1,5 +1,6 @@
 export default {
   taskDuration: 'Task Duration',
+  telegramSupport: 'Telegram Support',
   taskInterval: 'Task Interval',
   followBackWarning: 'The follow back function allows you to control large-scale farm accounts to follow back the accounts in the follower list. You can also send hello message to the accounts after following back.',
   followBack: 'Follow Back',

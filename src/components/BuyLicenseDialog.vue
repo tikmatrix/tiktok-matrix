@@ -21,7 +21,7 @@
               <a class="link link-primary text-md flex items-center gap-1 min-w-max"
                 href="https://t.me/tikmatrix_support" target="_blank">
                 <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
-                {{ $t('telegramCustom') }}
+                {{ $t('telegramSupport') }}
               </a>
               <a class="link link-primary text-md flex items-center gap-1 min-w-max"
                 @click="copyText('support@tikmatrix.com', $event)" target="_blank">
