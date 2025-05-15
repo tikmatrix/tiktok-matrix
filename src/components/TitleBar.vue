@@ -403,6 +403,7 @@ export default {
                 const res = await this.$service.get_license();
                 if (res.code === 0) {
                     this.licenseData = JSON.parse(res.data);
+                    await this.$emiter('LICENSE_STATUS_CHANGED', this.licenseData);
                 } else {
                     await this.$emiter('NOTIFY', {
                         type: 'error',
@@ -626,9 +627,7 @@ export default {
             }
 
             if (e.payload.show) {
-                if (!this.is_licensed()) {
-                    this.showLicenseDialog();
-                }
+                this.showLicenseDialog();
             }
         });
 

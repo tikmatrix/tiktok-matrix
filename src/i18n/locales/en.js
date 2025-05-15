@@ -1,5 +1,10 @@
 export default {
   taskDuration: 'Task Duration',
+  licenseRequired: 'License Required',
+  pleaseActivateSoftware: 'Please activate the software to use all features',
+  unableDetectPhoneTip: 'Unable to detect phone? Please check the following tips',
+  taskFailedTip: 'Task failed? Please check the following tips',
+  activateNow: 'Activate Now',
   telegramSupport: 'Telegram Support',
   taskInterval: 'Task Interval',
   followBackWarning: 'The follow back function allows you to control large-scale farm accounts to follow back the accounts in the follower list. You can also send hello message to the accounts after following back.',

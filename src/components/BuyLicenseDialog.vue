@@ -19,7 +19,7 @@
               </button>
 
               <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-                href="https://t.me/tikmatrix_support" target="_blank">
+                href="https://t.me/tikmatrix" target="_blank">
                 <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
                 {{ $t('telegramSupport') }}
               </a>

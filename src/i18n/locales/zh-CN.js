@@ -1,5 +1,10 @@
 export default {
   taskDuration: '任务时长',
+  licenseRequired: '软件未激活',
+  pleaseActivateSoftware: '请激活软件以使用全部功能',
+  unableDetectPhoneTip: '无法检测到手机？请检查以下提示',
+  taskFailedTip: '任务失败？请检查以下提示',
+  activateNow: '立即激活',
   telegramSupport: 'Telegram 支持',
   taskInterval: '任务间隔',
   followBackWarning: '回关功能可以控制大规模农场账号对关注者列表进行回关操作，您也可以在回关后发送欢迎消息。',
