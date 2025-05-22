@@ -34,16 +34,25 @@
           <label for="standard" class="label cursor-pointer ml-2">{{ $t('standardWindow') }}</label>
         </div>
         <div class="flex items-center px-3 py-1 rounded-lg shadow-md">
-          <input type="radio" id="docked" value="docked" v-model="bigScreen"
-            class="form-radio text-primary h-4 w-4">
+          <input type="radio" id="docked" value="docked" v-model="bigScreen" class="form-radio text-primary h-4 w-4">
           <label for="docked" class="label cursor-pointer ml-2">{{ $t('dockedWindow') }}</label>
         </div>
       </div>
     </div>
+    <div class="divider">{{ $t('openAppDir') }}</div>
+    <div class="form-control px-3 py-1 rounded-lg shadow-md flex-row items-center">
+      <label class="label cursor-pointer flex items-center space-x-2">
+        <span class="text-md font-bold">{{ $t('openAppDir') }}:</span>
+        <a class="link link-primary" @click="open_dir('')">
+          {{ work_path }}
+        </a>
+      </label>
+    </div>
   </div>
 </template>
 <script>
-
+import { invoke } from "@tauri-apps/api/tauri";
+import { appDataDir } from '@tauri-apps/api/path';
 export default {
   name: 'TikTokSettings',
   props: {
@@ -70,10 +79,16 @@ export default {
   data() {
     return {
       packagename: '',
-      bigScreen: localStorage.getItem('bigScreen') || 'standard'
+      bigScreen: localStorage.getItem('bigScreen') || 'standard',
+      work_path: '',
     }
   },
   methods: {
+    async open_dir(name) {
+      invoke("open_dir", {
+        name
+      });
+    },
     async update_settings() {
       await this.$service.update_settings(this.settings)
       //reload settings
@@ -83,6 +98,7 @@ export default {
   },
   async mounted() {
     this.packagename = this.settings.packagename
+    this.work_path = await appDataDir();
   }
 }
 </script>

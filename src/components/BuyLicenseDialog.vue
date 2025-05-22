@@ -14,12 +14,13 @@
               <label class="font-bold w-28">{{ $t('mid') }}: </label>
               <input id="mid" type="text" placeholder="mid" class="input input-md input-bordered ring-1"
                 v-model="license.mid" readonly disabled />
+              <span v-if="!license.mid">{{ $t('networkProblem') }}</span>
               <button @click="copyText(license.mid, $event)" class=" btn btn-md btn-primary  rounded-l-none">
                 {{ $t('copy') }}
               </button>
 
-              <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-                href="https://t.me/tikmatrix" target="_blank">
+              <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
+                target="_blank">
                 <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
                 {{ $t('telegramSupport') }}
               </a>
@@ -129,7 +130,7 @@
               <p class="mt-4 flex items-baseline gap-x-2">
 
                 <span class="text-primary-content text-5xl font-semibold tracking-tight">
-                  $0
+                  {{ license.trial_price }}
                 </span>
                 <span class=" text-primary-content">7 {{ $t('days') }}</span>
               </p>
@@ -180,8 +181,8 @@
                     ${{ (99 * (1 - license.affiliate_discount / 100)).toFixed(0) }}
                   </span>
                 </template> -->
-                <span  class="text-accent text-5xl font-semibold tracking-tight">
-                  $99
+                <span class="text-accent text-5xl font-semibold tracking-tight">
+                  {{ license.month_price }}
                 </span>
                 <span class=" text-accent">/ {{ $t('month') }}</span>
               </p>
@@ -261,7 +262,7 @@
                   </span>
                 </template> -->
                 <span class="text-success-content text-5xl font-semibold tracking-tight">
-                  $599
+                  {{ license.year_price }}
                 </span>
                 <span class=" text-success-content">/ {{ $t('year') }}</span>
               </p>

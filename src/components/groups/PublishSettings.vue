@@ -84,16 +84,19 @@
       </div>
       <div class="flex w-full items-center gap-2 mb-4">
         <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
-        <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1" :marks="{5: '5'+$t('second'),  10: '10'+$t('second'),  15: '15'+$t('second'),  20: '20'+$t('second'),  25: '25'+$t('second'),  30: '30'+$t('second')}" />
-        
+        <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1"
+          :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
+
       </div>
       <div class="flex w-full items-center gap-2 mb-4" v-if="mygroup.add_sound == 1">
         <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
         <div class="flex items-center">
           <label class="ml-2 mr-2">{{ $t('originSound') }}: </label>
-          <VueSlider v-model="mygroup.origin_sound_volume" :width="100" :min="0" :max="100" :step="25" :marks="{0: '0',  100: '100'}" />
+          <VueSlider v-model="mygroup.origin_sound_volume" :width="100" :min="0" :max="100" :step="25"
+            :marks="{ 0: '0', 100: '100' }" />
           <label class="ml-8 mr-2">{{ $t('addSound') }}: </label>
-          <VueSlider v-model="mygroup.add_sound_volume" :width="100" :min="0" :max="100" :step="25" :marks="{0: '0',  100: '100'}" />
+          <VueSlider v-model="mygroup.add_sound_volume" :width="100" :min="0" :max="100" :step="25"
+            :marks="{ 0: '0', 100: '100' }" />
         </div>
       </div>
       <!-- add sound end-->
@@ -126,7 +129,14 @@
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
           :placeholder="$t('titlesTips')" autocomplete="off" v-model="mygroup.title"> </textarea>
       </div>
-
+      <!-- 添加提示信息 -->
+      <div role="alert" class="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>{{ $t('captionsTips') }}</span>
+      </div>
     </div>
     <!-- other fields... -->
     <div class="mt-8 w-full flex justify-end">

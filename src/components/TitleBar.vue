@@ -19,10 +19,10 @@
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
-        <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" @click="open_dir('')">
+        <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" @click="open_dir('')">
             <font-awesome-icon icon="fa fa-folder" class="h-4 w-4" />
             <span>{{ $t('openAppDir') }}</span>
-        </a>
+        </a> -->
         <!-- Rewards-->
         <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
             target="_blank">
@@ -302,11 +302,7 @@ export default {
         is_licensed() {
             return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active;
         },
-        async open_dir(name) {
-            invoke("open_dir", {
-                name
-            });
-        },
+
         async startAgent() {
             try {
                 this.$refs.download_dialog.showModal();
