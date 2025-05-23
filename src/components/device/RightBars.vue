@@ -1,5 +1,6 @@
 <template>
-  <div class="flex flex-col justify-start z-10 bg-base-100 shadow-2xl rounded-2xl absolute right-[-55px] top-[-55px]">
+  <div
+    class="flex flex-col justify-start z-10 bg-base-100 shadow-2xl rounded-2xl absolute right-[-55px] top-[-55px] ring-1 ring-base-300">
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('send_keycode', 'task')">
       <font-awesome-icon icon="fa fa-window-restore" class="h-6 w-6 text-primary" />
@@ -20,11 +21,11 @@
       <font-awesome-icon icon="fa fa-lightbulb" class="h-6 w-6 text-primary" />
       <span class="text-md block font-bold">{{ $t('power') }}</span>
     </button>
-    <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
+    <!-- <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('adbEventData', { args: ['shell', 'reboot'] })">
       <font-awesome-icon icon="fa fa fa-refresh" class="h-6 w-6 text-error" />
       <span class="text-md block font-bold">{{ $t('reboot') }}</span>
-    </button>
+    </button> -->
     <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '1000', '500', '500', '300'] })">
       <font-awesome-icon icon="fa-arrow-up" class="h-6 w-6 text-primary" />

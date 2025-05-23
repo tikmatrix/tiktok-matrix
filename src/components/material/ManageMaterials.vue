@@ -2,8 +2,10 @@
   <div class="w-full">
 
 
-    <Pagination :items="filteredMaterials" :searchKeys="['name']" @refresh="get_materials">
+    <Pagination :items="filteredMaterials" @refresh="get_materials">
       <template v-slot:buttons>
+        <!-- <div class="badge badge-success">{{ $t('unused') }}</div>
+        <div class="badge badge-error">{{ $t('used') }}</div> -->
         <MyButton @click="selectMaterials" label="add" icon="fa fa-add" />
         <MyButton @click="delete_all" label="clearAll" icon="fa fa-trash" />
         <div class="flex items-center ml-2">
@@ -19,6 +21,13 @@
           </div>
         </div>
         <button class="btn ml-2 btn-primary" @click="showTagManager">{{ $t('manageTags') }}</button>
+        <!-- 显示已使用和未使用的数量 -->
+        <div class="badge badge-success ml-2">
+          {{ $t('unused') }}: {{materials.filter(m => m.used == '0').length}}
+        </div>
+        <div class="badge badge-error ml-2">
+          {{ $t('used') }}: {{materials.filter(m => m.used == '1').length}}
+        </div>
       </template>
       <template v-slot:default="slotProps">
         <div class="overflow-x-auto">
@@ -26,31 +35,39 @@
             <thead>
               <tr>
                 <th>{{ $t('number') }}</th>
-                <th>{{ $t('status') }}</th>
                 <th>{{ $t('preview') }}</th>
+                <th>{{ $t('contentType') }}</th>
                 <th>{{ $t('tags') }}</th>
                 <th>{{ $t('sort') }}</th>
                 <th>{{ $t('caption') }}</th>
                 <th>{{ $t('username') }}</th>
+                <th>{{ $t('group') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(material, index) in slotProps.items" :key="index">
                 <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
-                <td>
-                  <div class="badge badge-success" v-if="material.used == '0'">{{ $t('unused') }}</div>
-                  <div class="badge badge-error" v-else @click="show_material(material)">{{ $t('used') }}</div>
-                </td>
                 <td @click="show_material(material)">
-                  <div class="cursor-pointer border rounded items-center text-center flex align-middle">
-                    <template v-if="material.name.endsWith('.mp4') || material.name.endsWith('.webm')">
-                      <video :src="material.preview" class="w-[90px] h-[160px] max-w-none flex-1"></video>
-                    </template>
-                    <template v-else>
-                      <img :src="material.preview" class="w-[90px] h-[160px] max-w-none flex-1" />
-                    </template>
+                  <div class="indicator">
+                    <div class="indicator-item badge badge-success" v-if="material.used == '0'">{{ $t('unused') }}</div>
+                    <div class="indicator-item badge badge-error" v-else @click="show_material(material)">{{ $t('used')
+                    }}</div>
+                    <div class="cursor-pointer border rounded items-center text-center flex align-middle">
+                      <template v-if="material.name.endsWith('.mp4') || material.name.endsWith('.webm')">
+                        <video :src="material.preview" class="w-12 h-18 max-w-none flex-1"></video>
+                      </template>
+                      <template v-else>
+                        <img :src="material.preview" class="w-12 h-18 max-w-none flex-1" />
+                      </template>
+                    </div>
                   </div>
+
+                </td>
+                <td>
+                  <span v-if="material.content_type == 0">{{ $t('video') }}</span>
+                  <span v-else-if="material.content_type == 1">{{ $t('image') }}</span>
+                  <span v-else>{{ $t('unknown') }}</span>
                 </td>
                 <td>
                   <div class="flex flex-wrap gap-1 max-w-xs">
@@ -101,6 +118,11 @@
                     $t('unset') }}</span>
                 </td>
                 <td>
+                  <span class="text-md cursor-pointer" v-if="material.group_id">{{ get_group_name(material.group_id)
+                  }}</span>
+                  <span class="text-md text-warning cursor-pointer" v-else>{{ $t('unset') }}</span>
+                </td>
+                <td>
                   <button class="bg-error hover:bg-red-700 text-primary-content btn btn-md"
                     @click="delete_material(material)">
                     {{ $t('delete') }}
@@ -120,7 +142,7 @@
         </form>
         <div class="m-4 flex max-h-60">
           <template v-if="currentMaterial.name.endsWith('.mp4') || currentMaterial.name.endsWith('.webm')">
-            <video ref="video" :src="currentMaterial.name" class="rounded-lg" controls></video>
+            <video ref="video" :src="currentMaterial.preview" class="rounded-lg" controls></video>
           </template>
           <template v-else>
             <img :src="currentMaterial.name" class="rounded-lg" />
@@ -266,6 +288,7 @@ export default {
       newTagInputs: {},
       selectedTagId: '',
       accounts: [],
+      groups: [],
     }
   },
   computed: {
@@ -493,8 +516,11 @@ export default {
 
         // 处理素材路径
         let work_path = await appDataDir();
+
         for (let i = 0; i < this.materials.length; i++) {
-          this.materials[i].preview = convertFileSrc(await join(work_path, "upload", this.materials[i].name));
+          const filePath = await join(work_path, "upload", this.materials[i].name);
+          const assetUrl = convertFileSrc(filePath);
+          this.materials[i].preview = assetUrl;
         }
       } catch (err) {
         console.error('获取素材列表失败', err);
@@ -584,11 +610,21 @@ export default {
           this.accounts = res.data
         })
     },
+    async get_groups() {
+      this.$service.get_groups().then(async res => {
+        this.groups = res.data
+      })
+    },
+    get_group_name(group_id) {
+      const group = this.groups.find(group => group.id === group_id);
+      return group ? group.name : '';
+    }
   },
   async mounted() {
     await this.getTags();
     await this.get_materials();
     await this.get_accounts();
+    await this.get_groups();
   }
 }
 </script>
