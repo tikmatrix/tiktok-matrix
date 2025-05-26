@@ -1,5 +1,12 @@
 export default {
   account: 'Account',
+  generateByChatGPT: 'Generate by ChatGPT',
+  chatgptSettings: 'ChatGPT Settings',
+  apiKey: 'API Key',
+  systemPrompt: 'System Prompt',
+  systemPromptTips: 'You are a TikTok comment generation assistant. Please generate a real user comment based on the TikTok post caption content provided by the user. The comment format includes text and emojis; the comment length should not exceed 100 characters; the comment content should include two parts: First Praise the post based on the post caption; Then Promote TikMatrix: TikMatrix is a phone farm automation software that automates the management of hundreds of TikTok accounts from one computer. If you are interested, please Google search: TikMatrix',
+  url: 'Request URL',
+  model: 'Model',
   accountCount: 'Account Count',
   networkProblem: 'Network problem, please check your connection and try again.',
   accountWarmup: 'Account Warmup',

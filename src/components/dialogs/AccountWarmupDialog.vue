@@ -66,32 +66,60 @@
         </div>
         <div class="flex w-full items-center gap-2 mb-2">
           <label class="font-bold w-40">{{ $t('topics') }}:</label>
-          <textarea class="textarea textarea-success w-xl" :placeholder="$t('topicsTips')" autocomplete="off"
+          <textarea class="textarea textarea-success w-full" :placeholder="$t('topicsTips')" autocomplete="off"
             v-model="topic"> </textarea>
         </div>
         <div class="flex w-full items-center gap-2 mb-2">
           <label class="font-bold w-40">{{ $t('comments') }}:</label>
-          <textarea class="textarea textarea-success w-lg" :placeholder="$t('commentsTips')" autocomplete="off"
-            v-model="comment"> </textarea>
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col w-full gap-2">
             <div class="flex flex-row items-center gap-2">
-              <label class="font-bold">{{ $t('insertEmoji') }}:</label>
-              <input type="checkbox" class="toggle toggle-accent" v-model="insert_emoji"
-                title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
+              <label class="font-bold">{{ $t('generateByChatGPT') }}:</label>
+              <input type="checkbox" class="toggle toggle-accent" v-model="generate_by_chatgpt" />
             </div>
-            <div class="flex flex-row items-center">
-              <label class="font-bold">{{ $t('commentOrder') }}:</label>
-              <div class="flex items-center">
-                <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="radio" name="commentOrder" value="random" class="radio radio-sm radio-primary"
-                    v-model="comment_order" />
-                  <span>{{ $t('random') }}</span>
-                </label>
-                <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="radio" name="commentOrder" value="sequential" class="radio radio-sm radio-primary"
-                    v-model="comment_order" />
-                  <span>{{ $t('sequential') }}</span>
-                </label>
+            <div v-if="generate_by_chatgpt" class="flex flex-col gap-2">
+              <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+                <legend class="fieldset-legend">{{ $t('chatgptSettings') }}</legend>
+
+                <label class="label">{{ $t('url') }}</label>
+                <input type="text" class="input w-full" placeholder="https://api.openai.com/v1/chat/completions"
+                  v-model="chatgpt_settings.url" />
+
+                <label class="label">{{ $t('apiKey') }}</label>
+                <input type="password" class="input w-full" placeholder="sk-********"
+                  v-model="chatgpt_settings.api_key" />
+
+                <label class="label">{{ $t('model') }}</label>
+                <input type="text" class="input" placeholder="gpt-3.5-turbo" v-model="chatgpt_settings.model" />
+                <label class="label">{{ $t('systemPrompt') }}</label>
+                <textarea class="textarea textarea-success w-full" :placeholder="$t('systemPromptTips')"
+                  autocomplete="off" v-model="chatgpt_settings.system_prompt"> </textarea>
+              </fieldset>
+              <button class="btn btn-primary" @click="testChatGPT">Test ChatGPT</button>
+              <span :class="testResultStyle">{{ testResult }}</span>
+
+            </div>
+            <div class="flex flex-col gap-2 relative" v-else>
+              <textarea class="textarea textarea-success w-full" :placeholder="$t('commentsTips')" autocomplete="off"
+                v-model="comment"> </textarea>
+              <div class="flex flex-row items-center gap-2 absolute top-2 right-4">
+                <label class="font-bold">{{ $t('insertEmoji') }}:</label>
+                <input type="checkbox" class="toggle toggle-accent" v-model="insert_emoji"
+                  title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
+              </div>
+              <div class="flex flex-row items-center absolute top-8 right-4">
+                <label class="font-bold">{{ $t('commentOrder') }}:</label>
+                <div class="flex items-center">
+                  <label class="flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="commentOrder" value="random" class="radio radio-sm radio-primary"
+                      v-model="comment_order" />
+                    <span>{{ $t('random') }}</span>
+                  </label>
+                  <label class="flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="commentOrder" value="sequential" class="radio radio-sm radio-primary"
+                      v-model="comment_order" />
+                    <span>{{ $t('sequential') }}</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -144,6 +172,7 @@
     </template>
 
   </div>
+
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
@@ -168,6 +197,15 @@ export default {
       max_duration: Number(localStorage.getItem('max_duration')) || 30,
       topic: localStorage.getItem('topic') || '',
       comment: localStorage.getItem('comment') || '',
+      generate_by_chatgpt: localStorage.getItem('generate_by_chatgpt') === 'true' || false,
+      chatgpt_settings: JSON.parse(localStorage.getItem('chatgpt_settings')) || {
+        url: 'https://api.openai.com/v1/chat/completions',
+        api_key: '',
+        model: 'gpt-3.5-turbo',
+        system_prompt: 'You are a TikTok comment generation assistant. Please generate a real user comment based on the TikTok post caption content provided by the user. The comment format includes text and emojis; the comment length should not exceed 100 characters; the comment content should include two parts: First Praise the post based on the post caption; Then Promote TikMatrix: TikMatrix is a phone farm automation software that automates the management of hundreds of TikTok accounts from one computer. If you are interested, please Google search: TikMatrix'
+      },
+      testResult: '',
+      testResultStyle: 'text-gray-500',
     }
   },
   computed: {
@@ -237,9 +275,36 @@ export default {
     'settings': function (val) {
       localStorage.setItem('settings', val)
     },
-
+    'generate_by_chatgpt': function (val) {
+      localStorage.setItem('generate_by_chatgpt', val)
+    },
   },
   methods: {
+    async testChatGPT() {
+      try {
+        localStorage.setItem('chatgpt_settings', JSON.stringify(this.chatgpt_settings));
+        this.testResult = 'Testing...';
+        this.testResultStyle = 'text-warning';
+        const response = await this.$service.chatgpt_completion({
+          url: this.chatgpt_settings.url,
+          api_key: this.chatgpt_settings.apiKey,
+          model: this.chatgpt_settings.model,
+          system_prompt: this.chatgpt_settings.system_prompt,
+          post_caption: 'This is a test post caption for TikTok.',
+        });
+        console.log(response);
+        if (response.code == 0) {
+          this.testResult = response.data;
+          this.testResultStyle = 'text-success';
+        } else {
+          this.testResult = response.data;
+          this.testResultStyle = 'text-error';
+        }
+      } catch (error) {
+        this.testResult = 'Error: ' + error.message;
+        this.testResultStyle = 'text-error';
+      }
+    },
     async runScript() {
       await this.$emiter('run_now_by_account', {
         name: 'account_warmup', args: {
@@ -256,6 +321,8 @@ export default {
           comment: this.comment,
           min_duration: Number(this.min_duration),
           max_duration: Number(this.max_duration),
+          generate_by_chatgpt: this.generate_by_chatgpt,
+          chatgpt_settings: JSON.stringify(this.chatgpt_settings)
         }
       })
     },

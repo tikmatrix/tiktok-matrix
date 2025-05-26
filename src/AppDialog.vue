@@ -1,20 +1,21 @@
 <template>
-    <dialog ref="page_dialog" class="modal">
-      <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
-        <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
-        <TikTokSettings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open"/>
-        <TrainSettings v-if="selectedItem.name === 'accountWarmup' && $refs.page_dialog.open" :group="selectedItem.group" />
-        <PublishSettings v-if="selectedItem.name === 'post' && $refs.page_dialog.open" :group="selectedItem.group" />
-        <ManageMaterials :group="selectedItem.group"
-          v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
-        <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
-        <BeforeRunScriptDialog :selecedDevices="selecedDevices" :devices="devices" :script="selectedItem.script" :settings="settings" v-if="selectedItem.name === 'beforeRunScriptDialog' && $refs.page_dialog.open" />
-        
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
+  <dialog ref="page_dialog" class="modal">
+    <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
+      <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
+      <TikTokSettings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open" />
+      <TrainSettings v-if="selectedItem.name === 'accountWarmup' && $refs.page_dialog.open"
+        :group="selectedItem.group" />
+      <PublishSettings v-if="selectedItem.name === 'post' && $refs.page_dialog.open" :group="selectedItem.group" />
+      <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
+      <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
+      <BeforeRunScriptDialog :selecedDevices="selecedDevices" :devices="devices" :script="selectedItem.script"
+        :settings="settings" v-if="selectedItem.name === 'beforeRunScriptDialog' && $refs.page_dialog.open" />
+
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 
 
 </template>
@@ -66,7 +67,7 @@ export default {
       })
     },
 
-  
+
 
   },
   async mounted() {

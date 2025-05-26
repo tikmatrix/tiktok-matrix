@@ -614,4 +614,12 @@ export function get_materials_with_tags_by_tag({ tag_id }) {
     url: api.materials_with_tags_by_tag.replace('{tag_id}', tag_id)
   })
 }
+// ChatGPT 完成请求
+export function chatgpt_completion(data) {
+  return request({
+    method: 'post',
+    url: api.chatgpt_completion,
+    data
+  })
+}
 

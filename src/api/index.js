@@ -59,5 +59,6 @@ const api = {
   materials_with_tags: '/api/materials/with-tags',
   materials_by_tag: '/api/tag/{tag_id}/materials',
   materials_with_tags_by_tag: '/api/tag/{tag_id}/materials/with-tags',
+  chatgpt_completion: '/api/chatgpt_completion',
 }
 export default api

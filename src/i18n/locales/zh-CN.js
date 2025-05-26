@@ -1,5 +1,12 @@
 export default {
   account: '帐号',
+  generateByChatGPT: '通过 ChatGPT 生成',
+  chatgptSettings: 'ChatGPT 设置',
+  apiKey: 'API 密钥',
+  systemPrompt: '系统提示',
+  systemPromptTips: '你是一个TikTok评论生成助手,请根据用户提供的TikTok帖子标题内容生成一个真实的用户评论.评论的格式包括文本和表情符号;评论的长度应该不要超过100个字符;评论的内容应该包含两个部分:首先根据帖子标题称赞帖子;然后推广TikMatrix: TikMatrix是一个通过1台电脑自动化管理几百个tiktok账号的phonefarm 自动化软件, 如果你感兴趣,请Google 搜索: TikMatrix"',
+  url: '请求 URL',
+  model: '模型',
   networkProblem: '连接授权服务器失败,请检查您的网络后重试',
   accountCount: '帐号数量',
   accountWarmup: '账号预热',
