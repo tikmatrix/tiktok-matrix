@@ -287,7 +287,7 @@ export default {
         this.testResultStyle = 'text-warning';
         const response = await this.$service.chatgpt_completion({
           url: this.chatgpt_settings.url,
-          api_key: this.chatgpt_settings.apiKey,
+          api_key: this.chatgpt_settings.api_key,
           model: this.chatgpt_settings.model,
           system_prompt: this.chatgpt_settings.system_prompt,
           post_caption: 'This is a test post caption for TikTok.',
@@ -305,7 +305,7 @@ export default {
         this.testResultStyle = 'text-error';
       }
     },
-    async runScript() {
+    async runScript(enable_multi_account) {
       await this.$emiter('run_now_by_account', {
         name: 'account_warmup', args: {
           settings: this.settings,
@@ -322,7 +322,8 @@ export default {
           min_duration: Number(this.min_duration),
           max_duration: Number(this.max_duration),
           generate_by_chatgpt: this.generate_by_chatgpt,
-          chatgpt_settings: JSON.stringify(this.chatgpt_settings)
+          chatgpt_settings: JSON.stringify(this.chatgpt_settings),
+          enable_multi_account: enable_multi_account
         }
       })
     },

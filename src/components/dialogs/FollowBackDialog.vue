@@ -10,7 +10,7 @@
   <div class="flex flex-row items-center p-2 gap-2">
     <label class="font-bold text-right col-span-1">{{ $t('actions') }}:</label>
     <div class="flex flex-wrap gap-4">
-      
+
       <div class="form-control">
         <label class="label cursor-pointer gap-2">
           <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_send_message" />
@@ -57,14 +57,15 @@ export default {
     },
   },
   methods: {
-    
-    async runScript() {
+
+    async runScript(enable_multi_account) {
       await this.$emiter('run_now_by_account', {
         name: 'follow_back',
         args: {
           enable_send_message: this.enable_send_message,
           message_content: this.message_content,
           insert_emoji: this.insert_emoji,
+          enable_multi_account: enable_multi_account
         }
       })
     },

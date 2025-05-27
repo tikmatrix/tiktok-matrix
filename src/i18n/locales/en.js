@@ -1,5 +1,6 @@
 export default {
   account: 'Account',
+  enableMultiAccount: 'Enable Multi-Account',
   generateByChatGPT: 'Generate by ChatGPT',
   chatgptSettings: 'ChatGPT Settings',
   apiKey: 'API Key',

@@ -1,5 +1,6 @@
 export default {
   account: 'Аккаунт',
+  enableMultiAccount: 'Включить многопользовательский режим',
   generateByChatGPT: 'Сгенерировано ChatGPT',
   chatgptSettings: 'ChatGPT Настройки',
   apiKey: 'Ключ API',

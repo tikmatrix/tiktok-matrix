@@ -211,7 +211,7 @@ export default {
       this.live_target_username = lines.join('\n')
       return true;
     },
-    async runScript() {
+    async runScript(enable_multi_account) {
       if (!this.filterTargetUsername()) {
         return;
       }
@@ -239,6 +239,7 @@ export default {
           comment_order: this.comment_order,
           min_interval: Number(this.task_interval[0]),
           max_interval: Number(this.task_interval[1]),
+          enable_multi_account: enable_multi_account
         }
       })
     },

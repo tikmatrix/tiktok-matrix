@@ -1,6 +1,7 @@
 export default {
   account: '帐号',
   generateByChatGPT: '通过 ChatGPT 生成',
+  enableMultiAccount: '启用多账户',
   chatgptSettings: 'ChatGPT 设置',
   apiKey: 'API 密钥',
   systemPrompt: '系统提示',

@@ -330,7 +330,7 @@ export default {
       return tag_names.map(tag_name => this.tags.find(tag => tag.name === tag_name)?.id).join(',');
     },
 
-    async runScript() {
+    async runScript(enable_multi_account) {
       await this.$emiter('run_now_by_account', {
         name: 'post', args: {
           settings: this.settings,
@@ -344,6 +344,7 @@ export default {
           add_product_link: Number(this.add_product_link),
           captions: this.captions,
           materials_tags: this.convertTagsToIds(this.selectedTags),
+          enable_multi_account: enable_multi_account
         }
       })
     },
