@@ -169,7 +169,7 @@
             </label>
             <!-- 许可证状态 -->
             <button
-                class="btn btn-md flex items-center gap-2 px-4 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md"
+                class="btn btn-md flex items-center gap-2 px-4 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md cursor-pointer"
                 :class="[
                     isLoadingLicense ? 'btn-neutral' :
                         is_licensed() ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-none' : 'btn-error text-white'
@@ -178,8 +178,25 @@
                 <font-awesome-icon v-else-if="is_licensed()" icon="fa-solid fa-crown" class="h-5 w-5 text-yellow-200" />
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense">{{ $t('loading') }}</span>
-                <span v-else-if="is_licensed()" class="font-semibold">{{ $t('licensed') }}</span>
+                <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ $t('licensed') }}</span>
                 <span v-else>{{ $t('unlicensed') }}</span>
+                <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
+
+                    <label class="text-xs text-warning" v-if="licenseData.stripe_cancel_at">{{ $t('cancelTips', {
+                        date: new Date(licenseData.stripe_cancel_at *
+                            1000).toLocaleDateString()
+                    }) }}</label>
+                    <label class="text-xs text-warning" v-else>{{ $t('renewTips', {
+                        date: new Date(licenseData.stripe_renew_at *
+                            1000).toLocaleDateString()
+                    }) }}</label>
+                </div>
+                <div class="flex items-center flex-row gap-2 w-full" v-else>
+                    <label class="text-xs text-warning" v-if="licenseData.leftdays > 0">{{ $t('expiredTips', {
+                        date: new Date(new Date().getTime() + licenseData.leftdays * 24 * 60 * 60 *
+                            1000).toLocaleDateString()
+                    }) }}</label>
+                </div>
             </button>
             <!-- 语言选择 -->
             <select class="select select-info select-md" v-model="currentLocale" @change="changeLocale">

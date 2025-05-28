@@ -46,11 +46,11 @@
                 </div>
                 {{ $t('manageSubscription') }}
               </button>
-              <label class="text-sm text-gray-500" v-if="license.stripe_cancel_at">{{ $t('cancelAt', {
+              <label class="text-sm text-warning" v-if="license.stripe_cancel_at">{{ $t('cancelAt', {
                 date: new Date(license.stripe_cancel_at *
                   1000).toLocaleDateString()
               }) }}</label>
-              <label class="text-sm text-gray-500" v-else>{{ $t('renewAt', {
+              <label class="text-sm text-warning" v-else>{{ $t('renewAt', {
                 date: new Date(license.stripe_renew_at *
                   1000).toLocaleDateString()
               }) }}</label>
@@ -66,7 +66,7 @@
                 v-else>
                 {{ $t('copy') }}
               </button>
-              <label class="text-sm text-gray-500" v-if="license.leftdays > 0">{{ $t('expiredAt', {
+              <label class="text-sm text-warning" v-if="license.leftdays > 0">{{ $t('expiredAt', {
                 date: new Date(new Date().getTime() + license.leftdays * 24 * 60 * 60 * 1000).toLocaleDateString()
               }) }}</label>
 
