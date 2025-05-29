@@ -18,7 +18,8 @@
           || script.name === 'boostUsers'
           || script.name === 'boostPosts'
           || script.name === 'boostLives'
-          || script.name === 'massComment'">
+          || script.name === 'massComment'
+          || script.name === 'switchAccount'">
           <label class="font-bold text-info">{{ $t('enableMultiAccount') }}:</label>
           <input type="checkbox" class="toggle toggle-accent" v-model="enable_multi_account" />
         </div>
@@ -47,6 +48,7 @@
     <BoostPostsDialog v-if="script.name === 'boostPosts'" ref="currentDialog" />
     <BoostLivesDialog v-if="script.name === 'boostLives'" ref="currentDialog" />
     <MassCommentDialog v-if="script.name === 'massComment'" ref="currentDialog" />
+    <SwitchAccountDialog v-if="script.name === 'switchAccount'" ref="currentDialog" />
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
@@ -70,6 +72,7 @@ import BoostPostsDialog from './BoostPostsDialog.vue'
 import MatchAccounts from './MatchAccounts.vue'
 import MassCommentDialog from './MassCommentDialog.vue'
 import BoostLivesDialog from './BoostLivesDialog.vue'
+import SwitchAccountDialog from './SwitchAccountDialog.vue'
 export default {
   name: 'BeforeRunScript',
   props: {
@@ -104,7 +107,8 @@ export default {
     BoostPostsDialog,
     MatchAccounts,
     MassCommentDialog,
-    BoostLivesDialog
+    BoostLivesDialog,
+    SwitchAccountDialog
   },
 
   data() {

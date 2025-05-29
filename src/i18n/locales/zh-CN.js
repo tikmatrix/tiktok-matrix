@@ -1,6 +1,8 @@
 export default {
   account: '帐号',
   generateByChatGPT: '通过 ChatGPT 生成',
+  switchAccount: '切换帐号',
+  switchAccountWarning: '切换帐号脚本只用于测试切换账号功能是否正常工作',
   enableMultiAccount: '启用多账户',
   chatgptSettings: 'ChatGPT 设置',
   apiKey: 'API 密钥',

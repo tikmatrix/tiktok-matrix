@@ -20,6 +20,11 @@
         {{ $t('matchAccount') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'switchAccount' } })">
+        <font-awesome-icon icon="fa-solid fa-right-left" class="h-3 w-3" />
+        {{ $t('switchAccount') }}
+    </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'accountWarmup' } })">
         <font-awesome-icon icon="robot" class="h-3 w-3 text-success" />
         {{ $t('accountWarmup') }}

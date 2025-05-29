@@ -1,6 +1,8 @@
 export default {
   account: 'Аккаунт',
   enableMultiAccount: 'Включить многопользовательский режим',
+  switchAccount: 'Сменить аккаунт',
+  switchAccountWarning: 'Скрипт смены аккаунта позволяет тестировать переключение между аккаунтами без необходимости вручную выходить и входить в систему.',
   generateByChatGPT: 'Сгенерировано ChatGPT',
   chatgptSettings: 'ChatGPT Настройки',
   apiKey: 'Ключ API',

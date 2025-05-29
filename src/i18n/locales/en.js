@@ -1,6 +1,8 @@
 export default {
   account: 'Account',
   enableMultiAccount: 'Enable Multi-Account',
+  switchAccount: 'Switch Account',
+  switchAccountWarning: 'The multi-account switching feature allows you to Test the switching of accounts seamlessly.',
   generateByChatGPT: 'Generate by ChatGPT',
   chatgptSettings: 'ChatGPT Settings',
   apiKey: 'API Key',
