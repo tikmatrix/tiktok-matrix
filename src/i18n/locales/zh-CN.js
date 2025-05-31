@@ -1,5 +1,9 @@
 export default {
   account: '帐号',
+  privacyPolicy: '隐私政策',
+  termsOfService: '服务条款',
+  iAgreeWith: '我同意',
+  pleaseAgree: '请勾选下方我同意隐私政策和服务条款',
   generateByChatGPT: '通过 ChatGPT 生成',
   switchAccount: '切换帐号',
   switchAccountWarning: '切换帐号脚本只用于测试切换账号功能是否正常工作',

@@ -1,6 +1,10 @@
 export default {
   account: 'Account',
   enableMultiAccount: 'Enable Multi-Account',
+  privacyPolicy: 'Privacy Policy',
+  termsOfService: 'Terms of Service',
+  iAgreeWith: 'I agree with the ',
+  pleaseAgree: 'Please check the box below to agree to the Privacy Policy and Terms of Service.',
   switchAccount: 'Switch Account',
   switchAccountWarning: 'The multi-account switching feature allows you to Test the switching of accounts seamlessly.',
   generateByChatGPT: 'Generate by ChatGPT',

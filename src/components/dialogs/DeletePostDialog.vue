@@ -19,7 +19,7 @@ export default {
   name: 'DeletePost',
   data() {
     return {
-      maxViews: localStorage.getItem('maxViews') || 0,
+      maxViews: Number(localStorage.getItem('maxViews')) || 0,
     }
   },
   watch: {

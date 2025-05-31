@@ -121,7 +121,7 @@
           </div>
 
           <div class="mx-auto mt-2 grid  grid-cols-3 items-center gap-y-6 w-full gap-x-2"
-            v-else-if="license.is_stripe_active == 0">
+            v-else-if="license.is_stripe_active == 1">
             <!-- 试用 -->
             <div class="relative bg-primary shadow-2xl rounded-3xl p-8 ring-1 ring-info ring-opacity-50">
               <h3 class="text-primary-content font-semibold">
@@ -330,13 +330,38 @@
 
             </div>
           </div>
+          <!-- 新增：隐私协议和服务条款链接 -->
+          <div class="flex justify-center items-center gap-2 mt-4">
+            <input type="checkbox" id="agreePolicy" v-model="agreePolicy" class="checkbox checkbox-primary" />
+            <label for="agreePolicy" class="cursor-pointer select-none">
+              {{ $t('iAgreeWith') }}
+              <a href="https://tikmatrix.com/privacy-policy" target="_blank" class="link link-primary mx-1">
+                {{ $t('privacyPolicy') }}
+              </a>
+              {{ $t('and') }}
+              <a href="https://tikmatrix.com/terms-of-service" target="_blank" class="link link-primary mx-1">
+                {{ $t('termsOfService') }}
+              </a>
+            </label>
+          </div>
         </div>
 
 
       </div>
+
     </div>
     <form method="dialog" class="modal-backdrop">
       <button>close</button>
+    </form>
+  </dialog>
+  <!-- 新增：同意隐私协议和服务条款链接询问弹窗 -->
+  <dialog ref="agreePolicyDialog" class="modal">
+    <form method="dialog" class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('tips') }}</h3>
+      <p class="py-4">{{ $t('pleaseAgree') }}</p>
+      <div class="modal-action">
+        <button type="submit" class="btn">{{ $t('confirm') }}</button>
+      </div>
     </form>
   </dialog>
 </template>
@@ -365,20 +390,22 @@ export default {
       required: true
     }
   },
-  computed: {
 
-  },
   data() {
     return {
       remainingTime: 0,
       order: null,
       interval: null,
       refreshTime: 10,
+      agreePolicy: localStorage.getItem('agreePolicy') === 'true'
     }
   },
-
+  watch: {
+    agreePolicy(newVal) {
+      localStorage.setItem('agreePolicy', newVal);
+    }
+  },
   computed: {
-
     formattedTime() {
       const minutes = Math.floor((this.remainingTime % 3600) / 60).toString().padStart(2, '0');
       const seconds = (this.remainingTime % 60).toString().padStart(2, '0');
@@ -386,9 +413,6 @@ export default {
     }
   },
   methods: {
-
-
-
     async activate(event) {
       event.target.innerText = this.$t('activating')
       event.target.disabled = true
@@ -570,6 +594,10 @@ export default {
       await this.createStripeOrder(599, 'year', false, event)
     },
     async createStripeOrder(price, plan, trial, event) {
+      if (!this.agreePolicy) {
+        this.$refs.agreePolicyDialog.showModal();
+        return;
+      }
       event.target.disabled = true
       this.$service.get_stripe_checkout_url({
         price: price,
