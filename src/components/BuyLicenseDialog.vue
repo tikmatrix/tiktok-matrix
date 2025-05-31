@@ -121,7 +121,7 @@
           </div>
 
           <div class="mx-auto mt-2 grid  grid-cols-3 items-center gap-y-6 w-full gap-x-2"
-            v-else-if="license.is_stripe_active == 1">
+            v-else-if="license.is_stripe_active == 0">
             <!-- 试用 -->
             <div class="relative bg-primary shadow-2xl rounded-3xl p-8 ring-1 ring-info ring-opacity-50">
               <h3 class="text-primary-content font-semibold">
