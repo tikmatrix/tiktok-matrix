@@ -1,5 +1,7 @@
 export default {
   account: 'Аккаунт',
+  postWay: 'Способ публикации',
+  addButton: 'Добавить кнопку',
   privacyPolicy: 'Политика конфиденциальности',
   termsOfService: 'Условия обслуживания',
   iAgreeWith: 'Я согласен с ',

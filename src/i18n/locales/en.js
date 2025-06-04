@@ -1,5 +1,7 @@
 export default {
   account: 'Account',
+  postWay: 'Post Way',
+  addButton: 'Add Button',
   enableMultiAccount: 'Enable Multi-Account',
   privacyPolicy: 'Privacy Policy',
   termsOfService: 'Terms of Service',

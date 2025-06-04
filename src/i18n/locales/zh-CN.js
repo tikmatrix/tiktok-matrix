@@ -1,5 +1,7 @@
 export default {
   account: '帐号',
+  postWay: '发布方式',
+  addButton: '添加按钮',
   privacyPolicy: '隐私政策',
   termsOfService: '服务条款',
   iAgreeWith: '我同意',
