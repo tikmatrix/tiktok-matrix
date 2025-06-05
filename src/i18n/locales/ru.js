@@ -1,5 +1,6 @@
 export default {
   account: 'Аккаунт',
+  syncTiktokData: 'Синхронизировать данные TikTok',
   postWay: 'Способ публикации',
   addButton: 'Добавить кнопку',
   privacyPolicy: 'Политика конфиденциальности',

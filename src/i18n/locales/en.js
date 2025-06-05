@@ -1,5 +1,6 @@
 export default {
   account: 'Account',
+  syncTiktokData: 'Sync TikTok Data',
   postWay: 'Post Way',
   addButton: 'Add Button',
   enableMultiAccount: 'Enable Multi-Account',

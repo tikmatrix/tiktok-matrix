@@ -1,5 +1,6 @@
 export default {
   account: '帐号',
+  syncTiktokData: '同步 TikTok 数据',
   postWay: '发布方式',
   addButton: '添加按钮',
   privacyPolicy: '隐私政策',
@@ -518,7 +519,7 @@ export default {
   singleAccountModeTip: '在此模式下，每个账号将对单个帖子进行评论',
   singleAccountToSinglePost: '单账号对单帖评论',
   siteName: 'TikMatrix',
-  siteUrl: 'https://www.tikmatrix.com/zh-Hans',
+  siteUrl: 'https://www.tikmatrix.com',
   sleep: '休眠',
   smartFrameCut: '智能抽帧',
   sort: '排序',
