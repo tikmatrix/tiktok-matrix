@@ -615,7 +615,7 @@ export default {
       await this.getStripePriceTableInfo()
       this.$refs.buy_liscense_dialog.showModal()
       await this.getOrder()
-      this.$refs.createOrderLoadingDialog.showModal();
+      // this.$refs.createOrderLoadingDialog.showModal();
 
     },
     async copyText(text, event) {
