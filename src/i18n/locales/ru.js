@@ -1,5 +1,12 @@
 export default {
   account: 'Аккаунт',
+  yearlyDiscount: 'Ежегодно(Сэкономьте {percent}%)',
+  starter: 'Стартовый',
+  pro: 'Профессиональный',
+  business: 'Бизнес',
+  pc: 'ПК',
+  and: 'и',
+  subscribe: 'Подписаться',
   syncTiktokData: 'Синхронизировать данные TikTok',
   postWay: 'Способ публикации',
   addButton: 'Добавить кнопку',

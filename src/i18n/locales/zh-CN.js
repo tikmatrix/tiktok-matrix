@@ -1,5 +1,12 @@
 export default {
   account: '帐号',
+  yearlyDiscount: '年度（立省 {percent}%）',
+  starter: '入门',
+  pro: '专业',
+  business: '商业',
+  pc: '电脑',
+  and: '和',
+  subscribe: '订阅',
   syncTiktokData: '同步 TikTok 数据',
   postWay: '发布方式',
   addButton: '添加按钮',

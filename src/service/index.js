@@ -622,4 +622,10 @@ export function chatgpt_completion(data) {
     data
   })
 }
+export function get_stripe_price_table_info() {
+  return request({
+    method: 'get',
+    url: api.get_stripe_price_table_info
+  })
+}
 

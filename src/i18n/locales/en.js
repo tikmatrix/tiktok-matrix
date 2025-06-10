@@ -1,5 +1,12 @@
 export default {
   account: 'Account',
+  yearlyDiscount: 'Yearly(Save {percent}%)',
+  starter: 'Starter',
+  pro: 'Pro',
+  business: 'Business',
+  pc: 'PC',
+  and: 'and',
+  subscribe: 'Subscribe',
   syncTiktokData: 'Sync TikTok Data',
   postWay: 'Post Way',
   addButton: 'Add Button',
