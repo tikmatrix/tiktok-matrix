@@ -1,5 +1,6 @@
 export default {
   account: 'Account',
+  creatingOrder: 'Creating Order...',
   yearlyDiscount: 'Yearly(Save {percent}%)',
   starter: 'Starter',
   pro: 'Pro',

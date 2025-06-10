@@ -284,11 +284,24 @@
       <button>close</button>
     </form>
   </dialog>
-  <!-- 新增：同意隐私协议和服务条款链接询问弹窗 -->
+  <!-- 同意隐私协议和服务条款链接询问弹窗 -->
   <dialog ref="agreePolicyDialog" class="modal">
     <form method="dialog" class="modal-box">
       <h3 class="font-bold text-lg">{{ $t('tips') }}</h3>
       <p class="py-4">{{ $t('pleaseAgree') }}</p>
+      <div class="modal-action">
+        <button type="submit" class="btn">{{ $t('confirm') }}</button>
+      </div>
+    </form>
+  </dialog>
+  <!-- 创建订单Loading弹窗 -->
+  <dialog ref="createOrderLoadingDialog" class="modal">
+    <form method="dialog" class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('creatingOrder') }}</h3>
+      <div class="py-4 flex items-center justify-center">
+        <span class="loading loading-bars loading-xl"></span>
+      </div>
+
       <div class="modal-action">
         <button type="submit" class="btn">{{ $t('confirm') }}</button>
       </div>
@@ -542,6 +555,7 @@ export default {
         this.$refs.agreePolicyDialog.showModal();
         return;
       }
+      this.$refs.createOrderLoadingDialog.showModal();
       this.$service.get_stripe_checkout_url({
         price_id: price_id,
         plan_interval: plan_interval
@@ -557,6 +571,7 @@ export default {
           console.log('get_stripe_checkout_url:', res.data)
           await open(JSON.parse(res.data))
         }
+        this.$refs.createOrderLoadingDialog.close();
       }).catch(async (err) => {
         console.error('get_stripe_checkout_url error:', err)
         await this.$emiter('NOTIFY', {
@@ -564,9 +579,11 @@ export default {
           message: this.$t('getStripeCheckoutUrlErrorMessage'),
           timeout: 2000
         });
+        this.$refs.createOrderLoadingDialog.close();
       });
     },
     async createOrder(price, plan_id, plan_interval, network) {
+      this.$refs.createOrderLoadingDialog.showModal();
       const finalPrice = Number(price * (1 - this.license.affiliate_discount / 100).toFixed(0));
       this.$service.create_order({
         network: network,
@@ -580,6 +597,7 @@ export default {
         } else {
           await this.showOrder(res.data)
         }
+        this.$refs.createOrderLoadingDialog.close();
       }).catch(async (err) => {
         console.error('create_order error:', err)
         await this.$emiter('NOTIFY', {
@@ -587,6 +605,7 @@ export default {
           message: this.$t('createOrderErrorMessage'),
           timeout: 2000
         });
+        this.$refs.createOrderLoadingDialog.close();
       });
     },
 
@@ -596,6 +615,8 @@ export default {
       await this.getStripePriceTableInfo()
       this.$refs.buy_liscense_dialog.showModal()
       await this.getOrder()
+      this.$refs.createOrderLoadingDialog.showModal();
+
     },
     async copyText(text, event) {
       await writeText(text)

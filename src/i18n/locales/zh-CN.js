@@ -1,5 +1,6 @@
 export default {
   account: '帐号',
+  creatingOrder: '创建订单中...',
   yearlyDiscount: '年度（立省 {percent}%）',
   starter: '入门',
   pro: '专业',

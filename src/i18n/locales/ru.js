@@ -1,5 +1,6 @@
 export default {
   account: 'Аккаунт',
+  creatingOrder: 'Создание заказа...',
   yearlyDiscount: 'Ежегодно(Сэкономьте {percent}%)',
   starter: 'Стартовый',
   pro: 'Профессиональный',
