@@ -1,5 +1,8 @@
 export default {
   account: '帐号',
+  useSound: '使用声音',
+  soundNameRequired: '声音名称是必填项',
+  soundNamePlaceholder: '输入声音名称',
   creatingOrder: '创建订单中...',
   yearlyDiscount: '年度（立省 {percent}%）',
   starter: '入门',

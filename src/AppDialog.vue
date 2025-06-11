@@ -60,6 +60,7 @@ export default {
   },
   methods: {
     menu_selected(item) {
+      console.log('menu_selected', item)
       this.selectedItem = item
       this.$refs.page_dialog.showModal()
       this.$refs.page_dialog.addEventListener('close', () => {

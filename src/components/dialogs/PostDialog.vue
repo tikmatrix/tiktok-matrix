@@ -55,7 +55,15 @@
                 class="form-radio text-primary h-4 w-4">
               <label for="addButton" class="ml-2">{{ $t('addButton') }}</label>
             </div>
+            <div class="flex items-center">
+              <input type="radio" id="useSound" value="useSound" v-model="post_way"
+                class="form-radio text-primary h-4 w-4">
+              <label for="useSound" class="ml-2">{{ $t('useSound') }}</label>
+              <input type="text" v-model="sound_name" :placeholder="$t('soundNamePlaceholder')"
+                class="border-2 border-gray-300 p-2 rounded" />
+            </div>
           </div>
+
         </div>
         <div class="flex w-full items-center gap-2 mb-2">
           <label class="font-bold w-40">{{ $t('contentType') }}:</label>
@@ -213,6 +221,7 @@ export default {
     return {
       settings: localStorage.getItem('postSettings') || 'custom',
       post_way: localStorage.getItem('post_way') || 'share',
+      sound_name: localStorage.getItem('sound_name') || '',
       startOption: localStorage.getItem('postStartOption') || 'now',
       scheduledTime: localStorage.getItem('postScheduledTime') || '',
       content_type: Number(localStorage.getItem('content_type')) || 0,
@@ -240,6 +249,9 @@ export default {
     },
     post_way: function (newVal) {
       localStorage.setItem('post_way', newVal);
+    },
+    sound_name: function (newVal) {
+      localStorage.setItem('sound_name', newVal);
     },
     startOption: function (newVal) {
       localStorage.setItem('postStartOption', newVal);
@@ -348,10 +360,19 @@ export default {
     },
 
     async runScript(enable_multi_account) {
+      if (this.post_way === 'useSound' && !this.sound_name) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('soundNameRequired'),
+          timeout: 2000
+        });
+        return;
+      }
       await this.$emiter('run_now_by_account', {
         name: 'post', args: {
           settings: this.settings,
           post_way: this.post_way,
+          sound_name: this.sound_name,
           start_time: this.startOption === 'scheduled' ? this.scheduledTime : '',
           content_type: Number(this.content_type),
           image_count: Number(this.image_count),

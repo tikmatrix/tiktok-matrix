@@ -1,5 +1,8 @@
 export default {
   account: 'Аккаунт',
+  soundNameRequired: 'Название звука обязательно',
+  useSound: 'Использовать звук',
+  soundNamePlaceholder: 'Введите название звука',
   creatingOrder: 'Создание заказа...',
   yearlyDiscount: 'Ежегодно(Сэкономьте {percent}%)',
   starter: 'Стартовый',

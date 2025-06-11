@@ -1,5 +1,8 @@
 export default {
   account: 'Account',
+  soundNameRequired: 'Sound Name is required',
+  useSound: 'Use Sound',
+  soundNamePlaceholder: 'Enter Sound Name',
   creatingOrder: 'Creating Order...',
   yearlyDiscount: 'Yearly(Save {percent}%)',
   starter: 'Starter',

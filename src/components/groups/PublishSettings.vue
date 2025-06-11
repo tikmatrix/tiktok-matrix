@@ -13,7 +13,7 @@
       </div>
     </div>
     <div>
-      <div class="flex w-full items-center gap-2 mb-2">
+      <div class="flex w-full items-center gap-2 mb-2" v-if="mygroup.auto_publish == 1">
         <label class="font-bold w-40">{{ $t('scheduleTime') }}:</label>
         <div class="flex flex-wrap gap-2">
           <div v-for="(time, index) in publishTimes" :key="index" class="flex items-center">
@@ -30,6 +30,28 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
           </button>
+        </div>
+      </div>
+      <div class="flex w-full items-center gap-2 mb-2">
+        <label class="font-bold w-40">{{ $t('postWay') }}:</label>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center">
+            <input type="radio" id="share" value="share" v-model="mygroup.post_way"
+              class="form-radio text-primary h-4 w-4">
+            <label for="share" class="ml-2">{{ $t('share') }}</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" id="addButton" value="addButton" v-model="mygroup.post_way"
+              class="form-radio text-primary h-4 w-4">
+            <label for="addButton" class="ml-2">{{ $t('addButton') }}</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" id="useSound" value="useSound" v-model="mygroup.post_way"
+              class="form-radio text-primary h-4 w-4">
+            <label for="useSound" class="ml-2">{{ $t('useSound') }}</label>
+            <input type="text" v-model="mygroup.sound_name" :placeholder="$t('soundNamePlaceholder')"
+              v-if="mygroup.post_way == 'useSound'" class="border-2 border-gray-300 p-2 rounded" />
+          </div>
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
@@ -206,6 +228,14 @@ export default {
         await this.$emiter('NOTIFY', {
           type: 'error',
           message: this.$t('publishStartTimeFormatError'),
+          timeout: 2000
+        });
+        return
+      }
+      if (this.mygroup.post_way === 'useSound' && !this.mygroup.sound_name) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('soundNameRequired'),
           timeout: 2000
         });
         return
