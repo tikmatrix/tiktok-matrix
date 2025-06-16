@@ -1,5 +1,9 @@
 export default {
   account: 'Account',
+  followPlan: 'Follow Plan',
+  followCount: 'Follow Count',
+  unfollowDelay: 'Unfollow Delay',
+  unfollowCount: 'Unfollow Count',
   soundNameRequired: 'Sound Name is required',
   useSound: 'Use Sound',
   soundNamePlaceholder: 'Enter Sound Name',

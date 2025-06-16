@@ -628,4 +628,31 @@ export function get_stripe_price_table_info() {
     url: api.get_stripe_price_table_info
   })
 }
+export function get_plans() {
+  return request({
+    method: 'get',
+    url: api.plan
+  })
+}
+export function add_plan(data) {
+  return request({
+    method: 'post',
+    url: api.plan,
+    data
+  })
+}
+export function update_plan(data) {
+  return request({
+    method: 'put',
+    url: api.plan,
+    data
+  })
+}
+export function delete_plan({ id }) {
+  return request({
+    method: 'delete',
+    url: api.plan,
+    params: { id }
+  })
+}
 

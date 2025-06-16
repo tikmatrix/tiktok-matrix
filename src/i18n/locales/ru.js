@@ -1,5 +1,9 @@
 export default {
   account: 'Аккаунт',
+  followPlan: 'План подписки',
+  followCount: 'Количество подписок',
+  unfollowDelay: 'Задержка отмены подписки',
+  unfollowCount: 'Количество отмены подписки',
   soundNameRequired: 'Название звука обязательно',
   useSound: 'Использовать звук',
   soundNamePlaceholder: 'Введите название звука',

@@ -13,6 +13,10 @@
             <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
               <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
             </button>
+            <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('showDialog', { name: 'plans' })">
+              <font-awesome-icon icon="fa-solid fa-calendar-check" class="h-3 w-3 mr-1" />
+              {{ $t('followPlan') }}
+            </button>
             <button class="btn btn-md btn-primary ml-1 mb-1"
               @click="$emiter('showDialog', { name: 'materials', group: item })">
               <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}

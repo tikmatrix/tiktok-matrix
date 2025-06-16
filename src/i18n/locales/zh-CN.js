@@ -1,5 +1,9 @@
 export default {
   account: '帐号',
+  followPlan: '关注计划',
+  followCount: '关注数量',
+  unfollowDelay: '取消关注延迟',
+  unfollowCount: '取消关注数量',
   useSound: '使用声音',
   soundNameRequired: '声音名称是必填项',
   soundNamePlaceholder: '输入声音名称',

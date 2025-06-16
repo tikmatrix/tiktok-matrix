@@ -2,6 +2,7 @@
   <dialog ref="page_dialog" class="modal">
     <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
       <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
+      <ManagePlans :devices="devices" v-if="selectedItem.name === 'plans' && $refs.page_dialog.open" />
       <TikTokSettings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open" />
       <TrainSettings v-if="selectedItem.name === 'accountWarmup' && $refs.page_dialog.open"
         :group="selectedItem.group" />
@@ -22,6 +23,8 @@
 
 <script>
 import ManageAccounts from './components/account/ManageAccounts.vue'
+import ManagePlans from './components/plan/ManagePlans.vue'
+
 import TikTokSettings from './components/TikTokSettings.vue'
 import TrainSettings from './components/groups/TrainSettings.vue'
 import PublishSettings from './components/groups/PublishSettings.vue'
@@ -46,6 +49,7 @@ export default {
   },
   components: {
     ManageAccounts,
+    ManagePlans,
     TikTokSettings,
     TrainSettings,
     PublishSettings,
