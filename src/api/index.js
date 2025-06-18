@@ -61,6 +61,7 @@ const api = {
   materials_with_tags_by_tag: '/api/tag/{tag_id}/materials/with-tags',
   chatgpt_completion: '/api/chatgpt_completion',
   get_stripe_price_table_info: '/api/get_stripe_price_table_info',
-  plan: '/api/plan'
+  plan: '/api/plan',
+  follow_record: '/api/follow_record'
 }
 export default api

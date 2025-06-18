@@ -655,4 +655,11 @@ export function delete_plan({ id }) {
     params: { id }
   })
 }
+export function get_follow_record({ username }) {
+  return request({
+    method: 'get',
+    url: api.follow_record,
+    params: { username }
+  })
+}
 

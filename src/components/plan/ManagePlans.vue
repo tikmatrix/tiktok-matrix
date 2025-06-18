@@ -44,8 +44,10 @@
 
                 <td>
                   <div class="space-x-4">
-                    <button class="btn btn-md btn-primary" @click="$refs.edit_dialog.show(plan)">{{ $t('edit')
-                    }}</button>
+                    <button class="btn btn-md btn-primary" @click="$refs.edit_dialog.show(plan)">
+                      {{ $t('edit') }}</button>
+                    <button class="btn btn-md btn-primary" @click="$refs.follow_record_dialog.show(plan)">
+                      {{ $t('followRecord') }}</button>
                     <button class="btn btn-md btn-error" @click="deletePlan(plan)">
                       {{ $t('delete') }}
                     </button>
@@ -58,13 +60,13 @@
       </template>
     </Pagination>
     <Edit ref="edit_dialog" @update="updatePlan" @add="addPlan" />
-
-
+    <FollowRecord ref="follow_record_dialog" />
   </div>
 </template>
 <script>
 import MyButton from '../Button.vue'
 import Edit from './Edit.vue'
+import FollowRecord from './FollowRecord.vue'
 import Pagination from '../Pagination.vue'
 
 export default {
@@ -72,6 +74,7 @@ export default {
   components: {
     MyButton,
     Edit,
+    FollowRecord,
     Pagination,
   },
   props: {

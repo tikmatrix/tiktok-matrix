@@ -2,10 +2,11 @@
 
 📱 TikMatrix- is a PC desktop software for automating TikTok on Android phones.
 
-Download: https://tikmatrix.com/Download/
-Tutorial: https://tikmatrix.com/docs/intro
+Download: <https://tikmatrix.com/Download/>
+Tutorial: <https://tikmatrix.com/docs/intro>
 
 💪Features:
+
 - Multi-account switching: One phone can log in to 8 TikTok accounts simultaneously for all tasks.
 - Auto registration (with email) and auto login (with email/password or username/password). *Note: Captcha solving and email verification must be done manually.*
 - Auto profile filling: Avatar, nickname, bio, and username.
@@ -22,10 +23,11 @@ Tutorial: https://tikmatrix.com/docs/intro
 - Minute-level task scheduling: Automate tasks with minute-level precision.
 - Import/export accounts.
 - Custom functionality: Add any feature on request.
-- Multilingual support: TikMatrix supports EN/RU/CN. 
+- Multilingual support: TikMatrix supports EN/RU/CN.
 Note: The TikTok app on the phone must be in English for all features to work properly.
 
 ⚙️Requirements:
+
 - 💻Windows PC running Windows 7 or later OR 📱Mac computer running macOS
 - 🤖📱Android phones/devices with Android 5.0+ (API 21) Phones do not require root access.
 🏷Offers flexible pricing plans for every need:
@@ -38,12 +40,12 @@ Note: The TikTok app on the phone must be in English for all features to work pr
 - Annual billing enjoys a 30% discount.🔣
 - Payment methods: Card/Credit Card/USDT (TRC20/BEP20).💳💳🪙
 
-
 🔧Common troubleshooting and solutions
-https://tikmatrix.com/docs/category/troubleshooting
+<https://tikmatrix.com/docs/category/troubleshooting>
 
-DM https://t.me/tikmatrixcom 
-Chat Group https://t.me/tikmatrix_support
+DM <https://t.me/tikmatrixcom>
+Chat Group <https://t.me/tikmatrix_support>
+
 ## Quick start
 
 [Official website](https://www.tikmatrix.com)
@@ -52,7 +54,7 @@ Chat Group https://t.me/tikmatrix_support
 
 ## Discussions
 
-[Join our Telegram](https://t.me/+iGhozoBfAbI5YmE1)
+[Join our Telegram](https://t.me/tikmatrix)
 
 ## Development
 
@@ -84,7 +86,7 @@ adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.
 
 ### How to customize TikMatrix Brand?
 
-* src/src-tauri/tauri.conf.json
+- src/src-tauri/tauri.conf.json
 
 ```shell
 "package": {
@@ -93,7 +95,7 @@ adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.
   }
 ```
 
-* src/i18n.js
+- src/i18n.js
 
 ```shell
  siteName: 'TikMatrix',

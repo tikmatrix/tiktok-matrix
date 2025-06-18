@@ -13,6 +13,7 @@
           || script.name === 'post'
           || script.name === 'massDM'
           || script.name === 'followBack'
+          || script.name === 'unFollowAll'
           || script.name === 'scrapeFollowers'
           || script.name === 'deletePost'
           || script.name === 'boostUsers'
@@ -38,6 +39,7 @@
     <ProfileDialog v-if="script.name === 'profile'" ref="currentDialog" />
     <MassDMDialog v-if="script.name === 'massDM'" ref="currentDialog" />
     <FollowBackDialog v-if="script.name === 'followBack'" ref="currentDialog" />
+    <UnFollowAllDialog v-if="script.name === 'unFollowAll'" ref="currentDialog" />
     <AccountWarmupDialog v-if="script.name === 'accountWarmup'" ref="currentDialog" />
     <PostDialog v-if="script.name === 'post'" ref="currentDialog" />
     <LoginDialog v-if="script.name === 'login'" ref="currentDialog" />
@@ -62,6 +64,7 @@ import RegisterDialog from './RegisterDialog.vue'
 import ProfileDialog from './ProfileDialog.vue'
 import MassDMDialog from './MassDMDialog.vue'
 import FollowBackDialog from './FollowBackDialog.vue'
+import UnFollowAllDialog from './UnFollowAllDialog.vue'
 import LoginDialog from './LoginDialog.vue'
 import AccountWarmupDialog from './AccountWarmupDialog.vue'
 import PostDialog from './PostDialog.vue'
@@ -98,6 +101,7 @@ export default {
     ProfileDialog,
     MassDMDialog,
     FollowBackDialog,
+    UnFollowAllDialog,
     LoginDialog,
     AccountWarmupDialog,
     PostDialog,

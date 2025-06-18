@@ -75,6 +75,11 @@
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />
         {{ $t('followBack') }}
     </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'unFollowAll' } })">
+        <font-awesome-icon icon="fa-solid fa-user-minus" class="h-3 w-3 mr-1" />
+        {{ $t('unFollowAll') }}
+    </button>
 
 
 
