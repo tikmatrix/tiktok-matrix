@@ -48,6 +48,21 @@
         </a>
       </label>
     </div>
+    <div class="divider">{{ $t('featureUnlock') }}</div>
+    <div class="form-control px-3 py-1 rounded-lg shadow-md flex-row items-center">
+      <label class="label cursor-pointer flex items-center space-x-2">
+        <span class="text-md font-bold">{{ $t('featureUnlock') }}:</span>
+        <input v-model="featureCode" class="input input-bordered input-md w-40" :placeholder="$t('inputFeatureCode')" />
+        <button class="btn btn-md btn-primary ml-2" @click="unlockFeature">{{ $t('unlock') }}</button>
+      </label>
+    </div>
+    <div class="divider">{{ $t('openAdbTerminal') }}</div>
+    <div class="form-control px-3 py-1 rounded-lg shadow-md flex-row items-center">
+      <label class="label cursor-pointer flex items-center space-x-2">
+        <span class="text-md font-bold">{{ $t('openAdbTerminal') }}:</span>
+        <button class="btn btn-md btn-secondary ml-2" @click="open_adb_terminal">{{ $t('openAdbTerminalBtn') }}</button>
+      </label>
+    </div>
   </div>
 </template>
 <script>
@@ -81,6 +96,7 @@ export default {
       packagename: '',
       bigScreen: localStorage.getItem('bigScreen') || 'standard',
       work_path: '',
+      featureCode: '',
     }
   },
   methods: {
@@ -89,11 +105,48 @@ export default {
         name
       });
     },
+    async open_adb_terminal() {
+      const dir = (await appDataDir()) + 'platform-tools';
+      invoke('open_adb_terminal', { dir });
+    },
     async update_settings() {
       await this.$service.update_settings(this.settings)
       //reload settings
       await this.$emiter('reload_settings', {})
 
+    },
+    async unlockFeature() {
+      // 激活码与功能映射，可扩展
+      const featureMap = {
+        'cGxhbl9rZXk=': 'followPlan', // 'plan_key' base64
+        // 未来可添加更多激活码
+      };
+      const code = this.featureCode.trim();
+      const unlocked = JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
+      if (featureMap[code]) {
+        if (!unlocked.includes(featureMap[code])) {
+          unlocked.push(featureMap[code]);
+          localStorage.setItem('unlockedFeatures', JSON.stringify(unlocked));
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('featureUnlocked'),
+            timeout: 2000
+          });
+          await this.$emiter('featureUnlocked', {})
+        } else {
+          await this.$emiter('NOTIFY', {
+            type: 'info',
+            message: this.$t('featureAlreadyUnlocked'),
+            timeout: 2000
+          });
+        }
+      } else {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('featureCodeInvalid'),
+          timeout: 2000
+        });
+      }
     }
   },
   async mounted() {

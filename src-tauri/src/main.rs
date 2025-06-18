@@ -290,6 +290,35 @@ fn open_dir(name: String, app: tauri::AppHandle) {
     log::info!("open_dir: {}", path);
     let _ = open::that(path);
 }
+const CREATE_NEW_CONSOLE: u32 = 0x00000010;
+#[tauri::command]
+fn open_adb_terminal(dir: String) {
+    #[cfg(target_os = "windows")]
+    {
+        // powershell -NoExit -Command "cd 'C:/path/to/platform-tools'"
+        let mut command = Command::new("powershell.exe");
+        command.args(&[
+            "-NoExit",
+            "-Command",
+            &format!("cd '{}';", dir.replace("\\", "/")),
+        ]);
+        command
+            .creation_flags(CREATE_NEW_CONSOLE)
+            .spawn()
+            .expect("failed to open PowerShell");
+    }
+    #[cfg(target_os = "macos")]
+    {
+        // osascript -e 'tell application "Terminal" to do script "cd /path/to/platform-tools"'
+        let script = format!(
+            "tell application \"Terminal\" to do script \"cd '{}'\"",
+            dir.replace("'", "\\'")
+        );
+        let mut command = Command::new("osascript");
+        command.args(&["-e", &script]);
+        command.spawn().expect("failed to open Terminal");
+    }
+}
 
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
@@ -301,7 +330,8 @@ fn main() -> std::io::Result<()> {
             unzip_file,
             is_agent_running,
             set_env,
-            get_env
+            get_env,
+            open_adb_terminal
         ])
         .setup(|app| {
             let work_dir = app.path_resolver().app_data_dir().unwrap();

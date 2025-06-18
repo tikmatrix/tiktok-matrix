@@ -61,6 +61,11 @@
         <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-primary-content" />
         {{ $t('screenOff') }}
     </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="isFeatureUnlocked('followPlan')"
+        @click="$emiter('showDialog', { name: 'plans' })">
+        <font-awesome-icon icon="fa-solid fa-calendar-check" class="h-3 w-3 mr-1" />
+        {{ $t('followPlan') }}
+    </button>
     <div>
         <label class="label">
             <span class="label-text">{{ $t('screenSize') }}: </span>
@@ -185,10 +190,11 @@ export default {
         return {
             proxy_host: localStorage.getItem('proxy_host') || '127.0.0.1',
             proxy_port: localStorage.getItem('proxy_port') || 8080,
-            screenScaled:  100,
+            screenScaled: 100,
             resolution: Number(localStorage.getItem('screenResolution')) || 512,
             customResolution: 512,
             uninstall_package: '',
+            unlocked: JSON.parse(localStorage.getItem('unlockedFeatures') || '[]')
         }
     },
     computed: {
@@ -198,6 +204,14 @@ export default {
         }
     },
     methods: {
+        isFeatureUnlocked(key) {
+            try {
+
+                return this.unlocked.includes(key);
+            } catch (e) {
+                return false;
+            }
+        },
         async app_install() {
             await this.$emiter('installApks', {})
         },
@@ -251,6 +265,12 @@ export default {
             localStorage.setItem('screenResolution', value);
             await this.$emiter('screenResolution', { resolution: value });
         },
-    }
+    },
+    async mounted() {
+        //featureUnlocked
+        await this.$listen('featureUnlocked', async (e) => {
+            this.unlocked = JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
+        })
+    },
 }
 </script>
