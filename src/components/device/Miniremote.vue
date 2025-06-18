@@ -577,7 +577,7 @@ export default {
           await writeText(res.data)
           await this.$emiter('NOTIFY', {
             type: 'success',
-            message: this.$t('copySuccess'),
+            message: 'Copy Success!',
             timeout: 2000
           });
         })

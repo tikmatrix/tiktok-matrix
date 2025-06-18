@@ -662,4 +662,11 @@ export function get_follow_record({ username }) {
     params: { username }
   })
 }
+export function clear_follow_records({ username }) {
+  return request({
+    method: 'get',
+    url: api.clear_follow_records,
+    params: { username }
+  })
+}
 

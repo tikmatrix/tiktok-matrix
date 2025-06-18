@@ -62,6 +62,7 @@ const api = {
   chatgpt_completion: '/api/chatgpt_completion',
   get_stripe_price_table_info: '/api/get_stripe_price_table_info',
   plan: '/api/plan',
-  follow_record: '/api/follow_record'
+  follow_record: '/api/follow_record',
+  clear_follow_records: '/api/follow_record/clear',
 }
 export default api

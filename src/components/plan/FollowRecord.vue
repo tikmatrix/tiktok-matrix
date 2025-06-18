@@ -4,6 +4,7 @@
       <Pagination :items="follow_records" :searchKeys="['follower']" :searchTermPlaceholder="$t('follower')"
         :showRefBtn="false" @refresh="get_follow_record" :pageSize="8">
         <template v-slot:buttons>
+          <MyButton @click="clearAll" label="clearAll" icon="fa fa-trash" />
         </template>
         <template v-slot:default="slotProps">
           <div class="overflow-x-auto">
@@ -55,6 +56,7 @@
 
 <script>
 import Pagination from '../Pagination.vue'
+import MyButton from '../Button.vue'
 export default {
   data() {
     return {
@@ -63,7 +65,8 @@ export default {
     }
   },
   components: {
-    Pagination
+    Pagination,
+    MyButton
   },
   methods: {
     show(plan) {
@@ -82,6 +85,17 @@ export default {
         .then(res => {
           console.log(res.data);
           this.follow_records = res.data;
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    clearAll() {
+      this.$service.clear_follow_records({
+        username: this.plan.username
+      })
+        .then(() => {
+          this.follow_records = [];
         })
         .catch(err => {
           console.error(err);
