@@ -1,4 +1,7 @@
 export default {
+  openInstagram: 'Open Instagram',
+  stopInstagram: 'Stop Instagram',
+  grantInstagram: 'Grant Instagram Access',
   account: 'Account',
   followPlan: 'Follow Plan',
   followCount: 'Follow Count',

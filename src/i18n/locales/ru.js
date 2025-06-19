@@ -1,4 +1,7 @@
 export default {
+  openInstagram: 'Открыть Instagram',
+  stopInstagram: 'Остановить Instagram',
+  grantInstagram: 'Предоставить доступ к Instagram',
   account: 'Аккаунт',
   followPlan: 'План подписки',
   followCount: 'Количество подписок',

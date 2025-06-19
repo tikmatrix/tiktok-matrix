@@ -507,7 +507,7 @@ export default {
                     responseType: ResponseType.JSON,
                     headers: {
                         'User-Agent': platform,
-                        'X-App-Id': this.name
+                        'X-App-Id': 'TikMatrix'
                     }
                 });
                 console.log('response:', response);

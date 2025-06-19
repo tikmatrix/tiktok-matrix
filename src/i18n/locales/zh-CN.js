@@ -1,4 +1,7 @@
 export default {
+  openInstagram: '打开 Instagram',
+  stopInstagram: '停止 Instagram',
+  grantInstagram: '授权 Instagram',
   account: '帐号',
   followPlan: '关注计划',
   followCount: '关注数量',

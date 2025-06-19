@@ -79,7 +79,7 @@
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'unFollowAll' } })">
         <font-awesome-icon icon="fa-solid fa-user-minus" class="h-3 w-3 mr-1" />
         {{ $t('unFollowAll') }}
-    </button>
+    </button>-->
 
 
 
