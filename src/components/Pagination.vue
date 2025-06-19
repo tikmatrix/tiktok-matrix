@@ -1,7 +1,7 @@
 <template>
   <div class="bg-base-200">
     <div class="w-full flex items-center p-4 bg-base-200 z-10 shadow-md" v-if="showTopControls">
-      <span class="font-bold p-2 text-md">{{ $t('total') }}: {{ filteredItems.length }}</span>
+      <span class="font-bold p-2 text-md whitespace-nowrap">{{ $t('total') }} {{ filteredItems.length }}</span>
 
       <div class="relative ml-2" v-if="searchKeys">
         <label class="input">
@@ -33,7 +33,7 @@
     <!-- 底部分页控件 -->
     <div class="flex items-center justify-between p-4 mt-4" v-if="showBottomControls">
       <div class="flex items-center">
-        <span class="mr-4">{{ $t('total') }} {{ filteredItems.length }}</span>
+        <span class="mr-4 whitespace-nowrap">{{ $t('total') }} {{ filteredItems.length }}</span>
         <div class="dropdown dropdown-top">
           <label tabindex="0" class="btn min-h-8 h-10 px-4 min-w-[120px] flex justify-between items-center">
             {{ pageSize }}/{{ $t('page') }}

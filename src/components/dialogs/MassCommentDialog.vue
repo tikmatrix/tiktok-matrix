@@ -36,8 +36,8 @@
   </div>
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('comments') }}: </span>
-    <textarea class="textarea textarea-success w-lg h-32 leading-tight"
-      :placeholder="$t('commentContentTips')" autocomplete="off" v-model="comment_content"> </textarea>
+    <textarea class="textarea textarea-success w-lg h-32 leading-tight" :placeholder="$t('commentContentTips')"
+      autocomplete="off" v-model="comment_content"> </textarea>
     <div class="flex flex-col gap-2">
       <div class="flex flex-row items-center gap-2">
         <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
@@ -59,19 +59,20 @@
           </label>
         </div>
       </div>
-      
+
       <!-- 添加评论间隔时间设置 -->
       <div class="flex flex-row items-center">
         <label class="font-bold mr-4">{{ $t('commentInterval') }}:</label>
-        <VueSlider v-model="comment_interval" :width="200" :min="0" :max="10" :marks="{0: '0'+$t('minute'),5: '5'+$t('minute'),10: '10'+$t('minute')}" />
+        <VueSlider v-model="comment_interval" :width="200" :min="0" :max="10"
+          :marks="{ 0: '0' + $t('minute'), 5: '5' + $t('minute'), 10: '10' + $t('minute') }" />
       </div>
     </div>
   </div>
 
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('targetPostUrls') }}: </span>
-    <textarea class="textarea textarea-success w-lg h-32 leading-tight"
-      :placeholder="$t('targetPostUrlTips')" autocomplete="off" v-model="target_post_urls"> </textarea>
+    <textarea class="textarea textarea-success w-lg h-32 leading-tight" :placeholder="$t('targetPostUrlTips')"
+      autocomplete="off" v-model="target_post_urls"> </textarea>
   </div>
 
 
@@ -86,7 +87,7 @@ export default {
   },
   data() {
     return {
-     
+
       comment_mode: localStorage.getItem('comment_mode') || 'multi-to-single',
       comment_content: localStorage.getItem('comment_content') || '',
       insert_emoji: localStorage.getItem('insert_emoji') === 'true' || false,
@@ -137,7 +138,7 @@ export default {
       return true;
     },
 
-    async runScript() {
+    async runScript(enable_multi_account) {
       if (!this.filterTargetPostUrl()) {
         return;
       }
@@ -150,6 +151,7 @@ export default {
           comment_order: this.comment_order,
           min_interval: Number(this.comment_interval[0]),
           max_interval: Number(this.comment_interval[1]),
+          enable_multi_account: enable_multi_account
         })
       } else {
         await this.$emiter('run_now_by_account', {
@@ -160,6 +162,7 @@ export default {
             comment_order: this.comment_order,
             min_interval: Number(this.comment_interval[0]),
             max_interval: Number(this.comment_interval[1]),
+            enable_multi_account: enable_multi_account
           }
         })
       }

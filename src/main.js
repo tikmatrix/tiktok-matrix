@@ -12,7 +12,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 /* add icons to the library */
 library.add(fas, fab)
-import { i18n } from './i18n.js'
+import { i18n } from './i18n/index'
 import VueDragSelect from "@coleqiu/vue-drag-select";
 import VueDraggableResizable from 'vue-draggable-resizable'
 import { emit, listen } from '@tauri-apps/api/event';

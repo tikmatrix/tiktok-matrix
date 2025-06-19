@@ -23,16 +23,16 @@ const request = async function request(config) {
     responseType: ResponseType.JSON,
     contentType: 'application/json'
   }
-  // console.log(`request: ${queryUrl} options: ${JSON.stringify(options)}`)
+  console.log(`request: ${queryUrl} options: ${JSON.stringify(options)}`)
   const response = await fetch(`${queryUrl}`, options,);
-  // console.log(`response status: ${response.status}`)
-  if (response.status == 500 || response.status == 400) {
+  console.log(`response status: ${response.status}`)
+  if (response.status >= 400) {
     await emit('NOTIFY', {
       type: 'error',
-      message: response.data,
+      message: `url: ${queryUrl}, code: ${response.status}, message: ${response.data}`,
       timeout: 2000
     });
-    return { code: 500, data: [] }
+    return { code: response.status, data: response.data, error: response.data, }
   }
   return response.data
 }

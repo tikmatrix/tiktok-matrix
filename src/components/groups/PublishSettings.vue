@@ -1,7 +1,7 @@
 <template>
   <div class="bg-base-100 flex flex-col items-start p-4">
     <div class="flex w-full items-center gap-2 mb-2">
-      <label class="font-bold w-40">{{ $t('scheduledPublish') }}:</label>
+      <label class="font-bold w-40">{{ $t('enableSchedule') }}:</label>
       <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.auto_publish" true-value="1"
         false-value="0" />
       <div role="alert" class="alert">
@@ -9,12 +9,12 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <span>{{ $t('publishTimeTips') }}</span>
+        <span>{{ $t('enableScheduleTips') }}</span>
       </div>
     </div>
     <div>
-      <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('publishTimer') }}:</label>
+      <div class="flex w-full items-center gap-2 mb-2" v-if="mygroup.auto_publish == 1">
+        <label class="font-bold w-40">{{ $t('scheduleTime') }}:</label>
         <div class="flex flex-wrap gap-2">
           <div v-for="(time, index) in publishTimes" :key="index" class="flex items-center">
             <input type="time" class="border-2 border-gray-300 p-2 rounded" v-model="publishTimes[index]"
@@ -33,7 +33,29 @@
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('publishType') }}:</label>
+        <label class="font-bold w-40">{{ $t('postWay') }}:</label>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center">
+            <input type="radio" id="share" value="share" v-model="mygroup.post_way"
+              class="form-radio text-primary h-4 w-4">
+            <label for="share" class="ml-2">{{ $t('share') }}</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" id="addButton" value="addButton" v-model="mygroup.post_way"
+              class="form-radio text-primary h-4 w-4">
+            <label for="addButton" class="ml-2">{{ $t('addButton') }}</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" id="useSound" value="useSound" v-model="mygroup.post_way"
+              class="form-radio text-primary h-4 w-4">
+            <label for="useSound" class="ml-2">{{ $t('useSound') }}</label>
+            <input type="text" v-model="mygroup.sound_name" :placeholder="$t('soundNamePlaceholder')"
+              v-if="mygroup.post_way == 'useSound'" class="border-2 border-gray-300 p-2 rounded" />
+          </div>
+        </div>
+      </div>
+      <div class="flex w-full items-center gap-2 mb-2">
+        <label class="font-bold w-40">{{ $t('contentType') }}:</label>
         <div class="flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="video" value="0" v-model="mygroup.publish_type"
@@ -83,17 +105,20 @@
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-4">
-        <label class="font-bold w-40">{{ $t('loadSoundWaitTime') }}:</label>
-        <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1" :marks="{5: '5'+$t('second'),  10: '10'+$t('second'),  15: '15'+$t('second'),  20: '20'+$t('second'),  25: '25'+$t('second'),  30: '30'+$t('second')}" />
-        
+        <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
+        <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1"
+          :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
+
       </div>
       <div class="flex w-full items-center gap-2 mb-4" v-if="mygroup.add_sound == 1">
         <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
         <div class="flex items-center">
           <label class="ml-2 mr-2">{{ $t('originSound') }}: </label>
-          <VueSlider v-model="mygroup.origin_sound_volume" :width="100" :min="0" :max="100" :step="25" :marks="{0: '0',  100: '100'}" />
+          <VueSlider v-model="mygroup.origin_sound_volume" :width="100" :min="0" :max="100" :step="25"
+            :marks="{ 0: '0', 100: '100' }" />
           <label class="ml-8 mr-2">{{ $t('addSound') }}: </label>
-          <VueSlider v-model="mygroup.add_sound_volume" :width="100" :min="0" :max="100" :step="25" :marks="{0: '0',  100: '100'}" />
+          <VueSlider v-model="mygroup.add_sound_volume" :width="100" :min="0" :max="100" :step="25"
+            :marks="{ 0: '0', 100: '100' }" />
         </div>
       </div>
       <!-- add sound end-->
@@ -122,11 +147,18 @@
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('titles') }}:</label>
+        <label class="font-bold w-40">{{ $t('captions') }}:</label>
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
           :placeholder="$t('titlesTips')" autocomplete="off" v-model="mygroup.title"> </textarea>
       </div>
-
+      <!-- 添加提示信息 -->
+      <div role="alert" class="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>{{ $t('captionsTips') }}</span>
+      </div>
     </div>
     <!-- other fields... -->
     <div class="mt-8 w-full flex justify-end">
@@ -196,6 +228,14 @@ export default {
         await this.$emiter('NOTIFY', {
           type: 'error',
           message: this.$t('publishStartTimeFormatError'),
+          timeout: 2000
+        });
+        return
+      }
+      if (this.mygroup.post_way === 'useSound' && !this.mygroup.sound_name) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('soundNameRequired'),
           timeout: 2000
         });
         return

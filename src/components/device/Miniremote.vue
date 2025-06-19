@@ -3,10 +3,10 @@
     :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md']">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
-        <div class="flex flex-row drag bg-base-300 p-2">
+        <div class="flex flex-row drag bg-base-300 p-2" v-if="big">
           <div class="flex flex-1 items-center gap-2">
             <div class="flex-1 flex items-center gap-2">
-              <span class="font-bold bg-secondary px-3 py-1 rounded-lg text-secondary-content" v-if="big">
+              <span class="font-bold bg-secondary px-3 py-1 rounded-lg text-secondary-content">
                 {{ no }}
               </span>
               <div :class="['status animate-bounce', getTaskStatusColor]"></div>
@@ -16,7 +16,7 @@
             </div>
 
           </div>
-          <button class="btn btn-ghost btn-md hover:text-error" @click="$emiter('closeDevice', this.device)" v-if="big">
+          <button class="btn btn-ghost btn-md hover:text-error" @click="$emiter('closeDevice', this.device)">
             <font-awesome-icon icon="fa fa-times" class="h-6 w-6" />
           </button>
         </div>
@@ -32,6 +32,10 @@
               <div @click="$emiter('openDevice', this.device)"
                 class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
                 <div class="bg-transparent p-2 rounded-md text-center">
+                  <div :class="['status animate-bounce', getTaskStatusColor]"></div>
+                  <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
+                    {{ getTaskStatus }}
+                  </span>
                   <div class="font-bold text-info text-md">
                     {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
                   </div>
@@ -40,13 +44,12 @@
                   </div>
                 </div>
               </div>
-              <div
-                class="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-gradient-to-tr from-secondary/30 to-neutral/30 opacity-100"
+              <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
                 v-if="loading">
                 <font-awesome-icon icon="fa-solid fa-hourglass-end" class="w-24 h-24 text-primary rotate" />
+                <span class="text-primary font-bold">{{ $t('loading') }}</span>
               </div>
-              <div
-                class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300 opacity-90"
+              <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
                 v-if="operating">
                 <font-awesome-icon icon="fa fa-hand-pointer" class="w-24 h-24 text-primary" />
                 <span class="text-primary font-bold">{{ $t('operating') }}</span>
@@ -98,6 +101,10 @@ export default {
     RightBars,
   },
   props: {
+    bigSize: {
+      type: Boolean,
+      default: false
+    },
     no: {
       type: Number,
       default: 1
@@ -112,8 +119,8 @@ export default {
   },
   data() {
     return {
-      default_width: 150,
-      default_height: 300,
+      default_width: Number(localStorage.getItem('deviceWidth')) || 150,
+      default_height: Number(localStorage.getItem('deviceHeight')) || 300,
       big: false,
       visible: true,
       rotation: 0,
@@ -126,14 +133,13 @@ export default {
       input_callback: null,
       message_index: 0,
       name: 'Loading...',
-      height: 300,
-      width: 150,
+      height: Number(localStorage.getItem('deviceHeight')) || 300,
+      width: Number(localStorage.getItem('deviceWidth')) || 150,
       real_width: 0,
       real_height: 0,
       scaled: 1,
       listeners: [],
       touch: false,
-      screenScaled: (Number(localStorage.getItem('screenScaled')) || 100) / 100,
       screenResolution: Number(localStorage.getItem('screenResolution')) || 512,
       canvasCtx: null,
       frameQueue: [],
@@ -162,10 +168,10 @@ export default {
 
     getScaledFontSize() {
       if (this.big) return 'text-md';
-      if (this.screenScaled <= 0.65) return 'text-[0.6rem]';
-      if (this.screenScaled <= 0.75) return 'text-[0.7rem]';
-      if (this.screenScaled <= 0.85) return 'text-[0.8rem]';
-      if (this.screenScaled <= 1) return 'text-md';
+      if (this.width <= 100) return 'text-[0.6rem]';
+      if (this.width <= 150) return 'text-[0.7rem]';
+      if (this.width <= 200) return 'text-[0.8rem]';
+      if (this.width <= 250) return 'text-md';
       return 'text-md';
     },
     getTaskStatusColor() {
@@ -181,7 +187,6 @@ export default {
       return 'status-warning'
     },
     getTaskStatusTextColor() {
-      console.log('device.task_status:', this.device.task_status)
       if (this.device.task_status == -1) {
         return 'text-warning'
       }
@@ -196,25 +201,21 @@ export default {
   },
   watch: {
     scaled(newVal) {
-      console.log(`scaled: ${newVal}, screenScaled: ${this.screenScaled}`)
-      if (this.real_width == 0 || this.real_height == 0 || this.screenScaled == 0 || newVal == 0) {
+      console.log(`scaled: ${newVal}`)
+      if (this.real_width == 0 || this.real_height == 0 || newVal == 0) {
         return
       }
-      const newScaled = newVal * this.screenScaled
-      this.width = this.real_width * newScaled
-      this.height = this.real_height * newScaled
-      console.log(`newScaled: ${newScaled}, width: ${this.width}, height: ${this.height}`)
-    },
-    screenScaled(newVal) {
-      if (this.real_width == 0 || this.real_height == 0 || this.screenScaled == 0 || newVal == 0) {
-        return
-      }
-      const newScaled = this.scaled * newVal
-      this.width = this.real_width * newScaled
-      this.height = this.real_height * newScaled
+      this.width = this.real_width * newVal
+      this.height = this.real_height * newVal
+      console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
+      this.$emit('sizeChanged', this.width)
     },
     width(newVal) {
+      localStorage.setItem('deviceWidth', newVal)
       this.$emit('sizeChanged', newVal)
+    },
+    height(newVal) {
+      localStorage.setItem('deviceHeight', newVal)
     }
   },
   methods: {
@@ -309,10 +310,9 @@ export default {
       this.touchSync('d', event)
     },
     initializeWebCodecs() {
-      if (!this.$refs.canvas) return;
-
-      this.canvasCtx = this.$refs.canvas.getContext('2d');
-
+      if (!this.canvasCtx) {
+        this.canvasCtx = this.$refs.canvas.getContext('2d');
+      }
       try {
         this.videoDecoder = new VideoDecoder({
           output: (frame) => {
@@ -323,7 +323,7 @@ export default {
             console.error(`${this.no}Error VideoDecoder:`, error, `code: ${error.code}`);
           },
         });
-
+        console.log(`${this.no}-${this.device.serial} videoDecoder initialized`)
 
 
       } catch (e) {
@@ -434,11 +434,13 @@ export default {
           this.videoDecoder.decode(chunk);
         } else {
           if (this.videoDecoder.state === 'closed' && !this.loading) {
+            console.log(`${this.no}-${this.device.serial} videoDecoder is closed, loading`)
             this.loading = true
           }
         }
       } catch (e) {
         console.error(`${this.no}解码H.264数据出错:`, e);
+        this.initializeWebCodecs();
       }
     },
 
@@ -448,7 +450,7 @@ export default {
       this.scrcpy = new WebSocket(wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        console.log(`${this.no}-${this.device.serial} onopen`)
+        console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onopen`)
         let max_size = this.big ? 1024 : this.screenResolution
         this.scrcpy.send(`${this.device.serial}`)
         // max size
@@ -460,16 +462,11 @@ export default {
       }
       this.scrcpy.onclose = () => {
         this.loading = true
-        console.log(`${this.no}-${this.device.serial} onclose`)
-        // 关闭解码器
-        if (this.videoDecoder) {
-          this.videoDecoder.close();
-          this.videoDecoder = null;
-        }
+        console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onclose`)
       }
       this.scrcpy.onerror = () => {
         this.loading = true
-        console.error(`${this.no}-${this.device.serial} onerror`)
+        console.error(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onerror`)
         // 关闭解码器
         if (this.videoDecoder) {
           this.videoDecoder.close();
@@ -479,7 +476,6 @@ export default {
       this.scrcpy.onmessage = message => {
         this.loading = false
         if (this.message_index < 2) {
-          console.log(message)
           switch (this.message_index) {
             case 0:
               this.name = message.data.replace(/[\x00]+$/g, '');
@@ -517,13 +513,28 @@ export default {
     },
     closeScrcpy() {
       if (this.scrcpy) {
-        this.scrcpy.close()
-        this.scrcpy.onerror = null
-        this.scrcpy.onmessage = null
-        this.scrcpy.onclose = null
-        this.scrcpy.onopen = null
-        this.scrcpy = null
-        this.message_index = 0
+        try {
+          // 检查连接状态
+          if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
+            // 发送关闭帧
+            this.scrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+            console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
+          }
+
+          // 清空事件处理器
+          this.scrcpy.onerror = null;
+          this.scrcpy.onmessage = null;
+          this.scrcpy.onclose = null;
+          this.scrcpy.onopen = null;
+          console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
+
+
+        } catch (error) {
+          console.error(`关闭 WebSocket 连接时出错: ${error}`);
+          // 确保即使出错也能清理资源
+          this.scrcpy = null;
+          this.message_index = 0;
+        }
       }
     },
     closeDecoder() {
@@ -566,7 +577,7 @@ export default {
           await writeText(res.data)
           await this.$emiter('NOTIFY', {
             type: 'success',
-            message: this.$t('copySuccess'),
+            message: 'Copy Success!',
             timeout: 2000
           });
         })
@@ -576,24 +587,48 @@ export default {
     this.i18n.preparing = this.$t('preparing');
     this.i18n.running = this.$t('running');
     this.i18n.ready = this.$t('ready');
+    this.big = this.bigSize;
 
     this.listeners.push(await this.$listen('closeDevice', (e) => {
+      if (this.big) {
+        const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+        if (bigScreen === 'standard') {
+          this.closeScrcpy();
+          this.closeDecoder();
+          return;
+        }
+      }
       if (e.payload.serial === this.device.serial) {
-        this.big = false;
         this.closeScrcpy();
         this.closeDecoder();
+        this.big = false;
+        this.operating = false
         this.syncDisplay();
       }
     }))
     this.listeners.push(await this.$listen('openDevice', (e) => {
       if (e.payload.serial === this.device.serial) {
-        this.big = true;
+        const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+        if (bigScreen === 'standard') {
+          this.closeScrcpy();
+          this.closeDecoder();
+          this.operating = true
+          return
+        }
         this.closeScrcpy();
         this.closeDecoder();
+        this.big = true;
         this.syncDisplay();
       }
       if (e.payload.serial !== this.device.serial && this.operating) {
-        this.operating = false
+        const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+        if (bigScreen === 'standard') {
+          this.closeScrcpy();
+          this.closeDecoder();
+          this.big = false;
+          this.operating = false
+          this.syncDisplay();
+        }
       }
     }))
     this.listeners.push(await this.$listen('syncEventData', (e) => {
@@ -611,7 +646,13 @@ export default {
       this.syncDisplay()
     }))
     this.listeners.push(await this.$listen('screenScaled', (e) => {
-      this.screenScaled = e.payload.scaled
+      if (e.payload.action === 'plus') {
+        this.width = this.width * 1.1
+        this.height = this.height * 1.1
+      } else if (e.payload.action === 'minus') {
+        this.width = this.width * 0.9
+        this.height = this.height * 0.9
+      }
     }))
     this.listeners.push(await this.$listen('screenResolution', (e) => {
       this.screenResolution = e.payload.resolution;

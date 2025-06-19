@@ -1,23 +1,26 @@
 <template>
   <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
-    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true" :showBottomControls="false">
+
+
+    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true"
+      :showBottomControls="false">
       <template v-slot:buttons>
-        <div class="flex items-center space-x-2 ml-2">
-          <button class="btn btn-md btn-primary" @click="$refs.scan_dialog.show()">
-            <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
-          </button>
-          <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
-            <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
-          </button>
-          <!-- <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
-            <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
-          </button> -->
-          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
-            <label class="label cursor-pointer flex items-center space-x-2">
-              <span class="text-md font-medium">{{ $t('autoWakeUp') }}</span>
-              <input type="checkbox" class="toggle toggle-primary toggle-md" v-model="settings.uiautomator_status"
-                true-value="1" false-value="0" @change="update_settings" />
-            </label>
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center space-x-2 ml-2">
+            <button class="btn btn-md btn-primary" @click="$refs.scan_dialog.show()">
+              <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
+            </button>
+            <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
+              <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
+            </button>
+
+            <button class="btn btn-md btn-primary ml-1 mb-1"
+              @click="$emiter('showDialog', { name: 'materials', group: item })">
+              <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
+            </button>
+            <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
+              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
+            </button>
           </div>
 
           <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
@@ -94,7 +97,33 @@
         </div>
       </template>
     </Pagination>
-    <div v-if="devices.length == 0" class="w-full min-h-screen bg-base-100 flex flex-col items-center justify-center">
+    <!-- 未激活提示信息 -->
+    <div v-if="!isLicensed" class="alert alert-warning shadow-lg mb-4 mt-2">
+      <div class="flex w-full justify-between items-center gap-2">
+        <div class="flex items-center">
+          <font-awesome-icon icon="fa-solid fa-exclamation-triangle" class="h-6 w-6 text-warning" />
+          <div class="ml-3">
+            <h3 class="font-bold text-lg">{{ $t('licenseRequired') }}</h3>
+            <div class="text-sm">{{ $t('pleaseActivateSoftware') }}</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" @click="showLicenseDialog">
+          {{ $t('activateNow') }}
+        </button>
+        <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
+          target="_blank">
+          <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
+          {{ $t('telegramSupport') }}
+        </a>
+        <a class="link link-primary text-md flex items-center gap-1 min-w-max"
+          @click="copyText('support@tikmatrix.com', $event)" target="_blank">
+          <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
+          support@tikmatrix.com
+        </a>
+      </div>
+    </div>
+    <div v-else-if="devices.length == 0"
+      class="w-full min-h-screen bg-base-100 flex flex-col items-center justify-center">
       <div class="relative flex justify-center items-center">
         <div class="absolute animate-spin rounded-full h-48 w-48 border-t-4 border-b-4 border-purple-500"></div>
         <svg class="fill-current text-info h-32 w-32" xmlns="http://www.w3.org/2000/svg"
@@ -124,9 +153,18 @@
         </svg>
       </div>
       <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
+      <a class="link link-primary text-md flex items-center gap-1 min-w-max"
+        href="https://tikmatrix.com/docs/troubleshooting/unable-detect-phone" target="_blank">
+        <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5" />
+        {{ $t('unableDetectPhoneTip') }}
+      </a>
     </div>
   </div>
-
+  <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
+    :z="20" drag-handle=".drag"
+    class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
+    <Miniremote :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'" />
+  </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300">
       <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
@@ -164,12 +202,15 @@
     </form>
   </dialog>
 </template>
+<style>
+@import "vue-draggable-resizable/style.css";
+</style>
 <script>
 import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
-
+import { writeText } from '@tauri-apps/api/clipboard';
 
 export default {
   name: 'devices',
@@ -181,7 +222,7 @@ export default {
     settings: {
       type: Object,
       required: true
-    }
+    },
   },
   components: {
     MyButton,
@@ -191,6 +232,7 @@ export default {
   },
   data() {
     return {
+      device: null,
       listMode: localStorage.getItem('listMode') === 'true' || false,
       mydevices: [],
       ip_1: localStorage.getItem('ip_1')?.replace(/"/g, '') || 192,
@@ -205,7 +247,8 @@ export default {
       scanResult: '',
       groups: [],
       currentDevice: null,
-      cardMinWidth: 150,
+      cardMinWidth: Number(localStorage.getItem('deviceWidth')) || 150,
+      licenseData: {},
     }
   },
   watch: {
@@ -228,6 +271,14 @@ export default {
     }
   },
   methods: {
+    async copyText(text, event) {
+      await writeText(text)
+      await this.$emiter('NOTIFY', {
+        type: 'success',
+        message: this.$t('copied'),
+        timeout: 2000
+      });
+    },
     breakAt() {
       const obj = {};
       for (let i = 1; i <= 4; i++) {
@@ -285,8 +336,14 @@ export default {
       this.cardMinWidth = cardWidth
       console.log("sizeChanged:", this.cardMinWidth)
     },
+    async showLicenseDialog() {
+      await this.$emiter('LICENSE', { show: true });
+    },
   },
   computed: {
+    isLicensed() {
+      return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active;
+    },
     gridStyle() {
       // 当只有一个元素时，限制最大宽度而不是占满整行
       if (this.mydevices.length === 1) {
@@ -311,7 +368,25 @@ export default {
   },
   async mounted() {
     this.mydevices = this.devices
-
+    await this.$listen('openDevice', async (e) => {
+      const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+      if (bigScreen === 'standard') {
+        this.device = e.payload
+        for (let i = 0; i < this.mydevices.length; i++) {
+          if (this.mydevices[i].serial === this.device.serial) {
+            this.mydevices[i] = this.device
+            break
+          }
+        }
+      }
+    });
+    await this.$listen('closeDevice', (e) => {
+      this.device = null
+    });
+    // 监听TitleBar组件的授权状态变更
+    await this.$listen('LICENSE_STATUS_CHANGED', async (e) => {
+      this.licenseData = e.payload;
+    });
 
   },
 }

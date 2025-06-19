@@ -5,12 +5,12 @@
         <div class="flex items-center space-x-2">
             <img src="../assets/app-icon.png" class="h-10 w-10" />
             <span class="text-2xl text-base-content font-bold">{{ name }}</span>
-            <span class="text-md text-base-content">v{{ version }}</span>
+            <!-- <span class="text-md text-base-content">v{{ version }}</span> -->
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
-                class="flex items-center space-x-1 text-md text-info ml-2 hover:underline">
+                class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">
                 <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
-                <span>{{ $t('checkUpdate') }}</span>
+                <span>v{{ version }}</span>
             </button>
         </div>
         <!-- 教程链接 -->
@@ -19,10 +19,10 @@
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
-        <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" @click="open_dir('')">
+        <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" @click="open_dir('')">
             <font-awesome-icon icon="fa fa-folder" class="h-4 w-4" />
             <span>{{ $t('openAppDir') }}</span>
-        </a>
+        </a> -->
         <!-- Rewards-->
         <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
             target="_blank">
@@ -169,7 +169,7 @@
             </label>
             <!-- 许可证状态 -->
             <button
-                class="btn btn-md flex items-center gap-2 px-4 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md"
+                class="btn btn-md flex items-center gap-2 px-4 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md cursor-pointer"
                 :class="[
                     isLoadingLicense ? 'btn-neutral' :
                         is_licensed() ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-none' : 'btn-error text-white'
@@ -177,9 +177,26 @@
                 <font-awesome-icon v-if="isLoadingLicense" icon="fa-solid fa-spinner" class="h-4 w-4 animate-spin" />
                 <font-awesome-icon v-else-if="is_licensed()" icon="fa-solid fa-crown" class="h-5 w-5 text-yellow-200" />
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
-                <span v-if="isLoadingLicense">{{ $t('loading') }}</span>
-                <span v-else-if="is_licensed()" class="font-semibold">{{ $t('licensed') }}</span>
-                <span v-else>{{ $t('unlicensed') }}</span>
+                <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
+                <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ planName }}</span>
+                <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
+                <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
+
+                    <label class="text-xs text-warning" v-if="licenseData.stripe_cancel_at">{{ $t('cancelTips', {
+                        date: new Date(licenseData.stripe_cancel_at *
+                            1000).toLocaleDateString()
+                    }) }}</label>
+                    <label class="text-xs text-warning" v-else>{{ $t('renewTips', {
+                        date: new Date(licenseData.stripe_renew_at *
+                            1000).toLocaleDateString()
+                    }) }}</label>
+                </div>
+                <div class="flex items-center flex-row gap-2 w-full" v-else>
+                    <label class="text-xs text-warning" v-if="licenseData.leftdays > 0">{{ $t('expiredTips', {
+                        date: new Date(new Date().getTime() + licenseData.leftdays * 24 * 60 * 60 *
+                            1000).toLocaleDateString()
+                    }) }}</label>
+                </div>
             </button>
             <!-- 语言选择 -->
             <select class="select select-info select-md" v-model="currentLocale" @change="changeLocale">
@@ -211,7 +228,8 @@
     </div>
 
     <!-- 购买授权弹窗 -->
-    <BuyLicenseDialog ref="buyLicenseDialog" :license="licenseData" />
+    <!-- <BuyLicenseDialog ref="buyLicenseDialog" :license="licenseData" /> -->
+    <StripePriceTableDialog ref="stripePriceTableDialog" :license="licenseData" />
 
 
     <!-- 下载进度弹窗 -->
@@ -259,12 +277,14 @@ import { fetch, ResponseType } from '@tauri-apps/api/http';
 import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
 import BuyLicenseDialog from './BuyLicenseDialog.vue';
+import StripePriceTableDialog from './StripePriceTableDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
 
 export default {
     name: 'TitleBar',
     components: {
-        BuyLicenseDialog
+        BuyLicenseDialog,
+        StripePriceTableDialog
     },
     data() {
         return {
@@ -298,15 +318,23 @@ export default {
             this.$i18n.locale = val;
         }
     },
+    computed: {
+        planName() {
+            if (this.licenseData.device_count <= 5) {
+                return 'Starter'
+            } else if (this.licenseData.device_count <= 20) {
+                return 'Pro';
+            } else {
+                return 'Business';
+            }
+        }
+    },
     methods: {
+
         is_licensed() {
             return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active;
         },
-        async open_dir(name) {
-            invoke("open_dir", {
-                name
-            });
-        },
+
         async startAgent() {
             try {
                 this.$refs.download_dialog.showModal();
@@ -395,7 +423,8 @@ export default {
             // 主题切换逻辑
         },
         showLicenseDialog() {
-            this.$refs.buyLicenseDialog.show()
+            // this.$refs.buyLicenseDialog.show()
+            this.$refs.stripePriceTableDialog.show()
         },
         async loadLicense() {
             this.isLoadingLicense = true;
@@ -403,6 +432,7 @@ export default {
                 const res = await this.$service.get_license();
                 if (res.code === 0) {
                     this.licenseData = JSON.parse(res.data);
+                    await this.$emiter('LICENSE_STATUS_CHANGED', this.licenseData);
                 } else {
                     await this.$emiter('NOTIFY', {
                         type: 'error',
@@ -626,9 +656,7 @@ export default {
             }
 
             if (e.payload.show) {
-                if (!this.is_licensed()) {
-                    this.showLicenseDialog();
-                }
+                this.showLicenseDialog();
             }
         });
 

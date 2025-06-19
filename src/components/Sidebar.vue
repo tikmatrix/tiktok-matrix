@@ -37,7 +37,7 @@
             <label class="label cursor-pointer m-1">
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(0)"
                 :checked="isSelectAll(0)" />
-              <span class="label-text text-primary text-md">{{ $t('allDevices') }} ({{ groupDevices[0].length
+              <span class="label-text text-primary text-md select-none">{{ $t('allDevices') }} ({{ groupDevices[0].length
               }})</span>
             </label>
 
@@ -55,7 +55,7 @@
                 </li>
               </ul>
             </div>
-            <span class="label-text text-md text-right flex-1 mr-2">{{ $t('selected') }}
+            <span class="label-text text-md text-right flex-1 mr-2 select-none">{{ $t('selected') }}
               {{ selections[0].length }}
               {{ $t('units') }}
             </span>
@@ -72,7 +72,7 @@
             <label class="label cursor-pointer m-1">
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(item.id)"
                 :checked="isSelectAll(item.id)" />
-              <span class="label-text text-primary  text-md">{{ item.name }}({{ groupDevices[item.id].length
+              <span class="label-text text-primary  text-md select-none">{{ item.name }}({{ groupDevices[item.id].length
                 }})</span>
             </label>
             <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
@@ -82,21 +82,20 @@
                 @click="deleteGroup(item.id)"></font-awesome-icon>
             </div>
 
-            <span class="label-text text-md text-right flex-1 mr-2">{{ $t('selected') }}
+            <span class="label-text text-md text-right flex-1 mr-2 select-none">{{ $t('selected') }}
               {{ selections[item.id].length }}
               {{ $t('units') }}
             </span>
 
           </div>
-
           <div class="flex flex-row form-control items-center mt-1">
             <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'trainSettings', group: item })">
-              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('trainSettings') }}
+              @click="$emiter('showDialog', { name: 'accountWarmup', group: item })">
+              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('accountWarmup') }}
             </button>
             <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'publishSettings', group: item })">
-              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('publishSettings') }}
+              @click="$emiter('showDialog', { name: 'post', group: item })">
+              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('post') }}
             </button>
             <button class="btn btn-md btn-primary ml-1 mb-1"
               @click="$emiter('showDialog', { name: 'materials', group: item })">
@@ -741,7 +740,9 @@ export default {
     this.refreshSelections()
     this.listeners.push(await this.$listen('openDevice', async (e) => {
       console.log("receive openDevice: ", e.payload)
-      this.selection = [...this.selection.filter(serial => serial !== e.payload.real_serial), e.payload.real_serial]
+      // this.selection = [...this.selection.filter(serial => serial !== e.payload.real_serial), e.payload.real_serial]
+      //only select one device
+      this.selection = [e.payload.real_serial]
       this.refreshSelections()
     }))
     this.listeners.push(await this.$listen('closeDevice', (e) => {

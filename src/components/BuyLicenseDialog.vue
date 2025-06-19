@@ -14,14 +14,15 @@
               <label class="font-bold w-28">{{ $t('mid') }}: </label>
               <input id="mid" type="text" placeholder="mid" class="input input-md input-bordered ring-1"
                 v-model="license.mid" readonly disabled />
+              <span v-if="!license.mid">{{ $t('networkProblem') }}</span>
               <button @click="copyText(license.mid, $event)" class=" btn btn-md btn-primary  rounded-l-none">
                 {{ $t('copy') }}
               </button>
 
-              <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-                href="https://t.me/tikmatrix_support" target="_blank">
+              <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
+                target="_blank">
                 <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
-                {{ $t('telegramCustom') }}
+                {{ $t('telegramSupport') }}
               </a>
               <a class="link link-primary text-md flex items-center gap-1 min-w-max"
                 @click="copyText('support@tikmatrix.com', $event)" target="_blank">
@@ -31,7 +32,7 @@
             </div>
             <!-- 显示管理Stripe订阅按钮 -->
             <div class="flex items-center flex-row gap-2 w-full" v-if="license.is_stripe_active == 1">
-              <button @click="manageStripeSubscription" class="btn btn-wide btn-primary">
+              <button @click="manageStripeSubscription" class="btn btn-wide btn-primary whitespace-nowrap">
                 <!-- 支付卡图标集合 -->
                 <div class="flex -space-x-2 overflow-hidden">
                   <!-- 银行卡图标 -->
@@ -45,11 +46,11 @@
                 </div>
                 {{ $t('manageSubscription') }}
               </button>
-              <label class="text-sm text-gray-500" v-if="license.stripe_cancel_at">{{ $t('cancelAt', {
+              <label class="text-sm text-warning" v-if="license.stripe_cancel_at">{{ $t('cancelAt', {
                 date: new Date(license.stripe_cancel_at *
                   1000).toLocaleDateString()
               }) }}</label>
-              <label class="text-sm text-gray-500" v-else>{{ $t('renewAt', {
+              <label class="text-sm text-warning" v-else>{{ $t('renewAt', {
                 date: new Date(license.stripe_renew_at *
                   1000).toLocaleDateString()
               }) }}</label>
@@ -65,7 +66,7 @@
                 v-else>
                 {{ $t('copy') }}
               </button>
-              <label class="text-sm text-gray-500" v-if="license.leftdays > 0">{{ $t('expiredAt', {
+              <label class="text-sm text-warning" v-if="license.leftdays > 0">{{ $t('expiredAt', {
                 date: new Date(new Date().getTime() + license.leftdays * 24 * 60 * 60 * 1000).toLocaleDateString()
               }) }}</label>
 
@@ -129,7 +130,7 @@
               <p class="mt-4 flex items-baseline gap-x-2">
 
                 <span class="text-primary-content text-5xl font-semibold tracking-tight">
-                  $0
+                  {{ license.trial_price }}
                 </span>
                 <span class=" text-primary-content">7 {{ $t('days') }}</span>
               </p>
@@ -180,8 +181,8 @@
                     ${{ (99 * (1 - license.affiliate_discount / 100)).toFixed(0) }}
                   </span>
                 </template> -->
-                <span  class="text-accent text-5xl font-semibold tracking-tight">
-                  $99
+                <span class="text-accent text-5xl font-semibold tracking-tight">
+                  {{ license.month_price }}
                 </span>
                 <span class=" text-accent">/ {{ $t('month') }}</span>
               </p>
@@ -261,7 +262,7 @@
                   </span>
                 </template> -->
                 <span class="text-success-content text-5xl font-semibold tracking-tight">
-                  $599
+                  {{ license.year_price }}
                 </span>
                 <span class=" text-success-content">/ {{ $t('year') }}</span>
               </p>
@@ -329,13 +330,38 @@
 
             </div>
           </div>
+          <!-- 新增：隐私协议和服务条款链接 -->
+          <div class="flex justify-center items-center gap-2 mt-4">
+            <input type="checkbox" id="agreePolicy" v-model="agreePolicy" class="checkbox checkbox-primary" />
+            <label for="agreePolicy" class="cursor-pointer select-none">
+              {{ $t('iAgreeWith') }}
+              <a href="https://tikmatrix.com/privacy-policy" target="_blank" class="link link-primary mx-1">
+                {{ $t('privacyPolicy') }}
+              </a>
+              {{ $t('and') }}
+              <a href="https://tikmatrix.com/terms-of-service" target="_blank" class="link link-primary mx-1">
+                {{ $t('termsOfService') }}
+              </a>
+            </label>
+          </div>
         </div>
 
 
       </div>
+
     </div>
     <form method="dialog" class="modal-backdrop">
       <button>close</button>
+    </form>
+  </dialog>
+  <!-- 新增：同意隐私协议和服务条款链接询问弹窗 -->
+  <dialog ref="agreePolicyDialog" class="modal">
+    <form method="dialog" class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('tips') }}</h3>
+      <p class="py-4">{{ $t('pleaseAgree') }}</p>
+      <div class="modal-action">
+        <button type="submit" class="btn">{{ $t('confirm') }}</button>
+      </div>
     </form>
   </dialog>
 </template>
@@ -364,20 +390,22 @@ export default {
       required: true
     }
   },
-  computed: {
 
-  },
   data() {
     return {
       remainingTime: 0,
       order: null,
       interval: null,
       refreshTime: 10,
+      agreePolicy: localStorage.getItem('agreePolicy') === 'true'
     }
   },
-
+  watch: {
+    agreePolicy(newVal) {
+      localStorage.setItem('agreePolicy', newVal);
+    }
+  },
   computed: {
-
     formattedTime() {
       const minutes = Math.floor((this.remainingTime % 3600) / 60).toString().padStart(2, '0');
       const seconds = (this.remainingTime % 60).toString().padStart(2, '0');
@@ -385,14 +413,11 @@ export default {
     }
   },
   methods: {
-
-
-
     async activate(event) {
       event.target.innerText = this.$t('activating')
       event.target.disabled = true
       this.$service.activate_license({
-        'license_code': this.license.license,
+        'license_code': this.license.license_code,
       }).then(async (res) => {
         console.log(`activate_license: ${JSON.stringify(res)}`);
         event.target.innerText = this.$t('activate')
@@ -569,6 +594,10 @@ export default {
       await this.createStripeOrder(599, 'year', false, event)
     },
     async createStripeOrder(price, plan, trial, event) {
+      if (!this.agreePolicy) {
+        this.$refs.agreePolicyDialog.showModal();
+        return;
+      }
       event.target.disabled = true
       this.$service.get_stripe_checkout_url({
         price: price,

@@ -1,11 +1,13 @@
 <template>
   <div class="w-full">
     <Pagination :items="filteredAccounts" :searchKeys="['email', 'username', 'device', 'device_index', 'tags']"
-      :searchTermPlaceholder="$t('searchAccountPlaceholder')" :showRefBtn="false" @refresh="get_accounts">
+      :searchTermPlaceholder="$t('searchAccountPlaceholder')" :showRefBtn="false" @refresh="get_accounts" :pageSize="8">
       <template v-slot:buttons>
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="import_accounts" label="import" icon="fa fa-download" />
         <MyButton @click="export_accounts" label="export" icon="fa fa-upload" />
+        <MyButton v-if="Object.keys(tikTokData).length > 0" @click="clearAllTikTokData" label="clearTikTokData"
+          icon="fa fa-eye-slash" class="ml-2" />
 
         <!-- 标签筛选下拉列表 -->
         <select class="select ml-2 w-32" v-model="selectedTag">
@@ -20,6 +22,7 @@
           <option value="disable">{{ $t('disable') }}</option>
           <option value="enable">{{ $t('enable') }}</option>
           <option value="delete">{{ $t('delete') }}</option>
+          <option value="batchTiktokQuery">{{ $t('syncTiktokData') }}</option>
         </select>
 
         <!-- 清空标签按钮 -->
@@ -34,7 +37,13 @@
                 <th>{{ $t('number') }}</th>
                 <th>{{ $t('email') }}</th>
                 <th>{{ $t('username') }}</th>
-                <!-- <th>{{ $t('fans') }}</th> -->
+                <th>{{ $t('nickname') }}</th>
+                <th>{{ $t('country') }}</th>
+                <th>{{ $t('followers') }}</th>
+                <th>{{ $t('following') }}</th>
+                <th>{{ $t('hearts') }}</th>
+                <th>{{ $t('videos') }}</th>
+                <th>{{ $t('friends') }}</th>
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('loginStatus') }}</th>
                 <th>{{ $t('status') }}</th>
@@ -47,14 +56,63 @@
                 <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
                 <td>{{ account.email }}</td>
                 <td>
-                  <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">{{
-                    account.username }}</a>
+                  <div class="flex items-center gap-2">
+                    <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">{{
+                      account.username }}</a>
+                    <button class="btn btn-xs btn-ghost btn-circle" @click="tiktok_query(account)"
+                      :disabled="loadingTikTok[account.id]">
+                      <span class="loading loading-spinner text-info" v-if="loadingTikTok[account.id]"></span>
+                      <font-awesome-icon icon="fa-solid fa-sync" class="text-info" v-else />
+                    </button>
+                  </div>
                 </td>
-                <!-- <td>{{ account.fans }}</td> -->
+                <td>
+                  <template v-if="tikTokData[account.id]">
+                    <span class="badge badge-accent">{{ tikTokData[account.id].nickname }}</span>
+                  </template>
+                  <template v-else>{{ account.nickname }}</template>
+                </td>
+                <td>
+                  <template v-if="tikTokData[account.id]">
+                    <span class="badge badge-accent">{{ tikTokData[account.id].country }}</span>
+                  </template>
+                  <template v-else>{{ account.country }}</template>
+                </td>
+                <td>
+                  <template v-if="tikTokData[account.id]">
+                    <span class="badge badge-accent">{{ tikTokData[account.id].followers }}</span>
+                  </template>
+                  <template v-else>{{ account.followers }}</template>
+                </td>
+                <td>
+                  <template v-if="tikTokData[account.id]">
+                    <span class="badge badge-accent">{{ tikTokData[account.id].following }}</span>
+                  </template>
+                  <template v-else>{{ account.following }}</template>
+                </td>
+                <td>
+                  <template v-if="tikTokData[account.id]">
+                    <span class="badge badge-accent">{{ tikTokData[account.id].hearts }}</span>
+                  </template>
+                  <template v-else>{{ account.hearts }}</template>
+                </td>
+                <td>
+                  <template v-if="tikTokData[account.id]">
+                    <span class="badge badge-accent">{{ tikTokData[account.id].videos }}</span>
+                  </template>
+                  <template v-else>{{ account.videos }}</template>
+                </td>
+                <td>
+                  <template v-if="tikTokData[account.id]">
+                    <span class="badge badge-accent">{{ tikTokData[account.id].friends }}</span>
+                  </template>
+                  <template v-else>{{ account.friends }}</template>
+                </td>
 
                 <td>
                   <a class="cursor-pointer underline text-primary" v-if="account.device_index"
-                    @click="show_device(account.device)">{{ account.device_index }}
+                    @click="show_device(account.device)">{{
+                      account.device_index }}
                   </a>
                   <span v-else class="text text-error">{{ $t('offline') }}</span>
                 </td>
@@ -63,8 +121,11 @@
                   <span v-else class="text text-error">{{ $t('unlogined') }}</span>
                 </td>
                 <td>
-                  <span v-if="account.status == 0" class="text text-success">{{ $t('enable') }}</span>
-                  <span v-else class="text text-error">{{ $t('disable') }}</span>
+                  <span v-if="account.status == 0" class="badge badge-success cursor-pointer"
+                    @click="toggleStatus(account)">{{
+                      $t('enabled') }}</span>
+                  <span v-else class="badge badge-error cursor-pointer" @click="toggleStatus(account)">{{ $t('disabled')
+                  }}</span>
                 </td>
                 <td>
                   <div class="flex flex-wrap gap-1 max-w-xs">
@@ -106,10 +167,6 @@
                 </td>
                 <td>
                   <div class="space-x-4">
-                    <button class="btn btn-md" :class="account.status == 0 ? 'btn-warning' : 'btn-success'"
-                      @click="toggleStatus(account)">
-                      {{ account.status == 0 ? $t('disable') : $t('enable') }}
-                    </button>
                     <button class="btn btn-md btn-primary" @click="editAccount(account)">{{ $t('edit') }}</button>
                     <button class="btn btn-md btn-error" @click="deleteAccount(account)">
                       {{ $t('delete') }}
@@ -177,6 +234,8 @@ export default {
       newTagInput: {},
       selectedTag: '',
       batchAction: '',
+      tikTokData: {},
+      loadingTikTok: {}
     }
   },
   watch: {
@@ -191,6 +250,9 @@ export default {
             break
           case 'delete':
             this.batchDelete()
+            break
+          case 'batchTiktokQuery':
+            this.batchTiktokQuery()
             break
           default:
             break
@@ -247,6 +309,80 @@ export default {
     }
   },
   methods: {
+    tiktok_query(account) {
+      // 设置loading状态
+      this.loadingTikTok[account.id] = true;
+      this.$forceUpdate();
+
+      this.$service.tiktok_query({ username: account.username }).then(res => {
+        if (res.code === 0) {
+          try {
+            // 解析JSON字符串
+            const tiktokData = JSON.parse(res.data);
+
+            // 提取需要的信息
+            const { profile, stats } = tiktokData;
+
+            // 缓存数据到本地存储
+            try {
+              const tiktokCache = JSON.parse(localStorage.getItem('tiktokDataCache') || '{}');
+              tiktokCache[account.username] = {
+                data: tiktokData,
+                timestamp: new Date().getTime()
+              };
+              localStorage.setItem('tiktokDataCache', JSON.stringify(tiktokCache));
+
+              // 更新组件数据，但不发送到服务器
+              this.tikTokData[account.id] = {
+                nickname: profile?.Nickname || '-',
+                country: profile?.Country || '-',
+                followers: stats?.Followers || '-',
+                following: stats?.Following || '-',
+                hearts: stats?.Hearts || '-',
+                videos: stats?.Videos || '-',
+                friends: stats?.Friends || '-',
+                userId: profile?.['User ID'] || '-',
+                createdAt: profile?.['Account Created'] || '-'
+              };
+
+              // 强制组件重新渲染
+              this.$forceUpdate();
+
+              // 显示成功提示
+              this.$emiter('NOTIFY', {
+                type: 'success',
+                message: `${this.$t('dataRetrieved')}`,
+                timeout: 2000
+              });
+            } catch (e) {
+              console.error('Error caching TikTok data:', e);
+            }
+          } catch (e) {
+            this.$emiter('NOTIFY', {
+              type: 'error',
+              message: `${this.$t('parseError')}: ${e.message}`,
+              timeout: 3000
+            });
+          }
+        } else {
+          this.$emiter('NOTIFY', {
+            type: 'error',
+            message: `${this.$t('syncFailed')}: ${res.message || '未知错误'}`,
+            timeout: 3000
+          });
+        }
+      }).catch(err => {
+        this.$emiter('NOTIFY', {
+          type: 'error',
+          message: `${this.$t('requestFailed')}: ${err.message}`,
+          timeout: 3000
+        });
+      }).finally(() => {
+        // 无论成功失败，都取消loading状态
+        this.loadingTikTok[account.id] = false;
+        this.$forceUpdate();
+      });
+    },
     batchDisable() {
       const promises = this.filteredAccounts.map(account => {
         return this.$service.update_account({
@@ -303,6 +439,30 @@ export default {
         this.get_accounts()
       })
     },
+    batchTiktokQuery() {
+      const promises = this.filteredAccounts.map(account => {
+        return new Promise(resolve => {
+          this.tiktok_query(account)
+          // 等待 loading 状态结束后 resolve
+          const check = () => {
+            if (!this.loadingTikTok[account.id]) {
+              resolve()
+            } else {
+              setTimeout(check, 200)
+            }
+          }
+          check()
+        })
+      })
+      Promise.all(promises).then(() => {
+        this.batchAction = ''
+        this.$emiter('NOTIFY', {
+          type: 'success',
+          message: this.$t('batchTiktokSyncDone'),
+          timeout: 2000
+        })
+      })
+    },
     // 根据标签筛选账户
     filterByTag(tag) {
       this.selectedTag = tag;
@@ -337,7 +497,6 @@ export default {
           // 输出结果
           console.log(JSON.stringify(jsonData));
           for (let account of jsonData) {
-            account.fans = 0
             if (account.id) {
               await this.$service.update_account(account)
             } else {
@@ -356,17 +515,27 @@ export default {
 
     async export_accounts() {
       try {
-        // 准备 Excel 数据
-        const excelData = this.accounts.map(account => ({
-          id: account.id,
-          email: account.email,
-          pwd: account.pwd,
-          username: account.username,
-          device: account.device,
-          device_index: account.device_index || 'offline',
-          logined: account.logined,
-          status: account.status
-        }));
+        // 准备 Excel 数据，合并 tiktok 查询数据
+        const excelData = this.accounts.map(account => {
+          const tiktok = this.tikTokData[account.id] || {};
+          return {
+            id: account.id,
+            email: account.email,
+            pwd: account.pwd,
+            username: account.username,
+            device: account.device,
+            device_index: account.device_index || 'offline',
+            logined: account.logined,
+            status: account.status,
+            nickname: tiktok.nickname || account.nickname || '',
+            country: tiktok.country || account.country || '',
+            followers: tiktok.followers || account.followers || '',
+            following: tiktok.following || account.following || '',
+            hearts: tiktok.hearts || account.hearts || '',
+            videos: tiktok.videos || account.videos || '',
+            friends: tiktok.friends || account.friends || '',
+          }
+        });
 
         // 创建工作簿和工作表
         const wb = XLSX.utils.book_new();
@@ -388,7 +557,6 @@ export default {
           buf,
           { dir: BaseDirectory.AppData }
         );
-
 
         // 打开下载目录
         await invoke("open_dir", {
@@ -478,6 +646,9 @@ export default {
           })
           //sort by device_index asc
           this.accounts.sort((a, b) => a.device_index - b.device_index)
+
+          // 加载缓存的TikTok数据
+          this.loadTikTokCache();
         })
     },
     async add_account() {
@@ -485,7 +656,6 @@ export default {
         email: '',
         pwd: '',
         username: '',
-        fans: 0,
         device: '',
         logined: 0,
         status: 0,
@@ -543,6 +713,48 @@ export default {
         timeout: 2000
       })
       this.get_accounts()
+    },
+    // 清除所有TikTok数据
+    clearAllTikTokData() {
+      this.tikTokData = {};
+      // 清除缓存的TikTok数据
+      localStorage.removeItem('tiktokDataCache')
+      this.$forceUpdate();
+    },
+
+
+
+    // 加载缓存的TikTok数据
+    loadTikTokCache() {
+      try {
+        const tiktokCache = JSON.parse(localStorage.getItem('tiktokDataCache') || '{}');
+
+        // 将缓存数据映射到对应的账户
+        this.accounts.forEach(account => {
+          if (tiktokCache[account.username]) {
+            const { data } = tiktokCache[account.username];
+            const { profile, stats } = data;
+
+            // 使用常规对象赋值
+            this.tikTokData[account.id] = {
+              nickname: profile?.Nickname || '-',
+              country: profile?.Country || '-',
+              followers: stats?.Followers || '-',
+              following: stats?.Following || '-',
+              hearts: stats?.Hearts || '-',
+              videos: stats?.Videos || '-',
+              friends: stats?.Friends || '-',
+              userId: profile?.['User ID'] || '-',
+              createdAt: profile?.['Account Created'] || '-'
+            };
+          }
+        });
+
+        // 强制视图更新
+        this.$forceUpdate();
+      } catch (e) {
+        console.error('Error loading TikTok cache:', e);
+      }
     },
   },
   async mounted() {

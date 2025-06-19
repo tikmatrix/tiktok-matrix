@@ -9,6 +9,13 @@ export function auth({ password }) {
     }
   })
 }
+export function tiktok_query(data) {
+  return request({
+    method: 'post',
+    url: api.tiktok_query,
+    data: data
+  })
+}
 
 export function get_devices() {
   return request({
@@ -106,11 +113,11 @@ export function delete_task({ id }) {
     params: { id }
   })
 }
-export function update_task({ id, status }) {
+export function update_task(data) {
   return request({
     method: 'put',
     url: api.task,
-    data: { id, status }
+    data
   })
 }
 
@@ -456,11 +463,11 @@ export function reset_all_index(data) {
     url: api.reset_all_index
   })
 }
-export function edit_title(data) {
+export function update_material(data) {
   return request({
     method: 'put',
     data,
-    url: api.edit_title
+    url: api.material
   })
 }
 
@@ -493,6 +500,173 @@ export function get_stripe_checkout_url(data) {
     method: 'post',
     data,
     url: api.get_stripe_checkout_url
+  })
+}
+
+// 获取所有标签
+export function get_tags() {
+  return request({
+    method: 'get',
+    url: api.tag
+  })
+}
+
+// 添加新标签
+export function add_tag(data) {
+  return request({
+    method: 'post',
+    url: api.tag,
+    data
+  })
+}
+
+// 更新标签
+export function update_tag(data) {
+  return request({
+    method: 'put',
+    url: api.tag,
+    data
+  })
+}
+
+// 删除标签
+export function delete_tag({ id }) {
+  return request({
+    method: 'delete',
+    url: api.tag,
+    params: { id }
+  })
+}
+
+// 获取素材的所有标签
+export function get_material_tags({ material_id }) {
+  return request({
+    method: 'get',
+    url: api.material_tags.replace('{material_id}', material_id)
+  })
+}
+
+// 批量添加标签到素材
+export function add_tags_to_material({ material_id, tag_ids }) {
+  return request({
+    method: 'post',
+    url: api.material_tags.replace('{material_id}', material_id),
+    data: tag_ids
+  })
+}
+
+// 给素材添加单个标签
+export function add_tag_to_material({ material_id, tag_id }) {
+  return request({
+    method: 'post',
+    url: api.add_tag_to_material
+      .replace('{material_id}', material_id)
+      .replace('{tag_id}', tag_id)
+  })
+}
+
+// 从素材中移除标签
+export function remove_tag_from_material({ material_id, tag_id }) {
+  return request({
+    method: 'delete',
+    url: api.remove_tag_from_material
+      .replace('{material_id}', material_id)
+      .replace('{tag_id}', tag_id)
+  })
+}
+
+// 清空素材的所有标签
+export function clear_material_tags({ material_id }) {
+  return request({
+    method: 'delete',
+    url: api.material_tags.replace('{material_id}', material_id)
+  })
+}
+
+// 获取带标签的素材详情
+export function get_material_with_tags({ material_id }) {
+  return request({
+    method: 'get',
+    url: api.material_with_tags.replace('{material_id}', material_id)
+  })
+}
+
+// 获取所有带标签的素材
+export function list_all_materials_with_tags() {
+  return request({
+    method: 'get',
+    url: api.materials_with_tags
+  })
+}
+
+// 获取指定标签下的所有素材
+export function get_materials_by_tag({ tag_id }) {
+  return request({
+    method: 'get',
+    url: api.materials_by_tag.replace('{tag_id}', tag_id)
+  })
+}
+
+// 获取指定标签下的所有带标签的素材
+export function get_materials_with_tags_by_tag({ tag_id }) {
+  return request({
+    method: 'get',
+    url: api.materials_with_tags_by_tag.replace('{tag_id}', tag_id)
+  })
+}
+// ChatGPT 完成请求
+export function chatgpt_completion(data) {
+  return request({
+    method: 'post',
+    url: api.chatgpt_completion,
+    data
+  })
+}
+export function get_stripe_price_table_info() {
+  return request({
+    method: 'get',
+    url: api.get_stripe_price_table_info
+  })
+}
+export function get_plans() {
+  return request({
+    method: 'get',
+    url: api.plan
+  })
+}
+export function add_plan(data) {
+  return request({
+    method: 'post',
+    url: api.plan,
+    data
+  })
+}
+export function update_plan(data) {
+  return request({
+    method: 'put',
+    url: api.plan,
+    data
+  })
+}
+export function delete_plan({ id }) {
+  return request({
+    method: 'delete',
+    url: api.plan,
+    params: { id }
+  })
+}
+export function get_follow_record({ username }) {
+  return request({
+    method: 'get',
+    url: api.follow_record,
+    params: { username }
+  })
+}
+export function clear_follow_records({ username }) {
+  return request({
+    method: 'get',
+    url: api.clear_follow_records,
+    params: { username }
   })
 }
 

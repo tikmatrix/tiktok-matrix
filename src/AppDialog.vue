@@ -1,26 +1,30 @@
 <template>
-    <dialog ref="page_dialog" class="modal">
-      <div class="modal-box w-11/12 max-w-6xl">
-        <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
-        <TikTokSettings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open"/>
-        <TrainSettings v-if="selectedItem.name === 'trainSettings' && $refs.page_dialog.open" :group="selectedItem.group" />
-        <PublishSettings v-if="selectedItem.name === 'publishSettings' && $refs.page_dialog.open" :group="selectedItem.group" />
-        <ManageMaterials :group="selectedItem.group"
-          v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
-        <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
-        <BeforeRunScriptDialog :selecedDevices="selecedDevices" :devices="devices" :script="selectedItem.script" :settings="settings" v-if="selectedItem.name === 'beforeRunScriptDialog' && $refs.page_dialog.open" />
-        
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
+  <dialog ref="page_dialog" class="modal">
+    <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
+      <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
+      <ManagePlans :devices="devices" v-if="selectedItem.name === 'plans' && $refs.page_dialog.open" />
+      <TikTokSettings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open" />
+      <TrainSettings v-if="selectedItem.name === 'accountWarmup' && $refs.page_dialog.open"
+        :group="selectedItem.group" />
+      <PublishSettings v-if="selectedItem.name === 'post' && $refs.page_dialog.open" :group="selectedItem.group" />
+      <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
+      <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
+      <BeforeRunScriptDialog :selecedDevices="selecedDevices" :devices="devices" :script="selectedItem.script"
+        :settings="settings" v-if="selectedItem.name === 'beforeRunScriptDialog' && $refs.page_dialog.open" />
+
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 
 
 </template>
 
 <script>
 import ManageAccounts from './components/account/ManageAccounts.vue'
+import ManagePlans from './components/plan/ManagePlans.vue'
+
 import TikTokSettings from './components/TikTokSettings.vue'
 import TrainSettings from './components/groups/TrainSettings.vue'
 import PublishSettings from './components/groups/PublishSettings.vue'
@@ -45,6 +49,7 @@ export default {
   },
   components: {
     ManageAccounts,
+    ManagePlans,
     TikTokSettings,
     TrainSettings,
     PublishSettings,
@@ -59,6 +64,7 @@ export default {
   },
   methods: {
     menu_selected(item) {
+      console.log('menu_selected', item)
       this.selectedItem = item
       this.$refs.page_dialog.showModal()
       this.$refs.page_dialog.addEventListener('close', () => {
@@ -66,7 +72,7 @@ export default {
       })
     },
 
-  
+
 
   },
   async mounted() {

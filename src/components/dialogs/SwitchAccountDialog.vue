@@ -3,20 +3,20 @@
   <div class="alert alert-warning mb-4 shadow-lg">
     <div>
       <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="h-6 w-6 mr-2" />
-      <span>{{ $t('loginWarning') }}</span>
+      <span>{{ $t('switchAccountWarning') }}</span>
     </div>
   </div>
 </template>
 <script>
 export default {
-  name: 'LoginDialog',
+  name: 'SwitchAccountDialog',
   data() {
     return {
     }
   },
   methods: {
-    async runScript() {
-      await this.$emiter('run_now_by_account', { name: 'login', args: { count: 1 } })
+    async runScript(enable_multi_account) {
+      await this.$emiter('run_now_by_account', { name: 'switch_account', args: { enable_multi_account } })
     },
   },
   async mounted() {

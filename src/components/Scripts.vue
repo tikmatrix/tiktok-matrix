@@ -20,14 +20,19 @@
         {{ $t('matchAccount') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
-        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'train' } })">
-        <font-awesome-icon icon="robot" class="h-3 w-3 text-success" />
-        {{ $t('train') }}
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'switchAccount' } })">
+        <font-awesome-icon icon="fa-solid fa-right-left" class="h-3 w-3" />
+        {{ $t('switchAccount') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
-        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'publish' } })">
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'accountWarmup' } })">
+        <font-awesome-icon icon="robot" class="h-3 w-3 text-success" />
+        {{ $t('accountWarmup') }}
+    </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'post' } })">
         <font-awesome-icon icon="paper-plane" class="h-3 w-3 text-success" />
-        {{ $t('publish') }}
+        {{ $t('post') }}
     </button>
     <!-- <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'deletePost' } })">
@@ -64,7 +69,18 @@
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'scrapeFollowers' } })">
         <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />
         {{ $t('scrapeFollowers') }}
-    </button> -->
+    </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'followBack' } })">
+        <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />
+        {{ $t('followBack') }}
+    </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'unFollowAll' } })">
+        <font-awesome-icon icon="fa-solid fa-user-minus" class="h-3 w-3 mr-1" />
+        {{ $t('unFollowAll') }}
+    </button>
+
 
 
 

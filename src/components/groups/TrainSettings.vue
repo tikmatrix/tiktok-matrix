@@ -2,20 +2,20 @@
   <div class="bg-base-100 flex flex-col items-start p-4">
 
     <div class="flex w-full items-center gap-2 mb-2">
-      <label class="font-bold w-40">{{ $t('scheduledTrain') }}:</label>
+      <label class="font-bold w-40">{{ $t('enableSchedule') }}:</label>
       <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.auto_train" true-value="1" false-value="0" />
       <div role="alert" class="alert">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <span>{{ $t('trainTimeTips') }}</span>
+        <span>{{ $t('enableScheduleTips') }}</span>
       </div>
     </div>
 
     <div>
-      <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('trainTimer') }}:</label>
+      <div class="flex w-full items-center gap-2 mb-2" v-if="mygroup.auto_train == 1">
+        <label class="font-bold w-40">{{ $t('scheduleTime') }}:</label>
         <div class="flex flex-wrap gap-2">
           <div v-for="(time, index) in trainTimes" :key="index" class="flex items-center">
             <input type="time" class="border-2 border-gray-300 p-2 rounded" v-model="trainTimes[index]"
@@ -35,8 +35,9 @@
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('viewDuration') }}:</label>
-        <VueSlider v-model="view_duration" :width="300" :min="10" :max="180" :marks="{10: '10'+$t('second'), 90: '90'+$t('second'), 180: '180'+$t('second')}" />
-       
+        <VueSlider v-model="view_duration" :width="300" :min="10" :max="180"
+          :marks="{ 10: '10' + $t('second'), 90: '90' + $t('second'), 180: '180' + $t('second') }" />
+
         <div role="alert" class="alert w-96 ml-8">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -46,8 +47,9 @@
         </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-8">
-        <label class="font-bold w-40">{{ $t('trainDuration') }}:</label>
-        <VueSlider v-model="trainDurationInMinutes" :width="500" :min="10" :max="60" :marks="{10: '10'+$t('minute'),20: '20'+$t('minute'),30: '30'+$t('minute'),40: '40'+$t('minute'),50: '50'+$t('minute'),60: '60'+$t('minute')}" />
+        <label class="font-bold w-40">{{ $t('taskDuration') }}:</label>
+        <VueSlider v-model="trainDurationInMinutes" :width="500" :min="10" :max="60"
+          :marks="{ 10: '10' + $t('minute'), 20: '20' + $t('minute'), 30: '30' + $t('minute'), 40: '40' + $t('minute'), 50: '50' + $t('minute'), 60: '60' + $t('minute') }" />
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('topics') }}:</label>
@@ -56,29 +58,62 @@
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('comments') }}:</label>
-        <textarea class="textarea textarea-success w-lg" :placeholder="$t('commentsTips')" autocomplete="off"
-          v-model="mygroup.comment"> </textarea>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col w-full gap-2">
           <div class="flex flex-row items-center gap-2">
-            <label class="font-bold">{{ $t('insertEmoji') }}:</label>
-            <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.insert_emoji" :true-value=1
-              :false-value=0 title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
+            <label class="font-bold">{{ $t('generateByChatGPT') }}:</label>
+            <input type="checkbox" class="toggle toggle-accent" :true-value=1 :false-value=0
+              v-model="mygroup.generate_by_chatgpt" />
           </div>
-          <div class="flex flex-row items-center">
-            <label class="font-bold">{{ $t('commentOrder') }}:</label>
-            <div class="flex items-center">
-              <label class="flex items-center gap-1 cursor-pointer">
-                <input type="radio" name="commentOrder" value="random" class="radio radio-sm radio-primary" v-model="mygroup.comment_order" />
-                <span>{{ $t('random') }}</span>
-              </label>
-              <label class="flex items-center gap-1 cursor-pointer">
-                <input type="radio" name="commentOrder" value="sequential" class="radio radio-sm radio-primary" v-model="mygroup.comment_order" />
-                <span>{{ $t('sequential') }}</span>
-              </label>
+          <div v-if="mygroup.generate_by_chatgpt" class="flex flex-col gap-2">
+            <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+              <legend class="fieldset-legend">{{ $t('chatgptSettings') }}</legend>
+
+              <label class="label">{{ $t('url') }}</label>
+              <input type="text" class="input w-full" placeholder="https://api.openai.com/v1/chat/completions"
+                v-model="chatgpt_settings.url" />
+
+              <label class="label">{{ $t('apiKey') }}</label>
+              <input type="password" class="input w-full" placeholder="sk-********"
+                v-model="chatgpt_settings.api_key" />
+
+              <label class="label">{{ $t('model') }}</label>
+              <input type="text" class="input" placeholder="gpt-3.5-turbo" v-model="chatgpt_settings.model" />
+              <label class="label">{{ $t('systemPrompt') }}</label>
+              <textarea class="textarea textarea-success w-full" :placeholder="$t('systemPromptTips')"
+                autocomplete="off" v-model="chatgpt_settings.system_prompt"> </textarea>
+            </fieldset>
+            <button class="btn btn-primary" @click="testChatGPT">Test ChatGPT</button>
+            <span :class="testResultStyle">{{ testResult }}</span>
+
+          </div>
+          <div class="flex flex-col gap-2 relative" v-else>
+            <textarea class="textarea textarea-success w-full" :placeholder="$t('commentsTips')" autocomplete="off"
+              v-model="mygroup.comment"> </textarea>
+            <div class="flex flex-row items-center gap-2 absolute top-2 right-4 bg-info pl-2 pr-2 rounded">
+              <label class="font-bold">{{ $t('insertEmoji') }}:</label>
+              <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.insert_emoji" :true-value=1
+                :false-value=0
+                title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
+            </div>
+            <div class="flex flex-row items-center absolute top-8 right-4 bg-info pl-2 pr-2 rounded">
+              <label class="font-bold">{{ $t('commentOrder') }}:</label>
+              <div class="flex items-center">
+                <label class="flex items-center gap-1 cursor-pointer">
+                  <input type="radio" name="commentOrder" value="random" class="radio radio-sm radio-primary"
+                    v-model="mygroup.comment_order" />
+                  <span>{{ $t('random') }}</span>
+                </label>
+                <label class="flex items-center gap-1 cursor-pointer">
+                  <input type="radio" name="commentOrder" value="sequential" class="radio radio-sm radio-primary"
+                    v-model="mygroup.comment_order" />
+                  <span>{{ $t('sequential') }}</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('interact') }}:</label>
         <div class="flex flex-wrap gap-8">
@@ -88,7 +123,8 @@
               <label class="text-md">{{ $t('follow') }}: </label>
               <span class="text-md font-medium">{{ mygroup.floow_probable }}%</span>
             </div>
-            <VueSlider v-model="mygroup.floow_probable" :width="100" :min="0" :max="100" :marks="{0: '0%', 50: '50%', 100: '100%'}" />
+            <VueSlider v-model="mygroup.floow_probable" :width="100" :min="0" :max="100"
+              :marks="{ 0: '0%', 50: '50%', 100: '100%' }" />
           </div>
 
           <!-- 点赞概率滑块 -->
@@ -97,7 +133,8 @@
               <label class="text-md">{{ $t('like') }}: </label>
               <span class="text-md font-medium">{{ mygroup.like_probable }}%</span>
             </div>
-            <VueSlider v-model="mygroup.like_probable" :width="100" :min="0" :max="100" :marks="{0: '0%', 50: '50%', 100: '100%'}" />
+            <VueSlider v-model="mygroup.like_probable" :width="100" :min="0" :max="100"
+              :marks="{ 0: '0%', 50: '50%', 100: '100%' }" />
           </div>
 
           <!-- 收藏概率滑块 -->
@@ -106,7 +143,8 @@
               <label class="text-md">{{ $t('favorite') }}: </label>
               <span class="text-md font-medium">{{ mygroup.collect_probable }}%</span>
             </div>
-            <VueSlider v-model="mygroup.collect_probable" :width="100" :min="0" :max="100" :marks="{0: '0%', 50: '50%', 100: '100%'}" />
+            <VueSlider v-model="mygroup.collect_probable" :width="100" :min="0" :max="100"
+              :marks="{ 0: '0%', 50: '50%', 100: '100%' }" />
           </div>
 
           <!-- 评论概率滑块 -->
@@ -115,7 +153,8 @@
               <label class="text-md">{{ $t('comment') }}: </label>
               <span class="text-md font-medium">{{ mygroup.comment_probable }}%</span>
             </div>
-            <VueSlider v-model="mygroup.comment_probable" :width="100" :min="0" :max="100" :marks="{0: '0%', 50: '50%', 100: '100%'}" />
+            <VueSlider v-model="mygroup.comment_probable" :width="100" :min="0" :max="100"
+              :marks="{ 0: '0%', 50: '50%', 100: '100%' }" />
           </div>
         </div>
       </div>
@@ -145,7 +184,7 @@ export default {
   computed: {
     trainDurationInMinutes: {
       get() {
-        return this.mygroup.train_duration / 60
+        return (this.mygroup.train_duration / 60) || 10
       },
       set(value) {
         this.mygroup.train_duration = value * 60
@@ -153,11 +192,11 @@ export default {
     },
     view_duration: {
       get() {
-        return [this.group.min_duration, this.group.max_duration]
+        return [this.mygroup.min_duration, this.mygroup.max_duration]
       },
       set(value) {
-        this.group.min_duration = value[0]
-        this.group.max_duration = value[1]
+        this.mygroup.min_duration = value[0]
+        this.mygroup.max_duration = value[1]
       }
     }
   },
@@ -165,6 +204,9 @@ export default {
     return {
       mygroup: {},
       trainTimes: [],
+      chatgpt_settings: {},
+      testResult: '',
+      testResultStyle: 'text-gray-500',
     }
   },
   watch: {
@@ -174,7 +216,7 @@ export default {
     'mygroup.insert_emoji': function (val) {
       this.mygroup.insert_emoji = Number(val)
     },
-    
+
     'mygroup.train_duration': function (val) {
       this.mygroup.train_duration = Number(val)
     },
@@ -197,6 +239,30 @@ export default {
     },
   },
   methods: {
+    async testChatGPT() {
+      try {
+        this.testResult = 'Testing...';
+        this.testResultStyle = 'text-warning';
+        const response = await this.$service.chatgpt_completion({
+          url: this.chatgpt_settings.url,
+          api_key: this.chatgpt_settings.api_key,
+          model: this.chatgpt_settings.model,
+          system_prompt: this.chatgpt_settings.system_prompt,
+          post_caption: 'This is a test post caption for TikTok.',
+        });
+        console.log(response);
+        if (response.code == 0) {
+          this.testResult = response.data;
+          this.testResultStyle = 'text-success';
+        } else {
+          this.testResult = response.data;
+          this.testResultStyle = 'text-error';
+        }
+      } catch (error) {
+        this.testResult = 'Error: ' + error.message;
+        this.testResultStyle = 'text-error';
+      }
+    },
     addTime() {
       if (this.trainTimes.length < 6) {
         this.trainTimes.push('')
@@ -217,6 +283,7 @@ export default {
         });
         return
       }
+      this.mygroup.chatgpt_settings = JSON.stringify(this.chatgpt_settings)
       this.updateGroup(this.mygroup)
     },
     async updateGroup(group) {
@@ -230,6 +297,17 @@ export default {
   },
   async mounted() {
     this.mygroup = this.group
+    if (!this.mygroup.chatgpt_settings) {
+      this.chatgpt_settings = {
+        url: 'https://api.openai.com/v1/chat/completions',
+        api_key: '',
+        model: 'gpt-3.5-turbo',
+        system_prompt: 'You are a TikTok comment generation assistant. Please generate a real user comment based on the TikTok post caption content provided by the user. The comment format includes text and emojis; the comment length should not exceed 100 characters; the comment content should include two parts: First Praise the post based on the post caption; Then Promote TikMatrix: TikMatrix is a phone farm automation software that automates the management of hundreds of TikTok accounts from one computer. If you are interested, please Google search: TikMatrix'
+      }
+    } else {
+      this.chatgpt_settings = JSON.parse(this.mygroup.chatgpt_settings)
+    }
+
     if (this.mygroup.train_start_time) {
       this.trainTimes = this.mygroup.train_start_time.split(',')
     }

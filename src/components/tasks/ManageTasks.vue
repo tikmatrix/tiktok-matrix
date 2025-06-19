@@ -24,7 +24,7 @@
                 <th>{{ $t('scriptArgs') }}</th>
                 <th>{{ $t('startTime') }}</th>
                 <th>{{ $t('status') }}</th>
-                <!-- <th>{{ $t('remark') }}</th> -->
+                <th>{{ $t('username') }}</th>
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('actions') }}</th>
               </tr>
@@ -45,7 +45,7 @@
                   <div class="badge badge-success badge-md" v-else-if="task.status == '2'">{{ $t('success') }}</div>
                   <div class="badge badge-error badge-md" v-else-if="task.status == '3'">{{ $t('failed') }}</div>
                 </td>
-                <!-- <td><span class="badge badge-ghost badge-md">{{ task.remark }}</span></td> -->
+                <td><span class="badge badge-ghost badge-md">{{ getTaskArg(task.script_args, 'username') }}</span></td>
                 <td>
                   <a class="link link-primary" @click="show_device(task.serial)" v-if="task.device_index">{{
                     task.device_index }}</a>
@@ -105,6 +105,16 @@ export default {
 
   },
   methods: {
+    getTaskArg(args, key) {
+    try {
+      console.log(args);
+      const obj = typeof args === 'string' ? JSON.parse(args) : args;
+      console.log(obj);
+      return obj && obj[key] !== undefined ? obj[key] : '';
+    } catch (e) {
+      return '';
+    }
+  },
     truncateScriptArgs(scriptArgs) {
       if (scriptArgs.length > 30) {
         return `${scriptArgs.slice(0, 10)}...${scriptArgs.slice(-10)}`;
@@ -147,6 +157,7 @@ export default {
         .update_task({
           id: task.id,
           status: 0,
+          serial: task.serial
         })
         .then(() => {
           this.get_tasks()
