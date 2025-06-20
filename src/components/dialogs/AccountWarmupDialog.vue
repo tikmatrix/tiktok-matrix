@@ -184,7 +184,7 @@ export default {
   data() {
     return {
       settings: localStorage.getItem('settings') || 'custom',
-      task_duration: Number(localStorage.getItem('task_duration')) || 10,
+      task_duration: Number(localStorage.getItem('task_duration')) || 600, // 默认10分钟
       startOption: localStorage.getItem('startOption') || 'now',
       scheduledTime: localStorage.getItem('scheduledTime') || '',
       insert_emoji: localStorage.getItem('insert_emoji') === 'true' || false,
