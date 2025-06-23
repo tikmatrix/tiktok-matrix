@@ -73,7 +73,7 @@
           </div>
         </div>
       </div>
-      <!-- add sound start -->
+      <!-- add sound start 
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('addSound') }}:</label>
         <div class="flex items-center gap-4">
@@ -92,7 +92,6 @@
               class="form-radio text-primary h-4 w-4">
             <label for="enable" class="ml-2">{{ $t('enable') }}</label>
           </div>
-          <!-- add sound tips -->
 
           <div role="alert" class="alert">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -121,8 +120,8 @@
             :marks="{ 0: '0', 100: '100' }" />
         </div>
       </div>
-      <!-- add sound end-->
-      <div class="flex w-full items-center gap-2 mb-2">
+       add sound end-->
+      <!-- <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('addProductLink') }}:</label>
         <div class="flex items-center gap-4">
           <div class="flex items-center">
@@ -145,7 +144,7 @@
             <span>{{ $t('addProductLinkTips') }}</span>
           </div>
         </div>
-      </div>
+      </div> -->
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('captions') }}:</label>
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
