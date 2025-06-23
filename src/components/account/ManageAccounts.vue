@@ -22,7 +22,7 @@
           <option value="disable">{{ $t('disable') }}</option>
           <option value="enable">{{ $t('enable') }}</option>
           <option value="delete">{{ $t('delete') }}</option>
-          <option value="batchTiktokQuery">{{ $t('syncTiktokData') }}</option>
+          <!-- <option value="batchTiktokQuery">{{ $t('syncTiktokData') }}</option> -->
         </select>
 
         <!-- 清空标签按钮 -->
@@ -37,13 +37,13 @@
                 <th>{{ $t('number') }}</th>
                 <th>{{ $t('email') }}</th>
                 <th>{{ $t('username') }}</th>
-                <th>{{ $t('nickname') }}</th>
+                <!-- <th>{{ $t('nickname') }}</th>
                 <th>{{ $t('country') }}</th>
                 <th>{{ $t('followers') }}</th>
                 <th>{{ $t('following') }}</th>
                 <th>{{ $t('hearts') }}</th>
                 <th>{{ $t('videos') }}</th>
-                <th>{{ $t('friends') }}</th>
+                <th>{{ $t('friends') }}</th> -->
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('loginStatus') }}</th>
                 <th>{{ $t('status') }}</th>
@@ -57,57 +57,56 @@
                 <td>{{ account.email }}</td>
                 <td>
                   <div class="flex items-center gap-2">
-                    <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">{{
-                      account.username }}</a>
-                    <button class="btn btn-xs btn-ghost btn-circle" @click="tiktok_query(account)"
+                    {{ account.username }}
+                    <!-- <button class="btn btn-xs btn-ghost btn-circle" @click="tiktok_query(account)"
                       :disabled="loadingTikTok[account.id]">
                       <span class="loading loading-spinner text-info" v-if="loadingTikTok[account.id]"></span>
                       <font-awesome-icon icon="fa-solid fa-sync" class="text-info" v-else />
-                    </button>
+                    </button> -->
                   </div>
                 </td>
-                <td>
+                <!-- <td>
                   <template v-if="tikTokData[account.id]">
                     <span class="badge badge-accent">{{ tikTokData[account.id].nickname }}</span>
                   </template>
-                  <template v-else>{{ account.nickname }}</template>
-                </td>
-                <td>
-                  <template v-if="tikTokData[account.id]">
+<template v-else>{{ account.nickname }}</template>
+</td>
+<td>
+  <template v-if="tikTokData[account.id]">
                     <span class="badge badge-accent">{{ tikTokData[account.id].country }}</span>
                   </template>
-                  <template v-else>{{ account.country }}</template>
-                </td>
-                <td>
-                  <template v-if="tikTokData[account.id]">
+  <template v-else>{{ account.country }}</template>
+</td>
+<td>
+  <template v-if="tikTokData[account.id]">
                     <span class="badge badge-accent">{{ tikTokData[account.id].followers }}</span>
                   </template>
-                  <template v-else>{{ account.followers }}</template>
-                </td>
-                <td>
-                  <template v-if="tikTokData[account.id]">
+  <template v-else>{{ account.followers }}</template>
+</td>
+<td>
+  <template v-if="tikTokData[account.id]">
                     <span class="badge badge-accent">{{ tikTokData[account.id].following }}</span>
                   </template>
-                  <template v-else>{{ account.following }}</template>
-                </td>
-                <td>
-                  <template v-if="tikTokData[account.id]">
+  <template v-else>{{ account.following }}</template>
+</td>
+<td>
+  <template v-if="tikTokData[account.id]">
                     <span class="badge badge-accent">{{ tikTokData[account.id].hearts }}</span>
                   </template>
-                  <template v-else>{{ account.hearts }}</template>
-                </td>
-                <td>
-                  <template v-if="tikTokData[account.id]">
+  <template v-else>{{ account.hearts }}</template>
+</td>
+<td>
+  <template v-if="tikTokData[account.id]">
                     <span class="badge badge-accent">{{ tikTokData[account.id].videos }}</span>
                   </template>
-                  <template v-else>{{ account.videos }}</template>
-                </td>
-                <td>
-                  <template v-if="tikTokData[account.id]">
+  <template v-else>{{ account.videos }}</template>
+</td>
+<td>
+  <template v-if="tikTokData[account.id]">
                     <span class="badge badge-accent">{{ tikTokData[account.id].friends }}</span>
                   </template>
-                  <template v-else>{{ account.friends }}</template>
-                </td>
+  <template v-else>{{ account.friends }}</template>
+</td> -->
 
                 <td>
                   <a class="cursor-pointer underline text-primary" v-if="account.device_index"

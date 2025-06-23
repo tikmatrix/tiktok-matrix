@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col items-start p-12">
-    <div class="divider">{{ $t('tiktokPackagename') }}</div>
+    <!-- <div class="divider">{{ $t('tiktokPackagename') }}</div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full">
       <label class="font-bold text-right col-span-1">{{ $t('tiktokPackagename') }}:</label>
       <div class="col-span-2 flex items-center gap-4">
@@ -15,7 +15,7 @@
           <label for="asia" class="label cursor-pointer ml-2">{{ $t('asia') }}</label>
         </div>
       </div>
-    </div>
+    </div> -->
     <div class="divider">{{ $t('autoWakeUp') }}</div>
     <div class="form-control px-3 py-1 rounded-lg shadow-md flex-row items-center">
       <label class="label cursor-pointer flex items-center space-x-2">
