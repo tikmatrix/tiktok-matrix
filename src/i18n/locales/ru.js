@@ -1,5 +1,6 @@
 export default {
   account: 'Аккаунт',
+  loadingManagingSubscription: 'Загрузка управления подпиской...',
   followPlan: 'План подписки',
   followCount: 'Количество подписок',
   unfollowDelay: 'Задержка отмены подписки',

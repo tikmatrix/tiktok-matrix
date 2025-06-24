@@ -1,5 +1,6 @@
 export default {
   account: 'Account',
+  loadingManagingSubscription: 'Loading managing subscription...',
   followPlan: 'Follow Plan',
   followCount: 'Follow Count',
   unfollowDelay: 'Unfollow Delay',

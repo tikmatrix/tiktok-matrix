@@ -307,6 +307,19 @@
       </div>
     </form>
   </dialog>
+  <!-- 管理订阅Loading弹窗 -->
+  <dialog ref="manageSubscriptionLoadingDialog" class="modal">
+    <form method="dialog" class="modal-box">
+      <h3 class="font-bold text-lg">{{ $t('loadingManagingSubscription') }}</h3>
+      <div class="py-4 flex items-center justify-center">
+        <span class="loading loading-bars loading-xl"></span>
+      </div>
+
+      <div class="modal-action">
+        <button type="submit" class="btn">{{ $t('confirm') }}</button>
+      </div>
+    </form>
+  </dialog>
 </template>
 <script>
 import { writeText } from '@tauri-apps/api/clipboard';
@@ -657,14 +670,17 @@ export default {
 
     async manageStripeSubscription() {
       try {
+        this.$refs.manageSubscriptionLoadingDialog.showModal();
         // 获取管理订阅的URL
         this.$service.get_stripe_portal_url().then(async (res) => {
           if (res.code === 0) {
             const portalUrl = JSON.parse(res.data);
             console.log('portalUrl:', portalUrl)
+            this.$refs.manageSubscriptionLoadingDialog.close();
             // 打开Stripe订阅管理页面
             await open(portalUrl);
           } else {
+            this.$refs.manageSubscriptionLoadingDialog.close();
             await this.$emiter('NOTIFY', {
               type: 'error',
               message: res.data,
@@ -673,6 +689,7 @@ export default {
           }
         });
       } catch (error) {
+        this.$refs.manageSubscriptionLoadingDialog.close();
         await this.$emiter('NOTIFY', {
           type: 'error',
           message: this.$t('manageSubscriptionErrorMessage'),

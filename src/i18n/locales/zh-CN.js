@@ -1,5 +1,6 @@
 export default {
   account: '帐号',
+  loadingManagingSubscription: '加载管理订阅...',
   followPlan: '关注计划',
   followCount: '关注数量',
   unfollowDelay: '取消关注延迟',
