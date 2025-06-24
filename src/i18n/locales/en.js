@@ -3,6 +3,7 @@ export default {
   stopInstagram: 'Stop Instagram',
   grantInstagram: 'Grant Instagram Access',
   account: 'Account',
+  loadingManagingSubscription: 'Loading managing subscription...',
   followPlan: 'Follow Plan',
   followCount: 'Follow Count',
   unfollowDelay: 'Unfollow Delay',
