@@ -70,7 +70,7 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ig
       - name: setup node
         uses: actions/setup-node@v4
         with:
