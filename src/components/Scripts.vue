@@ -66,9 +66,9 @@
         {{ $t('massComment') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
-        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'scrapeFollowers' } })">
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'scrapeUsers' } })">
         <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />
-        {{ $t('scrapeFollowers') }}
+        {{ $t('scrapeUsers') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'followBack' } })">

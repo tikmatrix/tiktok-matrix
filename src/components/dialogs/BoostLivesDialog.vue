@@ -65,12 +65,18 @@
 
   <!-- 评论间隔输入 -->
   <div class="flex flex-row items-center p-1 gap-2">
-    <label class="font-bold text-right">{{ $t('commentInterval') }}:</label>
-    <input type="number" min="5" max="120" v-model="live_comment_interval" class="input input-bordered input-md w-20" />
-    <span>{{ $t('second') }}</span>
+    <div class="flex flex-row items-center p-1 gap-2">
+      <label class="font-bold text-right">{{ $t('commentInterval') }}:</label>
+      <input type="number" min="5" max="120" v-model="live_comment_interval"
+        class="input input-bordered input-md w-20" />
+      <span>{{ $t('second') }}</span>
+    </div>
+    <div class="flex flex-row items-center p-1 gap-2">
+      <label class="font-bold text-right">{{ $t('commentsPerAccount') }}:</label>
+      <input type="number" min="1" max="20" v-model="live_comment_count" class="input input-bordered input-md w-20" />
+      <span>{{ $t('times') }}</span>
+    </div>
   </div>
-
-
   <!-- 评论文本输入区域 -->
   <div class="flex flex-row items-center p-1 w-full gap-2">
     <label class="font-bold">{{ $t('comments') }}:</label>
@@ -108,6 +114,7 @@
     <VueSlider v-model="task_interval" :width="500" :min="0" :max="10"
       :marks="{ 0: '0' + $t('minute'), 5: '5' + $t('minute'), 10: '10' + $t('minute') }" />
   </div>
+
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
@@ -129,10 +136,16 @@ export default {
       enter_method: localStorage.getItem('live_enter_method') || 'search', // 默认搜索用户
       insert_emoji: localStorage.getItem('live_insert_emoji') === 'true' || false,
       comment_order: localStorage.getItem('live_comment_order') || 'random',
+      live_comment_count: Number(localStorage.getItem('live_comment_count')) || 1,
       task_interval: [localStorage.getItem('live_min_interval') || 0, localStorage.getItem('live_max_interval') || 10]
     }
   },
   watch: {
+    live_comment_count: {
+      handler(newVal) {
+        localStorage.setItem('live_comment_count', newVal)
+      },
+    },
     live_target_username: {
       handler(newVal) {
         localStorage.setItem('live_target_username', newVal)
@@ -239,6 +252,7 @@ export default {
           comment_order: this.comment_order,
           min_interval: Number(this.task_interval[0]),
           max_interval: Number(this.task_interval[1]),
+          comment_count: this.live_comment_count,
           enable_multi_account: enable_multi_account
         }
       })

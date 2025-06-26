@@ -14,7 +14,6 @@
           || script.name === 'massDM'
           || script.name === 'followBack'
           || script.name === 'unFollowAll'
-          || script.name === 'scrapeFollowers'
           || script.name === 'deletePost'
           || script.name === 'boostUsers'
           || script.name === 'boostPosts'
@@ -44,7 +43,7 @@
     <PostDialog v-if="script.name === 'post'" ref="currentDialog" />
     <LoginDialog v-if="script.name === 'login'" ref="currentDialog" />
     <MatchAccounts v-if="script.name === 'matchAccount'" ref="currentDialog" />
-    <ScrapeFollowersDialog v-if="script.name === 'scrapeFollowers'" ref="currentDialog" />
+    <ScrapeUsersDialog v-if="script.name === 'scrapeUsers'" ref="currentDialog" />
     <DeletePostDialog v-if="script.name === 'deletePost'" ref="currentDialog" />
     <BoostUsersDialog v-if="script.name === 'boostUsers'" ref="currentDialog" />
     <BoostPostsDialog v-if="script.name === 'boostPosts'" ref="currentDialog" />
@@ -68,7 +67,7 @@ import UnFollowAllDialog from './UnFollowAllDialog.vue'
 import LoginDialog from './LoginDialog.vue'
 import AccountWarmupDialog from './AccountWarmupDialog.vue'
 import PostDialog from './PostDialog.vue'
-import ScrapeFollowersDialog from './ScrapeFollowersDialog.vue'
+import ScrapeUsersDialog from './ScrapeUsersDialog.vue'
 import DeletePostDialog from './DeletePostDialog.vue'
 import BoostUsersDialog from './BoostUsersDialog.vue'
 import BoostPostsDialog from './BoostPostsDialog.vue'
@@ -105,7 +104,7 @@ export default {
     LoginDialog,
     AccountWarmupDialog,
     PostDialog,
-    ScrapeFollowersDialog,
+    ScrapeUsersDialog,
     DeletePostDialog,
     BoostUsersDialog,
     BoostPostsDialog,

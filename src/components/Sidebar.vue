@@ -37,7 +37,8 @@
             <label class="label cursor-pointer m-1">
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(0)"
                 :checked="isSelectAll(0)" />
-              <span class="label-text text-primary text-md select-none">{{ $t('allDevices') }} ({{ groupDevices[0].length
+              <span class="label-text text-primary text-md select-none">{{ $t('allDevices') }} ({{
+                groupDevices[0].length
               }})</span>
             </label>
 
@@ -73,7 +74,7 @@
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(item.id)"
                 :checked="isSelectAll(item.id)" />
               <span class="label-text text-primary  text-md select-none">{{ item.name }}({{ groupDevices[item.id].length
-                }})</span>
+              }})</span>
             </label>
             <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
               @click="renameGroup(item)"></font-awesome-icon>
@@ -722,7 +723,7 @@ export default {
       this.$service
         .scrape_now({
           serials: this.selection,
-          target_username: args.target_username,
+          ...args
         })
         .then(async (res) => {
           await this.$emiter('reload_tasks', {})
