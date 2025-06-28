@@ -241,7 +241,6 @@ export default {
     selectedTags: function () {
       return this.materials_tags ? this.materials_tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
     },
-
   },
   watch: {
     settings: function (newVal) {
