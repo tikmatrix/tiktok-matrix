@@ -265,16 +265,19 @@ export default {
     },
     addTime() {
       if (this.trainTimes.length < 6) {
-        this.trainTimes.push('')
+        const currentTime = new Date();
+        this.trainTimes.push(currentTime.toTimeString().slice(0, 5));
       }
     },
     removeTime(index) {
       this.trainTimes.splice(index, 1)
     },
     async update() {
+      console.log("trainTimes:", this.trainTimes);
       this.mygroup.train_start_time = this.trainTimes
         .filter(Boolean)
         .join(',')
+      console.log("train_start_time:", this.mygroup.train_start_time);
       if (this.mygroup.auto_train == 1 && !this.mygroup.train_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
         await this.$emiter('NOTIFY', {
           type: 'error',
