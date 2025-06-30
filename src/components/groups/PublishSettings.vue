@@ -36,18 +36,17 @@
         <label class="font-bold w-40">{{ $t('postWay') }}:</label>
         <div class="flex items-center gap-4">
           <div class="flex items-center">
-            <input type="radio" id="share" value="share" v-model="mygroup.post_way"
-              class="form-radio text-primary h-4 w-4">
+            <input type="radio" id="share" value="share" v-model="mygroup.post_way" class="form-radio text-primary">
             <label for="share" class="ml-2">{{ $t('share') }}</label>
           </div>
           <div class="flex items-center">
             <input type="radio" id="addButton" value="addButton" v-model="mygroup.post_way"
-              class="form-radio text-primary h-4 w-4">
+              class="form-radio text-primary">
             <label for="addButton" class="ml-2">{{ $t('addButton') }}</label>
           </div>
           <div class="flex items-center">
             <input type="radio" id="useSound" value="useSound" v-model="mygroup.post_way"
-              class="form-radio text-primary h-4 w-4">
+              class="form-radio text-primary">
             <label for="useSound" class="ml-2">{{ $t('useSound') }}</label>
             <input type="text" v-model="mygroup.sound_name" :placeholder="$t('soundNamePlaceholder')"
               v-if="mygroup.post_way == 'useSound'" class="border-2 border-gray-300 p-2 rounded" />
@@ -58,13 +57,11 @@
         <label class="font-bold w-40">{{ $t('contentType') }}:</label>
         <div class="flex items-center gap-4">
           <div class="flex items-center">
-            <input type="radio" id="video" value="0" v-model="mygroup.publish_type"
-              class="form-radio text-primary h-4 w-4">
+            <input type="radio" id="video" value="0" v-model="mygroup.publish_type" class="form-radio text-primary">
             <label for="video" class="ml-2">{{ $t('video') }}</label>
           </div>
           <div class="flex items-center">
-            <input type="radio" id="image" value="1" v-model="mygroup.publish_type"
-              class="form-radio text-primary h-4 w-4">
+            <input type="radio" id="image" value="1" v-model="mygroup.publish_type" class="form-radio text-primary">
             <label for="image" class="ml-2">{{ $t('image') }}</label>
           </div>
           <div class="flex items-center" v-if="mygroup.publish_type == 1">
@@ -78,18 +75,15 @@
         <label class="font-bold w-40">{{ $t('addSound') }}:</label>
         <div class="flex items-center gap-4">
           <div class="flex items-center">
-            <input type="radio" id="default" value="-1" v-model="mygroup.add_sound"
-              class="form-radio text-primary h-4 w-4">
+            <input type="radio" id="default" value="-1" v-model="mygroup.add_sound" class="form-radio text-primary">
             <label for="default" class="ml-2">{{ $t('default') }}</label>
           </div>
           <div class="flex items-center">
-            <input type="radio" id="disable" value="0" v-model="mygroup.add_sound"
-              class="form-radio text-primary h-4 w-4">
+            <input type="radio" id="disable" value="0" v-model="mygroup.add_sound" class="form-radio text-primary">
             <label for="disable" class="ml-2">{{ $t('disable') }}</label>
           </div>
           <div class="flex items-center">
-            <input type="radio" id="enable" value="1" v-model="mygroup.add_sound"
-              class="form-radio text-primary h-4 w-4">
+            <input type="radio" id="enable" value="1" v-model="mygroup.add_sound" class="form-radio text-primary">
             <label for="enable" class="ml-2">{{ $t('enable') }}</label>
           </div>
           <!-- add sound tips -->
@@ -127,12 +121,12 @@
         <div class="flex items-center gap-4">
           <div class="flex items-center">
             <input type="radio" id="disable" value="0" v-model="mygroup.add_product_link"
-              class="form-radio text-primary h-4 w-4">
+              class="form-radio text-primary">
             <label for="disable" class="ml-2">{{ $t('disable') }}</label>
           </div>
           <div class="flex items-center">
             <input type="radio" id="enable" value="1" v-model="mygroup.add_product_link"
-              class="form-radio text-primary h-4 w-4">
+              class="form-radio text-primary">
             <label for="enable" class="ml-2">{{ $t('enable') }}</label>
           </div>
 
@@ -162,7 +156,33 @@
     </div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <span class="font-bold w-40">{{ $t('materials') }}: </span>
-      <div class="relative grow">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center">
+          <input type="radio" id="localFolder" value="localFolder" v-model="mygroup.material_source"
+            class="form-radio text-primary">
+          <label for="localFolder" class="ml-2">{{ $t('localFolder') }}</label>
+        </div>
+        <div class="flex items-center">
+          <input type="radio" id="materialLibrary" value="materialLibrary" v-model="mygroup.material_source"
+            class="form-radio text-primary">
+          <label for="materialLibrary" class="ml-2">{{ $t('materialLibrary') }}</label>
+        </div>
+
+      </div>
+      <div class="relative grow" v-if="mygroup.material_source === 'localFolder'">
+        <input type="text" :placeholder="$t('clickToSelectMaterialsPath')"
+          class="input input-md grow input-bordered w-full" readonly @click="selectMaterials"
+          v-model="mygroup.material_path" />
+        <!-- 添加提示信息 -->
+        <div role="alert" class="alert">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>{{ $t('materialsPathTips') }}</span>
+        </div>
+      </div>
+      <div class="relative grow" v-if="mygroup.material_source === 'materialLibrary'">
         <!-- 自定义标签显示区域 -->
         <div
           class="min-h-[42px] w-full border border-gray-300 rounded-lg px-2 py-1 cursor-pointer flex flex-wrap items-center gap-1"
@@ -188,16 +208,18 @@
             </label>
           </div>
         </div>
+        <!-- 添加提示信息 -->
+        <div role="alert" class="alert">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>{{ $t('materialsTagsTips') }}</span>
+        </div>
       </div>
+
     </div>
-    <!-- 添加提示信息 -->
-    <div role="alert" class="alert">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-      <span>{{ $t('materialsTagsTips') }}</span>
-    </div>
+
     <!-- other fields... -->
     <div class="mt-8 w-full flex justify-end">
       <button class="btn btn-primary mr-2" @click="update">
@@ -209,6 +231,7 @@
 
 <script>
 import VueSlider from "vue-3-slider-component";
+import { open } from '@tauri-apps/api/dialog';
 export default {
   components: {
     VueSlider
@@ -258,6 +281,35 @@ export default {
 
   },
   methods: {
+    // 选择本地素材文件夹
+    async selectMaterials() {
+      try {
+        // 这里需要调用Tauri的文件对话框API来选择文件夹
+        const filePath = await open({
+          multiple: false, // 是否允许多选文件
+          directory: true, // 是否选择目录
+          filters: [ // 文件过滤器
+          ]
+        });
+        console.log('Selected file path:', filePath);
+        if (filePath && typeof filePath === 'string') {
+          this.mygroup.material_path = filePath;
+        } else {
+          await this.$emiter('NOTIFY', {
+            type: 'info',
+            message: this.$t('clickToSelectMaterialsPath'),
+            timeout: 2000
+          });
+        }
+      } catch (error) {
+        console.error('选择文件夹失败:', error);
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('selectFolderFailed'),
+          timeout: 2000
+        });
+      }
+    },
     // 获取所有标签
     async getTags() {
       try {
@@ -355,6 +407,17 @@ export default {
         });
         return
       }
+
+      // 验证素材配置
+      if (this.mygroup.material_source === 'localFolder' && !this.mygroup.material_path) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('selectFolderFailed'),
+          timeout: 2000
+        });
+        return
+      }
+
       this.updateGroup(this.mygroup)
     },
 
@@ -368,7 +431,13 @@ export default {
     },
   },
   async mounted() {
-    this.mygroup = this.group
+    this.mygroup = { ...this.group }
+
+    // 设置默认的素材源
+    if (!this.mygroup.material_source) {
+      this.mygroup.material_source = 'materialLibrary';
+    }
+
     if (this.mygroup.publish_start_time) {
       this.publishTimes = this.mygroup.publish_start_time.split(',')
     }
