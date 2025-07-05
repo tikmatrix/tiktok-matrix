@@ -178,7 +178,8 @@
                 <font-awesome-icon v-else-if="is_licensed()" icon="fa-solid fa-crown" class="h-5 w-5 text-yellow-200" />
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
-                <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ planName }}</span>
+                <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
+                    }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
@@ -318,17 +319,7 @@ export default {
             this.$i18n.locale = val;
         }
     },
-    computed: {
-        planName() {
-            if (this.licenseData.device_count <= 5) {
-                return 'Starter'
-            } else if (this.licenseData.device_count <= 20) {
-                return 'Pro';
-            } else {
-                return 'Business';
-            }
-        }
-    },
+
     methods: {
 
         is_licensed() {

@@ -345,18 +345,18 @@ export default {
       return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active;
     },
     gridStyle() {
-      // 当只有一个元素时，限制最大宽度而不是占满整行
-      if (this.mydevices.length === 1) {
+      // 当元素数量<=5个时，限制最大宽度而不是占满整行
+      if (this.mydevices.length <= 5) {
         return {
           display: 'grid',
-          gridTemplateColumns: `minmax(${this.cardMinWidth}px, auto)`,
+          gridTemplateColumns: `repeat(${this.mydevices.length}, minmax(${this.cardMinWidth}px, auto))`,
           justifyContent: 'flex-start',
           autoRows: 'auto',
           gap: '0.5rem',
           flex: 1
         }
       }
-      // 多个元素时保持原来的自适应布局
+      // 更多元素时保持原来的自适应布局
       return {
         display: 'grid',
         gridTemplateColumns: `repeat(auto-fit, minmax(${this.cardMinWidth}px, 1fr))`,

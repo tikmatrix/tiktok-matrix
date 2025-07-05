@@ -29,7 +29,7 @@
             <div class="flex items-center flex-row gap-2 w-full" v-if="license.is_stripe_active == 1">
               <button @click="manageStripeSubscription" class="btn btn-wide btn-primary whitespace-nowrap">
                 <font-awesome-icon icon="fa-solid fa-crown" class="h-5 w-5 text-yellow-200" />
-                <span class="font-semibold whitespace-nowrap text-yellow-200">{{ planName }}</span>
+                <span class="font-semibold whitespace-nowrap text-yellow-200">{{ license.plan_name }}</span>
                 {{ $t('manageSubscription') }}
               </button>
               <label class="text-sm text-warning" v-if="license.stripe_cancel_at">{{ $t('cancelAt', {
@@ -94,15 +94,16 @@
             <div class="tabs tabs-box tabs-lg" v-if="priceTableInfo && priceTableInfo.plans.length > 0">
               <input type="radio" name="my_tabs_6" class="tab" :aria-label="$t('monthly')" checked="checked" />
               <div class="tab-content bg-base-100 border-base-300 p-6">
-                <div class="mx-auto mt-2 grid  grid-cols-3 items-center gap-y-6 w-full gap-x-2">
+                <div class="mx-auto mt-2 grid items-center gap-y-6 w-full gap-x-2"
+                  :style="{ 'grid-template-columns': `repeat(${priceTableInfo?.plans?.length || 4}, minmax(0, 1fr))` }">
 
-                  <div class="relative bg-primary shadow-2xl rounded-3xl p-8 ring-1 ring-info ring-opacity-50"
-                    v-for="plan in priceTableInfo.plans">
+                  <div class="relative bg-primary shadow-2xl rounded-3xl ring-1 ring-info ring-opacity-50"
+                    :class="cardStyle.padding" v-for="plan in priceTableInfo.plans">
                     <h3 class="text-primary-content font-semibold">
                       {{ plan.name }}
                     </h3>
                     <p class="mt-4 flex items-baseline gap-x-2">
-                      <span class="text-primary-content text-5xl font-semibold tracking-tight">
+                      <span class="text-primary-content font-semibold tracking-tight" :class="cardStyle.textSize">
                         ${{ plan.price.month.amount }}
                       </span>
                       <span class="text-primary-content">/ {{ $t('month') }}</span>
@@ -176,15 +177,16 @@
               })" />
 
               <div class="tab-content bg-base-100 border-base-300 p-6">
-                <div class="mx-auto mt-2 grid grid-cols-3 items-center gap-y-6 w-full gap-x-2">
+                <div class="mx-auto mt-2 grid items-center gap-y-6 w-full gap-x-2"
+                  :style="{ 'grid-template-columns': `repeat(${priceTableInfo?.plans?.length || 4}, minmax(0, 1fr))` }">
 
-                  <div class="relative bg-neutral shadow-2xl rounded-3xl p-8 ring-1 ring-info ring-opacity-50"
-                    v-for="plan in priceTableInfo.plans">
+                  <div class="relative bg-neutral shadow-2xl rounded-3xl ring-1 ring-info ring-opacity-50"
+                    :class="cardStyle.padding" v-for="plan in priceTableInfo.plans">
                     <h3 class="text-accent font-semibold">
                       {{ plan.name }}
                     </h3>
                     <p class="mt-4 flex items-baseline gap-x-2">
-                      <span class="text-accent text-5xl font-semibold tracking-tight">
+                      <span class="text-accent font-semibold tracking-tight" :class="cardStyle.textSize">
                         ${{ Math.round(plan.price.year.amount / 12) }}
                       </span>
                       <span class=" text-accent">/ {{ $t('month') }}</span>
@@ -370,13 +372,16 @@ export default {
       const seconds = (this.remainingTime % 60).toString().padStart(2, '0');
       return `${minutes}:${seconds}`;
     },
-    planName() {
-      if (this.license.device_count <= 5) {
-        return 'Starter';
-      } else if (this.license.device_count <= 20) {
-        return 'Pro';
+
+    cardStyle() {
+      // 根据计划数量动态调整卡片内边距和字体大小
+      const plansCount = this.priceTableInfo?.plans?.length || 4;
+      if (plansCount <= 3) {
+        return { padding: 'p-8', textSize: 'text-5xl' };
+      } else if (plansCount === 4) {
+        return { padding: 'p-6', textSize: 'text-4xl' };
       } else {
-        return 'Business';
+        return { padding: 'p-4', textSize: 'text-3xl' };
       }
     }
   },

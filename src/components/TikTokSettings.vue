@@ -24,6 +24,15 @@
           true-value="1" false-value="0" @change="update_settings" />
       </label>
     </div>
+    <div class="divider">{{ $t('taskExecutionOrder') }}</div>
+    <div class="form-control px-3 py-1 rounded-lg shadow-md">
+      <label class="label cursor-pointer flex items-center space-x-2">
+        <span class="text-md font-bold">{{ $t('randomOrder') }}</span>
+        <input type="checkbox" class="toggle toggle-primary toggle-md" v-model="settings.random_order"
+          :true-value="true" :false-value="false" @change="update_settings" />
+      </label>
+      <div class="text-sm text-gray-500 mt-1">{{ $t('randomOrderTips') }}</div>
+    </div>
     <div class="divider">{{ $t('bigScreen') }}</div>
     <div class="flex items-center flex-row gap-2 max-w-full w-full">
       <label class="font-bold text-right col-span-1">{{ $t('bigScreen') }}:</label>
