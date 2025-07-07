@@ -602,10 +602,10 @@ export default {
     },
     async createOrder(price, plan_id, plan_interval, network) {
       this.$refs.createOrderLoadingDialog.showModal();
-      const finalPrice = Number(price * (1 - this.license.affiliate_discount / 100).toFixed(0));
+      // const finalPrice = Number(price * (1 - this.license.affiliate_discount / 100).toFixed(0));
       this.$service.create_order({
         network: network,
-        amount: finalPrice,
+        amount: price,
         plan_id: plan_id,
         plan_interval: plan_interval
       }).then(async (res) => {
