@@ -1,5 +1,6 @@
 export default {
   account: 'Аккаунт',
+  profileOrder: 'Порядок профиля',
   loadingManagingSubscription: 'Загрузка управления подпиской...',
   followPlan: 'План подписки',
   followCount: 'Количество подписок',

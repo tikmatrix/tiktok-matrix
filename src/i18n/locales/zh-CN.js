@@ -1,5 +1,6 @@
 export default {
   account: '帐号',
+  profileOrder: '个人资料顺序',
   loadingManagingSubscription: '加载管理订阅...',
   followPlan: '关注计划',
   followCount: '关注数量',

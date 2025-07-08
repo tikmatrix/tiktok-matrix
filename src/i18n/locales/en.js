@@ -1,5 +1,6 @@
 export default {
   account: 'Account',
+  profileOrder: 'Profile Order',
   loadingManagingSubscription: 'Loading managing subscription...',
   followPlan: 'Follow Plan',
   followCount: 'Follow Count',
