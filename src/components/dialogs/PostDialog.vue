@@ -11,13 +11,11 @@
       <label class="font-bold w-40">{{ $t('taskArgs') }}:</label>
       <div class="flex items-center gap-4">
         <label class="flex items-center gap-1 cursor-pointer">
-          <input type="radio" name="settingsOption" value="group" class="radio radio-sm radio-primary"
-            v-model="settings" />
+          <input type="radio" name="settingsOption" value="group" class="radio radio-primary" v-model="settings" />
           <span>{{ $t('group') }}</span>
         </label>
         <label class="flex items-center gap-1 cursor-pointer">
-          <input type="radio" name="settingsOption" value="custom" class="radio radio-sm radio-primary"
-            v-model="settings" />
+          <input type="radio" name="settingsOption" value="custom" class="radio radio-primary" v-model="settings" />
           <span>{{ $t('custom') }}</span>
         </label>
       </div>
@@ -27,12 +25,11 @@
         <label class="font-bold w-40">{{ $t('startTime') }}:</label>
         <div class="flex items-center gap-4">
           <label class="flex items-center gap-1 cursor-pointer">
-            <input type="radio" name="startOption" value="now" class="radio radio-sm radio-primary"
-              v-model="startOption" />
+            <input type="radio" name="startOption" value="now" class="radio radio-primary" v-model="startOption" />
             <span>{{ $t('startNow') }}</span>
           </label>
           <label class="flex items-center gap-1 cursor-pointer">
-            <input type="radio" name="startOption" value="scheduled" class="radio radio-sm radio-primary"
+            <input type="radio" name="startOption" value="scheduled" class="radio radio-primary"
               v-model="startOption" />
             <span>{{ $t('scheduleTime') }}</span>
           </label>
@@ -113,7 +110,7 @@
           <VueSlider class="ml-8" v-model="sound_wait_time" :width="500" :min="5" :max="30" :step="1"
             :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
         </div>
-        <div class="flex w-full items-center gap-2 mb-4" v-if="add_sound == 1">
+        <div class="flex w-full items-center gap-2 mb-4 mt-8 " v-if="add_sound == 1 || post_way == 'useSound'">
           <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
           <div class="flex items-center">
             <label class="ml-2 mr-2">{{ $t('originSound') }}: </label>

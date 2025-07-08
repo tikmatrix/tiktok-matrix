@@ -6,6 +6,21 @@
       <span>{{ $t('profileWarning') }}</span>
     </div>
   </div>
+  <div class="flex flex-row items-center gap-2">
+    <label class="font-bold">{{ $t('profileOrder') }}:</label>
+    <div class="flex items-center gap-2">
+      <label class="flex items-center gap-1 cursor-pointer">
+        <input type="radio" name="profileOrder" value="random" class="radio radio-sm radio-primary"
+          v-model="profile_order" />
+        <span>{{ $t('random') }}</span>
+      </label>
+      <label class="flex items-center gap-1 cursor-pointer">
+        <input type="radio" name="profileOrder" value="sequential" class="radio radio-sm radio-primary"
+          v-model="profile_order" />
+        <span>{{ $t('sequential') }}</span>
+      </label>
+    </div>
+  </div>
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('nicknames') }}: </span>
     <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('nicknamesTips')"
@@ -38,6 +53,7 @@ export default {
 
   data() {
     return {
+      profile_order: localStorage.getItem('profile_order') || 'random',
       nicknames: localStorage.getItem('nicknames') || '',
       usernames: localStorage.getItem('usernames') || '',
       bios: localStorage.getItem('bios') || '',
@@ -45,6 +61,9 @@ export default {
     }
   },
   watch: {
+    profile_order(newVal) {
+      localStorage.setItem('profile_order', newVal)
+    },
     nicknames(newVal) {
       localStorage.setItem('nicknames', newVal)
     },
@@ -78,6 +97,7 @@ export default {
     async runScript(enable_multi_account) {
       await this.$emiter('run_now_by_account', {
         name: 'profile', args: {
+          profile_order: this.profile_order,
           nicknames: this.nicknames,
           usernames: this.usernames,
           bios: this.bios,
