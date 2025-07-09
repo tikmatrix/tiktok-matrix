@@ -179,7 +179,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                    }}</span>
+                }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
@@ -262,6 +262,9 @@
             </div>
         </div>
     </dialog>
+
+    <!-- Agent错误弹窗 -->
+    <AgentErrorDialog ref="agentErrorDialog" :process-name="agentProcessName" :error-type="agentErrorType" />
 </template>
 
 <script>
@@ -280,12 +283,14 @@ import { os } from '@tauri-apps/api';
 import BuyLicenseDialog from './BuyLicenseDialog.vue';
 import StripePriceTableDialog from './StripePriceTableDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
+import AgentErrorDialog from './AgentErrorDialog.vue';
 
 export default {
     name: 'TitleBar',
     components: {
         BuyLicenseDialog,
-        StripePriceTableDialog
+        StripePriceTableDialog,
+        AgentErrorDialog
     },
     data() {
         return {
@@ -303,7 +308,9 @@ export default {
                 percentage: 0
             },
             check_update_dialog_title: '',
-            isLoadingLicense: true
+            isLoadingLicense: true,
+            agentProcessName: '',
+            agentErrorType: 'port' // 默认为端口问题
         }
     },
     watch: {
@@ -343,6 +350,10 @@ export default {
                     let agent_exists = await exists(`bin/${agentFilename}`, { dir: BaseDirectory.AppData })
                     if (!agent_exists) {
                         console.log(`${agentFilename} not found`)
+                        this.$refs.download_dialog.close();
+                        // 使用自定义dialog显示agent未找到错误
+                        this.agentErrorType = 'notfound';
+                        this.$refs.agentErrorDialog.show();
                         return;
                     }
                     const command = new Command('start-agent', [])
@@ -359,14 +370,10 @@ export default {
                 } else {
                     console.log('50809 port is used, process name:', pname)
                     this.$refs.download_dialog.close();
-                    // 使用带参数的i18n翻译消息
-                    const shouldExit = await ask(this.$t('agentPortOccupied', { process: pname }), { title: this.$t('exitApp'), type: 'error' });
-                    if (shouldExit) {
-                        await this.shutdown();
-                        getAll().forEach((win) => {
-                            win.close();
-                        });
-                    }
+                    // 使用自定义dialog替代ask弹窗
+                    this.agentProcessName = pname;
+                    this.agentErrorType = 'port';
+                    this.$refs.agentErrorDialog.show();
                 }
             } catch (e) {
                 let error = e.toString();
@@ -385,7 +392,9 @@ export default {
                 }
             }
             this.$refs.download_dialog.close();
-            await message('Agent Start Timeout', { title: 'Error', type: 'error' });
+            // 使用自定义dialog替代message弹窗
+            this.agentErrorType = 'timeout';
+            this.$refs.agentErrorDialog.show();
         },
         async minimizeWindow() {
             appWindow.minimize();
