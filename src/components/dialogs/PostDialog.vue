@@ -248,7 +248,7 @@ export default {
       scheduledTime: localStorage.getItem('postScheduledTime') || '',
       content_type: Number(localStorage.getItem('content_type')) || 0,
       image_count: Number(localStorage.getItem('image_count')) || 1,
-      add_sound: Number(localStorage.getItem('add_sound')) || -1,
+      add_sound: localStorage.getItem('add_sound') || '-1', // -1: default, 0: disable, 1: enable
       sound_wait_time: Number(localStorage.getItem('sound_wait_time')) || 10,
       origin_sound_volume: Number(localStorage.getItem('origin_sound_volume')) || 100,
       add_sound_volume: Number(localStorage.getItem('add_sound_volume')) || 100,
@@ -289,6 +289,7 @@ export default {
       localStorage.setItem('image_count', newVal);
     },
     add_sound: function (newVal) {
+      console.log('add_sound changed:', newVal);
       localStorage.setItem('add_sound', newVal);
     },
     sound_wait_time: function (newVal) {

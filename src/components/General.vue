@@ -1,11 +1,9 @@
 <template>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
-        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.ss.android.ugc.aweme.splash.SplashActivity'] })">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('openTikTok', {})">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-primary-content" />
         {{ $t('openTiktok') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
-        @click="$emiter('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('stopTiktok', {})">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
         {{ $t('stopTiktok') }}
     </button>
