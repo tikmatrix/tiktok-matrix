@@ -17,7 +17,7 @@
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
 import { getAll } from '@tauri-apps/api/window';
-import { writeTextFile } from '@tauri-apps/api/fs';
+import { writeTextFile, removeDir } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
 import { message } from '@tauri-apps/api/dialog';
 
@@ -48,10 +48,20 @@ export default {
         },
         async clearAgentCache() {
             try {
-                // 清除agent版本记录
-                localStorage.removeItem('agent');
-                // 删除agent.pid文件
-                await writeTextFile('agent.pid', '', { dir: BaseDirectory.AppData });
+
+                // 删除tmp和bin目录
+                try {
+                    await removeDir('tmp', { dir: BaseDirectory.AppData, recursive: true });
+                } catch (e) {
+                    console.log('tmp目录删除失败或不存在:', e);
+                }
+
+                try {
+                    await removeDir('bin', { dir: BaseDirectory.AppData, recursive: true });
+                } catch (e) {
+                    console.log('bin目录删除失败或不存在:', e);
+                }
+
                 await message(this.$t('agentCacheCleared'), { title: this.$t('success'), type: 'info' });
                 this.closeDialog();
                 // 通知用户重启应用
