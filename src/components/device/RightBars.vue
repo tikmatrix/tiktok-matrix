@@ -1,15 +1,15 @@
 <template>
   <div
-    class="flex flex-col justify-start z-30 bg-base-200/90 backdrop-blur-sm shadow-lg rounded-l-xl absolute right-0 top-0 transform translate-x-[calc(100%-2.5rem)] hover:translate-x-0 transition-all duration-300 ease-in-out border border-r-0 border-base-300 group min-w-[2.5rem]">
+    class="flex flex-col justify-start z-30 bg-base-200/90 backdrop-blur-sm shadow-lg rounded-r-xl absolute top-0 left-full ml-2 border border-l-0 border-base-300 group min-w-[2.5rem] max-w-[2.5rem] hover:max-w-xs transition-all duration-300 ease-in-out overflow-hidden">
 
     <!-- 展开指示器 -->
     <div
-      class="absolute left-0 top-4 transform -translate-x-full bg-primary text-primary-content p-1 rounded-l-md shadow-md opacity-75 group-hover:opacity-100 transition-all duration-300">
-      <font-awesome-icon icon="fa-solid fa-chevron-left"
+      class="absolute right-0 top-4 transform translate-x-full bg-primary text-primary-content p-1 rounded-r-md shadow-md opacity-75 group-hover:opacity-100 transition-all duration-300">
+      <font-awesome-icon icon="fa-solid fa-chevron-right"
         class="h-3 w-3 group-hover:rotate-180 transition-transform duration-300" />
     </div>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none first:rounded-t-xl tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none first:rounded-t-xl tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('task')" @click="$emiter('send_keycode', 'task')">
       <font-awesome-icon icon="fa fa-window-restore" class="h-4 w-4 flex-shrink-0" />
       <span
@@ -17,7 +17,7 @@
           $t('task') }}</span>
     </button>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('home')" @click="$emiter('send_keycode', 'home')">
       <font-awesome-icon icon="fa-solid fa-home" class="h-4 w-4 flex-shrink-0" />
       <span
@@ -25,7 +25,7 @@
           $t('home') }}</span>
     </button>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('back')" @click="$emiter('send_keycode', 'back')">
       <font-awesome-icon icon="fa fa-reply" class="h-4 w-4 flex-shrink-0" />
       <span
@@ -33,7 +33,7 @@
           $t('back') }}</span>
     </button>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('power')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'keyevent', 'KEYCODE_POWER'] })">
       <font-awesome-icon icon="fa fa-lightbulb" class="h-4 w-4 flex-shrink-0" />
@@ -45,7 +45,7 @@
     <div class="divider my-0 opacity-30"></div>
 
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('up')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '1000', '500', '500', '300'] })">
       <font-awesome-icon icon="fa-arrow-up" class="h-4 w-4 flex-shrink-0" />
@@ -54,7 +54,7 @@
           $t('up') }}</span>
     </button>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('down')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '500', '500', '1000', '300'] })">
       <font-awesome-icon icon="fa-arrow-down" class="h-4 w-4 flex-shrink-0" />
@@ -63,7 +63,7 @@
           $t('down') }}</span>
     </button>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('left')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '1000', '500', '500', '500', '300'] })">
       <font-awesome-icon icon="fa-arrow-left" class="h-4 w-4 flex-shrink-0" />
@@ -72,7 +72,7 @@
           $t('left') }}</span>
     </button>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('right')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '500', '1000', '500', '300'] })">
       <font-awesome-icon icon="fa-arrow-right" class="h-4 w-4 flex-shrink-0" />
@@ -80,45 +80,12 @@
         class="text-sm font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs group-hover:opacity-100 transition-all duration-300">{{
           $t('right') }}</span>
     </button>
-    <!-- <button
-      class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
-      :data-tip="$t('showTimeSetting')"
-      @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DATE_SETTINGS'] })">
-      <font-awesome-icon icon="fa fa-clock" class="h-6 w-6 text-primary" />
-      <span class="text-md block font-bold">{{ $t('time') }}</span>
-    </button>
-    <button
-      class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
-      :data-tip="$t('showLanguageSetting')"
-      @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.android.settings/.LanguageSettings'] })">
-      <font-awesome-icon icon="fa fa-language" class="h-6 w-6 text-primary" />
-      <span class="text-md block font-bold">{{ $t('language') }}</span>
-    </button>
-    <button
-      class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip"
-      :data-tip="$t('showSimInfo')"
-      @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-a', 'android.settings.DEVICE_INFO_SETTINGS'] })">
-      <font-awesome-icon icon="fa fa-mobile" class="h-6 w-6 text-primary" />
-      <span class="text-md block font-bold">{{ $t('sim') }}</span>
-    </button> -->
-    <!-- <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block"
-      @click="uploadVideo">
-        <font-awesome-icon icon="fa fa-upload" class="h-6 w-6 text-primary" />
-        <span class="text-md block font-bold">{{ $t('upload') }}</span>
-        <input id="upload_video_input" type="file" v-on:change="on_upload_video" multiple hidden />
-      </button> -->
-    <!-- <button class="btn bg-transparent hover:bg-transparent border-0 text-black-500 hover:text-blue-700 p-0 block tooltip" :data-tip="$t('installAPK')"
-        @click="app_install">
-        <font-awesome-icon icon="fa-brands fa-android" class="h-6 w-6 text-primary" />
-        <span class="text-md block font-bold">{{ $t('apk') }}</span>
-        <input id="app_install_input" type="file" v-on:change="on_app_install" multiple hidden />
-      </button> -->
 
     <!-- 分隔线 -->
     <div class="divider my-0 opacity-30"></div>
 
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('input')" @click="show_text_input_dialog">
       <font-awesome-icon icon="fa fa-keyboard" class="h-4 w-4 flex-shrink-0" />
       <span
@@ -127,7 +94,7 @@
     </button>
 
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('debug')" @click="openDebugWindow">
       <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 flex-shrink-0" />
       <span
@@ -135,7 +102,7 @@
           $t('debug') }}</span>
     </button>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('logs')" @click="showLogs">
       <font-awesome-icon icon="fa-solid fa-file-text" class="h-4 w-4 flex-shrink-0" />
       <span
@@ -143,7 +110,7 @@
           $t('logs') }}</span>
     </button>
     <button
-      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none last:rounded-b-xl tooltip tooltip-left transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
+      class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none last:rounded-b-xl tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('workProfile')" @click="show_work_profile_user_dialog">
       <font-awesome-icon icon="fa-solid fa-briefcase" class="h-4 w-4 flex-shrink-0" />
       <span
@@ -151,6 +118,7 @@
           $t('workProfile') }}</span>
     </button>
   </div>
+
   <dialog ref="input_dialog" class="modal">
     <div class="modal-box">
       <form method="dialog">
