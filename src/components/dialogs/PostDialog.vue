@@ -11,13 +11,11 @@
       <label class="font-bold w-40">{{ $t('taskArgs') }}:</label>
       <div class="flex items-center gap-4">
         <label class="flex items-center gap-1 cursor-pointer">
-          <input type="radio" name="settingsOption" value="group" class="radio radio-sm radio-primary"
-            v-model="settings" />
+          <input type="radio" name="settingsOption" value="group" class="radio radio-primary" v-model="settings" />
           <span>{{ $t('group') }}</span>
         </label>
         <label class="flex items-center gap-1 cursor-pointer">
-          <input type="radio" name="settingsOption" value="custom" class="radio radio-sm radio-primary"
-            v-model="settings" />
+          <input type="radio" name="settingsOption" value="custom" class="radio radio-primary" v-model="settings" />
           <span>{{ $t('custom') }}</span>
         </label>
       </div>
@@ -27,12 +25,11 @@
         <label class="font-bold w-40">{{ $t('startTime') }}:</label>
         <div class="flex items-center gap-4">
           <label class="flex items-center gap-1 cursor-pointer">
-            <input type="radio" name="startOption" value="now" class="radio radio-sm radio-primary"
-              v-model="startOption" />
+            <input type="radio" name="startOption" value="now" class="radio radio-primary" v-model="startOption" />
             <span>{{ $t('startNow') }}</span>
           </label>
           <label class="flex items-center gap-1 cursor-pointer">
-            <input type="radio" name="startOption" value="scheduled" class="radio radio-sm radio-primary"
+            <input type="radio" name="startOption" value="scheduled" class="radio radio-primary"
               v-model="startOption" />
             <span>{{ $t('scheduleTime') }}</span>
           </label>
@@ -250,7 +247,7 @@ export default {
       scheduledTime: localStorage.getItem('postScheduledTime') || '',
       content_type: Number(localStorage.getItem('content_type')) || 0,
       image_count: Number(localStorage.getItem('image_count')) || 1,
-      add_sound: Number(localStorage.getItem('add_sound')) || -1,
+      add_sound: localStorage.getItem('add_sound') || '-1', // -1: default, 0: disable, 1: enable
       sound_wait_time: Number(localStorage.getItem('sound_wait_time')) || 10,
       origin_sound_volume: Number(localStorage.getItem('origin_sound_volume')) || 100,
       add_sound_volume: Number(localStorage.getItem('add_sound_volume')) || 100,
@@ -291,6 +288,7 @@ export default {
       localStorage.setItem('image_count', newVal);
     },
     add_sound: function (newVal) {
+      console.log('add_sound changed:', newVal);
       localStorage.setItem('add_sound', newVal);
     },
     sound_wait_time: function (newVal) {

@@ -64,5 +64,7 @@ const api = {
   plan: '/api/plan',
   follow_record: '/api/follow_record',
   clear_follow_records: '/api/follow_record/clear',
+  open_tiktok: '/api/open_tiktok',
+  stop_tiktok: '/api/stop_tiktok',
 }
 export default api

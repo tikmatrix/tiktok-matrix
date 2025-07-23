@@ -1,6 +1,6 @@
 <template>
   <div
-    :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative  shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md']">
+    :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-visible']">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag bg-base-300 p-2" v-if="big">
@@ -21,40 +21,37 @@
           </button>
         </div>
 
-        <div class="flex flex-row flex-1 relative"
+        <div class="flex flex-row flex-1 relative overflow-visible"
           :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
-          <div>
-            <div class="relative flex-1 object-fill"
-              :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
-              <canvas class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="canvas"
-                @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
-                @mousemove="mouseMoveListener"></canvas>
-              <div @click="$emiter('openDevice', this.device)"
-                class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
-                <div class="bg-transparent p-2 rounded-md text-center">
-                  <div :class="['status animate-bounce', getTaskStatusColor]"></div>
-                  <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
-                    {{ getTaskStatus }}
-                  </span>
-                  <div class="font-bold text-info text-md">
-                    {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
-                  </div>
-                  <div class="text-info font-bold text-sm">
-                    {{ name }}
-                  </div>
+          <div class="relative flex-1 object-fill"
+            :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
+            <canvas class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="canvas"
+              @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
+              @mousemove="mouseMoveListener"></canvas>
+            <div @click="$emiter('openDevice', this.device)"
+              class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
+              <div class="bg-transparent p-2 rounded-md text-center">
+                <div :class="['status animate-bounce', getTaskStatusColor]"></div>
+                <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
+                  {{ getTaskStatus }}
+                </span>
+                <div class="font-bold text-info text-md">
+                  {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
+                </div>
+                <div class="text-info font-bold text-sm">
+                  {{ name }}
                 </div>
               </div>
-              <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
-                v-if="loading">
-                <font-awesome-icon icon="fa-solid fa-hourglass-end" class="w-24 h-24 text-primary rotate" />
-                <span class="text-primary font-bold">{{ $t('loading') }}</span>
-              </div>
-              <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
-                v-if="operating">
-                <font-awesome-icon icon="fa fa-hand-pointer" class="w-24 h-24 text-primary" />
-                <span class="text-primary font-bold">{{ $t('operating') }}</span>
-              </div>
-
+            </div>
+            <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
+              v-if="loading">
+              <font-awesome-icon icon="fa-solid fa-hourglass-end" class="w-24 h-24 text-primary rotate" />
+              <span class="text-primary font-bold">{{ $t('loading') }}</span>
+            </div>
+            <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
+              v-if="operating">
+              <font-awesome-icon icon="fa fa-hand-pointer" class="w-24 h-24 text-primary" />
+              <span class="text-primary font-bold">{{ $t('operating') }}</span>
             </div>
           </div>
           <RightBars v-if="big" :serial="device.serial" :real_serial="device.real_serial" />

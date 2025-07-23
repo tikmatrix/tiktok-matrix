@@ -669,4 +669,17 @@ export function clear_follow_records({ username }) {
     params: { username }
   })
 }
-
+export function open_tiktok(data) {
+  return request({
+    method: 'post',
+    url: api.open_tiktok,
+    data
+  })
+}
+export function stop_tiktok(data) {
+  return request({
+    method: 'post',
+    url: api.stop_tiktok,
+    data
+  })
+}

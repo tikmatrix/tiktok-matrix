@@ -103,7 +103,8 @@
           :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
 
       </div>
-      <div class="flex w-full items-center gap-2 mb-4" v-if="mygroup.add_sound == 1">
+      <div class="flex w-full items-center gap-2 mb-4 mt-8"
+        v-if="mygroup.add_sound == 1 || mygroup.post_way == 'useSound'">
         <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
         <div class="flex items-center">
           <label class="ml-2 mr-2">{{ $t('originSound') }}: </label>

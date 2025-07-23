@@ -39,7 +39,7 @@
                 :checked="isSelectAll(0)" />
               <span class="label-text text-primary text-md select-none">{{ $t('allDevices') }} ({{
                 groupDevices[0].length
-              }})</span>
+                }})</span>
             </label>
 
             <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-md text-right flex-1">
@@ -74,7 +74,7 @@
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(item.id)"
                 :checked="isSelectAll(item.id)" />
               <span class="label-text text-primary  text-md select-none">{{ item.name }}({{ groupDevices[item.id].length
-              }})</span>
+                }})</span>
             </label>
             <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
               @click="renameGroup(item)"></font-awesome-icon>
@@ -734,7 +734,52 @@ export default {
           });
         })
     },
-
+    //openTiktok
+    async openTikTok() {
+      if (this.selection.length == 0) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
+        return
+      }
+      this.$service
+        .open_tiktok({
+          serials: this.selection,
+          args: []
+        })
+        .then(async (res) => {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('commandSendSuccess'),
+            timeout: 2000
+          });
+        })
+    },
+    //stopTiktok
+    async stopTiktok() {
+      if (this.selection.length == 0) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('noDevicesSelected'),
+          timeout: 2000
+        });
+        return
+      }
+      this.$service
+        .stop_tiktok({
+          serials: this.selection,
+          args: []
+        })
+        .then(async (res) => {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('commandSendSuccess'),
+            timeout: 2000
+          });
+        })
+    },
 
   },
   async mounted() {
@@ -807,8 +852,17 @@ export default {
     this.listeners.push(document.addEventListener('paste', () => {
       this.pasteToPhone()
     }))
+
     this.listeners.push(await this.$listen('massScrape', (e) => {
       this.massScrape(e.payload);
+    }))
+    //openTiktok
+    this.listeners.push(await this.$listen('openTikTok', () => {
+      this.openTikTok();
+    }))
+    //stopTiktok
+    this.listeners.push(await this.$listen('stopTiktok', () => {
+      this.stopTiktok();
     }))
 
   },
