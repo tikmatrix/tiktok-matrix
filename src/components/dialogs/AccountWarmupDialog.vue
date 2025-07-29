@@ -69,6 +69,7 @@
           <textarea class="textarea textarea-success w-full" :placeholder="$t('topicsTips')" autocomplete="off"
             v-model="topic"> </textarea>
         </div>
+
         <div class="flex w-full items-center gap-2 mb-2">
           <label class="font-bold w-40">{{ $t('comments') }}:</label>
           <div class="flex flex-col w-full gap-2">
@@ -181,7 +182,7 @@ import { accountWarmupSettings } from '@/utils/settingsManager';
 
 const accountWarmupMixin = accountWarmupSettings.createVueMixin(
   {
-    settings: 'group',
+    settings: 'custom',
     startOption: 'now',
     scheduledTime: '09:00',
     task_duration: 1200,
@@ -194,7 +195,7 @@ const accountWarmupMixin = accountWarmupSettings.createVueMixin(
     min_duration: 30,
     max_duration: 60,
     topic: '#fyp #foryou #viral',
-    comment: '',
+    comment: 'Great video!\nLove this content!\nAwesome!',
     generate_by_chatgpt: false,
     chatgpt_settings: {
       url: 'https://api.openai.com/v1/chat/completions',
@@ -222,6 +223,10 @@ export default {
       testResult: '',
       testResultStyle: 'text-gray-500',
     }
+  },
+  async mounted() {
+    // 迁移逻辑现在在settingsManager中自动处理
+    // 无需手动调用迁移方法
   },
   computed: {
     taskDurationInMinutes: {

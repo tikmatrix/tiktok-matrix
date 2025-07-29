@@ -84,7 +84,7 @@ import { massCommentSettings } from '@/utils/settingsManager';
 
 const massCommentMixin = massCommentSettings.createVueMixin(
   {
-    settings: 'group',
+    settings: 'custom',
     startOption: 'now',
     scheduledTime: '09:00',
     target_videos: '',

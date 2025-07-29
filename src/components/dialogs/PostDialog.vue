@@ -238,7 +238,7 @@ import { postSettings } from '@/utils/settingsManager';
 
 const postMixin = postSettings.createVueMixin(
   {
-    settings: 'group',
+    settings: 'custom',
     startOption: 'now',
     scheduledTime: '09:00',
     post_way: 'share',

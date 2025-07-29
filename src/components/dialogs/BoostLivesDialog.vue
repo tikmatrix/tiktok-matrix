@@ -122,7 +122,7 @@ import { boostLivesSettings } from '@/utils/settingsManager';
 
 const boostLivesMixin = boostLivesSettings.createVueMixin(
   {
-    settings: 'group',
+    settings: 'custom',
     startOption: 'now',
     scheduledTime: '09:00',
     lives_url: '',
