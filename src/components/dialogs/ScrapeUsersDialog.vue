@@ -46,29 +46,28 @@
 </template>
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
+import { scrapeUsersSettings } from '@/utils/settingsManager';
+
 export default {
   name: 'ScrapeUsers',
+  mixins: [
+    scrapeUsersSettings.createVueMixin(
+      {
+        scrape_mode: 'username',
+        target_username: '',
+        search_keyword: '',
+        max_scrape_count: 50,
+      }, // 默认设置
+      ['scrape_mode', 'target_username', 'search_keyword', 'max_scrape_count'] // 需要监听的属性
+    )
+  ],
   data() {
     return {
-      scrape_mode: localStorage.getItem('scrape_mode') || 'username',
-      target_username: localStorage.getItem('target_username') || '',
-      search_keyword: localStorage.getItem('search_keyword') || '',
-      max_scrape_count: Number(localStorage.getItem('max_scrape_count')) || 50,
+      scrape_mode: 'username',
+      target_username: '',
+      search_keyword: '',
+      max_scrape_count: 50,
     }
-  },
-  watch: {
-    scrape_mode(newVal) {
-      localStorage.setItem('scrape_mode', newVal)
-    },
-    target_username(newVal) {
-      localStorage.setItem('target_username', newVal)
-    },
-    search_keyword(newVal) {
-      localStorage.setItem('search_keyword', newVal)
-    },
-    max_scrape_count(newVal) {
-      localStorage.setItem('max_scrape_count', newVal)
-    },
   },
   methods: {
     async openDownloadDir() {

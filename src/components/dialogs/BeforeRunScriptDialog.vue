@@ -75,7 +75,24 @@ import MatchAccounts from './MatchAccounts.vue'
 import MassCommentDialog from './MassCommentDialog.vue'
 import BoostLivesDialog from './BoostLivesDialog.vue'
 import SwitchAccountDialog from './SwitchAccountDialog.vue'
+import { beforeRunScriptSettings } from '@/utils/settingsManager';
+
+const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
+  {
+    enable_multi_account: false,
+    selected_accounts: [],
+    account_filters: {
+      proxy_status: 'all',
+      login_status: 'all',
+      account_status: 'all'
+    }
+  },
+  [
+    'enable_multi_account', 'selected_accounts', 'account_filters'
+  ]
+);
 export default {
+  mixins: [beforeRunScriptMixin],
   name: 'BeforeRunScript',
   props: {
     devices: {
@@ -116,12 +133,7 @@ export default {
 
   data() {
     return {
-      enable_multi_account: localStorage.getItem(`enable_multi_account_${this.script.name}`) === 'true' || false
-    }
-  },
-  watch: {
-    enable_multi_account(newValue) {
-      localStorage.setItem(`enable_multi_account_${this.script.name}`, newValue);
+      // 其他非设置相关的数据可以保留在这里
     }
   },
   methods: {

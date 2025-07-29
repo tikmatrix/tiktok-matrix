@@ -4,9 +4,9 @@
       <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
       <ManagePlans :devices="devices" v-if="selectedItem.name === 'plans' && $refs.page_dialog.open" />
       <TikTokSettings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open" />
-      <TrainSettings v-if="selectedItem.name === 'accountWarmup' && $refs.page_dialog.open"
+      <AccountWarmupSettings v-if="selectedItem.name === 'accountWarmup' && $refs.page_dialog.open"
         :group="selectedItem.group" />
-      <PublishSettings v-if="selectedItem.name === 'post' && $refs.page_dialog.open" :group="selectedItem.group" />
+      <PostSettings v-if="selectedItem.name === 'post' && $refs.page_dialog.open" :group="selectedItem.group" />
       <ManageMaterials :group="selectedItem.group" v-if="selectedItem.name === 'materials' && $refs.page_dialog.open" />
       <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
       <BeforeRunScriptDialog :selecedDevices="selecedDevices" :devices="devices" :script="selectedItem.script"
@@ -24,13 +24,12 @@
 <script>
 import ManageAccounts from './components/account/ManageAccounts.vue'
 import ManagePlans from './components/plan/ManagePlans.vue'
-
 import TikTokSettings from './components/TikTokSettings.vue'
-import TrainSettings from './components/groups/TrainSettings.vue'
-import PublishSettings from './components/groups/PublishSettings.vue'
+import PostSettings from './components/groups/PostSettings.vue'
 import ManageMaterials from './components/material/ManageMaterials.vue'
 import ManageTasks from './components/tasks/ManageTasks.vue'
 import BeforeRunScriptDialog from './components/dialogs/BeforeRunScriptDialog.vue'
+import AccountWarmupSettings from './components/groups/AccountWarmupSettings.vue'
 export default {
   name: 'appDialog',
   props: {
@@ -51,11 +50,11 @@ export default {
     ManageAccounts,
     ManagePlans,
     TikTokSettings,
-    TrainSettings,
-    PublishSettings,
     ManageMaterials,
     ManageTasks,
     BeforeRunScriptDialog,
+    AccountWarmupSettings,
+    PostSettings
   },
   data() {
     return {

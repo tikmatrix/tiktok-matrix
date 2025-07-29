@@ -89,13 +89,13 @@
           <div class="flex flex-col gap-2 relative" v-else>
             <textarea class="textarea textarea-success w-full" :placeholder="$t('commentsTips')" autocomplete="off"
               v-model="mygroup.comment"> </textarea>
-            <div class="flex flex-row items-center gap-2 absolute top-2 right-4 bg-info pl-2 pr-2 rounded">
+            <div class="flex flex-row items-center gap-2 absolute top-2 right-4 pl-2 pr-2 rounded">
               <label class="font-bold">{{ $t('insertEmoji') }}:</label>
               <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.insert_emoji" :true-value=1
                 :false-value=0
                 title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
             </div>
-            <div class="flex flex-row items-center absolute top-8 right-4 bg-info pl-2 pr-2 rounded">
+            <div class="flex flex-row items-center absolute top-8 right-4 pl-2 pr-2 rounded">
               <label class="font-bold">{{ $t('commentOrder') }}:</label>
               <div class="flex items-center">
                 <label class="flex items-center gap-1 cursor-pointer">

@@ -53,50 +53,37 @@
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
+import { boostPostsSettings } from '@/utils/settingsManager';
+
 export default {
   name: 'BoostPosts',
   components: {
     VueSlider
   },
+  mixins: [
+    boostPostsSettings.createVueMixin(
+      {
+        target_post_urls: '',
+        enable_like: false,
+        enable_favorite: false,
+        enable_share: false,
+        enable_follow: false,
+        view_duration: 10,
+        boost_post_interval: [0, 0]
+      }, // 默认设置
+      ['target_post_urls', 'enable_like', 'enable_favorite', 'enable_share', 'enable_follow', 'view_duration', 'boost_post_interval'] // 需要监听的属性
+    )
+  ],
   data() {
     return {
-      target_post_urls: localStorage.getItem('target_post_urls') || '',
-      enable_like: localStorage.getItem('enable_like') === 'true',
-      enable_favorite: localStorage.getItem('enable_favorite') === 'true',
-      enable_share: localStorage.getItem('enable_share') === 'true',
-      enable_follow: localStorage.getItem('enable_follow') === 'true',
-      view_duration: parseInt(localStorage.getItem('view_duration')) || 10,
-      boost_post_interval: [localStorage.getItem('boost_post_min_interval') || 0, localStorage.getItem('boost_post_max_interval') || 0]
+      target_post_urls: '',
+      enable_like: false,
+      enable_favorite: false,
+      enable_share: false,
+      enable_follow: false,
+      view_duration: 10,
+      boost_post_interval: [0, 0]
     }
-  },
-  watch: {
-    target_post_urls(newVal) {
-      localStorage.setItem('target_post_urls', newVal)
-    },
-    enable_like(newVal) {
-      localStorage.setItem('enable_like', newVal)
-      console.log('enable_like', localStorage.getItem('enable_like') === 'true')
-    },
-    enable_favorite(newVal) {
-      localStorage.setItem('enable_favorite', newVal)
-      console.log('enable_favorite', localStorage.getItem('enable_favorite') === 'true')
-    },
-    enable_share(newVal) {
-      localStorage.setItem('enable_share', newVal)
-      console.log('enable_share', localStorage.getItem('enable_share') === 'true')
-    },
-    enable_follow(newVal) {
-      localStorage.setItem('enable_follow', newVal)
-      console.log('enable_follow', localStorage.getItem('enable_follow') === 'true')
-    },
-    view_duration(newVal) {
-      localStorage.setItem('view_duration', newVal)
-      console.log('view_duration', localStorage.getItem('view_duration'))
-    },
-    boost_post_interval(newVal) {
-      localStorage.setItem('boost_post_min_interval', newVal[0])
-      localStorage.setItem('boost_post_max_interval', newVal[1])
-    },
   },
   methods: {
     filterTargetPostUrl() {
@@ -137,8 +124,6 @@ export default {
         }
       })
     },
-  },
-  async mounted() {
   }
 }
 </script>

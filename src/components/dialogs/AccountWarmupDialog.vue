@@ -176,34 +176,49 @@
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
+import { invoke } from "@tauri-apps/api/tauri";
+import { accountWarmupSettings } from '@/utils/settingsManager';
+
+const accountWarmupMixin = accountWarmupSettings.createVueMixin(
+  {
+    settings: 'group',
+    startOption: 'now',
+    scheduledTime: '09:00',
+    task_duration: 1200,
+    insert_emoji: false,
+    comment_order: 'random',
+    floow_probable: 50,
+    like_probable: 50,
+    collect_probable: 50,
+    comment_probable: 50,
+    min_duration: 30,
+    max_duration: 60,
+    topic: '#fyp #foryou #viral',
+    comment: '',
+    generate_by_chatgpt: false,
+    chatgpt_settings: {
+      url: 'https://api.openai.com/v1/chat/completions',
+      api_key: '',
+      model: 'gpt-3.5-turbo',
+      system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
+    }
+  },
+  [
+    'scheduledTime', 'insert_emoji', 'task_duration', 'like_probable',
+    'collect_probable', 'comment_probable', 'floow_probable', 'comment_order',
+    'min_duration', 'max_duration', 'topic', 'comment', 'generate_by_chatgpt',
+    'chatgpt_settings', 'settings', 'startOption'
+  ]
+);
+
 export default {
+  mixins: [accountWarmupMixin],
   name: 'AccountWarmupDialog',
   components: {
     VueSlider
   },
   data() {
     return {
-      settings: localStorage.getItem('settings') || 'custom',
-      task_duration: Number(localStorage.getItem('task_duration')) || 600, // 默认10分钟
-      startOption: localStorage.getItem('startOption') || 'now',
-      scheduledTime: localStorage.getItem('scheduledTime') || '',
-      insert_emoji: localStorage.getItem('insert_emoji') === 'true' || false,
-      comment_order: localStorage.getItem('comment_order') || 'random',
-      floow_probable: Number(localStorage.getItem('floow_probable')) || 10,
-      like_probable: Number(localStorage.getItem('like_probable')) || 10,
-      collect_probable: Number(localStorage.getItem('collect_probable')) || 10,
-      comment_probable: Number(localStorage.getItem('comment_probable')) || 10,
-      min_duration: Number(localStorage.getItem('min_duration')) || 15,
-      max_duration: Number(localStorage.getItem('max_duration')) || 30,
-      topic: localStorage.getItem('topic') || '',
-      comment: localStorage.getItem('comment') || '',
-      generate_by_chatgpt: localStorage.getItem('generate_by_chatgpt') === 'true' || false,
-      chatgpt_settings: JSON.parse(localStorage.getItem('chatgpt_settings')) || {
-        url: 'https://api.openai.com/v1/chat/completions',
-        api_key: '',
-        model: 'gpt-3.5-turbo',
-        system_prompt: 'You are a TikTok comment generation assistant. Please generate a real user comment based on the TikTok post caption content provided by the user. The comment format includes text and emojis; the comment length should not exceed 100 characters; the comment content should include two parts: First Praise the post based on the post caption; Then Promote TikMatrix: TikMatrix is a phone farm automation software that automates the management of hundreds of TikTok accounts from one computer. If you are interested, please Google search: TikMatrix'
-      },
       testResult: '',
       testResultStyle: 'text-gray-500',
     }
@@ -229,60 +244,10 @@ export default {
 
 
   },
-  watch: {
-    'scheduledTime': function (val) {
-      localStorage.setItem('scheduledTime', val)
-    },
-    'insert_emoji': function (val) {
-      localStorage.setItem('insert_emoji', val)
-    },
-    'task_duration': function (val) {
-      localStorage.setItem('task_duration', val)
-    },
-    'like_probable': function (val) {
-      localStorage.setItem('like_probable', val)
-    },
-    'collect_probable': function (val) {
-      localStorage.setItem('collect_probable', val)
-    },
-    'comment_probable': function (val) {
-      localStorage.setItem('comment_probable', val)
-    },
-    'floow_probable': function (val) {
-      localStorage.setItem('floow_probable', val)
-    },
-    'comment_order': function (val) {
-      localStorage.setItem('comment_order', val)
-      if (val !== 'random' && val !== 'sequential') {
-        this.comment_order = 'random'
-      }
-    },
-    'min_duration': function (val) {
-      localStorage.setItem('min_duration', val)
-    },
-    'max_duration': function (val) {
-      localStorage.setItem('max_duration', val)
-    },
-    'topic': function (val) {
-      localStorage.setItem('topic', val)
-    },
-    'comment': function (val) {
-      localStorage.setItem('comment', val)
-    },
-    'startOption': function (val) {
-      localStorage.setItem('startOption', val)
-    },
-    'settings': function (val) {
-      localStorage.setItem('settings', val)
-    },
-    'generate_by_chatgpt': function (val) {
-      localStorage.setItem('generate_by_chatgpt', val)
-    },
-  },
   methods: {
     async testChatGPT() {
       try {
-        localStorage.setItem('chatgpt_settings', JSON.stringify(this.chatgpt_settings));
+        await this.saveSettings(); // 先保存设置
         this.testResult = 'Testing...';
         this.testResultStyle = 'text-warning';
         const response = await this.$service.chatgpt_completion({
@@ -327,8 +292,6 @@ export default {
         }
       })
     },
-  },
-  async mounted() {
   }
 }
 </script>

@@ -118,89 +118,51 @@
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
+import { boostLivesSettings } from '@/utils/settingsManager';
+
+const boostLivesMixin = boostLivesSettings.createVueMixin(
+  {
+    settings: 'group',
+    startOption: 'now',
+    scheduledTime: '09:00',
+    lives_url: '',
+    view_duration_min: 30,
+    view_duration_max: 60,
+    engagement_rate: 20,
+    comment_chance: 30,
+    like_chance: 50,
+    share_chance: 10,
+    comments: 'Great live!\nLove this!\nAmazing content!'
+  },
+  [
+    'settings', 'startOption', 'scheduledTime', 'lives_url',
+    'view_duration_min', 'view_duration_max', 'engagement_rate',
+    'comment_chance', 'like_chance', 'share_chance', 'comments'
+  ]
+);
+
 export default {
+  mixins: [boostLivesMixin],
   name: 'BoostLives',
   components: {
     VueSlider
   },
   data() {
     return {
-      live_target_username: localStorage.getItem('live_target_username') || '',
-      live_enable_like: localStorage.getItem('live_enable_like') === 'true' || false,
-      live_enable_comment: localStorage.getItem('live_enable_comment') === 'true' || false,
-      live_view_duration: Number(localStorage.getItem('live_view_duration')) || 120,
-      live_like_interval: Number(localStorage.getItem('live_like_interval')) || 10,
-      live_like_count: Number(localStorage.getItem('live_like_count')) || 10,
-      live_comment_interval: Number(localStorage.getItem('live_comment_interval')) || 30, // 默认评论间隔30秒
-      live_comment_texts: localStorage.getItem('live_comment_texts') || '', // 评论文本，多行
-      enter_method: localStorage.getItem('live_enter_method') || 'search', // 默认搜索用户
-      insert_emoji: localStorage.getItem('live_insert_emoji') === 'true' || false,
-      comment_order: localStorage.getItem('live_comment_order') || 'random',
-      live_comment_count: Number(localStorage.getItem('live_comment_count')) || 1,
-      task_interval: [localStorage.getItem('live_min_interval') || 0, localStorage.getItem('live_max_interval') || 10]
+      live_target_username: '',
+      live_enable_like: false,
+      live_enable_comment: false,
+      live_view_duration: 120,
+      live_like_interval: 10,
+      live_like_count: 10,
+      live_comment_interval: 30,
+      live_comment_texts: '',
+      enter_method: 'search',
+      insert_emoji: false,
+      comment_order: 'random',
+      live_comment_count: 1,
+      task_interval: [0, 10]
     }
-  },
-  watch: {
-    live_comment_count: {
-      handler(newVal) {
-        localStorage.setItem('live_comment_count', newVal)
-      },
-    },
-    live_target_username: {
-      handler(newVal) {
-        localStorage.setItem('live_target_username', newVal)
-      },
-    },
-    live_enable_like: {
-      handler(newVal) {
-        localStorage.setItem('live_enable_like', newVal)
-      },
-    },
-    live_enable_comment: {
-      handler(newVal) {
-        localStorage.setItem('live_enable_comment', newVal)
-      },
-    },
-    live_view_duration: {
-      handler(newVal) {
-        localStorage.setItem('live_view_duration', newVal)
-      },
-    },
-    live_like_interval: {
-      handler(newVal) {
-        localStorage.setItem('live_like_interval', newVal)
-      },
-    },
-    live_like_count: {
-      handler(newVal) {
-        localStorage.setItem('live_like_count', newVal)
-      },
-    },
-    live_comment_interval: {
-      handler(newVal) {
-        localStorage.setItem('live_comment_interval', newVal)
-      },
-    },
-    live_comment_texts: {
-      handler(newVal) {
-        localStorage.setItem('live_comment_texts', newVal)
-      },
-    },
-    enter_method: {
-      handler(newVal) {
-        localStorage.setItem('live_enter_method', newVal)
-      },
-    },
-    insert_emoji(newVal) {
-      localStorage.setItem('live_insert_emoji', newVal)
-    },
-    comment_order(newVal) {
-      localStorage.setItem('live_comment_order', newVal)
-    },
-    task_interval(newVal) {
-      localStorage.setItem('live_min_interval', newVal[0])
-      localStorage.setItem('live_max_interval', newVal[1])
-    },
   },
   methods: {
     filterTargetUsername() {
@@ -257,8 +219,6 @@ export default {
         }
       })
     },
-  },
-  async mounted() {
   }
 }
 </script>
