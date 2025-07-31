@@ -264,7 +264,20 @@ const postMixin = postSettings.createVueMixin(
       api_key: '',
       model: 'gpt-3.5-turbo',
       system_prompt: 'Generate a casual, engaging TikTok caption for this video. Keep it under 150 characters, use relevant hashtags, and make it trendy.'
-    }
+    },
+    // 添加素材相关字段
+    sound_name: '',
+    content_type: 0,
+    image_count: 1,
+    add_sound: '-1',
+    sound_wait_time: 10,
+    origin_sound_volume: 100,
+    add_sound_volume: 100,
+    add_product_link: 0,
+    captions: '',
+    materials_tags: '',
+    material_source: 'materialLibrary',
+    material_path: ''
   },
   [
     'settings', 'startOption', 'scheduledTime', 'post_way', 'videos_folder',
@@ -273,7 +286,9 @@ const postMixin = postSettings.createVueMixin(
     'post_caption', 'insert_emoji', 'comment_on_own_post',
     'comment_on_own_post_delay_min', 'comment_on_own_post_delay_max',
     'own_post_comment', 'own_post_comment_emoji', 'generate_by_chatgpt',
-    'chatgpt_settings'
+    'chatgpt_settings', 'sound_name', 'content_type', 'image_count',
+    'add_sound', 'sound_wait_time', 'origin_sound_volume', 'add_sound_volume',
+    'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path'
   ]
 );
 
@@ -285,20 +300,8 @@ export default {
   name: 'PostDialog',
   data() {
     return {
-      sound_name: '',
-      content_type: 0,
-      image_count: 1,
-      add_sound: '-1', // -1: default, 0: disable, 1: enable
-      sound_wait_time: 10,
-      origin_sound_volume: 100,
-      add_sound_volume: 100,
-      add_product_link: 0,
-      captions: '',
-      materials_tags: '',
       tags: [],
       showTagsDialog: false,
-      material_source: 'localFolder',
-      material_path: '',
     }
   },
   computed: {
@@ -454,11 +457,6 @@ export default {
     },
   },
   async mounted() {
-    // 设置默认的素材源
-    if (!this.material_source) {
-      this.material_source = 'materialLibrary';
-    }
-
     await this.getTags();
   },
   beforeUnmount() {
