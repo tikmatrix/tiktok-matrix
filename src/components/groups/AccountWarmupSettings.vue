@@ -26,7 +26,7 @@
               </svg>
             </button>
           </div>
-          <button v-if="trainTimes.length < 6" @click="addTime" class="p-2 text-primary hover:text-primary-focus">
+          <button @click="addTime" class="p-2 text-primary hover:text-primary-focus">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -264,10 +264,8 @@ export default {
       }
     },
     addTime() {
-      if (this.trainTimes.length < 6) {
-        const currentTime = new Date();
-        this.trainTimes.push(currentTime.toTimeString().slice(0, 5));
-      }
+      const currentTime = new Date();
+      this.trainTimes.push(currentTime.toTimeString().slice(0, 5));
     },
     removeTime(index) {
       this.trainTimes.splice(index, 1)
