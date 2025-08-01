@@ -81,10 +81,12 @@
         {{ $t('unFollowAll') }}
     </button>
 
-
-
-
-
+    <!-- 超级营销脚本 -->
+    <button class="btn btn-md btn-success ml-1 mb-1"
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'superBoost' } })">
+        <font-awesome-icon icon="fa-solid fa-rocket" class="h-3 w-3 mr-1" />
+        {{ $t('superBoost') }}
+    </button>
 </template>
 <script>
 

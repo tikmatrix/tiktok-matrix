@@ -331,6 +331,7 @@ export const beforeRunScriptSettings = new SettingsManager('before_run_script_se
 export const boostLivesSettings = new SettingsManager('boost_lives_settings.json');
 export const massCommentSettings = new SettingsManager('mass_comment_settings.json');
 export const followBackSettings = new SettingsManager('follow_back_settings.json');
+export const superBoostSettings = new SettingsManager('super_boost_settings.json');
 
 // 导出常用函数
 export async function loadSettings(filename, defaultSettings = {}) {
