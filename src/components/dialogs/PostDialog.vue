@@ -232,32 +232,75 @@
 <script>
 import VueSlider from "vue-3-slider-component";
 import { open } from '@tauri-apps/api/dialog';
+import { invoke } from "@tauri-apps/api/tauri";
+import { postSettings } from '@/utils/settingsManager';
+
+const postMixin = postSettings.createVueMixin(
+  {
+    settings: 'custom',
+    startOption: 'now',
+    scheduledTime: '09:00',
+    post_way: 'share',
+    videos_folder: '',
+    captions_folder: '',
+    schedule_type: 'interval',
+    interval_minutes: 30,
+    specific_times: ['09:00', '12:00', '18:00'],
+    repeat_times: 1,
+    shuffle_videos: false,
+    video_delay_min: 5,
+    video_delay_max: 15,
+    post_caption: '',
+    insert_emoji: false,
+    comment_on_own_post: false,
+    comment_on_own_post_delay_min: 1,
+    comment_on_own_post_delay_max: 5,
+    own_post_comment: '',
+    own_post_comment_emoji: false,
+    generate_by_chatgpt: false,
+    chatgpt_settings: {
+      url: 'https://api.openai.com/v1/chat/completions',
+      api_key: '',
+      model: 'gpt-3.5-turbo',
+      system_prompt: 'Generate a casual, engaging TikTok caption for this video. Keep it under 150 characters, use relevant hashtags, and make it trendy.'
+    },
+    // 添加素材相关字段
+    sound_name: '',
+    content_type: 0,
+    image_count: 1,
+    add_sound: '-1',
+    sound_wait_time: 10,
+    origin_sound_volume: 100,
+    add_sound_volume: 100,
+    add_product_link: 0,
+    captions: '',
+    materials_tags: '',
+    material_source: 'materialLibrary',
+    material_path: ''
+  },
+  [
+    'settings', 'startOption', 'scheduledTime', 'post_way', 'videos_folder',
+    'captions_folder', 'schedule_type', 'interval_minutes', 'specific_times',
+    'repeat_times', 'shuffle_videos', 'video_delay_min', 'video_delay_max',
+    'post_caption', 'insert_emoji', 'comment_on_own_post',
+    'comment_on_own_post_delay_min', 'comment_on_own_post_delay_max',
+    'own_post_comment', 'own_post_comment_emoji', 'generate_by_chatgpt',
+    'chatgpt_settings', 'sound_name', 'content_type', 'image_count',
+    'add_sound', 'sound_wait_time', 'origin_sound_volume', 'add_sound_volume',
+    'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path'
+  ]
+);
+
 export default {
+  mixins: [postMixin],
   components: {
     VueSlider
   },
   name: 'PostDialog',
   data() {
-
     return {
-      settings: localStorage.getItem('postSettings') || 'custom',
-      post_way: localStorage.getItem('post_way') || 'share',
-      sound_name: localStorage.getItem('sound_name') || '',
-      startOption: localStorage.getItem('postStartOption') || 'now',
-      scheduledTime: localStorage.getItem('postScheduledTime') || '',
-      content_type: Number(localStorage.getItem('content_type')) || 0,
-      image_count: Number(localStorage.getItem('image_count')) || 1,
-      add_sound: localStorage.getItem('add_sound') || '-1', // -1: default, 0: disable, 1: enable
-      sound_wait_time: Number(localStorage.getItem('sound_wait_time')) || 10,
-      origin_sound_volume: Number(localStorage.getItem('origin_sound_volume')) || 100,
-      add_sound_volume: Number(localStorage.getItem('add_sound_volume')) || 100,
-      add_product_link: Number(localStorage.getItem('add_product_link')) || 0,
-      captions: localStorage.getItem('captions') || '',
-      materials_tags: localStorage.getItem('materials_tags') || '',
       tags: [],
       showTagsDialog: false,
-      material_source: localStorage.getItem('material_source') || 'localFolder',
-      material_path: localStorage.getItem('material_path') || '',
     }
   },
   computed: {
@@ -265,58 +308,6 @@ export default {
       return this.materials_tags ? this.materials_tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
     },
   },
-  watch: {
-    settings: function (newVal) {
-      localStorage.setItem('postSettings', newVal);
-    },
-    post_way: function (newVal) {
-      localStorage.setItem('post_way', newVal);
-    },
-    sound_name: function (newVal) {
-      localStorage.setItem('sound_name', newVal);
-    },
-    startOption: function (newVal) {
-      localStorage.setItem('postStartOption', newVal);
-    },
-    scheduledTime: function (newVal) {
-      localStorage.setItem('postScheduledTime', newVal);
-    },
-    content_type: function (newVal) {
-      localStorage.setItem('content_type', newVal);
-    },
-    image_count: function (newVal) {
-      localStorage.setItem('image_count', newVal);
-    },
-    add_sound: function (newVal) {
-      console.log('add_sound changed:', newVal);
-      localStorage.setItem('add_sound', newVal);
-    },
-    sound_wait_time: function (newVal) {
-      localStorage.setItem('sound_wait_time', newVal);
-    },
-    origin_sound_volume: function (newVal) {
-      localStorage.setItem('origin_sound_volume', newVal);
-    },
-    add_sound_volume: function (newVal) {
-      localStorage.setItem('add_sound_volume', newVal);
-    },
-    add_product_link: function (newVal) {
-      localStorage.setItem('add_product_link', newVal);
-    },
-    captions: function (newVal) {
-      localStorage.setItem('captions', newVal);
-    },
-    materials_tags: function (newVal) {
-      localStorage.setItem('materials_tags', newVal);
-    },
-    material_source: function (newVal) {
-      localStorage.setItem('material_source', newVal);
-    },
-    material_path: function (newVal) {
-      localStorage.setItem('material_path', newVal);
-    },
-  },
-
   methods: {
     // 获取所有标签
     async getTags() {
@@ -465,11 +456,6 @@ export default {
     },
   },
   async mounted() {
-    // 设置默认的素材源
-    if (!this.material_source) {
-      this.material_source = 'materialLibrary';
-    }
-
     await this.getTags();
   },
   beforeUnmount() {

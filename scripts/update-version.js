@@ -22,7 +22,7 @@ let body = JSON.stringify({
         }
     }
 }, null, 2)
-let response = await fetch('https://pro.api.tikmatrix.com/ci/update_version_info', {
+let response = await fetch('https://api.tikmatrix.com/ci/update_version_info', {
     method: 'PUT',
     headers: {
         'Content-Type': 'text/plain',

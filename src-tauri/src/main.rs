@@ -46,7 +46,7 @@ fn setup_env(working_dir: &str) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
     std::env::set_var("MATRIX_APP_NAME", "IgMatrix");
     if cfg!(debug_assertions) {
-        std::env::set_var("MOSS_URL", "http://127.0.0.1:8788/moss");
+        std::env::set_var("MOSS_URL", "http://127.0.0.1:8787/moss");
         std::env::set_var("RUST_BACKTRACE", "1");
         std::env::set_var("LOG_LEVEL", "info");
     }
@@ -59,6 +59,57 @@ fn set_env(key: String, value: String) {
 #[tauri::command]
 fn get_env(key: String) -> String {
     std::env::var(key.clone()).unwrap_or_default()
+}
+
+// 通用的设置文件读取函数
+#[tauri::command]
+fn read_settings_file_generic(app: tauri::AppHandle, filename: String) -> Result<String, String> {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let settings_path = work_dir.join("data").join(filename);
+
+    match std::fs::read_to_string(&settings_path) {
+        Ok(content) => Ok(content),
+        Err(_) => Ok("{}".to_string()), // 返回空 JSON 对象如果文件不存在
+    }
+}
+
+// 通用的设置文件写入函数
+#[tauri::command]
+fn write_settings_file_generic(
+    app: tauri::AppHandle,
+    filename: String,
+    content: String,
+) -> Result<(), String> {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let data_dir = work_dir.join("data");
+    let settings_path = data_dir.join(filename);
+
+    // 确保 data 目录存在
+    std::fs::create_dir_all(&data_dir).map_err(|e| e.to_string())?;
+
+    std::fs::write(&settings_path, content).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+// 为了向后兼容，保留原有的函数名
+#[tauri::command]
+fn read_settings_file(app: tauri::AppHandle) -> Result<String, String> {
+    read_settings_file_generic(app, "account_warmup_settings.json".to_string())
+}
+
+#[tauri::command]
+fn write_settings_file(app: tauri::AppHandle, content: String) -> Result<(), String> {
+    write_settings_file_generic(app, "account_warmup_settings.json".to_string(), content)
+}
+
+#[tauri::command]
+fn read_post_settings_file(app: tauri::AppHandle) -> Result<String, String> {
+    read_settings_file_generic(app, "post_settings.json".to_string())
+}
+
+#[tauri::command]
+fn write_post_settings_file(app: tauri::AppHandle, content: String) -> Result<(), String> {
+    write_settings_file_generic(app, "post_settings.json".to_string(), content)
 }
 #[tauri::command]
 async fn download_file(
@@ -331,6 +382,12 @@ fn main() -> std::io::Result<()> {
             is_agent_running,
             set_env,
             get_env,
+            read_settings_file_generic,
+            write_settings_file_generic,
+            read_settings_file,
+            write_settings_file,
+            read_post_settings_file,
+            write_post_settings_file,
             open_adb_terminal
         ])
         .setup(|app| {

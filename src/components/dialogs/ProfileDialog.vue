@@ -48,38 +48,32 @@
 </template>
 <script>
 import { open } from '@tauri-apps/api/dialog';
+import { profileSettings } from '@/utils/settingsManager';
+
 export default {
   name: 'ProfileDialog',
-
+  mixins: [
+    profileSettings.createVueMixin(
+      {
+        profile_order: 'random',
+        nicknames: '',
+        usernames: '',
+        bios: '',
+        avatars_path: '',
+      }, // 默认设置
+      ['profile_order', 'nicknames', 'usernames', 'bios', 'avatars_path'] // 需要监听的属性
+    )
+  ],
   data() {
     return {
-      profile_order: localStorage.getItem('profile_order') || 'random',
-      nicknames: localStorage.getItem('nicknames') || '',
-      usernames: localStorage.getItem('usernames') || '',
-      bios: localStorage.getItem('bios') || '',
-      avatars_path: localStorage.getItem('avatars_path') || '',
+      profile_order: 'random',
+      nicknames: '',
+      usernames: '',
+      bios: '',
+      avatars_path: '',
     }
   },
-  watch: {
-    profile_order(newVal) {
-      localStorage.setItem('profile_order', newVal)
-    },
-    nicknames(newVal) {
-      localStorage.setItem('nicknames', newVal)
-    },
-    usernames(newVal) {
-      localStorage.setItem('usernames', newVal)
-    },
-    bios(newVal) {
-      localStorage.setItem('bios', newVal)
-    },
-    avatars_path(newVal) {
-      localStorage.setItem('avatars_path', newVal)
-    },
-  },
-
   methods: {
-
     //选择头像目录
     async selectAvatars() {
       const filePath = await open({
@@ -107,8 +101,6 @@ export default {
       })
     },
 
-  },
-  async mounted() {
   }
 }
 </script>

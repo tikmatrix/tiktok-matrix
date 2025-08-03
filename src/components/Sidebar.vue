@@ -39,7 +39,7 @@
                 :checked="isSelectAll(0)" />
               <span class="label-text text-primary text-md select-none">{{ $t('allDevices') }} ({{
                 groupDevices[0].length
-                }})</span>
+              }})</span>
             </label>
 
             <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-md text-right flex-1">
@@ -74,7 +74,7 @@
               <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(item.id)"
                 :checked="isSelectAll(item.id)" />
               <span class="label-text text-primary  text-md select-none">{{ item.name }}({{ groupDevices[item.id].length
-                }})</span>
+              }})</span>
             </label>
             <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
               @click="renameGroup(item)"></font-awesome-icon>
@@ -109,8 +109,8 @@
 
       </div>
       <div class="mt-4 ring-1 ring-base-300 rounded-lg overflow-hidden relative" v-if="!hideAd">
-        <a href="https://gou.niaozun.com/products/samsung-s10-mobile-farm-b8wu4pb1-1x414m0f-ahisqnqd?variant=466&f_tracking_id=tikmatrix"
-          target="_blank" class="block w-full h-full relative hover:opacity-90 transition-opacity">
+        <a href="http://www.niaozun.shop?cid=934ec2fe" target="_blank"
+          class="block w-full h-full relative hover:opacity-90 transition-opacity">
           <img src="https://gou.niaozun.com/media/product/1/image/2024/06/26/e4c4d51d0598b76eeb0e2f4ef84bdea2.png"
             class="w-full h-full object-cover" />
         </a>

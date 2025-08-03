@@ -15,24 +15,25 @@
 
 </template>
 <script>
+import { deletePostSettings } from '@/utils/settingsManager';
+
 export default {
   name: 'DeletePost',
+  mixins: [
+    deletePostSettings.createVueMixin(
+      { maxViews: 0 }, // 默认设置
+      ['maxViews']     // 需要监听的属性
+    )
+  ],
   data() {
     return {
-      maxViews: Number(localStorage.getItem('maxViews')) || 0,
+      maxViews: 0,
     }
-  },
-  watch: {
-    maxViews(newVal) {
-      localStorage.setItem('maxViews', newVal)
-    },
   },
   methods: {
     async runScript(enable_multi_account) {
       await this.$emiter('run_now_by_account', { name: 'delete_post', args: { max_views: this.maxViews, enable_multi_account } })
     },
-  },
-  async mounted() {
   }
 }
 </script>

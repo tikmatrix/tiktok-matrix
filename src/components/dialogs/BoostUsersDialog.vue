@@ -34,25 +34,26 @@
 </template>
 <script>
 import { open } from '@tauri-apps/api/dialog';
+import { boostUsersSettings } from '@/utils/settingsManager';
+
 export default {
   name: 'BoostUsers',
+  mixins: [
+    boostUsersSettings.createVueMixin(
+      {
+        boost_type: 'follow',
+        follow_method: 'search',
+        target_username_path: '',
+      }, // 默认设置
+      ['boost_type', 'follow_method', 'target_username_path'] // 需要监听的属性
+    )
+  ],
   data() {
     return {
-      boost_type: localStorage.getItem('boost_type') || 'follow',
-      follow_method: localStorage.getItem('follow_method') || 'search', // 默认为搜索用户
-      target_username_path: localStorage.getItem('target_username_path') || '',
+      boost_type: 'follow',
+      follow_method: 'search',
+      target_username_path: '',
     }
-  },
-  watch: {
-    boost_type(newVal) {
-      localStorage.setItem('boost_type', newVal)
-    },
-    follow_method(newVal) {
-      localStorage.setItem('follow_method', newVal) // 保存关注方式到 localStorage
-    },
-    target_username_path(newVal) {
-      localStorage.setItem('target_username_path', newVal)
-    },
   },
   methods: {
     // 选择文件并获取路径
@@ -77,8 +78,6 @@ export default {
         }
       })
     },
-  },
-  async mounted() {
   }
 }
 </script>

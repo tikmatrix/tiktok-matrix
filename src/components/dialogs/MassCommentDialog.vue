@@ -80,42 +80,42 @@
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
+import { massCommentSettings } from '@/utils/settingsManager';
+
+const massCommentMixin = massCommentSettings.createVueMixin(
+  {
+    settings: 'custom',
+    startOption: 'now',
+    scheduledTime: '09:00',
+    target_videos: '',
+    comment_texts: 'Great video!\nLove this content!\nAmazing!',
+    comment_delay_min: 2,
+    comment_delay_max: 8,
+    insert_emoji: false,
+    comment_order: 'random'
+  },
+  [
+    'settings', 'startOption', 'scheduledTime', 'target_videos',
+    'comment_texts', 'comment_delay_min', 'comment_delay_max',
+    'insert_emoji', 'comment_order'
+  ]
+);
+
 export default {
+  mixins: [massCommentMixin],
   name: 'MassCommentDialog',
   components: {
     VueSlider
   },
   data() {
     return {
-
-      comment_mode: localStorage.getItem('comment_mode') || 'multi-to-single',
-      comment_content: localStorage.getItem('comment_content') || '',
-      insert_emoji: localStorage.getItem('insert_emoji') === 'true' || false,
-      target_post_urls: localStorage.getItem('target_post_urls') || '',
-      comment_order: localStorage.getItem('comment_order') || 'random',
-      comment_interval: [localStorage.getItem('min_interval') || 0, localStorage.getItem('max_interval') || 10]
+      comment_mode: 'multi-to-single',
+      comment_content: '',
+      insert_emoji: false,
+      target_post_urls: '',
+      comment_order: 'random',
+      comment_interval: [0, 10]
     }
-  },
-  watch: {
-    comment_mode(newVal) {
-      localStorage.setItem('comment_mode', newVal)
-    },
-    comment_content(newVal) {
-      localStorage.setItem('comment_content', newVal)
-    },
-    insert_emoji(newVal) {
-      localStorage.setItem('insert_emoji', newVal)
-    },
-    target_post_urls(newVal) {
-      localStorage.setItem('target_post_urls', newVal)
-    },
-    comment_order(newVal) {
-      localStorage.setItem('comment_order', newVal)
-    },
-    comment_interval(newVal) {
-      localStorage.setItem('min_interval', newVal[0])
-      localStorage.setItem('max_interval', newVal[1])
-    },
   },
   methods: {
     filterTargetPostUrl() {

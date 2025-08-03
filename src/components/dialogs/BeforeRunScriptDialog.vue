@@ -19,7 +19,8 @@
           || script.name === 'boostPosts'
           || script.name === 'boostLives'
           || script.name === 'massComment'
-          || script.name === 'switchAccount'">
+          || script.name === 'switchAccount'
+          || script.name === 'superBoost'">
           <label class="font-bold text-info">{{ $t('enableMultiAccount') }}:</label>
           <input type="checkbox" class="toggle toggle-accent" v-model="enable_multi_account" />
         </div>
@@ -50,11 +51,12 @@
     <BoostLivesDialog v-if="script.name === 'boostLives'" ref="currentDialog" />
     <MassCommentDialog v-if="script.name === 'massComment'" ref="currentDialog" />
     <SwitchAccountDialog v-if="script.name === 'switchAccount'" ref="currentDialog" />
+    <SuperBoostDialog v-if="script.name === 'superBoost'" ref="currentDialog" />
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
       <button class="btn btn-success" :disabled="selecedDevices.length === 0" @click="runScript">{{ $t('startScript')
-      }}</button>
+        }}</button>
     </div>
   </div>
 </template>
@@ -75,7 +77,25 @@ import MatchAccounts from './MatchAccounts.vue'
 import MassCommentDialog from './MassCommentDialog.vue'
 import BoostLivesDialog from './BoostLivesDialog.vue'
 import SwitchAccountDialog from './SwitchAccountDialog.vue'
+import SuperBoostDialog from './SuperBoostDialog.vue'
+import { beforeRunScriptSettings } from '@/utils/settingsManager';
+
+const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
+  {
+    enable_multi_account: false,
+    selected_accounts: [],
+    account_filters: {
+      proxy_status: 'all',
+      login_status: 'all',
+      account_status: 'all'
+    }
+  },
+  [
+    'enable_multi_account', 'selected_accounts', 'account_filters'
+  ]
+);
 export default {
+  mixins: [beforeRunScriptMixin],
   name: 'BeforeRunScript',
   props: {
     devices: {
@@ -111,17 +131,13 @@ export default {
     MatchAccounts,
     MassCommentDialog,
     BoostLivesDialog,
-    SwitchAccountDialog
+    SwitchAccountDialog,
+    SuperBoostDialog
   },
 
   data() {
     return {
-      enable_multi_account: localStorage.getItem(`enable_multi_account_${this.script.name}`) === 'true' || false
-    }
-  },
-  watch: {
-    enable_multi_account(newValue) {
-      localStorage.setItem(`enable_multi_account_${this.script.name}`, newValue);
+      // 其他非设置相关的数据可以保留在这里
     }
   },
   methods: {

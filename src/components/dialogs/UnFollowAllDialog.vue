@@ -11,28 +11,29 @@
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
+import { unfollowAllSettings } from '@/utils/settingsManager';
+
 export default {
   name: 'UnFollowAll',
   components: {
     VueSlider
   },
+  mixins: [
+    unfollowAllSettings.createVueMixin(
+      {
+        enable_send_message: false,
+        message_content: '',
+        insert_emoji: false,
+      }, // 默认设置
+      ['enable_send_message', 'message_content', 'insert_emoji'] // 需要监听的属性
+    )
+  ],
   data() {
     return {
-      enable_send_message: localStorage.getItem('enable_send_message') === 'true',
-      message_content: localStorage.getItem('follow_back_message_content') || '',
-      insert_emoji: localStorage.getItem('follow_back_insert_emoji') === 'true',
+      enable_send_message: false,
+      message_content: '',
+      insert_emoji: false,
     }
-  },
-  watch: {
-    enable_send_message(newVal) {
-      localStorage.setItem('enable_send_message', newVal)
-    },
-    message_content(newVal) {
-      localStorage.setItem('follow_back_message_content', newVal)
-    },
-    insert_emoji(newVal) {
-      localStorage.setItem('follow_back_insert_emoji', newVal)
-    },
   },
   methods: {
 

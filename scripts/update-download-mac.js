@@ -4,7 +4,7 @@ const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
 
 //update mac download url
 let body = `https://r2.tikmatrix.com/IgMatrix_${config.package.version}_universal.dmg`
-let response = await fetch('https://pro.api.tikmatrix.com/ci/update_download_url', {
+let response = await fetch('https://api.tikmatrix.com/ci/update_download_url', {
     method: 'PUT',
     headers: {
         'Content-Type': 'text/plain',

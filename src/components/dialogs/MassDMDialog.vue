@@ -30,29 +30,28 @@
 </template>
 <script>
 import { open } from '@tauri-apps/api/dialog';
+import { massDMSettings } from '@/utils/settingsManager';
+
 export default {
-  name: 'MassDMDialog',
+  name: 'MassDM',
+  mixins: [
+    massDMSettings.createVueMixin(
+      {
+        message_content: '',
+        insert_emoji: false,
+        target_username_path: '',
+        send_profile_card: '',
+      }, // 默认设置
+      ['message_content', 'insert_emoji', 'target_username_path', 'send_profile_card'] // 需要监听的属性
+    )
+  ],
   data() {
     return {
-      message_content: localStorage.getItem('message_content') || '',
-      insert_emoji: localStorage.getItem('insert_emoji') === 'true' || false,
-      target_username_path: localStorage.getItem('target_username_path') || '',
-      send_profile_card: localStorage.getItem('send_profile_card') || '',
+      message_content: '',
+      insert_emoji: false,
+      target_username_path: '',
+      send_profile_card: '',
     }
-  },
-  watch: {
-    message_content(newVal) {
-      localStorage.setItem('message_content', newVal)
-    },
-    insert_emoji(newVal) {
-      localStorage.setItem('insert_emoji', newVal)
-    },
-    target_username_path(newVal) {
-      localStorage.setItem('target_username_path', newVal)
-    },
-    send_profile_card(newVal) {
-      localStorage.setItem('send_profile_card', newVal)
-    },
   },
   methods: {
     // 选择文件并获取路径
@@ -86,7 +85,6 @@ export default {
     },
 
 
-  },
-
+  }
 }
 </script>

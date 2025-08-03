@@ -25,7 +25,7 @@
               </svg>
             </button>
           </div>
-          <button v-if="publishTimes.length < 6" @click="addTime" class="p-2 text-primary hover:text-primary-focus">
+          <button @click="addTime" class="p-2 text-primary hover:text-primary-focus">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -380,9 +380,7 @@ export default {
       return tag_names.map(tag_name => this.tags.find(tag => tag.name === tag_name)?.id).join(',');
     },
     addTime() {
-      if (this.publishTimes.length < 6) {
-        this.publishTimes.push('')
-      }
+      this.publishTimes.push('')
     },
     removeTime(index) {
       this.publishTimes.splice(index, 1)
