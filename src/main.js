@@ -16,6 +16,10 @@ import { i18n } from './i18n/index'
 import VueDragSelect from "@coleqiu/vue-drag-select";
 import VueDraggableResizable from 'vue-draggable-resizable'
 import { emit, listen } from '@tauri-apps/api/event';
+import { initWhiteLabel } from './utils/whitelabel.js';
+
+// 初始化白标配置
+const whitelabelConfig = initWhiteLabel();
 
 const app = createApp(App)
 app.use(i18n)
@@ -37,6 +41,7 @@ app.config.errorHandler = (err, vm, info) => {
 app.config.globalProperties.$service = service
 app.config.globalProperties.$emiter = emit
 app.config.globalProperties.$listen = listen
+app.config.globalProperties.$whitelabel = whitelabelConfig
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.component("vue-draggable-resizable", VueDraggableResizable)
 app.mount('#app')

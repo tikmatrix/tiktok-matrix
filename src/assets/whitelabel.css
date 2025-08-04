@@ -1,0 +1,220 @@
+/* 白标主题CSS变量 */
+:root {
+    /* 默认颜色 */
+    --primary-color: #3b82f6;
+    --secondary-color: #10b981;
+    --accent-color: #f59e0b;
+
+    /* 扩展的颜色变量 */
+    --primary-hover: #2563eb;
+    --secondary-hover: #059669;
+    --accent-hover: #d97706;
+
+    /* 透明度变化 */
+    --primary-light: rgba(59, 130, 246, 0.1);
+    --secondary-light: rgba(16, 185, 129, 0.1);
+    --accent-light: rgba(245, 158, 11, 0.1);
+}
+
+/* 白标主题应用 */
+.whitelabel-primary {
+    color: var(--primary-color) !important;
+}
+
+.whitelabel-bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.whitelabel-border-primary {
+    border-color: var(--primary-color) !important;
+}
+
+.whitelabel-secondary {
+    color: var(--secondary-color) !important;
+}
+
+.whitelabel-bg-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+.whitelabel-border-secondary {
+    border-color: var(--secondary-color) !important;
+}
+
+.whitelabel-accent {
+    color: var(--accent-color) !important;
+}
+
+.whitelabel-bg-accent {
+    background-color: var(--accent-color) !important;
+}
+
+.whitelabel-border-accent {
+    border-color: var(--accent-color) !important;
+}
+
+/* 悬停状态 */
+.whitelabel-hover-primary:hover {
+    background-color: var(--primary-hover) !important;
+}
+
+.whitelabel-hover-secondary:hover {
+    background-color: var(--secondary-hover) !important;
+}
+
+.whitelabel-hover-accent:hover {
+    background-color: var(--accent-hover) !important;
+}
+
+/* 渐变背景 */
+.whitelabel-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)) !important;
+}
+
+.whitelabel-gradient-secondary {
+    background: linear-gradient(135deg, var(--secondary-color), var(--secondary-hover)) !important;
+}
+
+.whitelabel-gradient-accent {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)) !important;
+}
+
+/* 按钮样式重写 */
+.btn-primary.whitelabel-themed {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary.whitelabel-themed:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.btn-secondary.whitelabel-themed {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-secondary.whitelabel-themed:hover {
+    background-color: var(--secondary-hover);
+    border-color: var(--secondary-hover);
+}
+
+.btn-accent.whitelabel-themed {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-accent.whitelabel-themed:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+/* 链接样式 */
+a.whitelabel-link {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a.whitelabel-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* 表单控件 */
+.form-control.whitelabel-themed:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color), 0.25);
+}
+
+.checkbox.whitelabel-themed:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* 进度条 */
+.progress.whitelabel-themed::-webkit-progress-value {
+    background-color: var(--primary-color);
+}
+
+.progress.whitelabel-themed::-moz-progress-bar {
+    background-color: var(--primary-color);
+}
+
+/* 标签页 */
+.tab.tab-active.whitelabel-themed {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* 警告框 */
+.alert.whitelabel-info {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.alert.whitelabel-success {
+    background-color: var(--secondary-light);
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+.alert.whitelabel-warning {
+    background-color: var(--accent-light);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+/* 模态框 */
+.modal-box.whitelabel-themed {
+    border-top: 4px solid var(--primary-color);
+}
+
+/* 加载状态 */
+.loading.whitelabel-themed {
+    border-color: var(--primary-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+    .whitelabel-mobile-hide {
+        display: none;
+    }
+}
+
+@media (min-width: 641px) {
+    .whitelabel-desktop-hide {
+        display: none;
+    }
+}
+
+/* 动画 */
+@keyframes whitelabel-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.whitelabel-pulse {
+    animation: whitelabel-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 阴影效果 */
+.whitelabel-shadow-primary {
+    box-shadow: 0 4px 14px 0 rgba(var(--primary-color), 0.2);
+}
+
+.whitelabel-shadow-secondary {
+    box-shadow: 0 4px 14px 0 rgba(var(--secondary-color), 0.2);
+}
+
+.whitelabel-shadow-accent {
+    box-shadow: 0 4px 14px 0 rgba(var(--accent-color), 0.2);
+}
