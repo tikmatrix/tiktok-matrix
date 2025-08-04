@@ -10,7 +10,7 @@
   <!-- 直播用户名输入区域 -->
   <div class="flex flex-row items-center p-2 w-full">
     <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
-      :placeholder="$t('targetUsernameTips')" autocomplete="off" v-model="live_target_username"> </textarea>
+      :placeholder="$t('targetUsernameTips')" autocomplete="off" v-model="target_username"> </textarea>
   </div>
   <!-- 新增进入方式选择 -->
   <div class="flex flex-row items-center p-2 gap-2">
@@ -24,22 +24,21 @@
   <div class="flex flex-row items-center justify-start p-1 gap-4">
     <div class="form-control">
       <label class="label cursor-pointer gap-2 py-1">
-        <input type="checkbox" v-model="live_enable_like" class="checkbox checkbox-success checkbox-md" />
+        <input type="checkbox" v-model="enable_like" class="checkbox checkbox-success checkbox-md" />
         <span class="label-text">{{ $t('likeLive') }}</span>
       </label>
     </div>
 
     <div class="form-control">
       <label class="label cursor-pointer gap-2 py-1">
-        <input type="checkbox" v-model="live_enable_comment" class="checkbox checkbox-success checkbox-md" />
+        <input type="checkbox" v-model="enable_comment" class="checkbox checkbox-success checkbox-md" />
         <span class="label-text">{{ $t('commentLive') }}</span>
       </label>
     </div>
     <!-- 观看时长输入 -->
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('viewDuration') }}:</label>
-      <input type="number" min="30" max="3600" v-model="live_view_duration"
-        class="input input-bordered input-md w-20" />
+      <input type="number" min="30" max="3600" v-model="view_duration" class="input input-bordered input-md w-20" />
       <span>{{ $t('second') }}</span>
     </div>
   </div>
@@ -51,14 +50,14 @@
     <!-- 点赞间隔输入 -->
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('likeInterval') }}:</label>
-      <input type="number" min="3" max="60" v-model="live_like_interval" class="input input-bordered input-md w-20" />
+      <input type="number" min="3" max="60" v-model="like_interval" class="input input-bordered input-md w-20" />
       <span>{{ $t('second') }}</span>
     </div>
 
     <!-- 点赞连击次数输入 -->
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('likeTapCount') }}:</label>
-      <input type="number" min="1" max="10" v-model="live_like_count" class="input input-bordered input-md w-20" />
+      <input type="number" min="1" max="10" v-model="like_count" class="input input-bordered input-md w-20" />
       <span>{{ $t('times') }}</span>
     </div>
   </div>
@@ -67,13 +66,12 @@
   <div class="flex flex-row items-center p-1 gap-2">
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('commentInterval') }}:</label>
-      <input type="number" min="5" max="120" v-model="live_comment_interval"
-        class="input input-bordered input-md w-20" />
+      <input type="number" min="5" max="120" v-model="comment_interval" class="input input-bordered input-md w-20" />
       <span>{{ $t('second') }}</span>
     </div>
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('commentsPerAccount') }}:</label>
-      <input type="number" min="1" max="20" v-model="live_comment_count" class="input input-bordered input-md w-20" />
+      <input type="number" min="1" max="20" v-model="comment_count" class="input input-bordered input-md w-20" />
       <span>{{ $t('times') }}</span>
     </div>
   </div>
@@ -81,7 +79,7 @@
   <div class="flex flex-row items-center p-1 w-full gap-2">
     <label class="font-bold">{{ $t('comments') }}:</label>
     <textarea class="textarea textarea-success w-lg h-32 leading-tight" :placeholder="$t('commentTextsTips')"
-      v-model="live_comment_texts" autocomplete="off"></textarea>
+      v-model="comment_texts" autocomplete="off"></textarea>
     <div class="flex flex-col gap-2">
       <div class="flex flex-row items-center gap-2">
         <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
@@ -122,22 +120,24 @@ import { boostLivesSettings } from '@/utils/settingsManager';
 
 const boostLivesMixin = boostLivesSettings.createVueMixin(
   {
-    settings: 'custom',
-    startOption: 'now',
-    scheduledTime: '09:00',
-    lives_url: '',
-    view_duration_min: 30,
-    view_duration_max: 60,
-    engagement_rate: 20,
-    comment_chance: 30,
-    like_chance: 50,
-    share_chance: 10,
-    comments: 'Great live!\nLove this!\nAmazing content!'
+    target_username: '',
+    enable_like: false,
+    enable_comment: false,
+    view_duration: 120,
+    like_interval: 10,
+    like_count: 10,
+    comment_interval: 30,
+    comment_texts: '',
+    enter_method: 'search',
+    insert_emoji: false,
+    comment_order: 'random',
+    comment_count: 1,
+    task_interval: [0, 10]
   },
   [
-    'settings', 'startOption', 'scheduledTime', 'lives_url',
-    'view_duration_min', 'view_duration_max', 'engagement_rate',
-    'comment_chance', 'like_chance', 'share_chance', 'comments'
+    'target_username', 'enable_like', 'enable_comment', 'view_duration',
+    'like_interval', 'like_count', 'comment_interval', 'comment_texts',
+    'enter_method', 'insert_emoji', 'comment_order', 'comment_count', 'task_interval'
   ]
 );
 
@@ -149,29 +149,17 @@ export default {
   },
   data() {
     return {
-      live_target_username: '',
-      live_enable_like: false,
-      live_enable_comment: false,
-      live_view_duration: 120,
-      live_like_interval: 10,
-      live_like_count: 10,
-      live_comment_interval: 30,
-      live_comment_texts: '',
-      enter_method: 'search',
-      insert_emoji: false,
-      comment_order: 'random',
-      live_comment_count: 1,
-      task_interval: [0, 10]
+      // mixin 已经提供了所有必要的数据属性
     }
   },
   methods: {
     filterTargetUsername() {
-      if (this.live_target_username == '') {
+      if (this.target_username == '') {
         alert(this.$t('targetUsernameRequired'))
         return false;
       }
       //filter empty lines
-      let lines = this.live_target_username.split('\n').filter(line => line.trim() != '')
+      let lines = this.target_username.split('\n').filter(line => line.trim() != '')
       if (lines.length == 0) {
         alert(this.$t('targetUsernameRequired'))
         return false;
@@ -183,7 +171,7 @@ export default {
         }
         return line
       })
-      this.live_target_username = lines.join('\n')
+      this.target_username = lines.join('\n')
       return true;
     },
     async runScript(enable_multi_account) {
@@ -192,29 +180,29 @@ export default {
       }
 
       // 检查如果启用了评论但没有输入评论文本
-      if (this.live_enable_comment && !this.live_comment_texts.trim()) {
+      if (this.enable_comment && !this.comment_texts.trim()) {
         alert(this.$t('commentTextsRequired'))
         return;
       }
 
-      // 修改为传递更多参数，包括点赞连击次数和评论相关
+      // 传递与后端脚本匹配的参数
       await this.$emiter('run_now_by_account', {
         name: 'boost_live',
         args: {
-          target_username: this.live_target_username,
+          target_username: this.target_username,
           enter_method: this.enter_method,
-          enable_like: this.live_enable_like,
-          view_duration: this.live_view_duration,
-          like_interval: this.live_like_interval,
-          like_count: this.live_like_count,
-          enable_comment: this.live_enable_comment,
-          comment_interval: this.live_comment_interval,
-          comment_texts: this.live_comment_texts,
+          enable_like: this.enable_like,
+          view_duration: this.view_duration,
+          like_interval: this.like_interval,
+          like_count: this.like_count,
+          enable_comment: this.enable_comment,
+          comment_interval: this.comment_interval,
+          comment_texts: this.comment_texts,
           insert_emoji: this.insert_emoji,
           comment_order: this.comment_order,
+          comment_count: this.comment_count,
           min_interval: Number(this.task_interval[0]),
           max_interval: Number(this.task_interval[1]),
-          comment_count: this.live_comment_count,
           enable_multi_account: enable_multi_account
         }
       })
