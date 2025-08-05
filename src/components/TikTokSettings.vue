@@ -128,6 +128,7 @@ export default {
       // 激活码与功能映射，可扩展
       const featureMap = {
         'cGxhbl9rZXk=': 'followPlan', // 'plan_key' base64
+        'd2hpdGVsYWJlbA==': 'whiteLabel', // 'whitelabel' base64
         // 未来可添加更多激活码
       };
       const code = this.featureCode.trim();

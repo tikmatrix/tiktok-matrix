@@ -1,0 +1,19 @@
+{
+    "appName": "MyBrand Matrix",
+    "logo": {
+        "main": "/src/assets/custom-logo.png",
+        "favicon": "/public/custom-favicon.ico",
+        "titleBar": "/src/assets/custom-logo.png"
+    },
+    "branding": {
+        "supportEmail": "support@mybrand.com",
+        "tutorialUrl": "https://mybrand.com/docs",
+        "rewardsUrl": "https://mybrand.com/rewards",
+        "telegramUrl": "https://t.me/mybrand"
+    },
+    "features": {
+        "showTutorial": true,
+        "showRewards": true,
+        "showBranding": true
+    }
+}

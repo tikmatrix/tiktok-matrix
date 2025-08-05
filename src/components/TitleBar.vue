@@ -3,8 +3,8 @@
         class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
         <!-- 左侧：应用图标、名称、版本和检查更新 -->
         <div class="flex items-center space-x-2">
-            <img src="../assets/app-icon.png" class="h-10 w-10" />
-            <span class="text-2xl text-base-content font-bold">{{ name }}</span>
+            <img :src="whitelabelConfig.logo?.main || '../assets/app-icon.png'" class="h-10 w-10" alt="App Icon" />
+            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || 'TikMatrix' }}</span>
             <!-- <span class="text-md text-base-content">v{{ version }}</span> -->
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
@@ -14,8 +14,9 @@
             </button>
         </div>
         <!-- 教程链接 -->
-        <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline"
-            :href="$t('siteUrl') + '/docs/intro'" target="_blank">
+        <a v-if="whitelabelConfig.features?.showTutorial"
+            class="flex items-center space-x-1 text-md text-info ml-2 hover:underline"
+            :href="whitelabelConfig.branding?.tutorialUrl || 'https://tikmatrix.com/docs/intro'" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
@@ -199,6 +200,11 @@
                     }) }}</label>
                 </div>
             </button>
+            <!-- 白标设置按钮 - 仅在解锁后显示 -->
+            <button v-if="isWhiteLabelUnlocked" @click="openWhiteLabelDialog" class="p-1 hover:bg-gray-200 rounded"
+                :title="$t('whitelabelSettings')">
+                <font-awesome-icon icon="fa-solid fa-palette" class="h-6 w-6 text-base-content" />
+            </button>
             <!-- 语言选择 -->
             <select class="select select-info select-md" v-model="currentLocale" @change="changeLocale">
                 <option selected value="en">English</option>
@@ -227,6 +233,9 @@
             </div>
         </div>
     </div>
+
+    <!-- 白标设置弹窗 -->
+    <WhiteLabelDialog ref="whitelabelDialog" @config-updated="onWhiteLabelConfigUpdated" />
 
     <!-- 购买授权弹窗 -->
     <!-- <BuyLicenseDialog ref="buyLicenseDialog" :license="licenseData" /> -->
@@ -282,14 +291,18 @@ import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
 import BuyLicenseDialog from './BuyLicenseDialog.vue';
 import StripePriceTableDialog from './StripePriceTableDialog.vue';
+import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
 import AgentErrorDialog from './AgentErrorDialog.vue';
+import { getWhiteLabelConfig } from '../config/whitelabel.js';
+import { isFeatureUnlocked } from '../utils/features.js';
 
 export default {
     name: 'TitleBar',
     components: {
         BuyLicenseDialog,
         StripePriceTableDialog,
+        WhiteLabelDialog,
         AgentErrorDialog
     },
     data() {
@@ -310,7 +323,9 @@ export default {
             check_update_dialog_title: '',
             isLoadingLicense: true,
             agentProcessName: '',
-            agentErrorType: 'port' // 默认为端口问题
+            agentErrorType: 'port', // 默认为端口问题
+            whitelabelConfig: getWhiteLabelConfig(),
+            isWhiteLabelUnlocked: isFeatureUnlocked('whiteLabel')
         }
     },
     watch: {
@@ -624,6 +639,19 @@ export default {
                 });
             }
         },
+
+        // 白标相关方法
+        openWhiteLabelDialog() {
+            this.$refs.whitelabelDialog.showDialog();
+        },
+
+        onWhiteLabelConfigUpdated(config) {
+            this.whitelabelConfig = config;
+            // 更新页面标题
+            document.title = config.appName || 'TikMatrix';
+            // 可以触发其他需要更新的组件
+            this.$emit('whitelabel-updated', config);
+        },
     },
     async mounted() {
         // 获取版本号
@@ -632,6 +660,9 @@ export default {
         // 设置当前语言
         this.$i18n.locale = this.currentLocale;
         console.log('currentLocale:', this.currentLocale);
+
+        // 检查功能解锁状态
+        this.isWhiteLabelUnlocked = isFeatureUnlocked('whiteLabel');
 
         // 监听下载进度
         await this.$listen("DOWNLOAD_PROGRESS", async (e) => {
@@ -666,6 +697,11 @@ export default {
             if (!this.is_licensed()) {
                 this.showLicenseDialog();
             }
+        });
+
+        // 监听功能解锁事件
+        await this.$listen('featureUnlocked', async (e) => {
+            this.isWhiteLabelUnlocked = isFeatureUnlocked('whiteLabel');
         });
 
         this.check_update();
