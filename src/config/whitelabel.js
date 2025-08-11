@@ -8,7 +8,7 @@ import defaultIcon from '../assets/app-icon.png';
 
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
-    appName: 'TikMatrix',
+    appName: 'IgMatrix',
 
     // Logo配置
     logo: {
