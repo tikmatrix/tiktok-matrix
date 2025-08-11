@@ -143,7 +143,7 @@
                     </div>
 
                     <div class="ml-8 space-y-3">
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-2 gap-2">
                             <label class="cursor-pointer flex items-center gap-2">
                                 <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
                                     v-model="postSettings.enable_like" />
@@ -153,11 +153,6 @@
                                 <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
                                     v-model="postSettings.enable_favorite" />
                                 <span class="text-sm">{{ $t('favorite') }}</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-2">
-                                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
-                                    v-model="postSettings.enable_share" />
-                                <span class="text-sm">{{ $t('share') }}</span>
                             </label>
                         </div>
 
@@ -229,7 +224,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-xs btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                }}</button>
+                                    }}</button>
                                 <span :class="testResultStyle" class="text-xs">{{ testResult }}</span>
                             </div>
                         </div>
@@ -298,7 +293,6 @@ export default {
                     max_posts_count: 1,
                     enable_like: false,
                     enable_favorite: false,
-                    enable_share: false,
                     view_duration: 10
                 },
                 commentSettings: {
@@ -357,7 +351,6 @@ export default {
                 max_posts_count: 1, // 最大处理帖子数量
                 enable_like: false,
                 enable_favorite: false,
-                enable_share: false,
                 view_duration: 10
             },
 
@@ -448,8 +441,7 @@ export default {
             }
 
             if (this.features.boostPosts &&
-                !this.postSettings.enable_like && !this.postSettings.enable_favorite &&
-                !this.postSettings.enable_share) {
+                !this.postSettings.enable_like && !this.postSettings.enable_favorite) {
                 errors.push(this.$t('selectAtLeastOnePostAction'));
             }
 
@@ -496,7 +488,6 @@ export default {
                     max_posts_count: this.postSettings.max_posts_count,
                     enable_like: this.postSettings.enable_like,
                     enable_favorite: this.postSettings.enable_favorite,
-                    enable_share: this.postSettings.enable_share,
                     view_duration: this.postSettings.view_duration
                 };
             }
