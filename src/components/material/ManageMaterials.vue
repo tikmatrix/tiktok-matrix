@@ -52,7 +52,7 @@
                   <div class="indicator">
                     <div class="indicator-item badge badge-success" v-if="material.used == '0'">{{ $t('unused') }}</div>
                     <div class="indicator-item badge badge-error" v-else @click="show_material(material)">{{ $t('used')
-                    }}</div>
+                      }}</div>
                     <div class="cursor-pointer border rounded items-center text-center flex align-middle">
                       <template v-if="material.name.endsWith('.mp4') || material.name.endsWith('.webm')">
                         <video :src="material.preview" class="w-12 h-18 max-w-none flex-1"></video>
@@ -119,7 +119,7 @@
                 </td>
                 <td>
                   <span class="text-md cursor-pointer" v-if="material.group_id">{{ get_group_name(material.group_id)
-                  }}</span>
+                    }}</span>
                   <span class="text-md text-warning cursor-pointer" v-else>{{ $t('unset') }}</span>
                 </td>
                 <td>
@@ -145,7 +145,7 @@
             <video ref="video" :src="currentMaterial.preview" class="rounded-lg" controls></video>
           </template>
           <template v-else>
-            <img :src="currentMaterial.name" class="rounded-lg" />
+            <img :src="currentMaterial.preview" class="rounded-lg" />
           </template>
         </div>
       </div>
