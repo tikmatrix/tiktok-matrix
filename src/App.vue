@@ -18,7 +18,7 @@ import Sidebar from './components/Sidebar.vue'
 import AppDialog from './AppDialog.vue'
 import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
-import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs'
 
 export default {
   name: 'app',
@@ -194,7 +194,29 @@ export default {
         this.devices.forEach((device, index) => {
           device.key = index + 1;
         });
+
+        // 保存设备信息到文件
+        this.saveDevicesInfo();
       });
+    },
+
+    async saveDevicesInfo() {
+      try {
+        // 检查data目录是否存在，如果不存在则创建
+        const dataExists = await exists('data', { dir: BaseDirectory.AppData });
+        if (!dataExists) {
+          await createDir('data', { dir: BaseDirectory.AppData, recursive: true });
+        }
+
+        // 将设备信息保存到JSON文件
+        await writeTextFile('data/devices_info.json', JSON.stringify(this.devices, null, 2), {
+          dir: BaseDirectory.AppData
+        });
+
+        console.log('设备信息已成功保存到应用目录');
+      } catch (error) {
+        console.error('保存设备信息失败:', error);
+      }
     },
 
     disableMenu() {
@@ -210,6 +232,7 @@ export default {
 
 
   },
+
   async mounted() {
     // 禁止右键菜单
     this.disableMenu();

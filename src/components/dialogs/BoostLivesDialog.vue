@@ -132,7 +132,7 @@ const boostLivesMixin = boostLivesSettings.createVueMixin(
     insert_emoji: false,
     comment_order: 'random',
     comment_count: 1,
-    task_interval: [0, 10]
+    task_interval: [0, 0]
   },
   [
     'target_username', 'enable_like', 'enable_comment', 'view_duration',

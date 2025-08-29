@@ -54,11 +54,25 @@
             <div class="flex items-center">
               <input type="radio" id="useSound" value="useSound" v-model="post_way" class="form-radio text-primary">
               <label for="useSound" class="ml-2">{{ $t('useSound') }}</label>
-              <input type="text" v-model="sound_name" :placeholder="$t('soundNamePlaceholder')"
-                class="border-2 border-gray-300 p-2 rounded" />
             </div>
           </div>
+        </div>
 
+        <!-- 当选择使用声音时显示输入框，输入框和提示放在同一行 -->
+        <div v-if="post_way === 'useSound'" class="flex w-full items-center gap-2 mb-2 mt-2">
+          <label class="font-bold w-40">{{ $t('soundName') }}:</label>
+          <div class="flex-1 flex items-center gap-2">
+            <input type="text" v-model="sound_name" :placeholder="$t('soundNameOrUrlPlaceholder')"
+              class="border-2 border-gray-300 p-2 rounded flex-1 min-w-[300px]" />
+            <div role="alert" class="alert flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                class="stroke-info shrink-0 w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>{{ $t('soundInputTips') }}</span>
+            </div>
+          </div>
         </div>
         <div class="flex w-full items-center gap-2 mb-2">
           <label class="font-bold w-40">{{ $t('contentType') }}:</label>
@@ -384,7 +398,7 @@ export default {
       if (this.post_way === 'useSound' && !this.sound_name) {
         await this.$emiter('NOTIFY', {
           type: 'error',
-          message: this.$t('soundNameRequired'),
+          message: this.$t('soundInputRequired'),
           timeout: 2000
         });
         return;
