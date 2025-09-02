@@ -1,0 +1,168 @@
+<template>
+    <!-- 添加提示信息 -->
+    <div class="alert alert-warning mb-4 shadow-lg">
+        <div>
+            <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="h-6 w-6 mr-2" />
+            <span>{{ $t('boostCommentsWarning') }}</span>
+        </div>
+    </div>
+
+    <div class="flex flex-row items-center p-2 w-full">
+        <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
+            :placeholder="$t('targetCommentUrlTips')" autocomplete="off" v-model="target_comment_urls"> </textarea>
+    </div>
+
+    <div class="flex flex-row items-center p-2 gap-2">
+        <label class="font-bold text-right col-span-1">{{ $t('boostOptions') }}:</label>
+        <div class="flex flex-wrap gap-4">
+            <div class="form-control">
+                <label class="label cursor-pointer gap-2">
+                    <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_like_comment" />
+                    <span class="label-text">{{ $t('likeComment') }}</span>
+                </label>
+            </div>
+            <div class="form-control">
+                <label class="label cursor-pointer gap-2">
+                    <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_reply_comment" />
+                    <span class="label-text">{{ $t('replyComment') }}</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 回复评论内容设置 -->
+    <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+        <span class="font-bold">{{ $t('replyContents') }}: </span>
+        <textarea class="textarea textarea-success w-lg h-32 leading-tight" :placeholder="$t('replyContentTips')"
+            autocomplete="off" v-model="reply_contents"> </textarea>
+        <div class="flex flex-col gap-2">
+            <div class="flex flex-row items-center gap-2">
+                <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
+                <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji"
+                    title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
+            </div>
+            <div class="flex flex-row items-center gap-2">
+                <label class="font-bold">{{ $t('commentOrder') }}:</label>
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="replyOrder" value="random" class="radio radio-sm radio-primary"
+                            v-model="reply_order" />
+                        <span>{{ $t('random') }}</span>
+                    </label>
+                    <label class="flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="replyOrder" value="sequential" class="radio radio-sm radio-primary"
+                            v-model="reply_order" />
+                        <span>{{ $t('sequential') }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-row items-center">
+        <label class="font-bold mr-4">{{ $t('boostCommentInterval') }}:</label>
+        <VueSlider v-model="boost_comment_interval" :width="200" :min="0" :max="10"
+            :marks="{ 0: '0' + $t('minute'), 5: '5' + $t('minute'), 10: '10' + $t('minute') }" />
+    </div>
+</template>
+
+<script>
+import VueSlider from "vue-3-slider-component";
+import { boostCommentsSettings } from '@/utils/settingsManager';
+
+export default {
+    name: 'BoostComments',
+    components: {
+        VueSlider
+    },
+    mixins: [
+        boostCommentsSettings.createVueMixin(
+            {
+                target_comment_urls: '',
+                enable_like_comment: false,
+                enable_reply_comment: false,
+                reply_contents: 'Great point!\nI agree!\nThanks for sharing!',
+                insert_emoji: false,
+                reply_order: 'random',
+                boost_comment_interval: [0, 0]
+            }, // 默认设置
+            ['target_comment_urls', 'enable_like_comment', 'enable_reply_comment', 'reply_contents', 'insert_emoji', 'reply_order', 'boost_comment_interval'] // 需要监听的属性
+        )
+    ],
+    data() {
+        return {
+            target_comment_urls: '',
+            enable_like_comment: false,
+            enable_reply_comment: false,
+            reply_contents: 'Great point!\nI agree!\nThanks for sharing!',
+            insert_emoji: false,
+            reply_order: 'random',
+            boost_comment_interval: [0, 0]
+        }
+    },
+    methods: {
+        filterTargetCommentUrl() {
+            if (this.target_comment_urls == '') {
+                alert(this.$t('commentUrlRequired'))
+                return false;
+            }
+            //filter empty lines
+            let lines = this.target_comment_urls.split('\n').filter(line => line.trim() != '')
+            if (lines.length == 0) {
+                alert(this.$t('commentUrlRequired'))
+                return false;
+            }
+            //remove query string and validate comment URLs
+            lines = lines.map(line => {
+                try {
+                    let url = new URL(line)
+                    // 检查是否包含评论相关的路径或参数
+                    if (url.pathname.includes('/comment/') || url.search.includes('comment') || line.includes('#comment')) {
+                        return url.origin + url.pathname + url.search + url.hash
+                    } else {
+                        // 如果不是评论链接，尝试作为帖子链接处理
+                        return url.origin + url.pathname
+                    }
+                } catch (e) {
+                    return line; // 如果不是有效URL，保持原样
+                }
+            })
+            this.target_comment_urls = lines.join('\n')
+            return true;
+        },
+
+        async runScript(enable_multi_account) {
+            if (!this.filterTargetCommentUrl()) {
+                return;
+            }
+
+            // 检查是否至少选择了一个提升选项
+            if (!this.enable_like_comment && !this.enable_reply_comment) {
+                alert(this.$t('selectAtLeastOneOption'))
+                return;
+            }
+
+            // 如果启用回复评论，检查回复内容
+            if (this.enable_reply_comment && this.reply_contents.trim() === '') {
+                alert(this.$t('replyContentsRequired'))
+                return;
+            }
+
+            await this.$emiter('run_now_by_account', {
+                name: 'boost_comment',
+                args: {
+                    comment_url: this.target_comment_urls,
+                    enable_like_comment: this.enable_like_comment,
+                    enable_reply_comment: this.enable_reply_comment,
+                    reply_contents: this.reply_contents,
+                    insert_emoji: this.insert_emoji,
+                    reply_order: this.reply_order,
+                    min_interval: Number(this.boost_comment_interval[0]),
+                    max_interval: Number(this.boost_comment_interval[1]),
+                    enable_multi_account: enable_multi_account
+                }
+            })
+        },
+    }
+}
+</script>

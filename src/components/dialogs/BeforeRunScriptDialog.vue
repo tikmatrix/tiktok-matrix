@@ -48,6 +48,7 @@
     <DeletePostDialog v-if="script.name === 'deletePost'" ref="currentDialog" />
     <BoostUsersDialog v-if="script.name === 'boostUsers'" ref="currentDialog" />
     <BoostPostsDialog v-if="script.name === 'boostPosts'" ref="currentDialog" />
+    <BoostCommentsDialog v-if="script.name === 'boostComments'" ref="currentDialog" />
     <BoostLivesDialog v-if="script.name === 'boostLives'" ref="currentDialog" />
     <MassCommentDialog v-if="script.name === 'massComment'" ref="currentDialog" />
     <SwitchAccountDialog v-if="script.name === 'switchAccount'" ref="currentDialog" />
@@ -56,7 +57,7 @@
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
       <button class="btn btn-success" :disabled="selecedDevices.length === 0" @click="runScript">{{ $t('startScript')
-        }}</button>
+      }}</button>
     </div>
   </div>
 </template>
@@ -73,6 +74,7 @@ import ScrapeUsersDialog from './ScrapeUsersDialog.vue'
 import DeletePostDialog from './DeletePostDialog.vue'
 import BoostUsersDialog from './BoostUsersDialog.vue'
 import BoostPostsDialog from './BoostPostsDialog.vue'
+import BoostCommentsDialog from './BoostCommentsDialog.vue'
 import MatchAccounts from './MatchAccounts.vue'
 import MassCommentDialog from './MassCommentDialog.vue'
 import BoostLivesDialog from './BoostLivesDialog.vue'
@@ -128,6 +130,7 @@ export default {
     DeletePostDialog,
     BoostUsersDialog,
     BoostPostsDialog,
+    BoostCommentsDialog,
     MatchAccounts,
     MassCommentDialog,
     BoostLivesDialog,

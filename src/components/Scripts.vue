@@ -51,6 +51,11 @@
         {{ $t('boostPosts') }}
     </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostComments' } })">
+        <font-awesome-icon icon="fa-solid fa-comment-dots" class="h-3 w-3 text-success" />
+        {{ $t('boostComments') }}
+    </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostLives' } })">
         <font-awesome-icon icon="fa-solid fa-video" class="h-3 w-3 text-success" />
         {{ $t('boostLives') }}
