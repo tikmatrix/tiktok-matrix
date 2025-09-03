@@ -229,7 +229,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-xs btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                    }}</button>
+                                }}</button>
                                 <span :class="testResultStyle" class="text-xs">{{ testResult }}</span>
                             </div>
                         </div>
@@ -536,54 +536,11 @@ export default {
                 return;
             }
 
-            // 准备脚本参数
-            const scriptArgs = {
-                // 通用设置
-                target_usernames_path: this.targetUsernamesPath,
-                access_method: this.accessMethod,
-                features: this.features,
-                enable_multi_account: enable_multi_account
-            };
-
-            // 添加各功能的具体配置
-            if (this.features.followUsers) {
-                scriptArgs.follow_settings = {
-                    boost_type: this.followSettings.boost_type
-                };
-            }
-
-            if (this.features.sendDM) {
-                scriptArgs.dm_settings = {
-                    message_content: this.dmSettings.message_content,
-                    insert_emoji: this.dmSettings.insert_emoji
-                };
-            }
-
-            if (this.features.boostPosts) {
-                scriptArgs.post_settings = {
-                    max_posts_count: this.postSettings.max_posts_count,
-                    enable_like: this.postSettings.enable_like,
-                    enable_favorite: this.postSettings.enable_favorite,
-                    enable_share: this.postSettings.enable_share,
-                    view_duration: this.postSettings.view_duration
-                };
-            }
-
-            if (this.features.massComment) {
-                scriptArgs.comment_settings = {
-                    comment_content: this.commentSettings.comment_content,
-                    insert_emoji: this.commentSettings.insert_emoji,
-                    comment_order: this.commentSettings.comment_order,
-                    max_posts_count: this.postSettings.max_posts_count, // 使用相同的帖子数量设置
-                    generate_by_chatgpt: this.commentSettings.generate_by_chatgpt,
-                    chatgpt_settings: this.commentSettings.generate_by_chatgpt ? JSON.stringify(this.commentSettings.chatgpt_settings) : ''
-                };
-            }
 
             // 发送到后端执行
             await this.$emiter('run_now_by_account', {
                 name: 'super_boost',
-                args: scriptArgs
+                args: { enable_multi_account }
             });
         }
     }

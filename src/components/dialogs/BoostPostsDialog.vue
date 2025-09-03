@@ -112,12 +112,6 @@ export default {
       await this.$emiter('run_now_by_account', {
         name: 'boost_post',
         args: {
-          post_url: this.target_post_urls,
-          enable_like: this.enable_like,
-          enable_favorite: this.enable_favorite,
-          enable_share: this.enable_share,
-          enable_follow: this.enable_follow,
-          view_duration: this.view_duration,
           min_interval: Number(this.boost_post_interval[0]),
           max_interval: Number(this.boost_post_interval[1]),
           enable_multi_account: enable_multi_account

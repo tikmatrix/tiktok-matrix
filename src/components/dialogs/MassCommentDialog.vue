@@ -146,11 +146,6 @@ export default {
 
       if (this.comment_mode === 'single-to-single') {
         await this.$emiter('massComment', {
-          comment_contents: this.comment_contents,
-          insert_emoji: this.insert_emoji,
-          insert_device_number: this.insert_device_number,
-          target_post_urls: this.target_post_urls,
-          comment_order: this.comment_order,
           min_interval: Number(this.comment_interval[0]),
           max_interval: Number(this.comment_interval[1]),
           enable_multi_account: enable_multi_account
@@ -158,11 +153,7 @@ export default {
       } else {
         await this.$emiter('run_now_by_account', {
           name: 'comment', args: {
-            comment_contents: this.comment_contents,
-            insert_emoji: this.insert_emoji,
-            insert_device_number: this.insert_device_number,
             target_post_urls: this.target_post_urls,
-            comment_order: this.comment_order,
             min_interval: Number(this.comment_interval[0]),
             max_interval: Number(this.comment_interval[1]),
             enable_multi_account: enable_multi_account

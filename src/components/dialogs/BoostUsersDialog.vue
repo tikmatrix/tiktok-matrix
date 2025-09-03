@@ -72,9 +72,7 @@ export default {
       await this.$emiter('run_now_by_account', {
         name: this.boost_type,
         args: {
-          follow_method: this.follow_method,  // 将关注方式传递给脚本
           enable_multi_account: enable_multi_account,
-          target_username_path: this.target_username_path
         }
       })
     },

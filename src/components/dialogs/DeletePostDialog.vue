@@ -32,7 +32,10 @@ export default {
   },
   methods: {
     async runScript(enable_multi_account) {
-      await this.$emiter('run_now_by_account', { name: 'delete_post', args: { max_views: this.maxViews, enable_multi_account } })
+      await this.$emiter('run_now_by_account', {
+        name: 'delete_post',
+        args: { enable_multi_account }
+      })
     },
   }
 }

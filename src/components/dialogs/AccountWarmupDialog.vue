@@ -278,21 +278,9 @@ export default {
     async runScript(enable_multi_account) {
       await this.$emiter('run_now_by_account', {
         name: 'account_warmup', args: {
-          settings: this.settings,
-          task_duration: this.task_duration,
           start_time: this.startOption === 'scheduled' ? this.scheduledTime : '',
-          insert_emoji: this.insert_emoji,
-          comment_order: this.comment_order,
-          floow_probable: Number(this.floow_probable),
-          like_probable: Number(this.like_probable),
-          collect_probable: Number(this.collect_probable),
-          comment_probable: Number(this.comment_probable),
-          topic: this.topic,
-          comment: this.comment,
           min_duration: Number(this.min_duration),
           max_duration: Number(this.max_duration),
-          generate_by_chatgpt: this.generate_by_chatgpt,
-          chatgpt_settings: JSON.stringify(this.chatgpt_settings),
           enable_multi_account: enable_multi_account
         }
       })

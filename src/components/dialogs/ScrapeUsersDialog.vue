@@ -108,7 +108,6 @@ export default {
         mode: this.scrape_mode,
         target_username: this.target_username,
         search_keyword: this.search_keyword,
-        max_scrape_count: this.max_scrape_count,
       })
     },
   },

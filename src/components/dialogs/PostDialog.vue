@@ -416,21 +416,7 @@ export default {
 
       await this.$emiter('run_now_by_account', {
         name: 'post', args: {
-          settings: this.settings,
-          post_way: this.post_way,
-          sound_name: this.sound_name,
           start_time: this.startOption === 'scheduled' ? this.scheduledTime : '',
-          content_type: Number(this.content_type),
-          image_count: Number(this.image_count),
-          add_sound: Number(this.add_sound),
-          sound_wait_time: Number(this.sound_wait_time),
-          origin_sound_volume: Number(this.origin_sound_volume),
-          add_sound_volume: Number(this.add_sound_volume),
-          add_product_link: Number(this.add_product_link),
-          captions: this.captions,
-          materials_tags: this.convertTagsToIds(this.selectedTags),
-          material_source: this.material_source,
-          material_path: this.material_path,
           enable_multi_account: enable_multi_account
         }
       })

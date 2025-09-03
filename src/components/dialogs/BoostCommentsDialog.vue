@@ -151,12 +151,6 @@ export default {
             await this.$emiter('run_now_by_account', {
                 name: 'boost_comment',
                 args: {
-                    comment_url: this.target_comment_urls,
-                    enable_like_comment: this.enable_like_comment,
-                    enable_reply_comment: this.enable_reply_comment,
-                    reply_contents: this.reply_contents,
-                    insert_emoji: this.insert_emoji,
-                    reply_order: this.reply_order,
                     min_interval: Number(this.boost_comment_interval[0]),
                     max_interval: Number(this.boost_comment_interval[1]),
                     enable_multi_account: enable_multi_account

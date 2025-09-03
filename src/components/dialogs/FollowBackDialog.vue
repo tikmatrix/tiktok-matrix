@@ -62,9 +62,6 @@ export default {
       await this.$emiter('run_now_by_account', {
         name: 'follow_back',
         args: {
-          enable_send_message: this.enable_send_message,
-          message_content: this.message_content,
-          insert_emoji: this.insert_emoji,
           enable_multi_account: enable_multi_account
         }
       })

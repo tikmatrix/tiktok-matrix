@@ -189,18 +189,6 @@ export default {
       await this.$emiter('run_now_by_account', {
         name: 'boost_live',
         args: {
-          target_username: this.target_username,
-          enter_method: this.enter_method,
-          enable_like: this.enable_like,
-          view_duration: this.view_duration,
-          like_interval: this.like_interval,
-          like_count: this.like_count,
-          enable_comment: this.enable_comment,
-          comment_interval: this.comment_interval,
-          comment_texts: this.comment_texts,
-          insert_emoji: this.insert_emoji,
-          comment_order: this.comment_order,
-          comment_count: this.comment_count,
           min_interval: Number(this.task_interval[0]),
           max_interval: Number(this.task_interval[1]),
           enable_multi_account: enable_multi_account
