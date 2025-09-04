@@ -381,7 +381,8 @@ export default {
       return tag_names.map(tag_name => this.tags.find(tag => tag.name === tag_name)?.id).join(',');
     },
     addTime() {
-      this.publishTimes.push('')
+      const currentTime = new Date();
+      this.publishTimes.push(currentTime.toTimeString().slice(0, 5));
     },
     removeTime(index) {
       this.publishTimes.splice(index, 1)
@@ -417,20 +418,133 @@ export default {
         return
       }
 
-      this.updateGroup(this.mygroup)
+      // 直接保存到配置文件而不是更新数据库
+      await this.saveGroupConfigFile()
+
+      // 保存成功后关闭对话框
+      await this.$emiter('closeDialog', {})
+      await this.$emiter('reload_group', {})
     },
 
-    async updateGroup(group) {
-      this.$service
-        .update_group(group)
-        .then(async () => {
-          await this.$emiter('closeDialog', {})
-          await this.$emiter('reload_group', {})
-        })
+    // 保存到配置文件
+    async saveGroupConfigFile() {
+      try {
+        // 构建要保存的配置
+        const config = {
+          auto_publish: this.mygroup.auto_publish,
+          publish_start_time: this.mygroup.publish_start_time,
+          post_way: this.mygroup.post_way,
+          sound_name: this.mygroup.sound_name,
+          publish_type: this.mygroup.publish_type,
+          image_count: this.mygroup.image_count,
+          add_sound: this.mygroup.add_sound,
+          sound_wait_time: this.mygroup.sound_wait_time,
+          origin_sound_volume: this.mygroup.origin_sound_volume,
+          add_sound_volume: this.mygroup.add_sound_volume,
+          add_product_link: this.mygroup.add_product_link,
+          title: this.mygroup.title || '',
+          material_source: this.mygroup.material_source,
+          material_path: this.mygroup.material_path || '',
+          materials_tags: this.mygroup.materials_tags || '',
+          settings: 'group_file'
+        };
+
+        const result = await this.$service.save_group_config_file({
+          group_id: this.mygroup.id,
+          script_name: 'post',
+          settings: config
+        });
+        if (result.code === 0) {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('configFileSaved') || 'Configuration saved successfully',
+            timeout: 2000
+          });
+        } else {
+          await this.$emiter('NOTIFY', {
+            type: 'error',
+            message: result.data || 'Failed to save configuration file',
+            timeout: 2000
+          });
+        }
+      } catch (error) {
+        console.error('Error saving config file:', error);
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('saveConfigError') || 'Error saving configuration file',
+          timeout: 2000
+        });
+      }
     },
   },
   async mounted() {
     this.mygroup = { ...this.group }
+
+    // 尝试从配置文件加载设置，如果存在则使用配置文件的设置
+    try {
+      const response = await this.$service.get_group_config_file({
+        group_id: this.mygroup.id,
+        script_name: 'post'
+      });
+
+      if (response.code === 0 && response.data) {
+        // 如果存在配置文件，则使用配置文件的设置覆盖数据库设置
+        const config = response.data;
+
+        // 更新post相关配置
+        if (config.auto_publish !== undefined) {
+          this.mygroup.auto_publish = config.auto_publish;
+        }
+        if (config.publish_start_time !== undefined) {
+          this.mygroup.publish_start_time = config.publish_start_time;
+        }
+        if (config.post_way !== undefined) {
+          this.mygroup.post_way = config.post_way;
+        }
+        if (config.sound_name !== undefined) {
+          this.mygroup.sound_name = config.sound_name;
+        }
+        if (config.publish_type !== undefined) {
+          this.mygroup.publish_type = config.publish_type;
+        }
+        if (config.image_count !== undefined) {
+          this.mygroup.image_count = config.image_count;
+        }
+        if (config.add_sound !== undefined) {
+          this.mygroup.add_sound = config.add_sound;
+        }
+        if (config.sound_wait_time !== undefined) {
+          this.mygroup.sound_wait_time = config.sound_wait_time;
+        }
+        if (config.origin_sound_volume !== undefined) {
+          this.mygroup.origin_sound_volume = config.origin_sound_volume;
+        }
+        if (config.add_sound_volume !== undefined) {
+          this.mygroup.add_sound_volume = config.add_sound_volume;
+        }
+        if (config.add_product_link !== undefined) {
+          this.mygroup.add_product_link = config.add_product_link;
+        }
+        if (config.title !== undefined) {
+          this.mygroup.title = config.title;
+        }
+        if (config.material_source !== undefined) {
+          this.mygroup.material_source = config.material_source;
+        }
+        if (config.material_path !== undefined) {
+          this.mygroup.material_path = config.material_path;
+        }
+        if (config.materials_tags !== undefined) {
+          this.mygroup.materials_tags = config.materials_tags;
+        }
+
+        console.log('Loaded settings from config file for post');
+      } else {
+        console.log('No config file found, using database settings for post');
+      }
+    } catch (error) {
+      console.log('Failed to load config file, using database settings for post:', error);
+    }
 
     // 设置默认的素材源
     if (!this.mygroup.material_source) {
