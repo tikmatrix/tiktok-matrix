@@ -123,6 +123,27 @@
           <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
           <VueSlider class="ml-8" v-model="sound_wait_time" :width="500" :min="5" :max="30" :step="1"
             :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
+          <div role="alert" class="alert ml-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              class="stroke-info shrink-0 w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ $t('loadingTimeTips') }}</span>
+          </div>
+        </div>
+        <div class="flex w-full items-center gap-2 mb-4">
+          <label class="font-bold w-40">{{ $t('uploadWaitTime') }}:</label>
+          <VueSlider class="ml-8" v-model="upload_wait_time" :width="500" :min="5" :max="60" :step="5"
+            :marks="{ 5: '5' + $t('second'), 15: '15' + $t('second'), 30: '30' + $t('second'), 45: '45' + $t('second'), 60: '60' + $t('second') }" />
+          <div role="alert" class="alert ml-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              class="stroke-info shrink-0 w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ $t('uploadWaitTimeTips') }}</span>
+          </div>
         </div>
         <div class="flex w-full items-center gap-2 mb-4 mt-8 " v-if="add_sound == 1 || post_way == 'useSound'">
           <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
@@ -285,6 +306,7 @@ const postMixin = postSettings.createVueMixin(
     image_count: 1,
     add_sound: '-1',
     sound_wait_time: 10,
+    upload_wait_time: 10,
     origin_sound_volume: 100,
     add_sound_volume: 100,
     add_product_link: 0,
@@ -301,7 +323,7 @@ const postMixin = postSettings.createVueMixin(
     'comment_on_own_post_delay_min', 'comment_on_own_post_delay_max',
     'own_post_comment', 'own_post_comment_emoji', 'generate_by_chatgpt',
     'chatgpt_settings', 'sound_name', 'content_type', 'image_count',
-    'add_sound', 'sound_wait_time', 'origin_sound_volume', 'add_sound_volume',
+    'add_sound', 'sound_wait_time', 'upload_wait_time', 'origin_sound_volume', 'add_sound_volume',
     'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path'
   ]
 );

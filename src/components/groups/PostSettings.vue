@@ -102,7 +102,25 @@
         <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
         <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1"
           :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
-
+        <div role="alert" class="alert ml-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>{{ $t('loadingTimeTips') }}</span>
+        </div>
+      </div>
+      <div class="flex w-full items-center gap-2 mb-4">
+        <label class="font-bold w-40">{{ $t('uploadWaitTime') }}:</label>
+        <VueSlider v-model="mygroup.upload_wait_time" :width="500" :min="5" :max="60" :step="5"
+          :marks="{ 5: '5' + $t('second'), 15: '15' + $t('second'), 30: '30' + $t('second'), 45: '45' + $t('second'), 60: '60' + $t('second') }" />
+        <div role="alert" class="alert ml-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>{{ $t('uploadWaitTimeTips') }}</span>
+        </div>
       </div>
       <div class="flex w-full items-center gap-2 mb-4 mt-8"
         v-if="mygroup.add_sound == 1 || mygroup.post_way == 'useSound'">
@@ -278,6 +296,9 @@ export default {
     'mygroup.sound_wait_time': function (val) {
       this.mygroup.sound_wait_time = Number(val)
     },
+    'mygroup.upload_wait_time': function (val) {
+      this.mygroup.upload_wait_time = Number(val)
+    },
 
 
   },
@@ -439,6 +460,7 @@ export default {
           image_count: this.mygroup.image_count,
           add_sound: this.mygroup.add_sound,
           sound_wait_time: this.mygroup.sound_wait_time,
+          upload_wait_time: this.mygroup.upload_wait_time,
           origin_sound_volume: this.mygroup.origin_sound_volume,
           add_sound_volume: this.mygroup.add_sound_volume,
           add_product_link: this.mygroup.add_product_link,
@@ -515,6 +537,9 @@ export default {
         }
         if (config.sound_wait_time !== undefined) {
           this.mygroup.sound_wait_time = config.sound_wait_time;
+        }
+        if (config.upload_wait_time !== undefined) {
+          this.mygroup.upload_wait_time = config.upload_wait_time;
         }
         if (config.origin_sound_volume !== undefined) {
           this.mygroup.origin_sound_volume = config.origin_sound_volume;
