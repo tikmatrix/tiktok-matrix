@@ -57,14 +57,14 @@
         <label class="font-bold w-40">{{ $t('contentType') }}:</label>
         <div class="flex items-center gap-4">
           <div class="flex items-center">
-            <input type="radio" id="video" value="0" v-model="mygroup.publish_type" class="form-radio text-primary">
+            <input type="radio" id="video" value="0" v-model="mygroup.content_type" class="form-radio text-primary">
             <label for="video" class="ml-2">{{ $t('video') }}</label>
           </div>
           <div class="flex items-center">
-            <input type="radio" id="image" value="1" v-model="mygroup.publish_type" class="form-radio text-primary">
+            <input type="radio" id="image" value="1" v-model="mygroup.content_type" class="form-radio text-primary">
             <label for="image" class="ml-2">{{ $t('image') }}</label>
           </div>
-          <div class="flex items-center" v-if="mygroup.publish_type == 1">
+          <div class="flex items-center" v-if="mygroup.content_type == 1">
             <input class="border-2 border-gray-300 p-2 rounded col-span-1 input-md" v-model="mygroup.image_count"
               :placeholder="$t('imageCount')" type="number" />
           </div>
@@ -161,7 +161,7 @@
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('captions') }}:</label>
         <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
-          :placeholder="$t('titlesTips')" autocomplete="off" v-model="mygroup.title"> </textarea>
+          :placeholder="$t('titlesTips')" autocomplete="off" v-model="mygroup.captions"> </textarea>
       </div>
       <!-- 添加提示信息 -->
       <div role="alert" class="alert">
@@ -277,8 +277,8 @@ export default {
     'mygroup.auto_publish': function (val) {
       this.mygroup.auto_publish = Number(val)
     },
-    'mygroup.publish_type': function (val) {
-      this.mygroup.publish_type = Number(val)
+    'mygroup.content_type': function (val) {
+      this.mygroup.content_type = Number(val)
     },
     'mygroup.add_sound': function (val) {
       this.mygroup.add_sound = Number(val)
@@ -455,7 +455,7 @@ export default {
           publish_start_time: this.mygroup.publish_start_time,
           post_way: this.mygroup.post_way,
           sound_name: this.mygroup.sound_name,
-          publish_type: this.mygroup.publish_type,
+          content_type: this.mygroup.content_type,
           image_count: this.mygroup.image_count,
           add_sound: this.mygroup.add_sound,
           sound_wait_time: this.mygroup.sound_wait_time,
@@ -463,7 +463,7 @@ export default {
           origin_sound_volume: this.mygroup.origin_sound_volume,
           add_sound_volume: this.mygroup.add_sound_volume,
           add_product_link: this.mygroup.add_product_link,
-          title: this.mygroup.title || '',
+          captions: this.mygroup.captions || '', // 改为 captions
           material_source: this.mygroup.material_source,
           material_path: this.mygroup.material_path || '',
           materials_tags: this.mygroup.materials_tags || '',
@@ -525,8 +525,11 @@ export default {
         if (config.sound_name !== undefined) {
           this.mygroup.sound_name = config.sound_name;
         }
-        if (config.publish_type !== undefined) {
-          this.mygroup.publish_type = config.publish_type;
+        if (config.content_type !== undefined) {
+          this.mygroup.content_type = config.content_type;
+        } else if (config.content_type !== undefined) {
+          // 向后兼容旧的字段名
+          this.mygroup.content_type = config.content_type;
         }
         if (config.image_count !== undefined) {
           this.mygroup.image_count = config.image_count;
@@ -549,8 +552,11 @@ export default {
         if (config.add_product_link !== undefined) {
           this.mygroup.add_product_link = config.add_product_link;
         }
-        if (config.title !== undefined) {
-          this.mygroup.title = config.title;
+        if (config.captions !== undefined) {
+          this.mygroup.captions = config.captions;
+        } else if (config.captions !== undefined) {
+          // 向后兼容旧的字段名
+          this.mygroup.captions = config.captions;
         }
         if (config.material_source !== undefined) {
           this.mygroup.material_source = config.material_source;
