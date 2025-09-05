@@ -162,7 +162,7 @@
   </div>
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
     :z="20" drag-handle=".drag"
-    class="bg-base-100 fixed top-16 right-16 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
+    class="bg-base-100 fixed top-32 right-32 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
     <Miniremote :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">

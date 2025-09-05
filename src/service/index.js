@@ -163,6 +163,30 @@ export function delete_group({ id }) {
     params: { id }
   })
 }
+
+export function create_group_config_file({ group_id, script_name }) {
+  return request({
+    method: 'post',
+    url: api.create_group_config_file,
+    data: { group_id, script_name }
+  })
+}
+
+export function get_group_config_file({ group_id, script_name }) {
+  return request({
+    method: 'get',
+    url: api.get_group_config_file,
+    params: { group_id, script_name }
+  })
+}
+
+export function save_group_config_file({ group_id, script_name, settings }) {
+  return request({
+    method: 'put',
+    url: api.save_group_config_file,
+    data: { group_id, script_name, settings }
+  })
+}
 export function get_musics() {
   return request({
     method: 'get',

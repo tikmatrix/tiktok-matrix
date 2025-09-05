@@ -37,12 +37,16 @@
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('comments') }}: </span>
     <textarea class="textarea textarea-success w-lg h-32 leading-tight" :placeholder="$t('commentContentTips')"
-      autocomplete="off" v-model="comment_content"> </textarea>
+      autocomplete="off" v-model="comment_contents"> </textarea>
     <div class="flex flex-col gap-2">
       <div class="flex flex-row items-center gap-2">
         <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
         <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji"
           title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
+      </div>
+      <div class="flex flex-row items-center gap-2">
+        <label class="font-bold text-right col-span-1">{{ $t('insertDeviceNumber') }}:</label>
+        <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_device_number" />
       </div>
       <div class="flex flex-row items-center gap-2">
         <label class="font-bold">{{ $t('commentOrder') }}:</label>
@@ -87,17 +91,18 @@ const massCommentMixin = massCommentSettings.createVueMixin(
     settings: 'custom',
     startOption: 'now',
     scheduledTime: '09:00',
-    target_videos: '',
-    comment_texts: 'Great video!\nLove this content!\nAmazing!',
+    target_post_urls: '',
+    comment_contents: 'Great video!\nLove this content!\nAmazing!',
     comment_delay_min: 2,
     comment_delay_max: 8,
     insert_emoji: false,
+    insert_device_number: false,
     comment_order: 'random'
   },
   [
-    'settings', 'startOption', 'scheduledTime', 'target_videos',
-    'comment_texts', 'comment_delay_min', 'comment_delay_max',
-    'insert_emoji', 'comment_order'
+    'settings', 'startOption', 'scheduledTime', 'target_post_urls',
+    'comment_contents', 'comment_delay_min', 'comment_delay_max',
+    'insert_emoji', 'insert_device_number', 'comment_order'
   ]
 );
 
@@ -110,11 +115,7 @@ export default {
   data() {
     return {
       comment_mode: 'multi-to-single',
-      comment_content: '',
-      insert_emoji: false,
-      target_post_urls: '',
-      comment_order: 'random',
-      comment_interval: [0, 10]
+      comment_interval: [0, 0]
     }
   },
   methods: {
@@ -145,10 +146,6 @@ export default {
 
       if (this.comment_mode === 'single-to-single') {
         await this.$emiter('massComment', {
-          comment_content: this.comment_content,
-          insert_emoji: this.insert_emoji,
-          target_post_urls: this.target_post_urls,
-          comment_order: this.comment_order,
           min_interval: Number(this.comment_interval[0]),
           max_interval: Number(this.comment_interval[1]),
           enable_multi_account: enable_multi_account
@@ -156,10 +153,7 @@ export default {
       } else {
         await this.$emiter('run_now_by_account', {
           name: 'comment', args: {
-            comment_contents: this.comment_content,
-            insert_emoji: this.insert_emoji,
             target_post_urls: this.target_post_urls,
-            comment_order: this.comment_order,
             min_interval: Number(this.comment_interval[0]),
             max_interval: Number(this.comment_interval[1]),
             enable_multi_account: enable_multi_account

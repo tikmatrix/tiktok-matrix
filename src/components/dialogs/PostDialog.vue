@@ -54,11 +54,25 @@
             <div class="flex items-center">
               <input type="radio" id="useSound" value="useSound" v-model="post_way" class="form-radio text-primary">
               <label for="useSound" class="ml-2">{{ $t('useSound') }}</label>
-              <input type="text" v-model="sound_name" :placeholder="$t('soundNamePlaceholder')"
-                class="border-2 border-gray-300 p-2 rounded" />
             </div>
           </div>
+        </div>
 
+        <!-- 当选择使用声音时显示输入框，输入框和提示放在同一行 -->
+        <div v-if="post_way === 'useSound'" class="flex w-full items-center gap-2 mb-2 mt-2">
+          <label class="font-bold w-40">{{ $t('soundName') }}:</label>
+          <div class="flex-1 flex items-center gap-2">
+            <input type="text" v-model="sound_name" :placeholder="$t('soundNameOrUrlPlaceholder')"
+              class="border-2 border-gray-300 p-2 rounded flex-1 min-w-[300px]" />
+            <div role="alert" class="alert flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                class="stroke-info shrink-0 w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>{{ $t('soundInputTips') }}</span>
+            </div>
+          </div>
         </div>
         <div class="flex w-full items-center gap-2 mb-2">
           <label class="font-bold w-40">{{ $t('contentType') }}:</label>
@@ -108,6 +122,27 @@
     <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
     <VueSlider class="ml-8" v-model="sound_wait_time" :width="500" :min="5" :max="30" :step="1"
       :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
+          <div role="alert" class="alert ml-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              class="stroke-info shrink-0 w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ $t('loadingTimeTips') }}</span>
+          </div>
+        </div>
+        <div class="flex w-full items-center gap-2 mb-4">
+          <label class="font-bold w-40">{{ $t('uploadWaitTime') }}:</label>
+          <VueSlider class="ml-8" v-model="upload_wait_time" :width="500" :min="5" :max="60" :step="5"
+            :marks="{ 5: '5' + $t('second'), 15: '15' + $t('second'), 30: '30' + $t('second'), 45: '45' + $t('second'), 60: '60' + $t('second') }" />
+          <div role="alert" class="alert ml-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              class="stroke-info shrink-0 w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ $t('uploadWaitTimeTips') }}</span>
+          </div>
   </div>
   <div class="flex w-full items-center gap-2 mb-4" v-if="add_sound == 1">
     <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
@@ -270,6 +305,7 @@ const postMixin = postSettings.createVueMixin(
     image_count: 1,
     add_sound: '-1',
     sound_wait_time: 10,
+    upload_wait_time: 10,
     origin_sound_volume: 100,
     add_sound_volume: 100,
     add_product_link: 0,
@@ -286,7 +322,7 @@ const postMixin = postSettings.createVueMixin(
     'comment_on_own_post_delay_min', 'comment_on_own_post_delay_max',
     'own_post_comment', 'own_post_comment_emoji', 'generate_by_chatgpt',
     'chatgpt_settings', 'sound_name', 'content_type', 'image_count',
-    'add_sound', 'sound_wait_time', 'origin_sound_volume', 'add_sound_volume',
+    'add_sound', 'sound_wait_time', 'upload_wait_time', 'origin_sound_volume', 'add_sound_volume',
     'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path'
   ]
 );
@@ -383,7 +419,7 @@ export default {
       if (this.post_way === 'useSound' && !this.sound_name) {
         await this.$emiter('NOTIFY', {
           type: 'error',
-          message: this.$t('soundNameRequired'),
+          message: this.$t('soundInputRequired'),
           timeout: 2000
         });
         return;
@@ -401,21 +437,7 @@ export default {
 
       await this.$emiter('run_now_by_account', {
         name: 'post', args: {
-          settings: this.settings,
-          post_way: this.post_way,
-          sound_name: this.sound_name,
           start_time: this.startOption === 'scheduled' ? this.scheduledTime : '',
-          content_type: Number(this.content_type),
-          image_count: Number(this.image_count),
-          add_sound: Number(this.add_sound),
-          sound_wait_time: Number(this.sound_wait_time),
-          origin_sound_volume: Number(this.origin_sound_volume),
-          add_sound_volume: Number(this.add_sound_volume),
-          add_product_link: Number(this.add_product_link),
-          captions: this.captions,
-          materials_tags: this.convertTagsToIds(this.selectedTags),
-          material_source: this.material_source,
-          material_path: this.material_path,
           enable_multi_account: enable_multi_account
         }
       })

@@ -76,10 +76,7 @@ export default {
         this.send_profile_card = '@' + this.send_profile_card
       }
       await this.$emiter('massDM', {
-        message_content: this.message_content,
-        insert_emoji: this.insert_emoji,
         target_username_path: this.target_username_path,
-        send_profile_card: this.send_profile_card,
         enable_multi_account: enable_multi_account
       })
     },

@@ -224,7 +224,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-xs btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                    }}</button>
+                                }}</button>
                                 <span :class="testResultStyle" class="text-xs">{{ testResult }}</span>
                             </div>
                         </div>
@@ -314,8 +314,7 @@ export default {
                 'commentSettings'
             ]
         )
-    ],
-    data() {
+    ], data() {
         return {
             // 统一的目标用户名文件路径
             targetUsernamesPath: '',
@@ -368,21 +367,90 @@ export default {
                 }
             }
         }
-    },
+    }, async mounted() {
+        let needsReset = false;
 
-    mounted() {
-        // 确保 commentSettings.chatgpt_settings 对象存在
-        if (!this.commentSettings.chatgpt_settings) {
-            this.$set(this.commentSettings, 'chatgpt_settings', {
-                url: 'https://api.openai.com/v1/chat/completions',
-                api_key: '',
-                model: 'gpt-3.5-turbo',
-                system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
-            });
+        // 检查 postSettings 是否为有效对象
+        if (typeof this.postSettings === 'string' || !this.postSettings) {
+            console.error(`postSettings 异常: ${typeof this.postSettings}`, this.postSettings);
+            needsReset = true;
         }
-    },
 
-    methods: {
+        // 检查 commentSettings 是否为有效对象
+        if (typeof this.commentSettings === 'string' || !this.commentSettings) {
+            console.error(`commentSettings 异常: ${typeof this.commentSettings}`, this.commentSettings);
+            needsReset = true;
+        } else {
+            // 确保 commentSettings.chatgpt_settings 对象存在
+            if (!this.commentSettings.chatgpt_settings) {
+                this.$set(this.commentSettings, 'chatgpt_settings', {
+                    url: 'https://api.openai.com/v1/chat/completions',
+                    api_key: '',
+                    model: 'gpt-3.5-turbo',
+                    system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
+                });
+            }
+        }
+
+        // 如果发现问题，尝试重置设置文件并重新加载
+        if (needsReset) {
+            console.warn('检测到设置异常，尝试修复...');
+            await this.resetSettingsFile();
+            console.log('设置已重置并重新加载');
+        }
+    }, methods: {
+        // 重置设置文件
+        async resetSettingsFile() {
+            try {
+                // 使用默认设置重置
+                const defaultSettings = {
+                    targetUsernamesPath: '',
+                    accessMethod: 'search',
+                    features: {
+                        followUsers: false,
+                        sendDM: false,
+                        boostPosts: false,
+                        massComment: false
+                    },
+                    followSettings: {
+                        boost_type: 'follow'
+                    },
+                    dmSettings: {
+                        message_content: '',
+                        insert_emoji: false
+                    },
+                    postSettings: {
+                        max_posts_count: 1,
+                        enable_like: false,
+                        enable_favorite: false,
+                        enable_share: false,
+                        view_duration: 10
+                    },
+                    commentSettings: {
+                        comment_content: '',
+                        insert_emoji: false,
+                        comment_order: 'random',
+                        generate_by_chatgpt: false,
+                        chatgpt_settings: {
+                            url: 'https://api.openai.com/v1/chat/completions',
+                            api_key: '',
+                            model: 'gpt-3.5-turbo',
+                            system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
+                        }
+                    }
+                };
+
+                await superBoostSettings.resetSettings(defaultSettings);
+                console.log('设置文件已重置');
+                // 重新加载设置
+                await this.loadComponentSettings();
+                return true;
+            } catch (error) {
+                console.error('重置设置文件失败:', error);
+                return false;
+            }
+        },
+
         // 选择用户名文件
         async selectUsernameFile() {
             const filePath = await open({
@@ -460,53 +528,11 @@ export default {
                 return;
             }
 
-            // 准备脚本参数
-            const scriptArgs = {
-                // 通用设置
-                target_usernames_path: this.targetUsernamesPath,
-                access_method: this.accessMethod,
-                features: this.features,
-                enable_multi_account: enable_multi_account
-            };
-
-            // 添加各功能的具体配置
-            if (this.features.followUsers) {
-                scriptArgs.follow_settings = {
-                    boost_type: this.followSettings.boost_type
-                };
-            }
-
-            if (this.features.sendDM) {
-                scriptArgs.dm_settings = {
-                    message_content: this.dmSettings.message_content,
-                    insert_emoji: this.dmSettings.insert_emoji
-                };
-            }
-
-            if (this.features.boostPosts) {
-                scriptArgs.post_settings = {
-                    max_posts_count: this.postSettings.max_posts_count,
-                    enable_like: this.postSettings.enable_like,
-                    enable_favorite: this.postSettings.enable_favorite,
-                    view_duration: this.postSettings.view_duration
-                };
-            }
-
-            if (this.features.massComment) {
-                scriptArgs.comment_settings = {
-                    comment_content: this.commentSettings.comment_content,
-                    insert_emoji: this.commentSettings.insert_emoji,
-                    comment_order: this.commentSettings.comment_order,
-                    max_posts_count: this.postSettings.max_posts_count, // 使用相同的帖子数量设置
-                    generate_by_chatgpt: this.commentSettings.generate_by_chatgpt,
-                    chatgpt_settings: this.commentSettings.generate_by_chatgpt ? JSON.stringify(this.commentSettings.chatgpt_settings) : ''
-                };
-            }
 
             // 发送到后端执行
             await this.$emiter('run_now_by_account', {
                 name: 'super_boost',
-                args: scriptArgs
+                args: { enable_multi_account }
             });
         }
     }

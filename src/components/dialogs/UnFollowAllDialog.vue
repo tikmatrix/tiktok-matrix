@@ -36,11 +36,11 @@ export default {
     }
   },
   methods: {
-
     async runScript(enable_multi_account) {
       await this.$emiter('run_now_by_account', {
         name: 'unFollowAll',
         args: {
+          enable_multi_account
         }
       })
     },

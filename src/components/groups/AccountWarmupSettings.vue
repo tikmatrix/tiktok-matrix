@@ -285,19 +285,138 @@ export default {
         return
       }
       this.mygroup.chatgpt_settings = JSON.stringify(this.chatgpt_settings)
-      this.updateGroup(this.mygroup)
+
+      // 直接保存到配置文件而不是更新数据库
+      await this.saveGroupConfigFile()
+
+      // 保存成功后关闭对话框
+      await this.$emiter('closeDialog', {})
+      await this.$emiter('reload_group', {})
     },
-    async updateGroup(group) {
-      this.$service
-        .update_group(group)
-        .then(async () => {
-          await this.$emiter('closeDialog', {})
-          await this.$emiter('reload_group', {})
-        })
+
+    // 保存当前设置到group配置文件
+    async saveGroupConfigFile() {
+      try {
+        console.log('Saving group config file for group:', this.mygroup.id);
+
+        // 构建要保存的配置
+        const config = {
+          auto_train: this.mygroup.auto_train,
+          train_start_time: this.mygroup.train_start_time,
+          task_duration: this.mygroup.train_duration,
+          floow_probable: this.mygroup.floow_probable,
+          like_probable: this.mygroup.like_probable,
+          collect_probable: this.mygroup.collect_probable,
+          comment_probable: this.mygroup.comment_probable,
+          topic: this.mygroup.topic || '',
+          comment: this.mygroup.comment || '',
+          min_duration: this.mygroup.min_duration,
+          max_duration: this.mygroup.max_duration,
+          insert_emoji: this.mygroup.insert_emoji,
+          comment_order: this.mygroup.comment_order || 'random',
+          generate_by_chatgpt: this.mygroup.generate_by_chatgpt,
+          chatgpt_settings: JSON.stringify(this.chatgpt_settings),
+          settings: 'group_file'
+        };
+
+        const response = await this.$service.save_group_config_file({
+          group_id: this.mygroup.id,
+          script_name: 'account_warmup',
+          settings: config
+        });
+
+        if (response.code === 0) {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('configFileSaved') || 'Configuration saved successfully',
+            timeout: 2000
+          });
+        } else {
+          await this.$emiter('NOTIFY', {
+            type: 'error',
+            message: this.$t('saveConfigError') || 'Failed to save configuration file',
+            timeout: 2000
+          });
+        }
+      } catch (error) {
+        console.error('Error saving group config file:', error);
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('saveConfigError') || 'Failed to save configuration file',
+          timeout: 2000
+        });
+      }
     },
   },
   async mounted() {
-    this.mygroup = this.group
+    this.mygroup = { ...this.group }
+
+    // 尝试从配置文件加载设置，如果存在则使用配置文件的设置
+    try {
+      const response = await this.$service.get_group_config_file({
+        group_id: this.mygroup.id,
+        script_name: 'account_warmup'
+      });
+
+      if (response.code === 0 && response.data) {
+        // 如果存在配置文件，则使用配置文件的设置覆盖数据库设置
+        const config = response.data;
+
+        // 更新账号预热相关配置
+        if (config.auto_train !== undefined) {
+          this.mygroup.auto_train = config.auto_train;
+        }
+        if (config.train_start_time !== undefined) {
+          this.mygroup.train_start_time = config.train_start_time;
+        }
+        if (config.task_duration !== undefined) {
+          this.mygroup.train_duration = config.task_duration;
+        }
+        if (config.floow_probable !== undefined) {
+          this.mygroup.floow_probable = config.floow_probable;
+        }
+        if (config.like_probable !== undefined) {
+          this.mygroup.like_probable = config.like_probable;
+        }
+        if (config.collect_probable !== undefined) {
+          this.mygroup.collect_probable = config.collect_probable;
+        }
+        if (config.comment_probable !== undefined) {
+          this.mygroup.comment_probable = config.comment_probable;
+        }
+        if (config.topic !== undefined) {
+          this.mygroup.topic = config.topic;
+        }
+        if (config.comment !== undefined) {
+          this.mygroup.comment = config.comment;
+        }
+        if (config.min_duration !== undefined) {
+          this.mygroup.min_duration = config.min_duration;
+        }
+        if (config.max_duration !== undefined) {
+          this.mygroup.max_duration = config.max_duration;
+        }
+        if (config.insert_emoji !== undefined) {
+          this.mygroup.insert_emoji = config.insert_emoji;
+        }
+        if (config.comment_order !== undefined) {
+          this.mygroup.comment_order = config.comment_order;
+        }
+        if (config.generate_by_chatgpt !== undefined) {
+          this.mygroup.generate_by_chatgpt = config.generate_by_chatgpt;
+        }
+        if (config.chatgpt_settings !== undefined) {
+          this.mygroup.chatgpt_settings = config.chatgpt_settings;
+        }
+
+        console.log('Loaded settings from config file for account warmup');
+      } else {
+        console.log('No config file found, using database settings for account warmup');
+      }
+    } catch (error) {
+      console.log('Failed to load config file, using database settings for account warmup:', error);
+    }
+
     if (!this.mygroup.chatgpt_settings) {
       this.chatgpt_settings = {
         url: 'https://api.openai.com/v1/chat/completions',

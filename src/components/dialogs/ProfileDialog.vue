@@ -91,11 +91,6 @@ export default {
     async runScript(enable_multi_account) {
       await this.$emiter('run_now_by_account', {
         name: 'profile', args: {
-          profile_order: this.profile_order,
-          nicknames: this.nicknames,
-          usernames: this.usernames,
-          bios: this.bios,
-          avatars_path: this.avatars_path,
           enable_multi_account: enable_multi_account
         }
       })
