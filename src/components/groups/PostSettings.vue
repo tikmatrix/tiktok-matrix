@@ -456,7 +456,7 @@ export default {
           publish_start_time: this.mygroup.publish_start_time,
           post_way: this.mygroup.post_way,
           sound_name: this.mygroup.sound_name,
-          publish_type: this.mygroup.publish_type,
+          content_type: this.mygroup.publish_type,
           image_count: this.mygroup.image_count,
           add_sound: this.mygroup.add_sound,
           sound_wait_time: this.mygroup.sound_wait_time,
@@ -526,7 +526,10 @@ export default {
         if (config.sound_name !== undefined) {
           this.mygroup.sound_name = config.sound_name;
         }
-        if (config.publish_type !== undefined) {
+        if (config.content_type !== undefined) {
+          this.mygroup.publish_type = config.content_type;
+        } else if (config.publish_type !== undefined) {
+          // 向后兼容旧的字段名
           this.mygroup.publish_type = config.publish_type;
         }
         if (config.image_count !== undefined) {
