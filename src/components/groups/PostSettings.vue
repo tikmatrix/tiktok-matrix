@@ -527,9 +527,9 @@ export default {
         }
         if (config.content_type !== undefined) {
           this.mygroup.content_type = config.content_type;
-        } else if (config.content_type !== undefined) {
+        } else if (config.publish_type !== undefined) {
           // 向后兼容旧的字段名
-          this.mygroup.content_type = config.content_type;
+          this.mygroup.content_type = config.publish_type;
         }
         if (config.image_count !== undefined) {
           this.mygroup.image_count = config.image_count;
@@ -554,9 +554,9 @@ export default {
         }
         if (config.captions !== undefined) {
           this.mygroup.captions = config.captions;
-        } else if (config.captions !== undefined) {
+        } else if (config.title !== undefined) {
           // 向后兼容旧的字段名
-          this.mygroup.captions = config.captions;
+          this.mygroup.captions = config.title;
         }
         if (config.material_source !== undefined) {
           this.mygroup.material_source = config.material_source;
