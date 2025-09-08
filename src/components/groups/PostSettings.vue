@@ -500,6 +500,14 @@ export default {
   },
   async mounted() {
     this.mygroup = { ...this.group }
+    if (this.mygroup.publish_type !== undefined) {
+      // 向后兼容旧的字段名
+      this.mygroup.content_type = this.mygroup.publish_type;
+    }
+    if (this.mygroup.title !== undefined) {
+      // 向后兼容旧的字段名
+      this.mygroup.captions = this.mygroup.title;
+    }
 
     // 尝试从配置文件加载设置，如果存在则使用配置文件的设置
     try {
