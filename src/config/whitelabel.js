@@ -8,7 +8,7 @@ import defaultIcon from '../assets/app-icon.png';
 
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
-    appName: 'TikMatrix',
+    appName: 'TikZenX',
 
     // Logo配置
     logo: {
@@ -19,9 +19,9 @@ export const DEFAULT_WHITELABEL_CONFIG = {
 
     // 品牌配置
     branding: {
-        supportEmail: 'support@tikmatrix.com',
-        tutorialUrl: 'https://tikmatrix.com/docs/intro',
-        rewardsUrl: 'https://tikmatrix.com/rewards',
+        supportEmail: 'support@tikzenx.com',
+        tutorialUrl: 'https://tikzenx.com/docs/intro',
+        rewardsUrl: 'https://tikzenx.com/rewards',
         telegramUrl: 'https://t.me/tikmatrix',
     },
 

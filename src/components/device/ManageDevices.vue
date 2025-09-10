@@ -116,9 +116,9 @@
           {{ $t('telegramSupport') }}
         </a>
         <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-          @click="copyText('support@tikmatrix.com', $event)" target="_blank">
+          @click="copyText('support@tikzenx.com', $event)" target="_blank">
           <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
-          support@tikmatrix.com
+          support@tikzenx.com
         </a>
       </div>
     </div>
@@ -154,7 +154,7 @@
       </div>
       <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
       <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-        href="https://tikmatrix.com/docs/troubleshooting/unable-detect-phone" target="_blank">
+        href="https://tikzenx.com/docs/troubleshooting/unable-detect-phone" target="_blank">
         <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5" />
         {{ $t('unableDetectPhoneTip') }}
       </a>

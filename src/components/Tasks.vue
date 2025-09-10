@@ -40,7 +40,7 @@
             </label>
         </fieldset>
         <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-            href="https://tikmatrix.com/docs/troubleshooting/task_failed" target="_blank">
+            href="https://tikzenx.com/docs/troubleshooting/task_failed" target="_blank">
             <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5" />
             {{ $t('taskFailedTip') }}
         </a>

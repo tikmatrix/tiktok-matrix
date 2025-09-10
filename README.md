@@ -1,9 +1,9 @@
-# TikMatrix
+# TikZenX
 
-📱 TikMatrix- is a PC desktop software for automating TikTok on Android phones.
+📱 TikZenX- is a PC desktop software for automating TikTok on Android phones.
 
-Download: <https://tikmatrix.com/Download/>
-Tutorial: <https://tikmatrix.com/docs/intro>
+Download: <https://tikzenx.com/Download/>
+Tutorial: <https://tikzenx.com/docs/intro>
 
 💪Features:
 
@@ -23,7 +23,7 @@ Tutorial: <https://tikmatrix.com/docs/intro>
 - Minute-level task scheduling: Automate tasks with minute-level precision.
 - Import/export accounts.
 - Custom functionality: Add any feature on request.
-- Multilingual support: TikMatrix supports EN/RU/CN.
+- Multilingual support: TikZenX supports EN/RU/CN.
 Note: The TikTok app on the phone must be in English for all features to work properly.
 
 ⚙️Requirements:
@@ -41,14 +41,14 @@ Note: The TikTok app on the phone must be in English for all features to work pr
 - Payment methods: Card/Credit Card/USDT (TRC20/BEP20).💳💳🪙
 
 🔧Common troubleshooting and solutions
-<https://tikmatrix.com/docs/category/troubleshooting>
+<https://tikzenx.com/docs/category/troubleshooting>
 
 DM <https://t.me/tikmatrixcom>
 Chat Group <https://t.me/tikmatrix_support>
 
 ## Quick start
 
-[Official website](https://www.tikmatrix.com)
+[Official website](https://www.tikzenx.com)
 
 [Video Tutorial](https://www.youtube.com/@tikmatrix)
 
@@ -73,7 +73,7 @@ npm run tauri dev
 
 ## FAQ
 
-### How to run TikMatrix Agent on phone by adb?
+### How to run TikZenX Agent on phone by adb?
 
 You can check the reason why the agent is not running by the following command.
 
@@ -84,13 +84,13 @@ adb devices
 adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.tikmatrix.stub.Stub com.github.tikmatrix.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-### How to customize TikMatrix Brand?
+### How to customize TikZenX Brand?
 
 - src/src-tauri/tauri.conf.json
 
 ```shell
 "package": {
-    "productName": "TikMatrix",
+    "productName": "TikZenX",
     "version": "1.8.1"
   }
 ```
@@ -98,24 +98,24 @@ adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.
 - src/i18n.js
 
 ```shell
- siteName: 'TikMatrix',
- siteUrl: 'https://www.tikmatrix.com',
+ siteName: 'TikZenX',
+ siteUrl: 'https://www.tikzenx.com',
 ```
 
 ### How to fix vcruntime140_1.dll not found?
 
 Need to install Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019.
-<https://tikmatrix.com/blog/how-to-fix-vcruntime140.dll-not-found-when-open-TikMatrix>
+<https://tikzenx.com/blog/how-to-fix-vcruntime140.dll-not-found-when-open-TikZenX>
 
 ### How to fix The application was unable to start correctly (0xc000007b)?
 
 Need to install Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019.
-<https://tikmatrix.com/blog/how-to-fix-vcruntime140.dll-not-found-when-open-TikMatrix>
+<https://tikzenx.com/blog/how-to-fix-vcruntime140.dll-not-found-when-open-TikZenX>
 
-### Fix unable to start TikMatrix on Mac
+### Fix unable to start TikZenX on Mac
 
 ```shell
-xattr -cr /Applications/TikMatrix.app
+xattr -cr /Applications/TikZenX.app
 ```
 
 ## Star History

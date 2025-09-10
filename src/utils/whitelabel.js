@@ -9,7 +9,7 @@ import { getWhiteLabelConfig } from '../config/whitelabel.js';
  * 更新文档标题
  */
 export function updateDocumentTitle(appName) {
-    document.title = appName || 'TikMatrix';
+    document.title = appName || 'TikZenX';
 }
 
 /**

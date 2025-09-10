@@ -23,19 +23,19 @@ function question(prompt) {
 }
 
 async function promptForConfig() {
-    console.log('🎨 TikMatrix 白标配置工具\n');
+    console.log('🎨 TikZenX 白标配置工具\n');
 
     const config = {
-        appName: await question('应用名称 (默认: TikMatrix): ') || 'TikMatrix',
+        appName: await question('应用名称 (默认: TikZenX): ') || 'TikZenX',
         logo: {
             main: await question('主要Logo路径 (默认: /src/assets/app-icon.png): ') || '/src/assets/app-icon.png',
             favicon: await question('Favicon路径 (默认: /public/favicon.ico): ') || '/public/favicon.ico',
             titleBar: await question('标题栏Logo路径 (默认: /src/assets/app-icon.png): ') || '/src/assets/app-icon.png',
         },
         branding: {
-            supportEmail: await question('支持邮箱 (默认: support@tikmatrix.com): ') || 'support@tikmatrix.com',
-            tutorialUrl: await question('教程地址 (默认: https://tikmatrix.com/docs/intro): ') || 'https://tikmatrix.com/docs/intro',
-            rewardsUrl: await question('奖励页面地址 (默认: https://tikmatrix.com/rewards): ') || 'https://tikmatrix.com/rewards',
+            supportEmail: await question('支持邮箱 (默认: support@tikzenx.com): ') || 'support@tikzenx.com',
+            tutorialUrl: await question('教程地址 (默认: https://tikzenx.com/docs/intro): ') || 'https://tikzenx.com/docs/intro',
+            rewardsUrl: await question('奖励页面地址 (默认: https://tikzenx.com/rewards): ') || 'https://tikzenx.com/rewards',
             telegramUrl: await question('Telegram地址 (默认: https://t.me/tikmatrix): ') || 'https://t.me/tikmatrix',
         },
         features: {
@@ -78,7 +78,7 @@ async function updatePackageJson(config) {
 
 async function main() {
     try {
-        console.log('欢迎使用TikMatrix白标配置工具！\n');
+        console.log('欢迎使用TikZenX白标配置工具！\n');
 
         const action = await question('请选择操作:\n1. 创建新的白标配置\n2. 从文件导入配置\n3. 查看当前配置\n请输入选项 (1-3): ');
 

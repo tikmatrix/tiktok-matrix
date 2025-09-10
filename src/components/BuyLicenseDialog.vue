@@ -25,9 +25,9 @@
                 {{ $t('telegramSupport') }}
               </a>
               <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-                @click="copyText('support@tikmatrix.com', $event)" target="_blank">
+                @click="copyText('support@tikzenx.com', $event)" target="_blank">
                 <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
-                support@tikmatrix.com
+                support@tikzenx.com
               </a>
             </div>
             <!-- 显示管理Stripe订阅按钮 -->
@@ -335,11 +335,11 @@
             <input type="checkbox" id="agreePolicy" v-model="agreePolicy" class="checkbox checkbox-primary" />
             <label for="agreePolicy" class="cursor-pointer select-none">
               {{ $t('iAgreeWith') }}
-              <a href="https://tikmatrix.com/privacy-policy" target="_blank" class="link link-primary mx-1">
+              <a href="https://tikzenx.com/privacy-policy" target="_blank" class="link link-primary mx-1">
                 {{ $t('privacyPolicy') }}
               </a>
               {{ $t('and') }}
-              <a href="https://tikmatrix.com/terms-of-service" target="_blank" class="link link-primary mx-1">
+              <a href="https://tikzenx.com/terms-of-service" target="_blank" class="link link-primary mx-1">
                 {{ $t('termsOfService') }}
               </a>
             </label>

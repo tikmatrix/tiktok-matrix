@@ -3,7 +3,7 @@ const configPath = "src-tauri/tauri.conf.json"
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
 
 //update windows download url
-let body = `https://r2.tikmatrix.com/TikMatrix_${config.package.version}_x64_en-US.msi`
+let body = `https://r2.tikmatrix.com/TikZenX_${config.package.version}_x64_en-US.msi`
 //put https://api.tikmatrix.com/download
 let response = await fetch('https://api.tikmatrix.com/ci/update_download_url', {
     method: 'PUT',
@@ -12,7 +12,7 @@ let response = await fetch('https://api.tikmatrix.com/ci/update_download_url', {
         'Content-Length': body.length,
         'Authorization': 'Bearer ' + process.env.API_KEY,
         'X-Platform': 'windows',
-        'X-App': 'tikmatrix'
+        'X-App': 'tikzenx'
     },
     body: body
 })

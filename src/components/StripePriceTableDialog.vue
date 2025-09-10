@@ -14,16 +14,16 @@
                 {{ $t('copy') }}
               </button>
 
-              <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
+              <!-- <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
                 target="_blank">
                 <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
                 {{ $t('telegramSupport') }}
               </a>
               <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-                @click="copyText('support@tikmatrix.com', $event)" target="_blank">
+                @click="copyText('support@tikzenx.com', $event)" target="_blank">
                 <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
-                support@tikmatrix.com
-              </a>
+                support@tikzenx.com
+              </a> -->
             </div>
             <!-- 显示管理Stripe订阅按钮 -->
             <div class="flex items-center flex-row gap-2 w-full" v-if="license.is_stripe_active == 1">
@@ -59,7 +59,7 @@
 
             </div>
           </div>
-          <div class="flex items-center flex-col w-full rounded-lg p-4" v-if="order && order.status == 0">
+          <!-- <div class="flex items-center flex-col w-full rounded-lg p-4" v-if="order && order.status == 0">
             <div class="flex items-center justify-center flex-row w-full">
               <div class="flex-1"></div>
               <a class="link link-secondary text-md" @click="closeOrder">
@@ -124,15 +124,10 @@
                     </button>
                     <button @click="createStripeCheckoutUrl(plan.price.month.id, 'month')" v-else
                       class="btn btn-wide btn-success ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
-                      <!-- 支付卡图标集合 -->
                       <div class="flex -space-x-4 overflow-hidden">
-                        <!-- 银行卡图标 -->
                         <font-awesome-icon icon="fas fa-credit-card" class="h-10 w-10 text-primary-content" />
-                        <!-- Visa图标 -->
                         <font-awesome-icon icon="fab fa-cc-visa" class="h-10 w-10 text-primary-content" />
-                        <!-- Mastercard图标 -->
                         <font-awesome-icon icon="fab fa-cc-mastercard" class="h-10 w-10 text-primary-content" />
-                        <!-- American Express -->
                         <font-awesome-icon icon="fab fa-cc-amex" class="h-10 w-10 text-primary-content" />
                       </div>
                       {{ $t('subscribe') }}
@@ -140,7 +135,6 @@
                     <button @click="createOrder(plan.price.month.amount, plan.id, 'month', 'TRC20')"
                       v-if="license.is_stripe_active == 0"
                       class="btn btn-wide btn-secondary ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-3.5 py-2.5 text-center text-md font-semibold">
-                      <!-- tron network icon -->
                       <svg class="fill-current text-secondary-content h-6 w-6" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 64 64">
                         <g id="tron">
@@ -153,7 +147,6 @@
                     <button @click="createOrder(plan.price.month.amount, plan.id, 'month', 'BEP20')"
                       v-if="license.is_stripe_active == 0"
                       class="btn btn-wide btn-neutral ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
-                      <!-- bsc network icon -->
 
                       <svg class="fill-current text-secondary-content h-6 w-6" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 336.41 337.42">
@@ -210,15 +203,10 @@
                     </button>
                     <button @click="createStripeCheckoutUrl(plan.price.year.id, 'year')" v-else
                       class="btn btn-wide btn-primary ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
-                      <!-- 支付卡图标集合 -->
                       <div class="flex -space-x-4 overflow-hidden">
-                        <!-- 银行卡图标 -->
                         <font-awesome-icon icon="fas fa-credit-card" class="h-10 w-10 text-primary-content" />
-                        <!-- Visa图标 -->
                         <font-awesome-icon icon="fab fa-cc-visa" class="h-10 w-10 text-primary-content" />
-                        <!-- Mastercard图标 -->
                         <font-awesome-icon icon="fab fa-cc-mastercard" class="h-10 w-10 text-primary-content" />
-                        <!-- American Express -->
                         <font-awesome-icon icon="fab fa-cc-amex" class="h-10 w-10 text-primary-content" />
                       </div>
                       {{ $t('subscribe') }}
@@ -226,7 +214,6 @@
                     <button @click="createOrder(plan.price.year.amount, plan.id, 'year', 'TRC20')"
                       v-if="license.is_stripe_active == 0"
                       class="btn btn-wide btn-secondary ring-1 flex flex-row items-center justify-center cursor-pointer mt-2 rounded-md px-3.5 py-2.5 text-center text-md font-semibold">
-                      <!-- tron network icon -->
                       <svg class="fill-current text-secondary-content h-6 w-6" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 64 64">
                         <g id="tron">
@@ -239,7 +226,6 @@
                     <button @click="createOrder(plan.price.year.amount, plan.id, 'year', 'BEP20')"
                       v-if="license.is_stripe_active == 0"
                       class="btn btn-wide btn-success ring-1 flex flex-row items-center justify-center cursor-pointer mt-2  rounded-md px-1 py-2 text-center text-md font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">
-                      <!-- bsc network icon -->
 
                       <svg class="fill-current text-secondary-content h-6 w-6" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 336.41 337.42">
@@ -262,20 +248,20 @@
             </div>
 
           </div>
-          <!-- 新增：隐私协议和服务条款链接 -->
           <div class="flex justify-center items-center gap-2 mt-4">
             <input type="checkbox" id="agreePolicy" v-model="agreePolicy" class="checkbox checkbox-primary" />
             <label for="agreePolicy" class="cursor-pointer select-none">
               {{ $t('iAgreeWith') }}
-              <a href="https://tikmatrix.com/privacy-policy" target="_blank" class="link link-primary mx-1">
+              <a href="https://tikzenx.com/privacy-policy" target="_blank" class="link link-primary mx-1">
                 {{ $t('privacyPolicy') }}
               </a>
               {{ $t('and') }}
-              <a href="https://tikmatrix.com/terms-of-service" target="_blank" class="link link-primary mx-1">
+              <a href="https://tikzenx.com/terms-of-service" target="_blank" class="link link-primary mx-1">
                 {{ $t('termsOfService') }}
               </a>
             </label>
           </div>
+          -->
         </div>
 
 

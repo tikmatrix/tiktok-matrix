@@ -160,9 +160,9 @@ export default {
             }
             if (!this.localConfig.branding) {
                 this.localConfig.branding = {
-                    supportEmail: 'support@tikmatrix.com',
-                    tutorialUrl: 'https://tikmatrix.com/docs/intro',
-                    rewardsUrl: 'https://tikmatrix.com/rewards',
+                    supportEmail: 'support@tikzenx.com',
+                    tutorialUrl: 'https://tikzenx.com/docs/intro',
+                    rewardsUrl: 'https://tikzenx.com/rewards',
                     telegramUrl: 'https://t.me/tikmatrix',
                 };
             }

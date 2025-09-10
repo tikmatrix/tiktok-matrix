@@ -277,15 +277,15 @@ export default {
     }))
     // 动态插入 AnythingLLM 聊天小部件
     const script = document.createElement('script');
-    script.src = 'https://llm.tikmatrix.com/embed/anythingllm-chat-widget.min.js';
+    script.src = 'https://llm.tikzenx.com/embed/anythingllm-chat-widget.min.js';
     script.async = true;
     script.setAttribute('data-embed-id', 'b69ccd65-9f2b-4d8c-9c6e-66f523abc798');
-    script.setAttribute('data-base-api-url', 'https://llm.tikmatrix.com/api/embed');
+    script.setAttribute('data-base-api-url', 'https://llm.tikzenx.com/api/embed');
     script.setAttribute('data-chat-icon', 'support');
-    script.setAttribute('data-brand-image-url', 'https://r2.tikmatrix.com/icon.png');
-    script.setAttribute('data-assistant-icon', 'https://r2.tikmatrix.com/icon.png');
+    script.setAttribute('data-brand-image-url', 'https://r2.tikzenx.com/icon.png');
+    script.setAttribute('data-assistant-icon', 'https://r2.tikzenx.com/icon.png');
     script.setAttribute('data-no-sponsor', '1');
-    script.setAttribute('data-assistant-name', 'TikMatrix Support');
+    script.setAttribute('data-assistant-name', 'TikZenX Support');
     script.setAttribute('data-button-color', '#007bff');
     script.onload = () => {
       console.log('AnythingLLM chat widget script loaded');
@@ -293,7 +293,7 @@ export default {
     script.onerror = () => {
       console.error('Failed to load AnythingLLM chat widget script');
     };
-    document.body.appendChild(script);
+    // document.body.appendChild(script);
   },
   unmounted() {
     this.listeners.forEach(listener => {

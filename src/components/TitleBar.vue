@@ -4,7 +4,7 @@
         <!-- 左侧：应用图标、名称、版本和检查更新 -->
         <div class="flex items-center space-x-2">
             <img :src="whitelabelConfig.logo?.main || '../assets/app-icon.png'" class="h-10 w-10" alt="App Icon" />
-            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || 'TikMatrix' }}</span>
+            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || 'TikZenX' }}</span>
             <!-- <span class="text-md text-base-content">v{{ version }}</span> -->
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
@@ -648,7 +648,7 @@ export default {
         onWhiteLabelConfigUpdated(config) {
             this.whitelabelConfig = config;
             // 更新页面标题
-            document.title = config.appName || 'TikMatrix';
+            document.title = config.appName || 'TikZenX';
             // 可以触发其他需要更新的组件
             this.$emit('whitelabel-updated', config);
         },
