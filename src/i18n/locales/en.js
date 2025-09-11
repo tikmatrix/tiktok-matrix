@@ -852,4 +852,8 @@ export default {
   postProcessSettings: 'Post Processing Settings',
   maxPostsToProcess: 'Maximum Posts to Process',
   postProcessTip: 'System will automatically click specified number of posts on user profile page in sequence',
+
+  // Keyboard Input
+  keyboardInput: 'Keyboard Control',
+  keyboardInputTip: 'Click on device screen in big mode to focus, then use computer keyboard to input text, punctuation and control the device',
 };
