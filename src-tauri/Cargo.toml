@@ -1,7 +1,7 @@
 [package]
 name = "TikZenX"
 version = "1.0.0"
-description = "TikTok Matrix System by tikmatrix.com"
+description = "TikTok Matrix System by tikzenx.com"
 authors = ["niostack"]
 repository = ""
 edition = "2021"

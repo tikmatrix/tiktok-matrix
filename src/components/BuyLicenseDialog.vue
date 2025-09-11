@@ -18,16 +18,20 @@
               <button @click="copyText(license.mid, $event)" class=" btn btn-md btn-primary  rounded-l-none">
                 {{ $t('copy') }}
               </button>
-
-              <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
+              <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://wa.me/6588387587"
+                target="_blank">
+                <font-awesome-icon icon="fab fa-whatsapp" class="h-5 w-5" />
+                WhatsApp Support
+              </a>
+              <!-- <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
                 target="_blank">
                 <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
                 {{ $t('telegramSupport') }}
-              </a>
+              </a> -->
               <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-                @click="copyText('support@tikzenx.com', $event)" target="_blank">
+                @click="copyText('admin@tikzenx.com', $event)" target="_blank">
                 <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
-                support@tikzenx.com
+                admin@tikzenx.com
               </a>
             </div>
             <!-- 显示管理Stripe订阅按钮 -->

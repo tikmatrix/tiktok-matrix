@@ -16,7 +16,7 @@
         <!-- 教程链接 -->
         <a v-if="whitelabelConfig.features?.showTutorial"
             class="flex items-center space-x-1 text-md text-info ml-2 hover:underline"
-            :href="whitelabelConfig.branding?.tutorialUrl || 'https://tikmatrix.com/docs/intro'" target="_blank">
+            :href="whitelabelConfig.branding?.tutorialUrl || 'https://tikzenx.com/docs/intro'" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
@@ -180,7 +180,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                }}</span>
+                    }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 

@@ -160,7 +160,7 @@ export default {
             }
             if (!this.localConfig.branding) {
                 this.localConfig.branding = {
-                    supportEmail: 'support@tikzenx.com',
+                    supportEmail: 'admin@tikzenx.com',
                     tutorialUrl: 'https://tikzenx.com/docs/intro',
                     rewardsUrl: 'https://tikzenx.com/rewards',
                     telegramUrl: 'https://t.me/tikmatrix',

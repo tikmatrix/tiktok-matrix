@@ -19,7 +19,7 @@ export const DEFAULT_WHITELABEL_CONFIG = {
 
     // 品牌配置
     branding: {
-        supportEmail: 'support@tikzenx.com',
+        supportEmail: 'admin@tikzenx.com',
         tutorialUrl: 'https://tikzenx.com/docs/intro',
         rewardsUrl: 'https://tikzenx.com/rewards',
         telegramUrl: 'https://t.me/tikmatrix',

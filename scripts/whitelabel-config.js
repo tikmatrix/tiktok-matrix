@@ -33,7 +33,7 @@ async function promptForConfig() {
             titleBar: await question('标题栏Logo路径 (默认: /src/assets/app-icon.png): ') || '/src/assets/app-icon.png',
         },
         branding: {
-            supportEmail: await question('支持邮箱 (默认: support@tikzenx.com): ') || 'support@tikzenx.com',
+            supportEmail: await question('支持邮箱 (默认: admin@tikzenx.com): ') || 'admin@tikzenx.com',
             tutorialUrl: await question('教程地址 (默认: https://tikzenx.com/docs/intro): ') || 'https://tikzenx.com/docs/intro',
             rewardsUrl: await question('奖励页面地址 (默认: https://tikzenx.com/rewards): ') || 'https://tikzenx.com/rewards',
             telegramUrl: await question('Telegram地址 (默认: https://t.me/tikmatrix): ') || 'https://t.me/tikmatrix',
