@@ -1,6 +1,19 @@
 <template>
   <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
 
+    <!-- 键盘输入提示信息 -->
+    <div v-if="showKeyboardTip" class="alert alert-info shadow-lg mb-4 mt-2 relative">
+      <button class="absolute top-2 right-2 btn btn-xs btn-ghost hover:btn-error" @click="closeKeyboardTip">
+        <font-awesome-icon icon="fa-solid fa-times" class="h-3 w-3" />
+      </button>
+      <div class="flex items-center pr-8">
+        <font-awesome-icon icon="fa-solid fa-keyboard" class="h-6 w-6 text-info" />
+        <div class="ml-3">
+          <h3 class="font-bold text-lg">{{ $t('keyboardInput') }}</h3>
+          <div class="text-sm">{{ $t('keyboardInputTip') }}</div>
+        </div>
+      </div>
+    </div>
 
     <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true"
       :showBottomControls="false">
@@ -249,9 +262,13 @@ export default {
       currentDevice: null,
       cardMinWidth: Number(localStorage.getItem('deviceWidth')) || 150,
       licenseData: {},
+      showKeyboardTip: localStorage.getItem('showKeyboardTip') !== 'false',
     }
   },
   watch: {
+    showKeyboardTip(val) {
+      localStorage.setItem('showKeyboardTip', val)
+    },
     groups(val) {
       this.mydevices.forEach(device => {
         device.group_name = this.groups.find(group => group.id === device.group_id)?.name
@@ -307,8 +324,9 @@ export default {
     refreshPage() {
       this.$emiter('refreshDevice', {})
     },
-
-
+    closeKeyboardTip() {
+      this.showKeyboardTip = false
+    },
 
     async scan() {
       this.scaning = true

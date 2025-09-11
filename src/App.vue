@@ -293,7 +293,7 @@ export default {
     script.onerror = () => {
       console.error('Failed to load AnythingLLM chat widget script');
     };
-    document.body.appendChild(script);
+    // document.body.appendChild(script);
   },
   unmounted() {
     this.listeners.forEach(listener => {

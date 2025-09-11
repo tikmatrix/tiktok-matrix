@@ -25,9 +25,10 @@
           :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
           <div class="relative flex-1 object-fill"
             :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
-            <canvas class="absolute top-0 left-0 w-full h-full hover:cursor-pointer" ref="canvas"
-              @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
-              @mousemove="mouseMoveListener"></canvas>
+            <canvas
+              class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+              ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
+              @mousemove="mouseMoveListener" tabindex="0" @keydown="keyDownListener" @keyup="keyUpListener"></canvas>
             <div @click="$emiter('openDevice', this.device)"
               class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
               <div class="bg-transparent p-2 rounded-md text-center">
@@ -299,9 +300,124 @@ export default {
       this.touchSync('u', event)
 
     },
+    async keyDownListener(event) {
+      if (!this.big) {
+        return
+      }
+      event.preventDefault()
+
+      // 映射特殊按键
+      let keyCode = this.mapKeyToAndroid(event.code, event.key)
+      if (keyCode) {
+        let data = JSON.stringify({
+          type: 'keycode',
+          operation: 'd',
+          keycode: keyCode
+        })
+        await this.$emiter('eventData', data)
+      } else if (this.isInputableKey(event)) {
+        // 处理可输入的字符（包括标点符号）
+        let data = JSON.stringify({
+          type: 'text',
+          text: event.key
+        })
+        await this.$emiter('eventData', data)
+      }
+    },
+    async keyUpListener(event) {
+      if (!this.big) {
+        return
+      }
+      event.preventDefault()
+
+      // 只处理特殊按键的释放事件
+      let keyCode = this.mapKeyToAndroid(event.code, event.key)
+      if (keyCode) {
+        let data = JSON.stringify({
+          type: 'keycode',
+          operation: 'u',
+          keycode: keyCode
+        })
+        await this.$emiter('eventData', data)
+      }
+    },
+    mapKeyToAndroid(code, key) {
+      // 映射键盘按键到Android键码
+      const keyMap = {
+        'Enter': 'KEYCODE_ENTER',
+        'Backspace': 'KEYCODE_DEL',
+        'Delete': 'KEYCODE_FORWARD_DEL',
+        'ArrowUp': 'KEYCODE_DPAD_UP',
+        'ArrowDown': 'KEYCODE_DPAD_DOWN',
+        'ArrowLeft': 'KEYCODE_DPAD_LEFT',
+        'ArrowRight': 'KEYCODE_DPAD_RIGHT',
+        'Home': 'KEYCODE_HOME',
+        'End': 'KEYCODE_MOVE_END',
+        'PageUp': 'KEYCODE_PAGE_UP',
+        'PageDown': 'KEYCODE_PAGE_DOWN',
+        'Tab': 'KEYCODE_TAB',
+        'Escape': 'KEYCODE_ESCAPE',
+        'Space': 'KEYCODE_SPACE',
+        'ShiftLeft': 'KEYCODE_SHIFT_LEFT',
+        'ShiftRight': 'KEYCODE_SHIFT_RIGHT',
+        'ControlLeft': 'KEYCODE_CTRL_LEFT',
+        'ControlRight': 'KEYCODE_CTRL_RIGHT',
+        'AltLeft': 'KEYCODE_ALT_LEFT',
+        'AltRight': 'KEYCODE_ALT_RIGHT',
+        'MetaLeft': 'KEYCODE_META_LEFT',
+        'MetaRight': 'KEYCODE_META_RIGHT',
+        'CapsLock': 'KEYCODE_CAPS_LOCK',
+        'F1': 'KEYCODE_F1',
+        'F2': 'KEYCODE_F2',
+        'F3': 'KEYCODE_F3',
+        'F4': 'KEYCODE_F4',
+        'F5': 'KEYCODE_F5',
+        'F6': 'KEYCODE_F6',
+        'F7': 'KEYCODE_F7',
+        'F8': 'KEYCODE_F8',
+        'F9': 'KEYCODE_F9',
+        'F10': 'KEYCODE_F10',
+        'F11': 'KEYCODE_F11',
+        'F12': 'KEYCODE_F12'
+      }
+
+      return keyMap[code] || keyMap[key]
+    },
+    isInputableKey(event) {
+      // 排除修饰键组合（除了Shift，因为Shift+字符是正常输入）
+      if (event.ctrlKey || event.altKey || event.metaKey) {
+        return false
+      }
+
+      // 单个字符（字母、数字、标点符号）
+      if (event.key.length === 1) {
+        return true
+      }
+
+      // 支持常用的标点符号和特殊字符按键
+      const inputableKeys = [
+        'Comma',      // ,
+        'Period',     // .
+        'Semicolon',  // ;
+        'Quote',      // '
+        'BracketLeft', // [
+        'BracketRight', // ]
+        'Backquote',  // `
+        'Slash',      // /
+        'Backslash',  // \
+        'Minus',      // -
+        'Equal'       // =
+      ]
+
+      return inputableKeys.includes(event.code)
+    },
     mouseDownListener(event) {
       if (this.loading) {
         return
+      }
+      // 让canvas获得焦点以接收键盘事件
+      if (this.big && this.$refs.canvas) {
+        this.$refs.canvas.focus()
       }
       this.touch = true
       this.touchSync('d', event)
@@ -592,6 +708,10 @@ export default {
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
+          // 清除焦点
+          if (this.$refs.canvas) {
+            this.$refs.canvas.blur();
+          }
           return;
         }
       }
@@ -600,6 +720,10 @@ export default {
         this.closeDecoder();
         this.big = false;
         this.operating = false
+        // 清除焦点
+        if (this.$refs.canvas) {
+          this.$refs.canvas.blur();
+        }
         this.syncDisplay();
       }
     }))
