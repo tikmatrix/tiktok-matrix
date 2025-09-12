@@ -802,7 +802,6 @@ export default {
   selectBoostFeatures: 'Select Marketing Features',
   followUsers: 'Follow Users',
   sendDM: 'Send Messages',
-  boostPosts: 'Post Actions',
   massComment: 'Mass Comment',
   followUsersSettings: 'Follow Users Settings',
   dmSettings: 'Message Settings',

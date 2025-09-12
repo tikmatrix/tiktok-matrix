@@ -804,7 +804,6 @@ export default {
   selectBoostFeatures: '选择营销功能',
   followUsers: '关注用户',
   sendDM: '发送私信',
-  boostPosts: '帖子操作',
   massComment: '批量评论',
   followUsersSettings: '关注用户设置',
   dmSettings: '私信设置',

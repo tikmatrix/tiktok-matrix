@@ -304,6 +304,13 @@ export default {
       if (!this.big) {
         return
       }
+
+      // 忽略Command/Meta键，避免干扰输入法
+      if (event.code === 'MetaLeft' || event.code === 'MetaRight') {
+        event.preventDefault()
+        return
+      }
+
       event.preventDefault()
 
       // 映射特殊按键
@@ -328,6 +335,13 @@ export default {
       if (!this.big) {
         return
       }
+
+      // 忽略Command/Meta键，避免干扰输入法
+      if (event.code === 'MetaLeft' || event.code === 'MetaRight') {
+        event.preventDefault()
+        return
+      }
+
       event.preventDefault()
 
       // 只处理特殊按键的释放事件
@@ -364,8 +378,9 @@ export default {
         'ControlRight': 'KEYCODE_CTRL_RIGHT',
         'AltLeft': 'KEYCODE_ALT_LEFT',
         'AltRight': 'KEYCODE_ALT_RIGHT',
-        'MetaLeft': 'KEYCODE_META_LEFT',
-        'MetaRight': 'KEYCODE_META_RIGHT',
+        // 移除Meta键映射，避免干扰输入法
+        // 'MetaLeft': 'KEYCODE_META_LEFT',
+        // 'MetaRight': 'KEYCODE_META_RIGHT',
         'CapsLock': 'KEYCODE_CAPS_LOCK',
         'F1': 'KEYCODE_F1',
         'F2': 'KEYCODE_F2',
