@@ -804,7 +804,6 @@ export default {
   selectBoostFeatures: '选择营销功能',
   followUsers: '关注用户',
   sendDM: '发送私信',
-  boostPosts: '帖子操作',
   massComment: '批量评论',
   followUsersSettings: '关注用户设置',
   dmSettings: '私信设置',
@@ -852,4 +851,8 @@ export default {
   postProcessSettings: '帖子处理设置',
   maxPostsToProcess: '最大处理帖子数量',
   postProcessTip: '系统会自动在用户主页按顺序点击指定数量的帖子进行操作',
+
+  // 键盘输入
+  keyboardInput: '键盘控制',
+  keyboardInputTip: '在大屏模式下点击设备屏幕获取焦点，然后使用电脑键盘输入文字、标点符号和控制设备',
 };
