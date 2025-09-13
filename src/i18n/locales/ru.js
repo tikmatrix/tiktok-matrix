@@ -804,7 +804,6 @@ export default {
   selectBoostFeatures: 'Выберите маркетинговые функции',
   followUsers: 'Подписаться на пользователей',
   sendDM: 'Отправить сообщения',
-  boostPosts: 'Действия с постами',
   massComment: 'Массовые комментарии',
   followUsersSettings: 'Настройки подписки на пользователей',
   dmSettings: 'Настройки сообщений',
