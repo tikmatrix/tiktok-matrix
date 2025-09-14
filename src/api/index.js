@@ -69,5 +69,7 @@ const api = {
   clear_follow_records: '/api/follow_record/clear',
   open_tiktok: '/api/open_tiktok',
   stop_tiktok: '/api/stop_tiktok',
+  validate_license_migration: '/api/validate_license_migration',
+  migrate_license: '/api/migrate_license',
 }
 export default api
