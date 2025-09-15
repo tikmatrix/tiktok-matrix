@@ -233,31 +233,32 @@ export default {
                     message: this.$t('targetMachineIdTooShort')
                 };
                 return;
-            }
-
-            this.isValidating = true;
+            } this.isValidating = true;
             this.machineIdValidationResult = null;
 
             try {
                 // 调用后端API验证目标机器ID和当前许可证
                 const response = await this.$service.validate_license_migration({
-                    current_machine_id: this.currentMachineId,
                     target_machine_id: this.targetMachineId
                 });
-
+                console.log('Validate response:', response);
                 if (response.code === 0) {
+                    // 解析返回的JSON数据
                     const result = JSON.parse(response.data);
+                    console.log('Validation result:', result);
+                    console.log('Validation valid:', result.valid);
                     this.machineIdValidationResult = {
                         valid: result.valid,
                         message: result.valid
                             ? this.$t('migrationValidationSuccess')
-                            : result.message || this.$t('migrationValidationFailed'),
-                        licenseInfo: result.license_info // 保存许可证详细信息
+                            : (result.message || this.$t('migrationValidationFailed')),
+                        licenseInfo: result.license_info
                     };
                 } else {
+                    const result = JSON.parse(response.data);
                     this.machineIdValidationResult = {
                         valid: false,
-                        message: response.data || this.$t('validateMachineIdFailed')
+                        message: result.message || this.$t('validateMachineIdFailed')
                     };
                 }
 
@@ -292,12 +293,9 @@ export default {
 
             this.isMigrating = true;
 
-            try {
-                // TODO: 调用后端API进行license迁移
-                // 注意: 这里需要后端实现 migrate_license API接口
-                // API需要接收当前机器ID和目标机器ID参数
+            try {                // 调用后端API进行license迁移
+                // 当前机器ID通过请求头传递，只需要传递目标机器ID
                 const response = await this.$service.migrate_license({
-                    current_machine_id: this.currentMachineId,
                     target_machine_id: this.targetMachineId
                 });
 
