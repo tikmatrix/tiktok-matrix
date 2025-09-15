@@ -32,6 +32,11 @@
                 <span class="font-semibold whitespace-nowrap text-yellow-200">{{ license.plan_name }}</span>
                 {{ $t('manageSubscription') }}
               </button>
+              <!-- License迁移按钮 -->
+              <button @click="showLicenseMigration" class="btn btn-outline btn-warning whitespace-nowrap">
+                <font-awesome-icon icon="fas fa-exchange-alt" class="h-4 w-4" />
+                {{ $t('migrateLicense') }}
+              </button>
               <label class="text-sm text-warning" v-if="license.stripe_cancel_at">{{ $t('cancelAt', {
                 date: new Date(license.stripe_cancel_at *
                   1000).toLocaleDateString()
@@ -55,8 +60,15 @@
               <label class="text-sm text-warning" v-if="license.leftdays > 0">{{ $t('expiredAt', {
                 date: new Date(new Date().getTime() + license.leftdays * 24 * 60 * 60 * 1000).toLocaleDateString()
               }) }}</label>
+            </div>
 
-
+            <!-- License迁移按钮 - 只在已激活license时显示 -->
+            <div class="flex items-center flex-row gap-2 w-full mt-2" v-if="license.leftdays > 0">
+              <button @click="showLicenseMigration" class="btn btn-outline btn-warning">
+                <font-awesome-icon icon="fas fa-exchange-alt" class="h-4 w-4" />
+                {{ $t('migrateLicense') }}
+              </button>
+              <span class="text-sm text-gray-500">{{ $t('migrateLicenseToNewDevice') }}</span>
             </div>
           </div>
           <div class="flex items-center flex-col w-full rounded-lg p-4" v-if="order && order.status == 0">
@@ -322,6 +334,10 @@
       </div>
     </form>
   </dialog>
+
+  <!-- License迁移对话框 -->
+  <LicenseMigrationDialog ref="licenseMigrationDialog" :licenseInfo="license"
+    @migrationCompleted="handleMigrationCompleted" />
 </template>
 <script>
 import { writeText } from '@tauri-apps/api/clipboard';
@@ -333,6 +349,7 @@ import QRCode from 'qrcode';
 import Bluebird from 'bluebird';
 import confetti from 'canvas-confetti';
 import { CheckIcon } from '@heroicons/vue/20/solid'
+import LicenseMigrationDialog from './LicenseMigrationDialog.vue'
 
 
 confetti.Promise = Bluebird;
@@ -340,7 +357,8 @@ confetti.Promise = Bluebird;
 export default {
   name: 'BuyLicense',
   components: {
-    CheckIcon
+    CheckIcon,
+    LicenseMigrationDialog
   },
   props: {
     license: {
@@ -701,6 +719,25 @@ export default {
           timeout: 2000
         });
       }
+    },
+
+    showLicenseMigration() {
+      // 检查是否有已激活的license
+      if (this.license.leftdays <= 0 && !this.license.is_stripe_active) {
+        this.$emiter('NOTIFY', {
+          type: 'warning',
+          message: this.$t('noActiveLicenseToMigrate'),
+          timeout: 3000
+        });
+        return;
+      }
+
+      this.$refs.licenseMigrationDialog.show();
+    },
+
+    handleMigrationCompleted() {
+      // 迁移完成后的处理
+      console.log('License migration completed');
     },
   },
   async mounted() {
