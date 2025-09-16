@@ -604,6 +604,7 @@ export default {
   resolutionNote: '更高的分辨率提供更好的图像质量，但可能会影响性能。不会修改真实的手机屏幕分辨率。',
   retry: '重试',
   retryAllFaied: '重试所有失败',
+  retryCount: '重试次数',
   rewards: '奖励',
   right: '右滑',
   running: '运行中',

@@ -601,6 +601,7 @@ export default {
   resolutionNote: 'Higher resolution provides better image quality but may affect performance. It will not modify the real phone screen resolution.',
   retry: 'Retry',
   retryAllFaied: 'Retry All Failed',
+  retryCount: 'Retry Count',
   rewards: 'Rewards',
   right: 'Right',
   running: 'Running',
