@@ -111,7 +111,8 @@
         "request": true,
         "scope": [
           "http://127.0.0.1:50809/*/*",
-          "https://api.tikmatrix.com/*/*"
+          "https://api.tikmatrix.com/*/*",
+          "https://admin.tikzenx.com/*/*"
         ]
       }
     },
