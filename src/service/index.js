@@ -707,3 +707,19 @@ export function stop_tiktok(data) {
     data
   })
 }
+
+export function validate_license_migration(data) {
+  return request({
+    method: 'post',
+    url: api.validate_license_migration,
+    data
+  })
+}
+
+export function migrate_license(data) {
+  return request({
+    method: 'post',
+    url: api.migrate_license,
+    data
+  })
+}

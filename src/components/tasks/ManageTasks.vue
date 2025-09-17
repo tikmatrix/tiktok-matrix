@@ -1,8 +1,7 @@
 <template>
   <div class="w-full">
-    <Pagination :items="filter_tasks" :searchKeys="['id', 'device_index', 'script_name']" 
-    :searchTermPlaceholder="$t('searchTaskPlaceholder')"
-    @refresh="get_tasks">
+    <Pagination :items="filter_tasks" :searchKeys="['id', 'device_index', 'script_name']"
+      :searchTermPlaceholder="$t('searchTaskPlaceholder')" @refresh="get_tasks">
       <template v-slot:buttons>
         <MyButton @click="retry_all_failed" label="retryAllFaied" icon="fa fa-repeat" />
         <MyButton @click="clearAll" label="clearAll" icon="fa fa-trash" />
@@ -24,6 +23,7 @@
                 <th>{{ $t('scriptArgs') }}</th>
                 <th>{{ $t('startTime') }}</th>
                 <th>{{ $t('status') }}</th>
+                <th>{{ $t('retryCount') }}</th>
                 <th>{{ $t('username') }}</th>
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('actions') }}</th>
@@ -44,6 +44,9 @@
                   <div class="badge badge-primary badge-md" v-else-if="task.status == '1'">{{ $t('execing') }}</div>
                   <div class="badge badge-success badge-md" v-else-if="task.status == '2'">{{ $t('success') }}</div>
                   <div class="badge badge-error badge-md" v-else-if="task.status == '3'">{{ $t('failed') }}</div>
+                </td>
+                <td>
+                  <span class="badge badge-info badge-md">{{ task.retry_count || 0 }}</span>
                 </td>
                 <td><span class="badge badge-ghost badge-md">{{ getTaskArg(task.script_args, 'username') }}</span></td>
                 <td>
@@ -106,15 +109,15 @@ export default {
   },
   methods: {
     getTaskArg(args, key) {
-    try {
-      console.log(args);
-      const obj = typeof args === 'string' ? JSON.parse(args) : args;
-      console.log(obj);
-      return obj && obj[key] !== undefined ? obj[key] : '';
-    } catch (e) {
-      return '';
-    }
-  },
+      try {
+        console.log(args);
+        const obj = typeof args === 'string' ? JSON.parse(args) : args;
+        console.log(obj);
+        return obj && obj[key] !== undefined ? obj[key] : '';
+      } catch (e) {
+        return '';
+      }
+    },
     truncateScriptArgs(scriptArgs) {
       if (scriptArgs.length > 30) {
         return `${scriptArgs.slice(0, 10)}...${scriptArgs.slice(-10)}`;
