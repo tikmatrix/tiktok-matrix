@@ -180,7 +180,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                }}</span>
+                    }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
@@ -652,6 +652,167 @@ export default {
             // 可以触发其他需要更新的组件
             this.$emit('whitelabel-updated', config);
         },
+
+        // 静默更新方法
+        async performSilentUpdate() {
+            console.log('开始执行静默更新...');
+            try {
+                let hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate');
+                // 强制检查更新，忽略hasCheckedUpdate状态
+                localStorage.removeItem('hasCheckedUpdate');
+
+                const osType = await os.type();
+                const arch = await os.arch();
+                console.log('osType:', osType, 'arch:', arch);
+
+                let platform = 'windows';
+                if (osType === 'Darwin') {
+                    if (arch === 'aarch64') {
+                        platform = 'mac-arm';
+                    } else {
+                        platform = 'mac-intel';
+                    }
+                }
+
+                // 静默检查系统更新（仅Windows）
+                if (platform === 'windows') {
+                    try {
+                        const { shouldUpdate, manifest } = await checkUpdate();
+                        if (shouldUpdate) {
+                            console.log('发现系统更新，但静默更新不安装系统更新，跳过');
+                        }
+                    } catch (e) {
+                        console.log('检查系统更新失败:', e);
+                    }
+                }
+
+                // 检查库更新
+                let response = null;
+                try {
+                    response = await fetch(`https://api.tikmatrix.com/front-api/check_libs?time=${new Date().getTime()}`, {
+                        method: 'GET',
+                        timeout: 10,
+                        responseType: ResponseType.JSON,
+                        headers: {
+                            'User-Agent': platform,
+                            'X-App-Id': this.name
+                        }
+                    });
+                    console.log('静默更新 - 库检查响应:', response);
+                } catch (e) {
+                    console.log('静默更新 - 检查库失败:', e);
+                    return;
+                }
+
+                if (response?.ok && response?.data?.code === 20000) {
+                    const libs = response.data.data.libs;
+                    let hasUpdates = false;
+
+                    for (const lib of libs) {
+                        const updated = await this.silentDownloadAndUpdateLib(lib, this.getLibStorageKey(lib.name));
+                        if (updated) {
+                            hasUpdates = true;
+                        }
+                    }
+
+                    if (hasUpdates) {
+                        console.log('静默更新完成，发现并安装了更新');
+                        // 发送通知但不弹窗
+                        await this.$emiter('NOTIFY', {
+                            type: 'success',
+                            message: '后台自动更新已完成',
+                            timeout: 3000
+                        });
+                    } else {
+                        console.log('静默更新完成，没有发现新的更新');
+                    }
+
+                    localStorage.setItem('hasCheckedUpdate', 'true');
+                } else {
+                    console.log('静默更新 - 检查更新失败');
+                }
+            } catch (error) {
+                console.error('静默更新失败:', error);
+            }
+        },
+
+        // 获取库对应的本地存储键
+        getLibStorageKey(libName) {
+            const libKeyMap = {
+                'platform-tools': 'platform-tools',
+                'PaddleOCR': 'PaddleOCR',
+                'apk': 'apk',
+                'test-apk': 'test-apk',
+                'scrcpy': 'scrcpy',
+                'script': 'script',
+                'agent': 'agent'
+            };
+            return libKeyMap[libName] || libName;
+        },
+
+        // 静默下载和更新库
+        async silentDownloadAndUpdateLib(lib, localStorageKey) {
+            try {
+                let localversion = localStorage.getItem(localStorageKey) || '0';
+                localversion = localversion.replace(/"/g, '');
+
+                console.log(`静默检查 ${lib.name}: 本地版本 ${localversion}, 远程版本 ${lib.version}`);
+
+                if (localversion === lib.version) {
+                    return false; // 无需更新
+                }
+
+                let url = lib.downloadUrl;
+                let work_path = await appDataDir();
+                let name = url.split('/').pop();
+                let path = work_path + 'tmp/' + name;
+
+                console.log(`静默下载 ${lib.name} 从 ${url}`);
+                url = url + '?t=' + new Date().getTime();
+                await invoke('download_file', { url, path });
+
+                localStorage.setItem(localStorageKey, lib.version);
+
+                // 执行特定的更新操作（静默版本，不显示进度）
+                await this.silentUpdateLib(lib, path, work_path);
+
+                console.log(`静默更新 ${lib.name} 完成`);
+                return true; // 已更新
+            } catch (e) {
+                console.error(`静默更新 ${lib.name} 失败:`, e);
+                return false;
+            }
+        },
+
+        // 静默更新库（无UI反馈）
+        async silentUpdateLib(lib, path, work_path) {
+            if (lib.name === 'platform-tools') {
+                const osType = await os.type();
+                const adbFileName = osType === 'Darwin' ? 'adb' : 'adb.exe';
+                let adb_exists = await exists(`platform-tools/${adbFileName}`, { dir: BaseDirectory.AppData });
+                if (!adb_exists) {
+                    await invoke("kill_process", { name: "adb" });
+                    await new Promise(r => setTimeout(r, 3000));
+                    await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                    await invoke("grant_permission", { path: "platform-tools/adb" });
+                }
+            } else if (lib.name === 'PaddleOCR') {
+                const osType = await os.type();
+                const paddleFileName = osType === 'Darwin' ? 'PaddleOCR-json' : 'PaddleOCR-json.exe';
+                let paddle_exists = await exists(`PaddleOCR-json/${paddleFileName}`, { dir: BaseDirectory.AppData });
+                if (!paddle_exists) {
+                    await invoke("kill_process", { name: "PaddleOCR-json" });
+                    await invoke("unzip_file", { zipPath: path, destDir: work_path });
+                }
+            } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
+                await copyFile(path, path.replace('tmp', 'bin'));
+            } else if (lib.name === 'script' || lib.name === 'agent') {
+                await invoke("kill_process", { name: lib.name });
+                await new Promise(r => setTimeout(r, 3000));
+                await copyFile(path, path.replace('tmp', 'bin'));
+                await invoke("grant_permission", { path: `bin/${lib.name}` });
+            }
+        },
     },
     async mounted() {
         // 获取版本号
@@ -702,6 +863,19 @@ export default {
         // 监听功能解锁事件
         await this.$listen('featureUnlocked', async (e) => {
             this.isWhiteLabelUnlocked = isFeatureUnlocked('whiteLabel');
+        });
+
+        // 监听自动更新触发事件
+        await this.$listen('AUTO_UPDATE_TRIGGER', async (e) => {
+            console.log('收到自动更新触发信号');
+            const { silent } = e.payload || {};
+            if (silent) {
+                // 静默更新，不显示弹窗
+                await this.performSilentUpdate();
+            } else {
+                // 常规更新
+                await this.check_update(true);
+            }
         });
 
         this.check_update();
