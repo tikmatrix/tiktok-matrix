@@ -299,8 +299,7 @@ export default {
       this.touch = false
       this.touchSync('u', event)
 
-    },
-    async keyDownListener(event) {
+    }, async keyDownListener(event) {
       if (!this.big) {
         return
       }
@@ -308,6 +307,11 @@ export default {
       // 忽略Command/Meta键，避免干扰输入法
       if (event.code === 'MetaLeft' || event.code === 'MetaRight') {
         event.preventDefault()
+        return
+      }
+
+      // 允许粘贴快捷键通过，不阻止其默认行为
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
         return
       }
 
@@ -330,8 +334,7 @@ export default {
         })
         await this.$emiter('eventData', data)
       }
-    },
-    async keyUpListener(event) {
+    }, async keyUpListener(event) {
       if (!this.big) {
         return
       }
@@ -339,6 +342,11 @@ export default {
       // 忽略Command/Meta键，避免干扰输入法
       if (event.code === 'MetaLeft' || event.code === 'MetaRight') {
         event.preventDefault()
+        return
+      }
+
+      // 允许粘贴快捷键通过，不阻止其默认行为
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
         return
       }
 
