@@ -850,6 +850,7 @@ export default {
     }))
 
     this.listeners.push(document.addEventListener('paste', () => {
+      console.log("paste event triggered")
       this.pasteToPhone()
     }))
 
