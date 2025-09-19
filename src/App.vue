@@ -48,14 +48,13 @@ export default {
 
   methods: {
     async get_settings() {
-      this.$service.get_settings().then(async res => {
-        this.settings = res.data
-        await this.$emiter('NOTIFY', {
-          type: 'success',
-          message: this.$t('settingsUpdated'),
-          timeout: 2000
-        });
-      })
+      const res = await this.$service.get_settings();
+      this.settings = res.data
+      await this.$emiter('NOTIFY', {
+        type: 'success',
+        message: this.$t('settingsUpdated'),
+        timeout: 2000
+      });
     },
 
     async get_groups() {
@@ -277,6 +276,7 @@ export default {
       }
 
       if (!this.settings.auto_update_enabled) {
+        console.log('自动更新未启用，跳过启动定时器');
         return;
       }
 
