@@ -39,19 +39,22 @@ export default {
       running_devices: [],
       selecedDevices: [],
       listeners: [],
+      // 自动更新相关
+      lastUserActivity: Date.now(),
+      autoUpdateTimer: null,
+      userActivityEvents: ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'],
     }
   },
 
   methods: {
     async get_settings() {
-      this.$service.get_settings().then(async res => {
-        this.settings = res.data
-        await this.$emiter('NOTIFY', {
-          type: 'success',
-          message: this.$t('settingsUpdated'),
-          timeout: 2000
-        });
-      })
+      const res = await this.$service.get_settings();
+      this.settings = res.data
+      await this.$emiter('NOTIFY', {
+        type: 'success',
+        message: this.$t('settingsUpdated'),
+        timeout: 2000
+      });
     },
 
     async get_groups() {
@@ -230,6 +233,81 @@ export default {
       document.addEventListener('contextmenu', event => event.preventDefault());
     },
 
+    // 自动更新相关方法
+    setupUserActivityListeners() {
+      this.userActivityEvents.forEach(event => {
+        document.addEventListener(event, this.onUserActivity, { passive: true });
+      });
+    },
+
+    removeUserActivityListeners() {
+      this.userActivityEvents.forEach(event => {
+        document.removeEventListener(event, this.onUserActivity);
+      });
+    },
+
+    onUserActivity() {
+      this.lastUserActivity = Date.now();
+    },
+
+    hasRunningTasks() {
+      return this.running_devices.length > 0 ||
+        this.devices.some(device => device.task_status === 1);
+    },
+
+    isSystemIdle() {
+      const idleThreshold = 5 * 60 * 1000; // 5分钟无用户活动
+      return (Date.now() - this.lastUserActivity) > idleThreshold;
+    },
+
+    async triggerAutoUpdate() {
+      console.log('执行自动更新检查...');
+      try {
+        // 通过事件通知 TitleBar 执行静默更新
+        await this.$emiter('AUTO_UPDATE_TRIGGER', { silent: true });
+      } catch (error) {
+        console.error('自动更新失败:', error);
+      }
+    },
+
+    startAutoUpdateTimer() {
+      if (this.autoUpdateTimer) {
+        clearInterval(this.autoUpdateTimer);
+      }
+
+      if (!this.settings.auto_update_enabled) {
+        console.log('自动更新未启用，跳过启动定时器');
+        return;
+      }
+
+      const interval = 10 * 60 * 1000; // 固定10分钟间隔
+      console.log(`启动自动更新定时器，间隔: 10 分钟`);
+
+      this.autoUpdateTimer = setInterval(() => {
+        // 检查是否有正在运行的任务
+        if (this.hasRunningTasks()) {
+          console.log('有正在运行的任务，跳过自动更新');
+          return;
+        }
+
+        // 检查系统是否空闲
+        if (!this.isSystemIdle()) {
+          console.log('用户最近有活动，跳过自动更新');
+          return;
+        }
+
+        console.log('系统空闲且无运行任务，触发自动更新');
+        this.triggerAutoUpdate();
+      }, interval);
+    },
+
+    stopAutoUpdateTimer() {
+      if (this.autoUpdateTimer) {
+        clearInterval(this.autoUpdateTimer);
+        this.autoUpdateTimer = null;
+      }
+    },
+
 
   },
 
@@ -250,6 +328,9 @@ export default {
       await this.connectAgent();
       await this.getRunningTasks();
       await this.$emiter('reload_tasks', {})
+
+      // 启动自动更新定时器
+      this.startAutoUpdateTimer();
     }));
     this.listeners.push(await this.$listen('reload_devices', async (e) => {
       await this.getDevices();
@@ -274,7 +355,13 @@ export default {
     //reload_settings
     this.listeners.push(await this.$listen('reload_settings', async (e) => {
       await this.get_settings()
+      // 重新启动自动更新定时器（设置可能已更改）
+      this.startAutoUpdateTimer();
     }))
+
+    // 设置用户活动监听
+    this.setupUserActivityListeners();
+
     // 动态插入 AnythingLLM 聊天小部件
     const script = document.createElement('script');
     script.src = 'https://llm.tikmatrix.com/embed/anythingllm-chat-widget.min.js';
@@ -302,6 +389,10 @@ export default {
       }
     })
     this.listeners = []
+
+    // 清理自动更新相关资源
+    this.removeUserActivityListeners();
+    this.stopAutoUpdateTimer();
   }
 }
 </script>
