@@ -6,7 +6,7 @@
       }}</h3>
       <div class="space-y-4">
         <!-- TikTok包名选择 -->
-        <div class="flex items-center justify-between py-3 border-b border-base-200">
+        <!-- <div class="flex items-center justify-between py-3 border-b border-base-200">
           <div class="flex-1">
             <label class="text-sm font-medium text-base-content">{{ $t('tiktokPackagename') }}</label>
           </div>
@@ -22,7 +22,7 @@
               <span class="text-sm">{{ $t('asia') }}</span>
             </label>
           </div>
-        </div>
+        </div> -->
 
         <!-- 自动唤醒 -->
         <div class="flex items-center justify-between py-3 border-b border-base-200">
