@@ -45,11 +45,11 @@
         <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 text-success" />
         {{ $t('boostUsers') }}
     </button> -->
-    <!-- <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostPosts' } })">
         <font-awesome-icon icon="fa-solid fa-thumbs-up" class="h-3 w-3 text-success" />
         {{ $t('boostPosts') }}
-    </button> -->
+    </button>
     <!-- <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostComments' } })">
         <font-awesome-icon icon="fa-solid fa-comment-dots" class="h-3 w-3 text-success" />
