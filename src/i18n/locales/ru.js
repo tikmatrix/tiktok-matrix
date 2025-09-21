@@ -1,4 +1,5 @@
 export default {
+  repost: 'Репост',
   account: 'Аккаунт',
   profileOrder: 'Порядок профиля',
   loadingManagingSubscription: 'Загрузка управления подпиской...',
