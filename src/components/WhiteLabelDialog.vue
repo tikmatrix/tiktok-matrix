@@ -137,7 +137,30 @@ export default {
     data() {
         return {
             activeTab: 'basic',
-            localConfig: {},
+            localConfig: {
+                features: {
+                    showTutorial: true,
+                    showRewards: true,
+                    showBranding: true,
+                    customTheme: false,
+                },
+                branding: {
+                    supportEmail: 'support@tikmatrix.com',
+                    tutorialUrl: 'https://tikmatrix.com/docs/intro',
+                    rewardsUrl: 'https://tikmatrix.com/rewards',
+                    telegramUrl: 'https://t.me/tikmatrix',
+                },
+                theme: {
+                    primaryColor: '#3b82f6',
+                    secondaryColor: '#10b981',
+                    accentColor: '#f59e0b',
+                },
+                logo: {
+                    main: '/src/assets/app-icon.png',
+                    favicon: '/favicon.ico',
+                    titleBar: '/src/assets/app-icon.png',
+                },
+            },
             logoPreview: '',
         };
     },

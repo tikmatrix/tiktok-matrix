@@ -2,6 +2,7 @@ export default {
   openInstagram: '打开 Instagram',
   stopInstagram: '停止 Instagram',
   grantInstagram: '授权 Instagram',
+  repost: '转发',
   account: '帐号',
   profileOrder: '个人资料顺序',
   loadingManagingSubscription: '加载管理订阅...',

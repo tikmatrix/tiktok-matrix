@@ -2,6 +2,7 @@ export default {
   openInstagram: 'Open Instagram',
   stopInstagram: 'Stop Instagram',
   grantInstagram: 'Grant Instagram Access',
+  repost: 'Repost',
   account: 'Account',
   seconds: 'Seconds',
   profileOrder: 'Profile Order',

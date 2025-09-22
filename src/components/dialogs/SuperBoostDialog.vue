@@ -154,6 +154,11 @@
                                     v-model="postSettings.enable_favorite" />
                                 <span class="text-sm">{{ $t('favorite') }}</span>
                             </label>
+                            <label class="cursor-pointer flex items-center gap-2">
+                                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                    v-model="postSettings.enable_repost" />
+                                <span class="text-sm">{{ $t('repost') }}</span>
+                            </label>
                         </div>
 
                         <div class="flex items-center gap-2">
@@ -293,6 +298,7 @@ export default {
                     max_posts_count: 1,
                     enable_like: false,
                     enable_favorite: false,
+                    enable_repost: false,
                     view_duration: 10
                 },
                 commentSettings: {
@@ -350,6 +356,7 @@ export default {
                 max_posts_count: 1, // 最大处理帖子数量
                 enable_like: false,
                 enable_favorite: false,
+                enable_repost: false,
                 view_duration: 10
             },
 
@@ -423,7 +430,7 @@ export default {
                         max_posts_count: 1,
                         enable_like: false,
                         enable_favorite: false,
-                        enable_share: false,
+                        enable_repost: false,
                         view_duration: 10
                     },
                     commentSettings: {
@@ -509,7 +516,8 @@ export default {
             }
 
             if (this.features.boostPosts &&
-                !this.postSettings.enable_like && !this.postSettings.enable_favorite) {
+                !this.postSettings.enable_like && !this.postSettings.enable_favorite &&
+                !this.postSettings.enable_repost) {
                 errors.push(this.$t('selectAtLeastOnePostAction'));
             }
 

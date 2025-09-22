@@ -2,6 +2,7 @@ export default {
   openInstagram: 'Открыть Instagram',
   stopInstagram: 'Остановить Instagram',
   grantInstagram: 'Предоставить доступ к Instagram',
+  repost: 'Репост',
   account: 'Аккаунт',
   profileOrder: 'Порядок профиля',
   loadingManagingSubscription: 'Загрузка управления подпиской...',
