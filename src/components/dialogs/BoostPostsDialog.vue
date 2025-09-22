@@ -21,8 +21,8 @@
       </div>
       <div class="form-control">
         <label class="label cursor-pointer gap-2">
-          <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_favorite" />
-          <span class="label-text">{{ $t('favorite') }}</span>
+          <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_save" />
+          <span class="label-text">{{ $t('save') }}</span>
         </label>
       </div>
       <div class="form-control">
@@ -65,20 +65,20 @@ export default {
       {
         target_post_urls: '',
         enable_like: false,
-        enable_favorite: false,
+        enable_save: false,
         enable_repost: false,
         enable_follow: false,
         view_duration: 10,
         boost_post_interval: [0, 0]
       }, // 默认设置
-      ['target_post_urls', 'enable_like', 'enable_favorite', 'enable_repost', 'enable_follow', 'view_duration', 'boost_post_interval'] // 需要监听的属性
+      ['target_post_urls', 'enable_like', 'enable_save', 'enable_repost', 'enable_follow', 'view_duration', 'boost_post_interval'] // 需要监听的属性
     )
   ],
   data() {
     return {
       target_post_urls: '',
       enable_like: false,
-      enable_favorite: false,
+      enable_save: false,
       enable_repost: false,
       enable_follow: false,
       view_duration: 10,
