@@ -91,18 +91,21 @@ const massCommentMixin = massCommentSettings.createVueMixin(
     settings: 'custom',
     startOption: 'now',
     scheduledTime: '09:00',
-    target_post_urls: '',
+    target_post_urls: 'https://www.tiktok.com/@tikmatrix001/photo/7520819163665911054',
     comment_contents: 'Great video!\nLove this content!\nAmazing!',
     comment_delay_min: 2,
     comment_delay_max: 8,
     insert_emoji: false,
     insert_device_number: false,
-    comment_order: 'random'
+    comment_order: 'random',
+    comment_mode: 'multi-to-single',
+    comment_interval: [0, 0]
   },
   [
     'settings', 'startOption', 'scheduledTime', 'target_post_urls',
     'comment_contents', 'comment_delay_min', 'comment_delay_max',
-    'insert_emoji', 'insert_device_number', 'comment_order'
+    'insert_emoji', 'insert_device_number', 'comment_order',
+    'comment_mode', 'comment_interval'
   ]
 );
 
@@ -111,11 +114,8 @@ export default {
   name: 'MassCommentDialog',
   components: {
     VueSlider
-  },
-  data() {
+  }, data() {
     return {
-      comment_mode: 'multi-to-single',
-      comment_interval: [0, 0]
     }
   },
   methods: {
