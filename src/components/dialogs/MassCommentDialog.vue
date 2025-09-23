@@ -91,7 +91,7 @@ const massCommentMixin = massCommentSettings.createVueMixin(
     settings: 'custom',
     startOption: 'now',
     scheduledTime: '09:00',
-    target_post_urls: 'https://www.tiktok.com/@tikmatrix001/photo/7520819163665911054',
+    target_post_urls: 'https://www.instagram.com/p/DLSazxnxAX8/',
     comment_contents: 'Great video!\nLove this content!\nAmazing!',
     comment_delay_min: 2,
     comment_delay_max: 8,
