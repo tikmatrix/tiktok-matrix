@@ -1,5 +1,4 @@
-<template>
-    <!-- <button class="btn btn-md btn-primary  ml-1 mb-1"
+<template> <button v-if="isFeatureUnlocked('registerScript')" class="btn btn-md btn-primary ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'register' } })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
         {{ $t('register') }}
@@ -100,10 +99,22 @@ export default {
     props: ['settings'],
     data() {
         return {
+            unlocked: JSON.parse(localStorage.getItem('unlockedFeatures') || '[]')
         }
     },
     methods: {
-
-    }
+        isFeatureUnlocked(key) {
+            try {
+                return this.unlocked.includes(key);
+            } catch (e) {
+                return false;
+            }
+        }
+    },
+    async mounted() {
+        await this.$listen('featureUnlocked', async (e) => {
+            this.unlocked = JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
+        })
+    },
 }
 </script>
