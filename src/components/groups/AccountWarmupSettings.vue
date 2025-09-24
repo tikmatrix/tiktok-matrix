@@ -48,8 +48,8 @@
       </div>
       <div class="flex w-full items-center gap-2 mb-8">
         <label class="font-bold w-40">{{ $t('taskDuration') }}:</label>
-        <VueSlider v-model="trainDurationInMinutes" :width="500" :min="10" :max="60"
-          :marks="{ 10: '10' + $t('minute'), 20: '20' + $t('minute'), 30: '30' + $t('minute'), 40: '40' + $t('minute'), 50: '50' + $t('minute'), 60: '60' + $t('minute') }" />
+        <VueSlider v-model="trainDurationInMinutes" :width="700" :min="5" :max="60"
+          :marks="{ 5: '5' + $t('minute'), 10: '10' + $t('minute'), 20: '20' + $t('minute'), 30: '30' + $t('minute'), 40: '40' + $t('minute'), 50: '50' + $t('minute'), 60: '60' + $t('minute') }" />
       </div>
       <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('topics') }}:</label>
@@ -184,7 +184,7 @@ export default {
   computed: {
     trainDurationInMinutes: {
       get() {
-        return (this.mygroup.train_duration / 60) || 10
+        return (this.mygroup.train_duration / 60) || 5
       },
       set(value) {
         this.mygroup.train_duration = value * 60
