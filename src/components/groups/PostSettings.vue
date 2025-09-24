@@ -97,6 +97,7 @@
           </div>
         </div>
       </div>
+    -->
       <div class="flex w-full items-center gap-2 mb-4">
         <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
         <VueSlider v-model="mygroup.sound_wait_time" :width="500" :min="5" :max="30" :step="1"
@@ -121,6 +122,7 @@
           <span>{{ $t('uploadWaitTimeTips') }}</span>
         </div>
       </div>
+      <!--
       <div class="flex w-full items-center gap-2 mb-4 mt-8"
         v-if="mygroup.add_sound == 1 || mygroup.post_way == 'useSound'">
         <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
@@ -133,7 +135,7 @@
             :marks="{ 0: '0', 100: '100' }" />
         </div>
       </div>
-       add sound end-->
+      add sound end-->
       <!-- <div class="flex w-full items-center gap-2 mb-2">
         <label class="font-bold w-40">{{ $t('addProductLink') }}:</label>
         <div class="flex items-center gap-4">

@@ -118,10 +118,11 @@
         </div>
       </div>
   </div>
-  <div class="flex w-full items-center gap-2 mb-4">
-    <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
-    <VueSlider class="ml-8" v-model="sound_wait_time" :width="500" :min="5" :max="30" :step="1"
-      :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
+  -->
+        <div class="flex w-full items-center gap-2 mb-4">
+          <label class="font-bold w-40">{{ $t('loadingTime') }}:</label>
+          <VueSlider class="ml-8" v-model="sound_wait_time" :width="500" :min="5" :max="30" :step="1"
+            :marks="{ 5: '5' + $t('second'), 10: '10' + $t('second'), 15: '15' + $t('second'), 20: '20' + $t('second'), 25: '25' + $t('second'), 30: '30' + $t('second') }" />
           <div role="alert" class="alert ml-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
               class="stroke-info shrink-0 w-6 h-6">
@@ -143,19 +144,20 @@
             </svg>
             <span>{{ $t('uploadWaitTimeTips') }}</span>
           </div>
-  </div>
-  <div class="flex w-full items-center gap-2 mb-4" v-if="add_sound == 1">
-    <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
-    <div class="flex items-center">
-      <label class="ml-2 mr-2">{{ $t('originSound') }}: </label>
-      <VueSlider v-model="origin_sound_volume" :width="100" :min="0" :max="100" :step="25"
-        :marks="{ 0: '0', 100: '100' }" />
-      <label class="ml-8 mr-2">{{ $t('addSound') }}: </label>
-      <VueSlider v-model="add_sound_volume" :width="100" :min="0" :max="100" :step="25"
-        :marks="{ 0: '0', 100: '100' }" />
-    </div>
-  </div>
-   add sound end-->
+        </div>
+        <!--
+        <div class="flex w-full items-center gap-2 mb-4" v-if="add_sound == 1">
+          <label class="font-bold w-40">{{ $t('soundVolume') }}:</label>
+          <div class="flex items-center">
+            <label class="ml-2 mr-2">{{ $t('originSound') }}: </label>
+            <VueSlider v-model="origin_sound_volume" :width="100" :min="0" :max="100" :step="25"
+              :marks="{ 0: '0', 100: '100' }" />
+            <label class="ml-8 mr-2">{{ $t('addSound') }}: </label>
+            <VueSlider v-model="add_sound_volume" :width="100" :min="0" :max="100" :step="25"
+              :marks="{ 0: '0', 100: '100' }" />
+          </div>
+        </div>
+        add sound end-->
         <!-- <div class="flex w-full items-center gap-2 mb-2">
           <label class="font-bold w-40">{{ $t('addProductLink') }}:</label>
           <div class="flex items-center gap-4">
