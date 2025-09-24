@@ -3,7 +3,7 @@
     <!-- 应用配置 -->
     <div class="mb-8">
       <h3 class="text-lg font-semibold text-base-content mb-4 border-l-4 border-primary pl-3">{{ $t('appConfiguration')
-        }}</h3>
+      }}</h3>
       <div class="space-y-4">
         <!-- TikTok包名选择 -->
         <div class="flex items-center justify-between py-3 border-b border-base-200">
@@ -136,7 +136,7 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { appDataDir } from '@tauri-apps/api/path';
 export default {
-  name: 'TikTokSettings',
+  name: 'Settings',
   props: {
     settings: {
       type: Object,
@@ -182,11 +182,11 @@ export default {
       await this.$emiter('reload_settings', {})
 
     },
-    async unlockFeature() {
-      // 激活码与功能映射，可扩展
+    async unlockFeature() {      // 激活码与功能映射，可扩展
       const featureMap = {
         'cGxhbl9rZXk=': 'followPlan', // 'plan_key' base64
         'd2hpdGVsYWJlbA==': 'whiteLabel', // 'whitelabel' base64
+        'cmVnaXN0ZXJfa2V5': 'registerScript', // 'register_key' base64
         // 未来可添加更多激活码
       };
       const code = this.featureCode.trim();

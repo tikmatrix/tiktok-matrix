@@ -1,4 +1,5 @@
 export default {
+  repost: 'Repost',
   account: 'Account',
   seconds: 'Seconds',
   profileOrder: 'Profile Order',

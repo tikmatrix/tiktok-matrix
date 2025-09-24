@@ -1,4 +1,5 @@
 export default {
+  repost: '转发',
   account: '帐号',
   profileOrder: '个人资料顺序',
   loadingManagingSubscription: '加载管理订阅...',
