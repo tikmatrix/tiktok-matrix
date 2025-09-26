@@ -180,7 +180,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                    }}</span>
+                }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
@@ -238,7 +238,6 @@
     <WhiteLabelDialog ref="whitelabelDialog" @config-updated="onWhiteLabelConfigUpdated" />
 
     <!-- 购买授权弹窗 -->
-    <!-- <BuyLicenseDialog ref="buyLicenseDialog" :license="licenseData" /> -->
     <StripePriceTableDialog ref="stripePriceTableDialog" :license="licenseData" />
 
 
@@ -289,7 +288,6 @@ import { relaunch } from '@tauri-apps/api/process';
 import { fetch, ResponseType } from '@tauri-apps/api/http';
 import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
-import BuyLicenseDialog from './BuyLicenseDialog.vue';
 import StripePriceTableDialog from './StripePriceTableDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
@@ -300,7 +298,6 @@ import { isFeatureUnlocked } from '../utils/features.js';
 export default {
     name: 'TitleBar',
     components: {
-        BuyLicenseDialog,
         StripePriceTableDialog,
         WhiteLabelDialog,
         AgentErrorDialog
