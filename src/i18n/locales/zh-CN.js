@@ -448,6 +448,8 @@ export default {
   likeTapCountTip: '每次点赞时连续点击屏幕的次数',
   likeVideos: '点赞视频',
   likeComment: '点赞评论',
+  joinFanClub: '加入粉丝团',
+  checkInDaily: '每日签到',
   replyComment: '回复评论',
   replyContents: '回复内容',
   replyContentTips: '输入回复内容，一行一个回复。系统会随机选择并发送',

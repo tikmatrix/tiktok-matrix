@@ -445,6 +445,8 @@ export default {
   likeTapCountTip: 'Number of consecutive taps for each like action',
   likeVideos: 'Like Videos',
   likeComment: 'Like Comment',
+  joinFanClub: 'Join Fan Club',
+  checkInDaily: 'Check in daily',
   replyComment: 'Reply Comment',
   replyContents: 'Reply Contents',
   replyContentTips: 'Enter reply contents, one per line. System will randomly select and send them',
