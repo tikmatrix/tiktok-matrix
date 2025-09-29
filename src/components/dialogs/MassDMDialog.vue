@@ -6,11 +6,11 @@
       <span>{{ $t('massDMWarning') }}</span>
     </div>
   </div>
-  <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
+  <!-- <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('sendProfileCard') }}: </span>
     <input type="text" class="input input-md grow input-bordered" v-model="send_profile_card"
       :placeholder="$t('sendProfileCardTips')" />
-  </div>
+  </div> -->
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('messageContent') }}: </span>
     <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('messageContentTips')"
