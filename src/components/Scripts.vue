@@ -9,11 +9,11 @@
         <font-awesome-icon icon="fa-solid fa-right-to-bracket" class="h-3 w-3" />
         {{ $t('login') }}
     </button>
-    <!-- <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'profile' } })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
         {{ $t('fillProfile') }}
-    </button> -->
+    </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'matchAccount' } })">
         <font-awesome-icon icon="fa-solid fa-user-check" class="h-3 w-3" />
