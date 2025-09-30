@@ -921,4 +921,13 @@ export default {
   // 键盘输入
   keyboardInput: '键盘控制',
   keyboardInputTip: '在大屏模式下点击设备屏幕获取焦点，然后使用电脑键盘输入文字、标点符号和控制设备',
+
+  // 确认对话框
+  confirm: '确认',
+  cancel: '取消',
+  warning: '警告',
+  clearAllConfirm: '确定要清空所有内容吗？',
+  clearAllMaterialsConfirm: '确定要清空所有素材吗？此操作不可逆转！',
+  clearAllTasksConfirm: '确定要清空所有任务吗？此操作不可逆转！',
+  operationCannotBeUndone: '此操作无法撤销',
 };

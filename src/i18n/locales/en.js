@@ -921,4 +921,13 @@ export default {
   // Keyboard Input
   keyboardInput: 'Keyboard Control',
   keyboardInputTip: 'Click on device screen in big mode to focus, then use computer keyboard to input text, punctuation and control the device',
+
+  // Confirmation Dialog
+  confirm: 'Confirm',
+  cancel: 'Cancel',
+  warning: 'Warning',
+  clearAllConfirm: 'Are you sure you want to clear all content?',
+  clearAllMaterialsConfirm: 'Are you sure you want to clear all materials? This operation cannot be undone!',
+  clearAllTasksConfirm: 'Are you sure you want to clear all tasks? This operation cannot be undone!',
+  operationCannotBeUndone: 'This operation cannot be undone',
 };

@@ -69,6 +69,30 @@
       </template>
     </Pagination>
 
+    <!-- 清空所有任务确认对话框 -->
+    <dialog ref="clear_all_confirm_dialog" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg text-warning">
+          <i class="fa fa-exclamation-triangle mr-2"></i>{{ $t('warning') }}
+        </h3>
+        <div class="py-4">
+          <p class="text-lg mb-2">{{ $t('clearAllTasksConfirm') }}</p>
+          <p class="text-sm text-base-content/70">{{ $t('operationCannotBeUndone') }}</p>
+        </div>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost mr-2">{{ $t('cancel') }}</button>
+          </form>
+          <button class="btn btn-error" @click="confirmClearAll">
+            <i class="fa fa-trash mr-1"></i>{{ $t('confirm') }}
+          </button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
 
   </div>
 </template>
@@ -125,6 +149,13 @@ export default {
       return scriptArgs;
     },
     async clearAll() {
+      // 显示确认对话框
+      this.$refs.clear_all_confirm_dialog.showModal()
+    },
+    async confirmClearAll() {
+      // 关闭确认对话框
+      this.$refs.clear_all_confirm_dialog.close()
+      // 执行清空操作
       this.$service
         .delete_all_tasks()
         .then(() => {
