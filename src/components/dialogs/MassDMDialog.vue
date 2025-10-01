@@ -14,7 +14,7 @@
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('messageContent') }}: </span>
     <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('messageContentTips')"
-      autocomplete="off" v-model="message_content"> </textarea>
+      autocomplete="off" v-model="message_contents"> </textarea>
     <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
     <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji"
       title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
@@ -37,17 +37,17 @@ export default {
   mixins: [
     massDMSettings.createVueMixin(
       {
-        message_content: '',
+        message_contents: '',
         insert_emoji: false,
         target_username_path: '',
         send_profile_card: '',
       }, // 默认设置
-      ['message_content', 'insert_emoji', 'target_username_path', 'send_profile_card'] // 需要监听的属性
+      ['message_contents', 'insert_emoji', 'target_username_path', 'send_profile_card'] // 需要监听的属性
     )
   ],
   data() {
     return {
-      message_content: '',
+      message_contents: '',
       insert_emoji: false,
       target_username_path: '',
       send_profile_card: '',
