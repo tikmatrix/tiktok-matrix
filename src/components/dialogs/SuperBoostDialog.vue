@@ -93,10 +93,11 @@
                     <div class="ml-8 space-y-3">
                         <div class="form-control">
                             <label class="label py-1">
-                                <span class="label-text text-sm">{{ $t('messageContent') }}</span>
+                                <span class="label-text text-sm">{{ $t('messageContents') }}</span>
                             </label>
                             <textarea class="textarea textarea-sm textarea-bordered h-16"
-                                v-model="dmSettings.message_content" :placeholder="$t('messageContentTips')"></textarea>
+                                v-model="dmSettings.message_contents"
+                                :placeholder="$t('messageContentsTips')"></textarea>
                         </div>
 
                         <label class="cursor-pointer flex items-center gap-2">
@@ -229,7 +230,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-xs btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                    }}</button>
+                                }}</button>
                                 <span :class="testResultStyle" class="text-xs">{{ testResult }}</span>
                             </div>
                         </div>
@@ -291,7 +292,7 @@ export default {
                     boost_type: 'follow'
                 },
                 dmSettings: {
-                    message_content: '',
+                    message_contents: '',
                     insert_emoji: false
                 },
                 postSettings: {
@@ -347,7 +348,7 @@ export default {
 
             // 私信设置
             dmSettings: {
-                message_content: '',
+                message_contents: '',
                 insert_emoji: false
             },
 
@@ -423,7 +424,7 @@ export default {
                         boost_type: 'follow'
                     },
                     dmSettings: {
-                        message_content: '',
+                        message_contents: '',
                         insert_emoji: false
                     },
                     postSettings: {
@@ -511,7 +512,7 @@ export default {
                 errors.push(this.$t('selectUsernameFileRequired'));
             }
 
-            if (this.features.sendDM && !this.dmSettings.message_content.trim()) {
+            if (this.features.sendDM && !this.dmSettings.message_contents.trim()) {
                 errors.push(this.$t('enterMessageContent'));
             }
 
