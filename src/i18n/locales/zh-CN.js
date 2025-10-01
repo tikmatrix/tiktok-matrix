@@ -646,8 +646,10 @@ export default {
   scrapeFans: '采集粉丝',
   scrapeFansJobs: '采集粉丝任务',
   scrapeUsers: '采集用户',
-  scrapeUsersWarning: '采集用户功能支持两种方式：一是采集指定用户的关注者列表，二是通过关键字搜索采集用户列表。TikTok 仅限制了可查看关注者列表的数量，所以每次最多只能获取约50条记录。',
+  scrapeUsersWarning: '采集用户功能支持三种方式：一是采集指定用户的关注者列表，二是采集指定用户的关注列表，三是通过关键字搜索采集用户列表。TikTok 仅限制了可查看关注者/关注列表的数量，所以每次最多只能获取约50条记录。',
   scrapeMode: '采集方式',
+  scrapeByFollowers: '按关注者采集',
+  scrapeByFollowing: '按关注列表采集',
   scrapeByUsername: '按用户名采集',
   scrapeByKeyword: '按关键字采集',
   searchKeywordTips: '请输入搜索关键字',
@@ -924,4 +926,13 @@ export default {
   // 键盘输入
   keyboardInput: '键盘控制',
   keyboardInputTip: '在大屏模式下点击设备屏幕获取焦点，然后使用电脑键盘输入文字、标点符号和控制设备',
+
+  // 确认对话框
+  confirm: '确认',
+  cancel: '取消',
+  warning: '警告',
+  clearAllConfirm: '确定要清空所有内容吗？',
+  clearAllMaterialsConfirm: '确定要清空所有素材吗？此操作不可逆转！',
+  clearAllTasksConfirm: '确定要清空所有任务吗？此操作不可逆转！',
+  operationCannotBeUndone: '此操作无法撤销',
 };

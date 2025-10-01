@@ -52,7 +52,7 @@
                   <div class="indicator">
                     <div class="indicator-item badge badge-success" v-if="material.used == '0'">{{ $t('unused') }}</div>
                     <div class="indicator-item badge badge-error" v-else @click="show_material(material)">{{ $t('used')
-                      }}</div>
+                    }}</div>
                     <div class="cursor-pointer border rounded items-center text-center flex align-middle">
                       <template v-if="material.name.endsWith('.mp4') || material.name.endsWith('.webm')">
                         <video :src="material.preview" class="w-12 h-18 max-w-none flex-1"></video>
@@ -119,7 +119,7 @@
                 </td>
                 <td>
                   <span class="text-md cursor-pointer" v-if="material.group_id">{{ get_group_name(material.group_id)
-                    }}</span>
+                  }}</span>
                   <span class="text-md text-warning cursor-pointer" v-else>{{ $t('unset') }}</span>
                 </td>
                 <td>
@@ -239,6 +239,30 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
+
+  <!-- 清空所有素材确认对话框 -->
+  <dialog ref="clear_all_confirm_dialog" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg text-warning">
+        <i class="fa fa-exclamation-triangle mr-2"></i>{{ $t('warning') }}
+      </h3>
+      <div class="py-4">
+        <p class="text-lg mb-2">{{ $t('clearAllMaterialsConfirm') }}</p>
+        <p class="text-sm text-base-content/70">{{ $t('operationCannotBeUndone') }}</p>
+      </div>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn btn-ghost mr-2">{{ $t('cancel') }}</button>
+        </form>
+        <button class="btn btn-error" @click="confirmClearAll">
+          <i class="fa fa-trash mr-1"></i>{{ $t('confirm') }}
+        </button>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop">
@@ -482,6 +506,13 @@ export default {
       }
     },
     delete_all() {
+      // 显示确认对话框
+      this.$refs.clear_all_confirm_dialog.showModal()
+    },
+    confirmClearAll() {
+      // 关闭确认对话框
+      this.$refs.clear_all_confirm_dialog.close()
+      // 执行清空操作
       this.$service
         .delete_all_materials({
           group_id: this.group.id

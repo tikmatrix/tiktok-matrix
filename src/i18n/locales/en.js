@@ -643,8 +643,10 @@ export default {
   scrapeFans: 'Scrape Flowers',
   scrapeFansJobs: 'Scrape Fans Jobs',
   scrapeUsers: 'Scrape Users',
-  scrapeUsersWarning: 'The user scraping feature supports two modes: collecting the followers list of a specified user, or collecting users by searching with keywords. TikTok only limits the number of followers that can be viewed, so only about 50 records can be retrieved per operation.',
+  scrapeUsersWarning: 'The user scraping feature supports three modes: collecting the followers list of a specified user, collecting the following list of a specified user, or collecting users by searching with keywords. TikTok only limits the number of followers/following that can be viewed, so only about 50 records can be retrieved per operation.',
   scrapeMode: 'Scrape Mode',
+  scrapeByFollowers: 'Scrape by Followers',
+  scrapeByFollowing: 'Scrape by Following',
   scrapeByUsername: 'Scrape by Username',
   scrapeByKeyword: 'Scrape by Keyword',
   searchKeywordTips: 'Please enter search keyword',
@@ -924,4 +926,13 @@ export default {
   // Keyboard Input
   keyboardInput: 'Keyboard Control',
   keyboardInputTip: 'Click on device screen in big mode to focus, then use computer keyboard to input text, punctuation and control the device',
+
+  // Confirmation Dialog
+  confirm: 'Confirm',
+  cancel: 'Cancel',
+  warning: 'Warning',
+  clearAllConfirm: 'Are you sure you want to clear all content?',
+  clearAllMaterialsConfirm: 'Are you sure you want to clear all materials? This operation cannot be undone!',
+  clearAllTasksConfirm: 'Are you sure you want to clear all tasks? This operation cannot be undone!',
+  operationCannotBeUndone: 'This operation cannot be undone',
 };
