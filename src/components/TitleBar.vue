@@ -180,7 +180,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                    }}</span>
+                }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
@@ -237,8 +237,8 @@
     <!-- 白标设置弹窗 -->
     <WhiteLabelDialog ref="whitelabelDialog" @config-updated="onWhiteLabelConfigUpdated" />
 
-    <!-- 购买授权弹窗 -->
-    <StripePriceTableDialog ref="stripePriceTableDialog" :license="licenseData" />
+    <!-- 许可证管理弹窗 -->
+    <LicenseManagementDialog ref="licenseManagementDialog" :license="licenseData" />
 
 
     <!-- 下载进度弹窗 -->
@@ -288,7 +288,7 @@ import { relaunch } from '@tauri-apps/api/process';
 import { fetch, ResponseType } from '@tauri-apps/api/http';
 import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
-import StripePriceTableDialog from './StripePriceTableDialog.vue';
+import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
 import AgentErrorDialog from './AgentErrorDialog.vue';
@@ -298,7 +298,7 @@ import { isFeatureUnlocked } from '../utils/features.js';
 export default {
     name: 'TitleBar',
     components: {
-        StripePriceTableDialog,
+        LicenseManagementDialog,
         WhiteLabelDialog,
         AgentErrorDialog
     },
@@ -436,7 +436,7 @@ export default {
         },
         showLicenseDialog() {
             // this.$refs.buyLicenseDialog.show()
-            this.$refs.stripePriceTableDialog.show()
+            this.$refs.licenseManagementDialog.show()
         },
         async loadLicense() {
             this.isLoadingLicense = true;
