@@ -117,9 +117,36 @@ async fn download_file(
     path: String,
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
+    download_file_with_version(url, path, app_handle, None).await
+}
+
+#[tauri::command]
+async fn download_file_with_version(
+    url: String,
+    path: String,
+    app_handle: tauri::AppHandle,
+    version: Option<String>,
+) -> Result<(), String> {
     let client = Client::new();
+
+    // 根据是否提供版本号来构建URL参数
+    let request_url = if let Some(v) = version {
+        if url.contains('?') {
+            format!("{}&v={}", url, v)
+        } else {
+            format!("{}?v={}", url, v)
+        }
+    } else {
+        // 回退到时间戳方式（兼容性）
+        if url.contains('?') {
+            format!("{}&t={}", url, Instant::now().elapsed().as_secs())
+        } else {
+            format!("{}?t={}", url, Instant::now().elapsed().as_secs())
+        }
+    };
+    log::info!("Downloading from URL: {}", &request_url);
     let res = client
-        .get(format!("{}?t={}", url, Instant::now().elapsed().as_secs()).as_str())
+        .get(&request_url)
         .header(
             USER_AGENT,
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
@@ -378,6 +405,7 @@ fn main() -> std::io::Result<()> {
             kill_process,
             open_dir,
             download_file,
+            download_file_with_version,
             unzip_file,
             is_agent_running,
             set_env,

@@ -180,7 +180,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                }}</span>
+                    }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
@@ -574,8 +574,12 @@ export default {
 
                 if (!downloaded || localversion !== lib.version) {
                     console.log(`downloading ${lib.name} from ${url} to ${path}`);
-                    url = url + '?t=' + new Date().getTime();
-                    await invoke('download_file', { url, path }).catch(async (e) => {
+                    // 使用版本号作为缓存参数，提高CDN缓存命中率
+                    await invoke('download_file_with_version', {
+                        url,
+                        path,
+                        version: lib.version
+                    }).catch(async (e) => {
                         console.error(e);
                         await message('Download Error', { title: 'Error', type: 'error' });
                         return;
@@ -765,8 +769,12 @@ export default {
                 let path = work_path + 'tmp/' + name;
 
                 console.log(`静默下载 ${lib.name} 从 ${url}`);
-                url = url + '?t=' + new Date().getTime();
-                await invoke('download_file', { url, path });
+                // 使用版本号作为缓存参数，提高CDN缓存命中率
+                await invoke('download_file_with_version', {
+                    url,
+                    path,
+                    version: lib.version
+                });
 
                 localStorage.setItem(localStorageKey, lib.version);
 
