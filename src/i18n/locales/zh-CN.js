@@ -1,5 +1,9 @@
 export default {
   repost: '转发',
+  share: '分享',
+  like: '点赞',
+  favorite: '收藏',
+  follow: '关注',
   account: '帐号',
   profileOrder: '个人资料顺序',
   loadingManagingSubscription: '加载管理订阅...',
