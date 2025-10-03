@@ -71,5 +71,6 @@ const api = {
   stop_tiktok: '/api/stop_tiktok',
   validate_license_migration: '/api/validate_license_migration',
   migrate_license: '/api/migrate_license',
+  report_distributor_install: '/api/report_distributor_install',
 }
 export default api

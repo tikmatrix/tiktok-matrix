@@ -1,0 +1,172 @@
+name: Build Distributor Package
+run-name: Building package for distributor ${{ github.event.inputs.distributor_code }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      distributor_code:
+        description: "Distributor Code (e.g., DIST001, DIST002)"
+        required: true
+        type: string
+      platform:
+        description: "Build Platform"
+        required: true
+        type: choice
+        default: "both"
+        options:
+          - windows
+          - macos
+          - both
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    if: ${{ github.event.inputs.platform == 'windows' || github.event.inputs.platform == 'both' }}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build with distributor code
+        env:
+          DISTRIBUTOR_CODE: ${{ github.event.inputs.distributor_code }}
+        run: |
+          npm run build
+          cd src-tauri
+          cargo build --release
+
+      - name: Create installer
+        env:
+          DISTRIBUTOR_CODE: ${{ github.event.inputs.distributor_code }}
+        run: |
+          cd src-tauri
+          cargo tauri build
+
+      - name: Get version and rename output
+        id: rename
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json).package.version
+          $distCode = "${{ github.event.inputs.distributor_code }}"
+
+          # 查找生成的 MSI 文件
+          $msiFiles = Get-ChildItem -Path "src-tauri/target/release/bundle/msi" -Filter "*.msi"
+
+          foreach ($file in $msiFiles) {
+            $newName = $file.Name -replace "\.msi$", "_${distCode}.msi"
+            $newPath = Join-Path $file.DirectoryName $newName
+            Move-Item -Path $file.FullName -Destination $newPath
+            Write-Output "Renamed: $($file.Name) -> $newName"
+            echo "msi_file=$newPath" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: TikMatrix-${{ github.event.inputs.distributor_code }}-Windows
+          path: src-tauri/target/release/bundle/msi/*${{ github.event.inputs.distributor_code }}.msi
+          if-no-files-found: error
+
+  build-macos:
+    if: ${{ github.event.inputs.platform == 'macos' || github.event.inputs.platform == 'both' }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build with distributor code
+        env:
+          DISTRIBUTOR_CODE: ${{ github.event.inputs.distributor_code }}
+        run: |
+          npm run build
+          chmod +x ./build.sh
+          ./build.sh
+
+      - name: Get version and rename output
+        id: rename
+        run: |
+          version=$(jq -r '.package.version' src-tauri/tauri.conf.json)
+          distCode="${{ github.event.inputs.distributor_code }}"
+
+          # 查找生成的 DMG 文件
+          for file in src-tauri/target/release/bundle/dmg/*.dmg; do
+            if [ -f "$file" ]; then
+              newName="${file%.dmg}_${distCode}.dmg"
+              mv "$file" "$newName"
+              echo "Renamed: $(basename $file) -> $(basename $newName)"
+              echo "dmg_file=$newName" >> $GITHUB_OUTPUT
+            fi
+          done
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: TikMatrix-${{ github.event.inputs.distributor_code }}-macOS
+          path: src-tauri/target/release/bundle/dmg/*${{ github.event.inputs.distributor_code }}.dmg
+          if-no-files-found: error
+
+  summary:
+    needs: [build-windows, build-macos]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create summary
+        run: |
+          echo "# 🎉 Distributor Package Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Distributor Code:** \`${{ github.event.inputs.distributor_code }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Platform:** ${{ github.event.inputs.platform }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📦 Download Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "Please check the **Artifacts** section above to download the built packages." >> $GITHUB_STEP_SUMMARY

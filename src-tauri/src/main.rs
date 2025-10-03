@@ -45,6 +45,12 @@ impl Progress {
 fn setup_env(working_dir: &str) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
     std::env::set_var("MATRIX_APP_NAME", "TikMatrix");
+
+    // 设置分发商代码 - 从编译时嵌入的环境变量读取
+    let distributor_code = env!("DISTRIBUTOR_CODE");
+    std::env::set_var("DISTRIBUTOR_CODE", distributor_code);
+    log::info!("Distributor code: {}", distributor_code);
+
     if cfg!(debug_assertions) {
         std::env::set_var("MOSS_URL", "http://127.0.0.1:8787/moss");
         std::env::set_var("RUST_BACKTRACE", "1");

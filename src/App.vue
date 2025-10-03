@@ -308,12 +308,69 @@ export default {
       }
     },
 
+    // 初始化分发商绑定
+    async initDistributor() {
+      try {
+        // 检查是否已绑定
+        const isBound = localStorage.getItem('distributor_bound');
+        if (isBound === 'true') {
+          console.log('Distributor already bound');
+          return;
+        }
+
+        // 动态导入 Tauri API
+        const { invoke } = await import('@tauri-apps/api/tauri');
+        const { getVersion } = await import('@tauri-apps/api/app');
+        const { type, version, arch } = await import('@tauri-apps/api/os');
+
+        // 获取分发商代码 - 从环境变量读取(编译时注入)
+        const distributorCode = await invoke('get_env', { key: 'DISTRIBUTOR_CODE' }) || 'OFFICIAL';
+        console.log('Distributor code:', distributorCode);
+
+        // 获取机器ID
+        const machineId = await invoke('get_env', { key: 'MACHINE_ID' }) || 'UNKNOWN';
+
+        // 获取应用版本 - 使用 Tauri API
+        const appVersion = await getVersion();
+
+        // 获取操作系统信息 - 使用 Tauri OS API
+        const osType = await type();      // 'Windows_NT', 'Darwin', 'Linux'
+        const osVersion = await version(); // 操作系统版本
+        const osArch = await arch();       // 'x86_64', 'aarch64'
+        const osFullVersion = `${osType} ${osVersion} (${osArch})`;
+
+        console.log('App version:', appVersion);
+        console.log('OS Info:', osFullVersion);
+
+        // 上报安装信息
+        const result = await this.$service.report_distributor_install({
+          distributor_code: distributorCode,
+          app_version: appVersion,
+          os_version: osFullVersion
+        });
+
+        console.log('Distributor report result:', result);
+
+        // 标记已绑定
+        localStorage.setItem('distributor_bound', 'true');
+        localStorage.setItem('distributor_code', distributorCode);
+
+      } catch (error) {
+        console.error('Failed to initialize distributor:', error);
+        // 失败也标记为已尝试,避免重复调用
+        localStorage.setItem('distributor_bound', 'true');
+      }
+    },
+
 
   },
 
   async mounted() {
     // 禁止右键菜单
     this.disableMenu();
+
+    // 初始化分发商绑定
+    await this.initDistributor();
 
     // 监听代理启动事件
     this.listeners.push(await this.$listen('agent_started', async (e) => {
