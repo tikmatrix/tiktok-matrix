@@ -24,7 +24,7 @@ function parseArgs() {
         platform: null,
         distributor: null,
         allDistributors: false,
-        app: 'tikmatrix'
+        app: 'tikzenx'
     }
 
     for (const arg of args) {
@@ -64,12 +64,12 @@ function buildDownloadUrl(platform, version, distributorCode) {
 
     if (platform === 'windows') {
         fileName = distributorCode === 'OFFICIAL'
-            ? `TikMatrix_${version}_x64_en-US.msi`
-            : `TikMatrix_${version}_x64_en-US_${distributorCode}.msi`
+            ? `TikZenX_${version}_x64_en-US.msi`
+            : `TikZenX_${version}_x64_en-US_${distributorCode}.msi`
     } else if (platform === 'mac') {
         fileName = distributorCode === 'OFFICIAL'
-            ? `TikMatrix_${version}_universal.dmg`
-            : `TikMatrix_${version}_universal_${distributorCode}.dmg`
+            ? `TikZenX_${version}_universal.dmg`
+            : `TikZenX_${version}_universal_${distributorCode}.dmg`
     } else {
         throw new Error(`Unknown platform: ${platform}`)
     }
