@@ -311,12 +311,6 @@ export default {
     // 初始化分发商绑定
     async initDistributor() {
       try {
-        // 检查是否已绑定
-        const isBound = localStorage.getItem('distributor_bound');
-        if (isBound === 'true') {
-          console.log('Distributor already bound');
-          return;
-        }
 
         // 动态导入 Tauri API
         const { invoke } = await import('@tauri-apps/api/tauri');
@@ -351,14 +345,9 @@ export default {
 
         console.log('Distributor report result:', result);
 
-        // 标记已绑定
-        localStorage.setItem('distributor_bound', 'true');
-        localStorage.setItem('distributor_code', distributorCode);
 
       } catch (error) {
         console.error('Failed to initialize distributor:', error);
-        // 失败也标记为已尝试,避免重复调用
-        localStorage.setItem('distributor_bound', 'true');
       }
     },
 
