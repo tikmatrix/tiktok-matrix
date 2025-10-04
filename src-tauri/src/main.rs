@@ -4,6 +4,7 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use std::{
     cmp::min,
+    fs,
     fs::File,
     io::{self, BufReader, Write},
     net::TcpListener,
@@ -25,6 +26,47 @@ use tauri::{
 use zip::read::ZipArchive;
 mod init_log;
 
+/**
+ * 读取分发商标识
+ * 优先从资源目录读取 distributor.txt,如果不存在则返回 "OFFICIAL"
+ */
+#[tauri::command]
+fn get_distributor_code(app_handle: tauri::AppHandle) -> Result<String, String> {
+    // 方法 1: 从资源目录读取
+    if let Some(resource_dir) = app_handle.path_resolver().resource_dir() {
+        let distributor_file = resource_dir.join("distributor.txt");
+        if distributor_file.exists() {
+            if let Ok(code) = fs::read_to_string(&distributor_file) {
+                let trimmed = code.trim().to_string();
+                if !trimmed.is_empty() {
+                    log::info!("📋 Distributor code loaded from resource: {}", trimmed);
+                    return Ok(trimmed);
+                }
+            }
+        }
+    }
+
+    // 方法 2: 从可执行文件同目录读取
+    if let Ok(exe_path) = std::env::current_exe() {
+        if let Some(exe_dir) = exe_path.parent() {
+            let distributor_file = exe_dir.join("distributor.txt");
+            if distributor_file.exists() {
+                if let Ok(code) = fs::read_to_string(&distributor_file) {
+                    let trimmed = code.trim().to_string();
+                    if !trimmed.is_empty() {
+                        log::info!("📋 Distributor code loaded from exe dir: {}", trimmed);
+                        return Ok(trimmed);
+                    }
+                }
+            }
+        }
+    }
+
+    // 默认返回 OFFICIAL
+    log::info!("📋 No distributor code found, using OFFICIAL");
+    Ok("OFFICIAL".to_string())
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Progress {
     pub filesize: u64,
@@ -45,11 +87,6 @@ impl Progress {
 fn setup_env(working_dir: &str) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
     std::env::set_var("MATRIX_APP_NAME", "TikMatrix");
-
-    // 设置分发商代码 - 从编译时嵌入的环境变量读取
-    let distributor_code = env!("DISTRIBUTOR_CODE");
-    std::env::set_var("DISTRIBUTOR_CODE", distributor_code);
-    log::info!("Distributor code: {}", distributor_code);
 
     if cfg!(debug_assertions) {
         std::env::set_var("MOSS_URL", "http://127.0.0.1:8787/moss");
@@ -407,6 +444,7 @@ fn open_adb_terminal(dir: String) {
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            get_distributor_code,
             grant_permission,
             kill_process,
             open_dir,
@@ -430,6 +468,17 @@ fn main() -> std::io::Result<()> {
             setup_env(work_dir);
             init_log::init(work_dir);
             log::info!("work_dir: {}", work_dir);
+
+            // 读取并记录分发商代码
+            let app_handle = app.handle();
+            match get_distributor_code(app_handle) {
+                Ok(code) => {
+                    log::info!("✅ Distributor Code: {}", code);
+                    std::env::set_var("DISTRIBUTOR_CODE", &code);
+                }
+                Err(e) => log::warn!("⚠️  Failed to get distributor code: {}", e),
+            }
+
             let window = app.get_window("main").expect("Failed to get main window");
             window
                 .eval("localStorage.removeItem('hasCheckedUpdate');")
