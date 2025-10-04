@@ -129,7 +129,6 @@ export default {
   adjustFrameRate: 'Adjust Frame Rate',
   adjustResolution: 'Adjust Resolution',
   adjustScreenSize: 'Adjust Screen Size',
-  affiliateCode: 'Promo Code',
   afterPayTip: 'Payment result is refreshing...,Please wait 1-2 minutes after payment, do not close the page!',
   afterScriptAction: 'After Script Action',
   agentPortOccupied: 'Port 50809 is occupied by process: {process}, which may indicate that another instance of the application is already running.',

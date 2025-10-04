@@ -131,7 +131,6 @@ export default {
   adjustFrameRate: '调整帧率',
   adjustResolution: '调整分辨率',
   adjustScreenSize: '调整屏幕尺寸',
-  affiliateCode: '优惠码',
   afterPayTip: '支付结果刷新中...,支付后请等待1-2分钟,不要关闭页面！',
   afterScriptAction: '脚本执行完毕后',
   agentPortOccupied: '端口50809被进程：{process}占用，这可能表明应用程序的另一个实例已经在运行。',
