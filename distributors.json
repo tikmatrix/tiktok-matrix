@@ -11,18 +11,6 @@
             "name": "Test Distributor 001",
             "enabled": true,
             "description": "Test distributor for development"
-        },
-        {
-            "code": "PARTNER_A",
-            "name": "Partner A",
-            "enabled": true,
-            "description": "Distribution partner A"
-        },
-        {
-            "code": "PARTNER_B",
-            "name": "Partner B",
-            "enabled": false,
-            "description": "Distribution partner B (disabled)"
         }
     ]
 }
