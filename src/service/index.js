@@ -297,13 +297,7 @@ export function activate_license(data) {
     data: data
   })
 }
-export function bind_affiliate(data) {
-  return request({
-    method: 'post',
-    url: api.bind_affiliate,
-    data: data
-  })
-}
+
 
 export function count_task_by_status() {
   return request({
@@ -720,6 +714,14 @@ export function migrate_license(data) {
   return request({
     method: 'post',
     url: api.migrate_license,
+    data
+  })
+}
+
+export function report_distributor_install(data) {
+  return request({
+    method: 'post',
+    url: api.report_distributor_install,
     data
   })
 }

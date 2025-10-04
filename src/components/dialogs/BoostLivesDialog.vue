@@ -35,6 +35,20 @@
         <span class="label-text">{{ $t('commentLive') }}</span>
       </label>
     </div>
+
+    <div class="form-control">
+      <label class="label cursor-pointer gap-2 py-1">
+        <input type="checkbox" v-model="join_fan_club" class="checkbox checkbox-success checkbox-md" />
+        <span class="label-text">{{ $t('joinFanClub') }}</span>
+      </label>
+    </div>
+
+    <div class="form-control">
+      <label class="label cursor-pointer gap-2 py-1">
+        <input type="checkbox" v-model="check_in_daily" class="checkbox checkbox-success checkbox-md" />
+        <span class="label-text">{{ $t('checkInDaily') }}</span>
+      </label>
+    </div>
     <!-- 观看时长输入 -->
     <div class="flex flex-row items-center p-1 gap-2">
       <label class="font-bold text-right">{{ $t('viewDuration') }}:</label>
@@ -123,6 +137,8 @@ const boostLivesMixin = boostLivesSettings.createVueMixin(
     target_username: '',
     enable_like: false,
     enable_comment: false,
+    join_fan_club: false,
+    check_in_daily: false,
     view_duration: 120,
     like_interval: 10,
     like_count: 10,
@@ -135,7 +151,7 @@ const boostLivesMixin = boostLivesSettings.createVueMixin(
     task_interval: [0, 0]
   },
   [
-    'target_username', 'enable_like', 'enable_comment', 'view_duration',
+    'target_username', 'enable_like', 'enable_comment', 'join_fan_club', 'check_in_daily', 'view_duration',
     'like_interval', 'like_count', 'comment_interval', 'comment_texts',
     'enter_method', 'insert_emoji', 'comment_order', 'comment_count', 'task_interval'
   ]

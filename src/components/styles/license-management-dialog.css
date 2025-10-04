@@ -1,0 +1,209 @@
+/* 许可证管理对话框样式 */
+
+/* 主对话框样式 */
+.license-management-dialog {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+/* 动画效果 */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 卡片悬停效果 */
+.license-management-dialog .card:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: translateY(-2px);
+}
+
+/* 渐变背景动画 */
+.license-management-dialog .bg-gradient-to-br {
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* 按钮样式增强 */
+.license-management-dialog .btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.license-management-dialog .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 输入框焦点效果 */
+.license-management-dialog .input:focus {
+    box-shadow: 0 0 0 3px rgba(var(--p), 0.2);
+    transform: translateY(-1px);
+}
+
+/* 徽章动画 */
+.license-management-dialog .badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* QR码容器样式 */
+.license-management-dialog .qr-code-container img {
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+}
+
+.license-management-dialog .qr-code-container img:hover {
+    transform: scale(1.05);
+}
+
+/* 功能列表样式 */
+.license-management-dialog .feature-list>li {
+    transition: transform 0.2s ease;
+}
+
+.license-management-dialog .feature-list>li:hover {
+    transform: translateX(4px);
+}
+
+/* 加载动画增强 */
+.license-management-dialog .loading {
+    animation: spin 1s linear infinite;
+}
+
+/* 倒计时数字样式 */
+.license-management-dialog .countdown {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+}
+
+/* Tab切换效果增强 */
+.license-management-dialog .tabs-lifted>.tab {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0.5rem 0.5rem 0 0;
+    border: 2px solid transparent;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+}
+
+.license-management-dialog .tabs-lifted>.tab:checked {
+    border-color: hsl(var(--b3));
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+.license-management-dialog .tabs-lifted>.tab:not(:checked):hover {
+    background-color: hsl(var(--b2));
+    transform: translateY(-1px);
+}
+
+/* 增强tab内容区域效果 */
+.license-management-dialog .tab-content {
+    transition: all 0.3s ease-in-out;
+    border-top: 0;
+    margin-top: -1px;
+}
+
+/* 链接悬停效果 */
+.license-management-dialog .link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+}
+
+/* 选中状态增强 */
+.license-management-dialog .checkbox:checked {
+    animation: checkboxCheck 0.3s ease-in-out;
+}
+
+@keyframes checkboxCheck {
+    0% {
+        transform: scale(0.8);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .license-management-dialog .modal-box {
+        margin: 0.5rem;
+        max-width: calc(100vw - 1rem);
+        max-height: 95vh;
+    }
+
+    .license-management-dialog .grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+    }
+
+    .license-management-dialog .card {
+        max-width: 100%;
+    }
+
+    /* 移动端进一步压缩间距 */
+    .license-management-dialog .px-4 {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .license-management-dialog .py-4 {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .license-management-dialog .grid[style*="repeat(4"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+/* 深色模式适配 */
+@media (prefers-color-scheme: dark) {
+    .license-management-dialog .card {
+        backdrop-filter: blur(10px);
+    }
+}
+
+/* 平滑滚动 */
+.license-management-dialog .modal-box {
+    scroll-behavior: smooth;
+}

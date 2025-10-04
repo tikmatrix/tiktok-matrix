@@ -11,8 +11,12 @@
     <span class="font-bold">{{ $t('scrapeMode') }}: </span>
     <div class="flex gap-2">
       <label class="cursor-pointer flex items-center gap-2">
-        <input type="radio" name="username" class="radio radio-accent" value="username" v-model="scrape_mode" />
-        <span>{{ $t('scrapeByUsername') }}</span>
+        <input type="radio" name="followers" class="radio radio-accent" value="followers" v-model="scrape_mode" />
+        <span>{{ $t('scrapeByFollowers') }}</span>
+      </label>
+      <label class="cursor-pointer flex items-center gap-2">
+        <input type="radio" name="following" class="radio radio-accent" value="following" v-model="scrape_mode" />
+        <span>{{ $t('scrapeByFollowing') }}</span>
       </label>
       <label class="cursor-pointer flex items-center gap-2">
         <input type="radio" name="keyword" class="radio radio-accent" value="keyword" v-model="scrape_mode" />
@@ -23,7 +27,7 @@
 
 
   <!-- 用户名输入 -->
-  <div v-if="scrape_mode === 'username'" class="flex flex-row items-center p-2 w-full">
+  <div v-if="scrape_mode === 'followers' || scrape_mode === 'following'" class="flex flex-row items-center p-2 w-full">
     <textarea class="textarea textarea-success w-full max-w-xl col-span-3 h-32 leading-tight"
       :placeholder="$t('targetUsernameTips')" autocomplete="off" v-model="target_username"> </textarea>
     <div class="flex flex-row items-center ml-4">
@@ -53,7 +57,7 @@ export default {
   mixins: [
     scrapeUsersSettings.createVueMixin(
       {
-        scrape_mode: 'username',
+        scrape_mode: 'followers',
         target_username: '',
         search_keyword: '',
         max_scrape_count: 50,
@@ -63,7 +67,7 @@ export default {
   ],
   data() {
     return {
-      scrape_mode: 'username',
+      scrape_mode: 'followers',
       target_username: '',
       search_keyword: '',
       max_scrape_count: 50,
@@ -74,7 +78,7 @@ export default {
       await invoke('open_dir', { name: 'download' })
     },
     filterTargetUsername() {
-      if (this.scrape_mode === 'username' && this.target_username == '') {
+      if ((this.scrape_mode === 'followers' || this.scrape_mode === 'following') && this.target_username == '') {
         alert(this.$t('targetUsernameRequired'))
         return false;
       }

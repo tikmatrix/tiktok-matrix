@@ -310,8 +310,8 @@ export default {
         return
       }
 
-      // 允许粘贴快捷键通过，不阻止其默认行为
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+      // 允许复制和粘贴快捷键通过，不阻止其默认行为
+      if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === 'v' || event.key.toLowerCase() === 'c')) {
         return
       }
 
@@ -345,8 +345,8 @@ export default {
         return
       }
 
-      // 允许粘贴快捷键通过，不阻止其默认行为
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+      // 允许复制和粘贴快捷键通过，不阻止其默认行为
+      if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === 'v' || event.key.toLowerCase() === 'c')) {
         return
       }
 

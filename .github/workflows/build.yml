@@ -3,16 +3,14 @@ run-name: ${{ github.actor }} is building Release 🚀
 on:
   push:
     tags:
-      - 'tikzenx*'
+      - "tikzenx*"
 permissions:
   contents: write
 jobs:
   deploy-windows:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: windows-latest
-    strategy:
-      fail-fast: true
-    steps:  
+    steps:
       - name: Checkout tikzenx repository
         uses: actions/checkout@v3
         with:
@@ -34,25 +32,15 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
-      - name: build
+      - name: build official package
         run: |
           npm install
           .\build.ps1
-      - name: update version
-        env:
-          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
-          API_KEY: ${{ secrets.API_KEY }}
+      - name: build distributor packages
         run: |
-          node scripts/update-version.js
-          node scripts/update-download-windows.js
-      # - name: release
-      #   id: create_release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: ./src-tauri/target/release/bundle/msi/*.msi
-      #     body_path: ./CHANGELOG
-      - name: upload to r2
-        uses: ryand56/r2-upload-action@v1.2.3
+          node scripts/build-distributor-packages-windows.js
+      - name: upload official package to r2
+        uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -60,12 +48,26 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
+      - name: upload distributor packages to r2
+        uses: ryand56/r2-upload-action@v1.4
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: tikmatrix
+          source-dir: ./dist-distributors
+          destination-dir: ./distributors
+      - name: update version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-version.js
+          node scripts/update-download-url.js --platform=windows --all-distributors
 
   deploy-macos:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: macos-latest
-    strategy:
-      fail-fast: true
     steps:
       - name: Checkout tikzenx repository
         uses: actions/checkout@v3
@@ -90,25 +92,16 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
-      - name: build
+      - name: build official package
         run: |
           npm install
           chmod +x ./build.sh
           ./build.sh
-      - name: update version
-        env:
-          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
-          API_KEY: ${{ secrets.API_KEY }}
+      - name: build distributor packages
         run: |
-          node scripts/update-download-mac.js
-      # - name: release
-      #   id: create_release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: ./src-tauri/target/release/bundle/dmg/*.dmg
-      #     body_path: ./CHANGELOG
-      - name: upload to r2
-        uses: ryand56/r2-upload-action@v1.2.3
+          node scripts/build-distributor-packages-mac.js
+      - name: upload official package to r2
+        uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -116,3 +109,18 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
           destination-dir: ./
+      - name: upload distributor packages to r2
+        uses: ryand56/r2-upload-action@v1.4
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: tikmatrix
+          source-dir: ./dist-distributors
+          destination-dir: ./distributors
+      - name: update version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-download-url.js --platform=mac --all-distributors

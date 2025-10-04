@@ -21,7 +21,6 @@ const api = {
   get_order: '/api/get_order',
   close_order: '/api/close_order',
   activate_license: '/api/activate_license',
-  bind_affiliate: '/api/bind_affiliate',
   count_online_device: '/api/device/count_online',
   count_all_account: '/api/account/count_all',
   count_account_by_group_id: '/api/account/count_account_by_group_id',
@@ -71,5 +70,6 @@ const api = {
   stop_tiktok: '/api/stop_tiktok',
   validate_license_migration: '/api/validate_license_migration',
   migrate_license: '/api/migrate_license',
+  report_distributor_install: '/api/report_distributor_install',
 }
 export default api

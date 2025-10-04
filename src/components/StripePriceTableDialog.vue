@@ -1,6 +1,13 @@
 <template>
   <dialog ref="buy_liscense_dialog" class="modal">
-    <div class="modal-box w-11/12 max-w-7xl overflow-hidden">
+    <div class="modal-box w-11/12 max-w-7xl overflow-y-auto max-h-[90vh] bg-gradient-to-br from-base-100 to-base-200">
+      <!-- 优化的关闭按钮 -->
+      <form method="dialog">
+        <button
+          class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-10 hover:bg-base-300 transition-all duration-200">
+          <font-awesome-icon icon="fas fa-times" class="text-lg" />
+        </button>
+      </form>
 
       <div class="modal-body">
         <div class="relative isolate px-6 py-6 w-full">
@@ -289,41 +296,72 @@
       <button>close</button>
     </form>
   </dialog>
-  <!-- 同意隐私协议和服务条款链接询问弹窗 -->
+
+  <!-- 隐私协议提醒对话框 -->
   <dialog ref="agreePolicyDialog" class="modal">
-    <form method="dialog" class="modal-box">
-      <h3 class="font-bold text-lg">{{ $t('tips') }}</h3>
-      <p class="py-4">{{ $t('pleaseAgree') }}</p>
-      <div class="modal-action">
-        <button type="submit" class="btn">{{ $t('confirm') }}</button>
+    <div class="modal-box max-w-md bg-gradient-to-br from-warning/10 to-error/10 border border-warning/20">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4">✕</button>
+      </form>
+      <div class="text-center">
+        <div class="w-16 h-16 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <font-awesome-icon icon="fas fa-exclamation-triangle" class="text-warning text-2xl" />
+        </div>
+        <h3 class="font-bold text-xl text-warning mb-4">{{ $t('tips') }}</h3>
+        <p class="text-base-content/80 mb-6 leading-relaxed">{{ $t('pleaseAgree') }}</p>
+        <div class="modal-action justify-center">
+          <form method="dialog">
+            <button class="btn btn-warning btn-wide hover:btn-warning-focus transition-all duration-200">
+              <font-awesome-icon icon="fas fa-check" class="mr-2" />
+              {{ $t('confirm') }}
+            </button>
+          </form>
+        </div>
       </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button></button>
     </form>
   </dialog>
-  <!-- 创建订单Loading弹窗 -->
+
+  <!-- 创建订单加载对话框 -->
   <dialog ref="createOrderLoadingDialog" class="modal">
-    <form method="dialog" class="modal-box">
-      <h3 class="font-bold text-lg">{{ $t('creatingOrder') }}</h3>
-      <div class="py-4 flex items-center justify-center">
-        <span class="loading loading-bars loading-xl"></span>
+    <div class="modal-box max-w-sm bg-gradient-to-br from-primary/10 to-secondary/10">
+      <div class="text-center">
+        <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span class="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+        <h3 class="font-bold text-xl text-primary mb-4">{{ $t('creatingOrder') }}</h3>
+        <p class="text-base-content/70 mb-6">{{ $t('pleaseWait') }}...</p>
+        <div class="modal-action justify-center">
+          <form method="dialog">
+            <button class="btn btn-primary btn-wide hover:btn-primary-focus transition-all duration-200">
+              {{ $t('confirm') }}
+            </button>
+          </form>
+        </div>
       </div>
-
-      <div class="modal-action">
-        <button type="submit" class="btn">{{ $t('confirm') }}</button>
-      </div>
-    </form>
+    </div>
   </dialog>
-  <!-- 管理订阅Loading弹窗 -->
-  <dialog ref="manageSubscriptionLoadingDialog" class="modal">
-    <form method="dialog" class="modal-box">
-      <h3 class="font-bold text-lg">{{ $t('loadingManagingSubscription') }}</h3>
-      <div class="py-4 flex items-center justify-center">
-        <span class="loading loading-bars loading-xl"></span>
-      </div>
 
-      <div class="modal-action">
-        <button type="submit" class="btn">{{ $t('confirm') }}</button>
+  <!-- 管理订阅加载对话框 -->
+  <dialog ref="manageSubscriptionLoadingDialog" class="modal">
+    <div class="modal-box max-w-sm bg-gradient-to-br from-success/10 to-info/10">
+      <div class="text-center">
+        <div class="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span class="loading loading-dots loading-lg text-success"></span>
+        </div>
+        <h3 class="font-bold text-xl text-success mb-4">{{ $t('loadingManagingSubscription') }}</h3>
+        <p class="text-base-content/70 mb-6">{{ $t('redirectingToStripe') }}...</p>
+        <div class="modal-action justify-center">
+          <form method="dialog">
+            <button class="btn btn-success btn-wide hover:btn-success-focus transition-all duration-200">
+              {{ $t('confirm') }}
+            </button>
+          </form>
+        </div>
       </div>
-    </form>
+    </div>
   </dialog>
 
   <!-- License迁移对话框 -->
@@ -744,3 +782,211 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* 自定义动画和过渡效果 */
+.modal-box {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 悬停效果增强 */
+.card:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* 渐变背景动画 */
+.bg-gradient-to-br {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 按钮悬停效果 */
+.btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 输入框焦点效果 */
+.input:focus {
+  box-shadow: 0 0 0 3px rgba(var(--p), 0.2);
+  transform: translateY(-1px);
+}
+
+/* 徽章动画 */
+.badge {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* QR码容器样式 */
+.card img {
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
+.card img:hover {
+  transform: scale(1.05);
+}
+
+/* 功能列表样式 */
+.space-y-3>li {
+  transition: transform 0.2s ease;
+}
+
+.space-y-3>li:hover {
+  transform: translateX(4px);
+}
+
+/* 加载动画增强 */
+.loading {
+  animation: spin 1s linear infinite;
+}
+
+/* 倒计时数字样式 */
+.countdown {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .modal-box {
+    margin: 0.5rem;
+    max-width: calc(100vw - 1rem);
+    max-height: 95vh;
+  }
+
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .card {
+    max-width: 100%;
+  }
+
+  /* 移动端进一步压缩间距 */
+  .px-4 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .py-4 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid[style*="repeat(4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* 深色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .card {
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* 平滑滚动 */
+.modal-box {
+  scroll-behavior: smooth;
+}
+
+/* 高亮效果 */
+.link:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+/* 选中状态增强 */
+.checkbox:checked {
+  animation: checkboxCheck 0.3s ease-in-out;
+}
+
+@keyframes checkboxCheck {
+  0% {
+    transform: scale(0.8);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Tab切换效果增强 */
+.tabs-lifted>.tab {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0.5rem 0.5rem 0 0;
+  border: 2px solid transparent;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.tabs-lifted>.tab:checked {
+  border-color: hsl(var(--b3));
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.tabs-lifted>.tab:not(:checked):hover {
+  background-color: hsl(var(--b2));
+  transform: translateY(-1px);
+}
+
+/* 增强tab内容区域效果 */
+.tab-content {
+  transition: all 0.3s ease-in-out;
+  border-top: 0;
+  margin-top: -1px;
+}
+</style>
