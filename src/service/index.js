@@ -164,13 +164,7 @@ export function delete_group({ id }) {
   })
 }
 
-export function create_group_config_file({ group_id, script_name }) {
-  return request({
-    method: 'post',
-    url: api.create_group_config_file,
-    data: { group_id, script_name }
-  })
-}
+
 
 export function get_group_config_file({ group_id, script_name }) {
   return request({
