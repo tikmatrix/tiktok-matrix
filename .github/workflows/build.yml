@@ -45,6 +45,12 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
+      - name: update version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-version.js
       - name: build distributor packages
         run: |
           node scripts/build-distributor-packages-windows.js
@@ -57,12 +63,11 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./dist-distributors
           destination-dir: ./distributors
-      - name: update version
+      - name: update distributor download urls
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-version.js
           node scripts/update-download-url.js --platform=windows --all-distributors
 
   deploy-macos:
@@ -106,6 +111,12 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
           destination-dir: ./
+      - name: update version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-version.js
       - name: build distributor packages
         run: |
           node scripts/build-distributor-packages-mac.js
@@ -118,7 +129,7 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./dist-distributors
           destination-dir: ./distributors
-      - name: update version
+      - name: update distributor download urls
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
