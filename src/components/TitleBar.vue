@@ -529,6 +529,8 @@ export default {
 
             if (response?.ok && response?.data?.code === 20000) {
                 const libs = response.data.data.libs;
+                let agentUpdated = false;
+                let scriptUpdated = false;
 
                 for (const lib of libs) {
                     if (lib.name === 'platform-tools') {
@@ -542,12 +544,15 @@ export default {
                     } else if (lib.name === 'scrcpy') {
                         await this.download_and_update_lib(lib, 'scrcpy');
                     } else if (lib.name === 'script') {
-                        await this.download_and_update_lib(lib, 'script');
+                        const updated = await this.download_and_update_lib(lib, 'script');
+                        if (updated) scriptUpdated = true;
                     } else if (lib.name === 'agent') {
-                        await this.download_and_update_lib(lib, 'agent');
+                        const updated = await this.download_and_update_lib(lib, 'agent');
+                        if (updated) agentUpdated = true;
                     }
                 }
-                if (!force) {
+                // 只有在首次检查更新或者 agent/script 有更新时才启动 agent
+                if (!force || agentUpdated || scriptUpdated) {
                     await this.startAgent();
                 }
                 localStorage.setItem('hasCheckedUpdate', 'true');
@@ -631,6 +636,7 @@ export default {
 
                     }
                 }
+                return updated;
             } catch (e) {
                 console.error(e);
                 await this.$emiter('NOTIFY', {
@@ -638,6 +644,7 @@ export default {
                     message: `Download and Update Lib Error: ${e.message}`,
                     timeout: 2000
                 });
+                return false;
             }
         },
 

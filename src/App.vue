@@ -358,8 +358,7 @@ export default {
     // 禁止右键菜单
     this.disableMenu();
 
-    // 初始化分发商绑定
-    await this.initDistributor();
+
 
     // 监听代理启动事件
     this.listeners.push(await this.$listen('agent_started', async (e) => {
@@ -368,6 +367,8 @@ export default {
         message: this.$t('agentStarted'),
         timeout: 2000
       });
+      // 初始化分发商绑定
+      await this.initDistributor();
       await this.get_settings()
       await this.get_groups()
       await this.getDevices();
