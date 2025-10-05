@@ -2,6 +2,8 @@
   <dialog ref="page_dialog" class="modal">
     <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
       <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
+      <AccountAnalytics :accounts="accounts"
+        v-if="selectedItem.name === 'accountAnalytics' && $refs.page_dialog.open" />
       <ManagePlans :devices="devices" v-if="selectedItem.name === 'plans' && $refs.page_dialog.open" />
       <Settings :settings="settings" v-if="selectedItem.name === 'tiktokSettings' && $refs.page_dialog.open" />
       <AccountWarmupSettings v-if="selectedItem.name === 'accountWarmup' && $refs.page_dialog.open"
@@ -23,6 +25,7 @@
 
 <script>
 import ManageAccounts from './components/account/ManageAccounts.vue'
+import AccountAnalytics from './components/account/AccountAnalytics.vue'
 import ManagePlans from './components/plan/ManagePlans.vue'
 import Settings from './components/Settings.vue'
 import PostSettings from './components/groups/PostSettings.vue'
@@ -48,6 +51,7 @@ export default {
   },
   components: {
     ManageAccounts,
+    AccountAnalytics,
     ManagePlans,
     Settings,
     ManageMaterials,
@@ -59,12 +63,30 @@ export default {
   data() {
     return {
       selectedItem: {},
+      accounts: []
     }
   },
   methods: {
-    menu_selected(item) {
+    async loadAccounts() {
+      try {
+        console.log('Loading accounts...');
+        const res = await this.$service.get_accounts();
+        this.accounts = res.data || [];
+        console.log('Accounts loaded:', this.accounts.length);
+      } catch (error) {
+        console.error('Failed to load accounts:', error);
+        this.accounts = [];
+      }
+    },
+    async menu_selected(item) {
       console.log('menu_selected', item)
       this.selectedItem = item
+
+      // 如果打开账号分析页面，重新加载账号数据
+      if (item.name === 'accountAnalytics') {
+        await this.loadAccounts();
+      }
+
       this.$refs.page_dialog.showModal()
       this.$refs.page_dialog.addEventListener('close', () => {
         this.selectedItem = {}
@@ -75,6 +97,8 @@ export default {
 
   },
   async mounted() {
+    await this.loadAccounts();
+
     // 监听关闭页面对话框事件
     await this.$listen('closeDialog', (e) => {
       this.$refs.page_dialog.close();
