@@ -4,6 +4,7 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 use std::{
     cmp::min,
+    fs,
     fs::File,
     io::{self, BufReader, Write},
     net::TcpListener,
@@ -25,6 +26,47 @@ use tauri::{
 use zip::read::ZipArchive;
 mod init_log;
 
+/**
+ * 读取分发商标识
+ * 优先从资源目录读取 distributor.txt,如果不存在则返回 "OFFICIAL"
+ */
+#[tauri::command]
+fn get_distributor_code(app_handle: tauri::AppHandle) -> Result<String, String> {
+    // 方法 1: 从资源目录读取
+    if let Some(resource_dir) = app_handle.path_resolver().resource_dir() {
+        let distributor_file = resource_dir.join("distributor.txt");
+        if distributor_file.exists() {
+            if let Ok(code) = fs::read_to_string(&distributor_file) {
+                let trimmed = code.trim().to_string();
+                if !trimmed.is_empty() {
+                    log::info!("📋 Distributor code loaded from resource: {}", trimmed);
+                    return Ok(trimmed);
+                }
+            }
+        }
+    }
+
+    // 方法 2: 从可执行文件同目录读取
+    if let Ok(exe_path) = std::env::current_exe() {
+        if let Some(exe_dir) = exe_path.parent() {
+            let distributor_file = exe_dir.join("distributor.txt");
+            if distributor_file.exists() {
+                if let Ok(code) = fs::read_to_string(&distributor_file) {
+                    let trimmed = code.trim().to_string();
+                    if !trimmed.is_empty() {
+                        log::info!("📋 Distributor code loaded from exe dir: {}", trimmed);
+                        return Ok(trimmed);
+                    }
+                }
+            }
+        }
+    }
+
+    // 默认返回 OFFICIAL
+    log::info!("📋 No distributor code found, using OFFICIAL");
+    Ok("OFFICIAL".to_string())
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Progress {
     pub filesize: u64,
@@ -45,6 +87,7 @@ impl Progress {
 fn setup_env(working_dir: &str) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
     std::env::set_var("MATRIX_APP_NAME", "IgMatrix");
+
     if cfg!(debug_assertions) {
         std::env::set_var("MOSS_URL", "http://127.0.0.1:8787/moss");
         std::env::set_var("RUST_BACKTRACE", "1");
@@ -117,9 +160,36 @@ async fn download_file(
     path: String,
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
+    download_file_with_version(url, path, app_handle, None).await
+}
+
+#[tauri::command]
+async fn download_file_with_version(
+    url: String,
+    path: String,
+    app_handle: tauri::AppHandle,
+    version: Option<String>,
+) -> Result<(), String> {
     let client = Client::new();
+
+    // 根据是否提供版本号来构建URL参数
+    let request_url = if let Some(v) = version {
+        if url.contains('?') {
+            format!("{}&v={}", url, v)
+        } else {
+            format!("{}?v={}", url, v)
+        }
+    } else {
+        // 回退到时间戳方式（兼容性）
+        if url.contains('?') {
+            format!("{}&t={}", url, Instant::now().elapsed().as_secs())
+        } else {
+            format!("{}?t={}", url, Instant::now().elapsed().as_secs())
+        }
+    };
+    log::info!("Downloading from URL: {}", &request_url);
     let res = client
-        .get(format!("{}?t={}", url, Instant::now().elapsed().as_secs()).as_str())
+        .get(&request_url)
         .header(
             USER_AGENT,
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
@@ -374,10 +444,12 @@ fn open_adb_terminal(dir: String) {
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            get_distributor_code,
             grant_permission,
             kill_process,
             open_dir,
             download_file,
+            download_file_with_version,
             unzip_file,
             is_agent_running,
             set_env,
@@ -396,6 +468,17 @@ fn main() -> std::io::Result<()> {
             setup_env(work_dir);
             init_log::init(work_dir);
             log::info!("work_dir: {}", work_dir);
+
+            // 读取并记录分发商代码
+            let app_handle = app.handle();
+            match get_distributor_code(app_handle) {
+                Ok(code) => {
+                    log::info!("✅ Distributor Code: {}", code);
+                    std::env::set_var("DISTRIBUTOR_CODE", &code);
+                }
+                Err(e) => log::warn!("⚠️  Failed to get distributor code: {}", e),
+            }
+
             let window = app.get_window("main").expect("Failed to get main window");
             window
                 .eval("localStorage.removeItem('hasCheckedUpdate');")

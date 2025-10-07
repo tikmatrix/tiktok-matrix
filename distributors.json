@@ -1,0 +1,16 @@
+{
+    "distributors": [
+        {
+            "code": "OFFICIAL",
+            "name": "Official Release",
+            "enabled": true,
+            "description": "Official TikMatrix release without distributor code"
+        },
+        {
+            "code": "TEST001",
+            "name": "Test Distributor 001",
+            "enabled": true,
+            "description": "Test distributor for development"
+        }
+    ]
+}

@@ -3,8 +3,8 @@
         class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
         <!-- 左侧：应用图标、名称、版本和检查更新 -->
         <div class="flex items-center space-x-2">
-            <img :src="whitelabelConfig.logo?.main || '../assets/app-icon.png'" class="h-10 w-10" alt="App Icon" />
-            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || 'TikMatrix' }}</span>
+            <img :src="whitelabelConfig.logo?.main || '../assets/logo.png'" class="h-10 w-auto" alt="TikMatrix Logo" />
+            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || '' }}</span>
             <!-- <span class="text-md text-base-content">v{{ version }}</span> -->
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
@@ -237,8 +237,8 @@
     <!-- 白标设置弹窗 -->
     <WhiteLabelDialog ref="whitelabelDialog" @config-updated="onWhiteLabelConfigUpdated" />
 
-    <!-- 购买授权弹窗 -->
-    <StripePriceTableDialog ref="stripePriceTableDialog" :license="licenseData" />
+    <!-- 许可证管理弹窗 -->
+    <LicenseManagementDialog ref="licenseManagementDialog" :license="licenseData" />
 
 
     <!-- 下载进度弹窗 -->
@@ -288,7 +288,7 @@ import { relaunch } from '@tauri-apps/api/process';
 import { fetch, ResponseType } from '@tauri-apps/api/http';
 import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
-import StripePriceTableDialog from './StripePriceTableDialog.vue';
+import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
 import AgentErrorDialog from './AgentErrorDialog.vue';
@@ -298,7 +298,7 @@ import { isFeatureUnlocked } from '../utils/features.js';
 export default {
     name: 'TitleBar',
     components: {
-        StripePriceTableDialog,
+        LicenseManagementDialog,
         WhiteLabelDialog,
         AgentErrorDialog
     },
@@ -436,7 +436,7 @@ export default {
         },
         showLicenseDialog() {
             // this.$refs.buyLicenseDialog.show()
-            this.$refs.stripePriceTableDialog.show()
+            this.$refs.licenseManagementDialog.show()
         },
         async loadLicense() {
             this.isLoadingLicense = true;
@@ -529,6 +529,8 @@ export default {
 
             if (response?.ok && response?.data?.code === 20000) {
                 const libs = response.data.data.libs;
+                let agentUpdated = false;
+                let scriptUpdated = false;
 
                 for (const lib of libs) {
                     if (lib.name === 'platform-tools') {
@@ -542,12 +544,15 @@ export default {
                     } else if (lib.name === 'scrcpy') {
                         await this.download_and_update_lib(lib, 'scrcpy');
                     } else if (lib.name === 'script') {
-                        await this.download_and_update_lib(lib, 'script');
+                        const updated = await this.download_and_update_lib(lib, 'script');
+                        if (updated) scriptUpdated = true;
                     } else if (lib.name === 'agent') {
-                        await this.download_and_update_lib(lib, 'agent');
+                        const updated = await this.download_and_update_lib(lib, 'agent');
+                        if (updated) agentUpdated = true;
                     }
                 }
-                if (!force) {
+                // 只有在首次检查更新或者 agent/script 有更新时才启动 agent
+                if (!force || agentUpdated || scriptUpdated) {
                     await this.startAgent();
                 }
                 localStorage.setItem('hasCheckedUpdate', 'true');
@@ -574,8 +579,12 @@ export default {
 
                 if (!downloaded || localversion !== lib.version) {
                     console.log(`downloading ${lib.name} from ${url} to ${path}`);
-                    url = url + '?t=' + new Date().getTime();
-                    await invoke('download_file', { url, path }).catch(async (e) => {
+                    // 使用版本号作为缓存参数，提高CDN缓存命中率
+                    await invoke('download_file_with_version', {
+                        url,
+                        path,
+                        version: lib.version
+                    }).catch(async (e) => {
                         console.error(e);
                         await message('Download Error', { title: 'Error', type: 'error' });
                         return;
@@ -627,6 +636,7 @@ export default {
 
                     }
                 }
+                return updated;
             } catch (e) {
                 console.error(e);
                 await this.$emiter('NOTIFY', {
@@ -634,6 +644,7 @@ export default {
                     message: `Download and Update Lib Error: ${e.message}`,
                     timeout: 2000
                 });
+                return false;
             }
         },
 
@@ -765,8 +776,12 @@ export default {
                 let path = work_path + 'tmp/' + name;
 
                 console.log(`静默下载 ${lib.name} 从 ${url}`);
-                url = url + '?t=' + new Date().getTime();
-                await invoke('download_file', { url, path });
+                // 使用版本号作为缓存参数，提高CDN缓存命中率
+                await invoke('download_file_with_version', {
+                    url,
+                    path,
+                    version: lib.version
+                });
 
                 localStorage.setItem(localStorageKey, lib.version);
 

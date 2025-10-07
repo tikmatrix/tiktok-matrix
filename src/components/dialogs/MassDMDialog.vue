@@ -12,8 +12,8 @@
       :placeholder="$t('sendProfileCardTips')" />
   </div> -->
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
-    <span class="font-bold">{{ $t('messageContent') }}: </span>
-    <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('messageContentTips')"
+    <span class="font-bold">{{ $t('messageContents') }}: </span>
+    <textarea class="textarea textarea-success grow  h-16 leading-tight" :placeholder="$t('messageContentsTips')"
       autocomplete="off" v-model="message_contents"> </textarea>
     <label class="font-bold text-right col-span-1">{{ $t('insertEmoji') }}:</label>
     <input type="checkbox" class="toggle toggle-accent col-span-1" v-model="insert_emoji"
@@ -25,6 +25,14 @@
     <input type="text" placeholder="example: C:/Users/Administrator/Desktop/usernames.txt"
       class="input input-md grow input-bordered" v-model="target_username_path" />
     <button class="btn btn-md btn-info ml-2" @click="selectTargetUsernames">{{ $t('select') }}</button>
+  </div>
+  <!-- 新增打开用户方式选择 -->
+  <div class="flex flex-row items-center p-2 gap-2">
+    <label class="font-bold text-right col-span-1">{{ $t('openUserMethod') }}:</label>
+    <input type="radio" id="search" v-model="open_user_method" value="search" />
+    <label for="search">{{ $t('searchUser') }}</label>
+    <input type="radio" id="direct" v-model="open_user_method" value="direct" />
+    <label for="direct">{{ $t('directOpenProfile') }}</label>
   </div>
 
 </template>
@@ -41,8 +49,9 @@ export default {
         insert_emoji: false,
         target_username_path: '',
         send_profile_card: '',
+        open_user_method: 'direct',
       }, // 默认设置
-      ['message_contents', 'insert_emoji', 'target_username_path', 'send_profile_card'] // 需要监听的属性
+      ['message_contents', 'insert_emoji', 'target_username_path', 'send_profile_card', 'open_user_method'] // 需要监听的属性
     )
   ],
   data() {
@@ -51,6 +60,7 @@ export default {
       insert_emoji: false,
       target_username_path: '',
       send_profile_card: '',
+      open_user_method: 'direct',
     }
   },
   methods: {

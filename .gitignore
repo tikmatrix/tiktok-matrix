@@ -25,3 +25,5 @@ dist-ssr
 target
 videos
 tiktok-agent/
+dist-distributors
+src-tauri/distributor.txt

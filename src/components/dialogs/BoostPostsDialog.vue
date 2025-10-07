@@ -33,6 +33,12 @@
       </div>
       <div class="form-control">
         <label class="label cursor-pointer gap-2">
+          <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_share" />
+          <span class="label-text">{{ $t('share') }}</span>
+        </label>
+      </div>
+      <div class="form-control">
+        <label class="label cursor-pointer gap-2">
           <input type="checkbox" class="checkbox checkbox-primary" v-model="enable_follow" />
           <span class="label-text">{{ $t('follow') }}</span>
         </label>
@@ -67,6 +73,7 @@ export default {
         enable_like: false,
         enable_save: false,
         enable_repost: false,
+        enable_share: false,
         enable_follow: false,
         view_duration: 10,
         boost_post_interval: [0, 0]
@@ -80,6 +87,7 @@ export default {
       enable_like: false,
       enable_save: false,
       enable_repost: false,
+      enable_share: false,
       enable_follow: false,
       view_duration: 10,
       boost_post_interval: [0, 0]
