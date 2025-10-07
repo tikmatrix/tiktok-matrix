@@ -6,7 +6,7 @@
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="import_accounts" label="import" icon="fa fa-download" />
         <MyButton @click="export_accounts" label="export" icon="fa fa-upload" />
-        <MyButton @click="openAnalytics" label="dataAnalytics" icon="fa fa-chart-line" class="ml-2" />
+        <!-- <MyButton @click="openAnalytics" label="dataAnalytics" icon="fa fa-chart-line" class="ml-2" /> -->
 
         <!-- 标签筛选下拉列表 -->
         <select class="select ml-2 w-32" v-model="selectedTag">
@@ -67,7 +67,7 @@
                     @click="toggleStatus(account)">{{
                       $t('enabled') }}</span>
                   <span v-else class="badge badge-error cursor-pointer" @click="toggleStatus(account)">{{ $t('disabled')
-                    }}</span>
+                  }}</span>
                 </td>
                 <td>
                   <div class="flex flex-wrap gap-1 max-w-xs">
