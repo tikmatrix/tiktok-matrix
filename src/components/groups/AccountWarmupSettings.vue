@@ -192,7 +192,9 @@ export default {
     },
     view_duration: {
       get() {
-        return [this.mygroup.min_duration, this.mygroup.max_duration]
+        const minDuration = this.mygroup.min_duration ?? 10
+        const maxDuration = this.mygroup.max_duration ?? 90
+        return [minDuration, maxDuration]
       },
       set(value) {
         this.mygroup.min_duration = value[0]
@@ -433,6 +435,14 @@ export default {
     }
     if (!this.mygroup.comment_order) {
       this.mygroup.comment_order = 'random'
+    }
+
+    // 确保 min_duration 和 max_duration 有默认值
+    if (this.mygroup.min_duration === undefined || this.mygroup.min_duration === null) {
+      this.mygroup.min_duration = 10
+    }
+    if (this.mygroup.max_duration === undefined || this.mygroup.max_duration === null) {
+      this.mygroup.max_duration = 90
     }
   },
 }
