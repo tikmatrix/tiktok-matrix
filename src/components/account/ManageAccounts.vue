@@ -33,8 +33,8 @@
             <thead>
               <tr>
                 <th>{{ $t('number') }}</th>
-                <th>{{ $t('email') }}</th>
                 <th>{{ $t('username') }}</th>
+                <th>{{ $t('packagename') }}</th>
                 <th>{{ $t('device') }}</th>
                 <th>{{ $t('loginStatus') }}</th>
                 <th>{{ $t('status') }}</th>
@@ -45,11 +45,16 @@
             <tbody>
               <tr v-for="(account, index) in slotProps.items">
                 <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
-                <td>{{ account.email }}</td>
                 <td>
                   <a class="link link-primary" :href="`https://www.instagram.com/${account.username}`" target="_blank">
                     {{ account.username }}
                   </a>
+                </td>
+                <td>
+                  <span v-if="account.packagename" class="badge badge-outline">
+                    {{ account.packagename }}
+                  </span>
+                  <span v-else class="text-gray-400">{{ $t('default') }}</span>
                 </td>
                 <td>
                   <a class="cursor-pointer underline text-primary" v-if="account.device_index"
@@ -364,6 +369,7 @@ export default {
             email: account.email,
             pwd: account.pwd,
             username: account.username,
+            packagename: account.packagename || '',
             device: account.device,
             device_index: account.device_index || 'offline',
             logined: account.logined,

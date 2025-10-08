@@ -1,22 +1,23 @@
 <template>
-    <div class="fixed top-14 right-4 z-[9999] pointer-events-none">
-        <div class="notification-container space-y-2">
-            <transition-group name="notification" tag="div">
-                <div v-for="notification in notifications" :key="notification.id"
-                    class="notification-item bg-base-100 shadow-lg rounded-lg p-3 max-w-md flex items-start pointer-events-auto"
-                    :class="notificationClass(notification.type)">
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none">
+        <div class="notification-container">
+            <transition name="notification" mode="out-in">
+                <div v-if="currentNotification" :key="currentNotification.id"
+                    class="notification-item shadow-xl rounded-lg p-2 max-w-xxl flex items-center pointer-events-auto"
+                    :class="notificationClass(currentNotification.type)">
                     <div class="flex-shrink-0 mr-3">
-                        <font-awesome-icon :icon="notificationIcon(notification.type)" class="text-lg" />
+                        <font-awesome-icon :icon="notificationIcon(currentNotification.type)" class="text-lg" />
                     </div>
-                    <div class="flex-1">
-                        <p>{{ notification.message }}</p>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="whitespace-nowrap overflow-hidden text-ellipsis font-medium">{{
+                            formatMessage(currentNotification.message) }}</p>
                     </div>
-                    <button @click="removeNotification(notification.id)"
-                        class="ml-2 text-base-content/50 hover:text-base-content">
-                        <font-awesome-icon icon="fa-solid fa-times" />
+                    <button @click="removeNotification(currentNotification.id)"
+                        class="ml-3 opacity-70 hover:opacity-100 transition-opacity">
+                        <font-awesome-icon icon="fa-solid fa-times" class="text-sm" />
                     </button>
                 </div>
-            </transition-group>
+            </transition>
         </div>
     </div>
 </template>
@@ -27,18 +28,20 @@ export default {
     name: 'Notifications',
     data() {
         return {
-            notifications: [],
-            nextId: 1
+            notificationQueue: [],
+            currentNotification: null,
+            nextId: 1,
+            isProcessing: false
         }
     },
     methods: {
         notificationClass(type) {
             switch (type) {
-                case 'success': return 'border-l-4 border-success';
-                case 'error': return 'border-l-4 border-error';
-                case 'warning': return 'border-l-4 border-warning';
+                case 'success': return 'bg-green-500 text-white';
+                case 'error': return 'bg-red-500 text-white';
+                case 'warning': return 'bg-orange-500 text-white';
                 case 'info':
-                default: return 'border-l-4 border-info';
+                default: return 'bg-blue-500 text-white';
             }
         },
         notificationIcon(type) {
@@ -50,20 +53,62 @@ export default {
                 default: return 'fa-solid fa-info-circle';
             }
         },
+        formatMessage(message) {
+            // 将所有换行符替换为空格,强制单行显示
+            if (!message) return '';
+            return message.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+        },
         addNotification(notification) {
             const id = this.nextId++;
-            this.notifications.push({
+            const newNotification = {
                 id,
                 ...notification,
                 timeout: notification.timeout || 3000
-            });
+            };
 
-            setTimeout(() => {
-                this.removeNotification(id);
-            }, notification.timeout || 3000);
+            this.notificationQueue.push(newNotification);
+            this.processQueue();
+        },
+        async processQueue() {
+            if (this.isProcessing || this.notificationQueue.length === 0) {
+                return;
+            }
+
+            this.isProcessing = true;
+
+            while (this.notificationQueue.length > 0) {
+                this.currentNotification = this.notificationQueue.shift();
+
+                await new Promise(resolve => {
+                    this.currentNotification.timer = setTimeout(() => {
+                        resolve();
+                    }, this.currentNotification.timeout);
+                });
+
+                this.currentNotification = null;
+
+                // 等待动画完成
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            this.isProcessing = false;
         },
         removeNotification(id) {
-            this.notifications = this.notifications.filter(n => n.id !== id);
+            if (this.currentNotification && this.currentNotification.id === id) {
+                if (this.currentNotification.timer) {
+                    clearTimeout(this.currentNotification.timer);
+                }
+                this.currentNotification = null;
+
+                // 继续处理队列
+                setTimeout(() => {
+                    this.isProcessing = false;
+                    this.processQueue();
+                }, 300);
+            } else {
+                // 从队列中移除
+                this.notificationQueue = this.notificationQueue.filter(n => n.id !== id);
+            }
         }
     },
     async mounted() {
@@ -77,43 +122,40 @@ export default {
 <style scoped>
 .notification-container {
     min-height: 0;
+    padding-top: 0.5rem;
 }
 
 .notification-item {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: top right;
+    transition: all 0.3s ease-out;
+    transform-origin: top center;
+    backdrop-filter: blur(8px);
 }
 
 .notification-enter-active {
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s ease-out;
 }
 
 .notification-leave-active {
-    transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
-    position: absolute;
-    right: 0;
-    width: 100%;
+    transition: all 0.3s ease-in;
 }
 
 .notification-enter-from {
     opacity: 0;
-    transform: translateX(100%) scale(0.8);
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 0;
+    transform: translateY(-10px) scale(0.95);
+}
+
+.notification-enter-to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.notification-leave-from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 .notification-leave-to {
     opacity: 0;
-    transform: translateX(100%) scale(0.8);
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 0;
-}
-
-.notification-move {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(-10px) scale(0.95);
 }
 </style>

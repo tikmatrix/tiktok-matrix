@@ -787,6 +787,8 @@ export default {
   test: 'Test',
   tiktok: 'Tiktok',
   tiktokPackagename: 'Tiktok Packagename',
+  packagename: 'Package Name',
+  useDefaultPackage: 'Use Default (From Settings)',
   tiktokSettings: 'Tiktok Settings',
   time: 'Time',
   times: 'times',
@@ -968,4 +970,11 @@ export default {
   clearAllTasksConfirm: 'Are you sure you want to clear all tasks? This operation cannot be undone!',
   clearAllDataConfirm: 'Are you sure you want to clear all TikTok data cache? This will remove all cached account statistics.',
   operationCannotBeUndone: 'This operation cannot be undone',
+
+  // Package Detection
+  detectPackage: 'Detect',
+  detectPackageSuccess: 'Package detected successfully',
+  detectPackageFailed: 'Failed to detect package name',
+  detectPackageError: 'Error occurred while detecting package',
+  pleaseSelectDevice: 'Please select a device first',
 };
