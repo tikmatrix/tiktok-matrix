@@ -743,6 +743,8 @@ export default {
   test: 'Тест',
   tiktok: 'Tiktok',
   tiktokPackagename: 'Имя пакета Tiktok',
+  packagename: 'Имя пакета',
+  useDefaultPackage: 'Использовать по умолчанию (из настроек)',
   tiktokSettings: 'Настройки Tiktok',
   time: 'Время',
   times: 'раз',
@@ -915,4 +917,11 @@ export default {
   clearAllTasksConfirm: 'Вы уверены, что хотите очистить все задачи? Эту операцию нельзя отменить!',
   clearAllDataConfirm: 'Вы уверены, что хотите очистить весь кэш данных TikTok? Это удалит всю кэшированную статистику аккаунтов.',
   operationCannotBeUndone: 'Эту операцию нельзя отменить',
+
+  // Обнаружение пакета
+  detectPackage: 'Определить',
+  detectPackageSuccess: 'Пакет успешно определен',
+  detectPackageFailed: 'Не удалось определить имя пакета',
+  detectPackageError: 'Произошла ошибка при определении пакета',
+  pleaseSelectDevice: 'Пожалуйста, сначала выберите устройство',
 };

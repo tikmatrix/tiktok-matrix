@@ -719,3 +719,11 @@ export function report_distributor_install(data) {
     data
   })
 }
+
+export function detectCurrentPackage(serial) {
+  return request({
+    method: 'post',
+    url: '/agent/api/detect_package',
+    data: { serial }
+  })
+}

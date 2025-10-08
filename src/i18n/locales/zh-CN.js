@@ -787,6 +787,8 @@ export default {
   test: 'Test',
   tiktok: 'Tiktok',
   tiktokPackagename: 'Tiktok 包名',
+  packagename: '包名',
+  useDefaultPackage: '使用默认包名(从设置中获取)',
   tiktokSettings: 'Tiktok 设置',
   time: '时间',
   times: '次',
@@ -965,4 +967,11 @@ export default {
   clearAllTasksConfirm: '确定要清空所有任务吗？此操作不可逆转！',
   clearAllDataConfirm: '确定要清空所有TikTok数据缓存吗？这将删除所有已缓存的账号统计数据。',
   operationCannotBeUndone: '此操作无法撤销',
+
+  // 包名检测
+  detectPackage: '检测',
+  detectPackageSuccess: '包名检测成功',
+  detectPackageFailed: '检测包名失败',
+  detectPackageError: '检测包名时发生错误',
+  pleaseSelectDevice: '请先选择设备',
 };

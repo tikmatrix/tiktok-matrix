@@ -180,7 +180,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                }}</span>
+                    }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
