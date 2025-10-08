@@ -3,7 +3,8 @@
         class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
         <!-- 左侧：应用图标、名称、版本和检查更新 -->
         <div class="flex items-center space-x-2">
-            <img :src="whitelabelConfig.logo?.main || '../assets/logo.png'" class="h-10 w-auto" alt="TikMatrix Logo" />
+            <img ref="logo" :src="whitelabelConfig.logo?.main || '../assets/logo.png'" class="h-10 w-auto logo"
+                alt="TikMatrix Logo" />
             <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || '' }}</span>
             <!-- <span class="text-md text-base-content">v{{ version }}</span> -->
             <!-- 检查更新按钮 -->
@@ -331,7 +332,6 @@ export default {
         },
         darkMode(val) {
             localStorage.setItem('isDark', val);
-            console.log('isDark:', val);
         },
         currentLocale(val) {
             localStorage.setItem('locale', val);
@@ -432,7 +432,12 @@ export default {
             this.$i18n.locale = this.currentLocale;
         },
         changeTheme() {
-            // 主题切换逻辑
+            if (this.darkMode) {
+                //invert logo color
+                this.$refs.logo.style.filter = 'invert(0.8) brightness(1.0)';
+            } else {
+                this.$refs.logo.style.filter = 'none';
+            }
         },
         showLicenseDialog() {
             // this.$refs.buyLicenseDialog.show()
@@ -827,6 +832,13 @@ export default {
         },
     },
     async mounted() {
+        // 设置主题
+        if (this.darkMode) {
+            //invert logo color
+            this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
+        } else {
+            this.$refs.logo.style.filter = 'none';
+        }
         // 获取版本号
         this.version = await getVersion();
         this.name = await getName();
