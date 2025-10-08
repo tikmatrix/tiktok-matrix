@@ -11,6 +11,12 @@
             "name": "Test Distributor 001",
             "enabled": true,
             "description": "Test distributor for development"
+        },
+        {
+            "code": "PHONEFARMGUY1",
+            "name": "Frank",
+            "enabled": true,
+            "description": "Frank's distributor account"
         }
     ]
 }
