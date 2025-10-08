@@ -3,8 +3,8 @@
         class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
         <!-- 左侧：应用图标、名称、版本和检查更新 -->
         <div class="flex items-center space-x-2">
-            <img :src="whitelabelConfig.logo?.main || '../assets/app-icon.png'" class="h-10 w-10" alt="App Icon" />
-            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || 'TikMatrix' }}</span>
+            <img :src="whitelabelConfig.logo?.main || '../assets/logo.png'" class="h-10 w-auto" alt="TikMatrix Logo" />
+            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || '' }}</span>
             <!-- <span class="text-md text-base-content">v{{ version }}</span> -->
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"

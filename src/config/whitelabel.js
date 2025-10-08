@@ -4,11 +4,11 @@
  */
 
 // 导入默认图标
-import defaultIcon from '../assets/app-icon.png';
+import defaultIcon from '../assets/logo.png';
 
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
-    appName: 'TikMatrix',
+    appName: '',
 
     // Logo配置
     logo: {
