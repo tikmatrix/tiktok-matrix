@@ -181,7 +181,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                    }}</span>
+                }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
@@ -308,7 +308,7 @@ export default {
             version: '',
             name: '',
             sidebarVisible: true,
-            darkMode: localStorage.getItem('isDark')?.replace(/"/g, '') || '0',
+            darkMode: localStorage.getItem('isDark')?.replace(/"/g, '') || 'false',
             currentLocale: localStorage.getItem('locale')?.replace(/"/g, '') || 'en',
             licenseData: {},
             remote_version: {},
@@ -434,7 +434,7 @@ export default {
         changeTheme() {
             if (this.darkMode) {
                 //invert logo color
-                this.$refs.logo.style.filter = 'invert(0.8) brightness(1.0)';
+                this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
             } else {
                 this.$refs.logo.style.filter = 'none';
             }
@@ -833,7 +833,10 @@ export default {
     },
     async mounted() {
         // 设置主题
+        console.log('darkMode:', this.darkMode);
+        this.darkMode = this.darkMode === 'true' || this.darkMode === true;
         if (this.darkMode) {
+            console.log('set dark theme');
             //invert logo color
             this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
         } else {
