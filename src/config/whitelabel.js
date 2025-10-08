@@ -8,7 +8,7 @@ import defaultIcon from '../assets/logo.png';
 
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
-    appName: 'IgMatrix',
+    appName: '',
 
     // Logo配置
     logo: {
