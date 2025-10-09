@@ -24,55 +24,62 @@ const sortedKeys = Array.from(allKeys).sort();
 // 检查每种语言的覆盖情况
 function checkCoverage(translations, name) {
   const missing = [];
-  
+
   for (const key of sortedKeys) {
     if (translations[key] === undefined) {
       missing.push(key);
     }
   }
-  
+
   console.log(`${name}: ${Object.keys(translations).length}/${sortedKeys.length} 键 (${missing.length} 个缺失)`);
-  
+
   if (missing.length > 0) {
     console.log(`缺失的键: ${missing.join(', ')}`);
   }
-  
+
   return missing;
 }
 
 // 合并翻译，使用英语作为后备
 function mergeTranslations(translations, missing) {
   const result = { ...translations };
-  
+
   for (const key of missing) {
     result[key] = en[key] || key;
   }
-  
+
   return result;
 }
 
 // 生成排序后的翻译对象
 function generateSortedTranslations(translations) {
   const sorted = {};
-  
+
   for (const key of sortedKeys) {
     sorted[key] = translations[key] || en[key] || key;
   }
-  
+
   return sorted;
 }
 
 // 生成JavaScript代码
 function generateJsCode(translations) {
   let output = 'export default {\n';
-  
+
   for (const key of sortedKeys) {
     const value = translations[key] || '';
-    // 转义引号
-    const escapedValue = value.replace(/'/g, "\\'");
+    // 正确转义所有特殊字符
+    const escapedValue = value
+      .replace(/\\/g, '\\\\')  // 反斜杠必须首先转义
+      .replace(/'/g, "\\'")     // 单引号
+      .replace(/\n/g, '\\n')    // 换行符
+      .replace(/\r/g, '\\r')    // 回车符
+      .replace(/\t/g, '\\t')    // 制表符
+      .replace(/\f/g, '\\f')    // 换页符
+      .replace(/\v/g, '\\v');   // 垂直制表符
     output += `  ${key}: '${escapedValue}',\n`;
   }
-  
+
   output += '};';
   return output;
 }
