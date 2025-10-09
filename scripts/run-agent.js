@@ -30,7 +30,7 @@ console.log(`🚀 Starting ${appName} Agent...`);
 function setEnvironment() {
     process.env.MATRIX_APP_NAME = appName;
     process.env.MOSS_URL = 'http://127.0.0.1:8787/moss';
-    process.env.LOG_LEVEL = isTikMatrix ? 'info' : 'debug';
+    process.env.LOG_LEVEL = 'debug';
 
     if (isWindows) {
         const appDataDir = process.env.APPDATA || join(homedir(), 'AppData', 'Roaming');
