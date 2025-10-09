@@ -69,7 +69,7 @@ export function validateEmail(email) {
 export function getConfigSummary(config) {
     return {
         appName: config.appName,
-        hasCustomLogo: config.logo.main !== '/src/assets/app-icon.png',
+        hasCustomLogo: config.logo.main !== '/src/assets/logo.png',
         featuresEnabled: Object.values(config.features).filter(Boolean).length,
         lastModified: new Date().toISOString()
     };

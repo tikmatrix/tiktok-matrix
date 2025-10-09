@@ -180,7 +180,7 @@
                 <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
                 <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
                 <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                }}</span>
+                    }}</span>
                 <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
                 <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
@@ -307,7 +307,7 @@ export default {
             version: '',
             name: '',
             sidebarVisible: true,
-            darkMode: localStorage.getItem('isDark')?.replace(/"/g, '') || '0',
+            darkMode: localStorage.getItem('isDark')?.replace(/"/g, '') || 'false',
             currentLocale: localStorage.getItem('locale')?.replace(/"/g, '') || 'en',
             licenseData: {},
             remote_version: {},
@@ -331,7 +331,6 @@ export default {
         },
         darkMode(val) {
             localStorage.setItem('isDark', val);
-            console.log('isDark:', val);
         },
         currentLocale(val) {
             localStorage.setItem('locale', val);
@@ -432,7 +431,12 @@ export default {
             this.$i18n.locale = this.currentLocale;
         },
         changeTheme() {
-            // 主题切换逻辑
+            if (this.darkMode) {
+                //invert logo color
+                this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
+            } else {
+                this.$refs.logo.style.filter = 'none';
+            }
         },
         showLicenseDialog() {
             // this.$refs.buyLicenseDialog.show()
@@ -529,6 +533,8 @@ export default {
 
             if (response?.ok && response?.data?.code === 20000) {
                 const libs = response.data.data.libs;
+                let agentUpdated = false;
+                let scriptUpdated = false;
 
                 for (const lib of libs) {
                     if (lib.name === 'platform-tools') {
@@ -542,12 +548,15 @@ export default {
                     } else if (lib.name === 'scrcpy') {
                         await this.download_and_update_lib(lib, 'scrcpy');
                     } else if (lib.name === 'script') {
-                        await this.download_and_update_lib(lib, 'script');
+                        const updated = await this.download_and_update_lib(lib, 'script');
+                        if (updated) scriptUpdated = true;
                     } else if (lib.name === 'agent') {
-                        await this.download_and_update_lib(lib, 'agent');
+                        const updated = await this.download_and_update_lib(lib, 'agent');
+                        if (updated) agentUpdated = true;
                     }
                 }
-                if (!force) {
+                // 只有在首次检查更新或者 agent/script 有更新时才启动 agent
+                if (!force || agentUpdated || scriptUpdated) {
                     await this.startAgent();
                 }
                 localStorage.setItem('hasCheckedUpdate', 'true');
@@ -631,6 +640,7 @@ export default {
 
                     }
                 }
+                return updated;
             } catch (e) {
                 console.error(e);
                 await this.$emiter('NOTIFY', {
@@ -638,6 +648,7 @@ export default {
                     message: `Download and Update Lib Error: ${e.message}`,
                     timeout: 2000
                 });
+                return false;
             }
         },
 
@@ -820,6 +831,16 @@ export default {
         },
     },
     async mounted() {
+        // 设置主题
+        console.log('darkMode:', this.darkMode);
+        this.darkMode = this.darkMode === 'true' || this.darkMode === true;
+        if (this.darkMode) {
+            console.log('set dark theme');
+            //invert logo color
+            this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
+        } else {
+            this.$refs.logo.style.filter = 'none';
+        }
         // 获取版本号
         this.version = await getVersion();
         this.name = await getName();

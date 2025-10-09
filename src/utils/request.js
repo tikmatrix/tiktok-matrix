@@ -1,5 +1,4 @@
 import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
-import mock from '../mock'
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { emit, listen } from '@tauri-apps/api/event';
 
