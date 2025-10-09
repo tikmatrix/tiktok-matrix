@@ -5,9 +5,7 @@
   "description": "Tools for managing i18n translation files",
   "main": "index.js",
   "scripts": {
-    "sync": "node check-and-sync.js",
-    "add-lang": "echo '导出默认语言文件模板 > export default {};' > locales/$LANG.js && node check-and-sync.js",
-    "backup": "mkdir -p backups/manual-$(date +%Y-%m-%d) && cp locales/*.js backups/manual-$(date +%Y-%m-%d)/"
+    "sync": "node check-and-sync.js"
   },
   "dependencies": {
     "i18n-tools": "file:"
