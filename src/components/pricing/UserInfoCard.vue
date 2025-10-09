@@ -29,7 +29,7 @@
                 @show-license-migration="$emit('show-license-migration')" />
 
             <!-- 许可证激活区域 -->
-            <LicenseActivation v-else :license="license" @activate="$emit('activate')"
+            <LicenseActivation v-else :license="license" @activate="$emit('activate', $event)"
                 @show-license-migration="$emit('show-license-migration')" @copy-text="copyText" />
         </div>
     </div>
