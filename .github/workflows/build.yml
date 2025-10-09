@@ -36,9 +36,6 @@ jobs:
         run: |
           npm install
           .\build.ps1
-      # - name: build distributor packages
-      #   run: |
-      #     node scripts/build-distributor-packages-windows.js
       - name: upload official package to r2
         uses: ryand56/r2-upload-action@v1.4
         with:
@@ -54,9 +51,9 @@ jobs:
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-version.js
-      - name: build distributor packages
-        run: |
-          node scripts/build-distributor-packages-windows.js
+      # - name: build distributor packages
+      #   run: |
+      #     node scripts/build-distributor-packages-windows.js
       # - name: upload distributor packages to r2
       #   uses: ryand56/r2-upload-action@v1.4
       #   with:
@@ -105,9 +102,6 @@ jobs:
           npm install
           chmod +x ./build.sh
           ./build.sh
-      # - name: build distributor packages
-      #   run: |
-      #     node scripts/build-distributor-packages-mac.js
       - name: upload official package to r2
         uses: ryand56/r2-upload-action@v1.4
         with:
@@ -117,15 +111,15 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
           destination-dir: ./
-      # - name: update version
-      #   env:
-      #     TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
-      #     API_KEY: ${{ secrets.API_KEY }}
-      #   run: |
-      #     node scripts/update-version.js
-      - name: build distributor packages
+      - name: update version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/build-distributor-packages-mac.js
+          node scripts/update-version.js
+      # - name: build distributor packages
+      #   run: |
+      #     node scripts/build-distributor-packages-mac.js
       # - name: upload distributor packages to r2
       #   uses: ryand56/r2-upload-action@v1.4
       #   with:
