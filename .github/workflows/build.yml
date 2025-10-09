@@ -111,12 +111,12 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
           destination-dir: ./
-      - name: update version
-        env:
-          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
-          API_KEY: ${{ secrets.API_KEY }}
-        run: |
-          node scripts/update-version.js
+      # - name: update version
+      #   env:
+      #     TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+      #     API_KEY: ${{ secrets.API_KEY }}
+      #   run: |
+      #     node scripts/update-version.js
       # - name: build distributor packages
       #   run: |
       #     node scripts/build-distributor-packages-mac.js
