@@ -1,9 +1,4 @@
 export default {
-  repost: 'Репост',
-  share: 'Поделиться',
-  like: 'Лайк',
-  favorite: 'Избранное',
-  follow: 'Подписаться',
   account: 'Аккаунт',
   accountCount: 'Количество аккаунтов',
   accountWarmup: 'Прогрев аккаунтов',

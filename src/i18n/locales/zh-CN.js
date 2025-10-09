@@ -1,9 +1,4 @@
 export default {
-  repost: '转发',
-  share: '分享',
-  like: '点赞',
-  favorite: '收藏',
-  follow: '关注',
   account: '帐号',
   accountCount: '帐号数量',
   accountWarmup: '账号预热',

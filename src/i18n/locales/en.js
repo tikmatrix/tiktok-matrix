@@ -1,9 +1,4 @@
 export default {
-  repost: 'Repost',
-  share: 'Share',
-  like: 'Like',
-  favorite: 'Favorite',
-  follow: 'Follow',
   account: 'Account',
   accountCount: 'Account Count',
   accountWarmup: 'Account Warmup',
