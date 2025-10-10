@@ -733,8 +733,6 @@ export default {
   sim: 'SIM',
   singleAccountModeTip: 'In this mode, each account will comment on a single post',
   singleAccountToSinglePost: 'Single Account to Single Post',
-  siteName: 'TikMatrix',
-  siteUrl: 'https://www.tikmatrix.com',
   sleep: 'Sleep',
   smartFrameCut: 'Smart Frame Cut',
   sort: 'Sort',

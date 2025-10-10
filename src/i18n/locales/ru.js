@@ -733,8 +733,6 @@ export default {
   sim: 'SIM',
   singleAccountModeTip: 'В этом режиме каждый аккаунт будет комментировать один пост',
   singleAccountToSinglePost: 'Один аккаунт к одному посту',
-  siteName: 'TikMatrix',
-  siteUrl: 'https://www.tikmatrix.com',
   sleep: 'Сон',
   smartFrameCut: 'Умная обрезка кадров',
   sort: 'Сортировка',

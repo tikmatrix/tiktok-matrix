@@ -6,7 +6,6 @@
             <img ref="logo" :src="whitelabelConfig.logo?.main || '../assets/logo.png'" class="h-10 w-auto logo"
                 alt="TikMatrix Logo" />
             <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || '' }}</span>
-            <!-- <span class="text-md text-base-content">v{{ version }}</span> -->
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
                 class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">
@@ -21,16 +20,7 @@
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
-        <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" @click="open_dir('')">
-            <font-awesome-icon icon="fa fa-folder" class="h-4 w-4" />
-            <span>{{ $t('openAppDir') }}</span>
-        </a> -->
-        <!-- Rewards-->
-        <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
-            target="_blank">
-            <font-awesome-icon icon="fa-solid fa-gift" class="h-4 w-4" />
-            <span>{{ $t('rewards') }}</span>
-        </a> -->
+
         <!-- 中间：灵活空间 -->
         <div class="flex-1"></div>
         <!-- 右侧：功能按钮和控制按钮 -->
