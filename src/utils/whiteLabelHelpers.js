@@ -74,20 +74,3 @@ export function getConfigSummary(config) {
         lastModified: new Date().toISOString()
     };
 }
-
-/**
- * 深度合并配置对象
- */
-export function deepMergeConfig(defaultConfig, userConfig) {
-    const result = { ...defaultConfig };
-
-    for (const key in userConfig) {
-        if (userConfig[key] && typeof userConfig[key] === 'object' && !Array.isArray(userConfig[key])) {
-            result[key] = deepMergeConfig(result[key] || {}, userConfig[key]);
-        } else {
-            result[key] = userConfig[key];
-        }
-    }
-
-    return result;
-}

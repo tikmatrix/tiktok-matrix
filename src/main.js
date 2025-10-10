@@ -16,7 +16,7 @@ import { i18n } from './i18n/index'
 import VueDragSelect from "@coleqiu/vue-drag-select";
 import VueDraggableResizable from 'vue-draggable-resizable'
 import { emit, listen } from '@tauri-apps/api/event';
-import { initWhiteLabel } from './utils/whitelabel.js';
+import { initWhiteLabel } from './utils/whiteLabelHelpers.js';
 
 // 初始化白标配置
 const whitelabelConfig = initWhiteLabel();
