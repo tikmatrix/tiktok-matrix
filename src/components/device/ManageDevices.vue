@@ -1,176 +1,184 @@
 <template>
-  <div class="flex-1 w-full h-screen overflow-y-scroll no-scrollbar pl-2 pr-2 pb-14">
+  <div class="flex-1 w-full h-full px-0">
+    <div
+      class="flex-1 w-full h-full overflow-hidden rounded-2xl bg-base-100 border border-base-200/60 shadow-sm backdrop-blur-sm">
+      <div class="h-full overflow-y-auto no-scrollbar px-4 pb-20 pt-4 space-y-4">
 
-    <!-- 键盘输入提示信息 -->
-    <div v-if="showKeyboardTip" class="alert alert-info shadow-lg mb-4 mt-2 relative">
-      <button class="absolute top-2 right-2 btn btn-xs btn-ghost hover:btn-error" @click="closeKeyboardTip">
-        <font-awesome-icon icon="fa-solid fa-times" class="h-3 w-3" />
-      </button>
-      <div class="flex items-center pr-8">
-        <font-awesome-icon icon="fa-solid fa-keyboard" class="h-6 w-6 text-info" />
-        <div class="ml-3">
-          <h3 class="font-bold text-lg">{{ $t('keyboardInput') }}</h3>
-          <div class="text-sm">{{ $t('keyboardInputTip') }}</div>
-        </div>
-      </div>
-    </div>
-
-    <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true"
-      :showBottomControls="false">
-      <template v-slot:buttons>
-        <div class="flex items-center justify-between w-full">
-          <div class="flex items-center space-x-2 ml-2">
-            <button class="btn btn-md btn-primary" @click="$refs.scan_dialog.show()">
-              <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
-            </button>
-            <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
-              <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
-            </button>
-
-            <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'materials', group: item })">
-              <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
-            </button>
-            <button class="btn btn-md btn-primary" @click="$emiter('showDialog', { name: 'tiktokSettings' })">
-              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
-            </button>
-          </div>
-
-          <div class="form-control px-3 py-1 rounded-lg bg-base-300 shadow-md flex-row items-center">
-            <label class="label cursor-pointer flex items-center space-x-2">
-              <span class="text-md font-medium">{{ $t('displayMode') }}</span>
-              <label class="swap swap-rotate">
-                <input type="checkbox" v-model="listMode" />
-                <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-5 h-5 text-primary" />
-                <font-awesome-icon icon="fa-solid fa-th" class="swap-off fill-current w-5 h-5 text-primary" />
-              </label>
-            </label>
-          </div>
-        </div>
-      </template>
-      <template v-slot:default="slotProps">
-        <div class="flex flex-wrap gap-2 p-4">
-          <div class="flex flex-wrap gap-2 flex-1" v-if="listMode">
-            <div class="overflow-x-auto">
-              <table class="table table-md">
-                <thead>
-                  <tr>
-                    <th>{{ $t('no') }}</th>
-                    <th>{{ $t('serial') }}</th>
-                    <th>{{ $t('mode') }}</th>
-                    <th>{{ $t('device') }}</th>
-                    <th>{{ $t('connectType') }}</th>
-                    <th>{{ $t('group') }}</th>
-                    <th>{{ $t('task') }}</th>
-                    <th>{{ $t('sort') }}</th>
-                    <th>{{ $t('actions') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(device, index) in slotProps.items" :key="index">
-                    <td>{{ device.key }}</td>
-                    <td>
-                      <a class="link link-primary" @click="$emiter('openDevice', device)" v-if="device.key">{{
-                        device.serial }}</a>
-                    </td>
-                    <td>{{ device.mode }}</td>
-                    <td>{{ device.real_serial }}</td>
-                    <td>
-                      <div class="badge badge-neutral badge-md" v-if="device.connect_type == '0'">USB</div>
-                      <div class="badge badge-primary badge-md" v-else>TCP</div>
-                    </td>
-                    <td>{{ device.group_name }}</td>
-                    <td>
-                      <div class="badge badge-success badge-md" v-if="device.task_status == '1'">
-                        {{ $t('running') }}
-                      </div>
-                      <div class="badge badge-primary badge-md" v-else>
-                        {{ $t('ready') }}
-                      </div>
-                    </td>
-                    <td>{{ device.sort }}</td>
-                    <td>
-                      <div class="space-x-4">
-                        <button class="btn-xs bg-primary hover:bg-blue-700 text-primary-content rounded"
-                          @click="showSetSortDialog(device)">{{
-                            $t('setSort') }}</button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+        <!-- 键盘输入提示信息 -->
+        <div v-if="showKeyboardTip" class="alert alert-info shadow-lg relative">
+          <button class="absolute top-2 right-2 btn btn-xs btn-ghost hover:btn-error" @click="closeKeyboardTip">
+            <font-awesome-icon icon="fa-solid fa-times" class="h-3 w-3" />
+          </button>
+          <div class="flex items-center pr-8">
+            <font-awesome-icon icon="fa-solid fa-keyboard" class="h-6 w-6 text-info" />
+            <div class="ml-3">
+              <h3 class="font-bold text-lg">{{ $t('keyboardInput') }}</h3>
+              <div class="text-sm">{{ $t('keyboardInputTip') }}</div>
             </div>
           </div>
-          <div :style="gridStyle" v-else>
-            <Miniremote :device="device" :key="device.real_serial" :no="device.key"
-              v-for="(device, index) in slotProps.items" @sizeChanged="sizeChanged" />
-          </div>
-
-
         </div>
-      </template>
-    </Pagination>
-    <!-- 未激活提示信息 -->
-    <div v-if="!isLicensed" class="alert alert-warning shadow-lg mb-4 mt-2">
-      <div class="flex w-full justify-between items-center gap-2">
-        <div class="flex items-center">
-          <font-awesome-icon icon="fa-solid fa-exclamation-triangle" class="h-6 w-6 text-warning" />
-          <div class="ml-3">
-            <h3 class="font-bold text-lg">{{ $t('licenseRequired') }}</h3>
-            <div class="text-sm">{{ $t('pleaseActivateSoftware') }}</div>
+
+        <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true"
+          :showBottomControls="false">
+          <template #buttons>
+            <div class="flex flex-wrap items-center justify-between gap-3 w-full px-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <button class="btn btn-sm md:btn-md btn-primary" @click="$refs.scan_dialog.show()">
+                  <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
+                </button>
+                <button class="btn btn-sm md:btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
+                  <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
+                </button>
+                <button class="btn btn-sm md:btn-md btn-primary"
+                  @click="$emiter('showDialog', { name: 'materials', group: item })">
+                  <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
+                </button>
+                <button class="btn btn-sm md:btn-md btn-primary"
+                  @click="$emiter('showDialog', { name: 'tiktokSettings' })">
+                  <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
+                </button>
+              </div>
+
+              <div
+                class="form-control px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-sm flex-row items-center">
+                <label class="label cursor-pointer flex items-center gap-3 whitespace-nowrap">
+                  <span class="text-sm font-medium">{{ $t('displayMode') }}</span>
+                  <label class="swap swap-rotate">
+                    <input type="checkbox" v-model="listMode" />
+                    <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-5 h-5 text-primary" />
+                    <font-awesome-icon icon="fa-solid fa-th" class="swap-off fill-current w-5 h-5 text-primary" />
+                  </label>
+                </label>
+              </div>
+            </div>
+          </template>
+
+          <template #default="slotProps">
+            <div class="flex flex-wrap gap-4 p-4">
+              <div class="flex flex-wrap gap-3 flex-1" v-if="listMode">
+                <div class="overflow-x-auto w-full rounded-2xl border border-base-300/60 bg-base-200/50 shadow-sm">
+                  <table class="table table-sm md:table-md align-middle">
+                    <thead class="bg-base-200/70 text-[0.7rem] uppercase tracking-wide text-base-content/60">
+                      <tr>
+                        <th class="font-semibold">{{ $t('no') }}</th>
+                        <th class="font-semibold">{{ $t('serial') }}</th>
+                        <th class="font-semibold">{{ $t('mode') }}</th>
+                        <th class="font-semibold">{{ $t('device') }}</th>
+                        <th class="font-semibold">{{ $t('connectType') }}</th>
+                        <th class="font-semibold">{{ $t('group') }}</th>
+                        <th class="font-semibold">{{ $t('task') }}</th>
+                        <th class="font-semibold">{{ $t('sort') }}</th>
+                        <th class="font-semibold text-center">{{ $t('actions') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-sm text-base-content/80">
+                      <tr v-for="(device, index) in slotProps.items" :key="index"
+                        class="hover:bg-base-100/60 transition-colors">
+                        <td class="font-semibold text-base-content/70 whitespace-nowrap">{{ device.key }}</td>
+                        <td class="whitespace-nowrap">
+                          <a class="link link-primary font-medium" @click="$emiter('openDevice', device)"
+                            v-if="device.key">{{ device.serial }}</a>
+                        </td>
+                        <td class="text-base-content/70 whitespace-nowrap">{{ device.mode }}</td>
+                        <td class="text-base-content/70 whitespace-nowrap">{{ device.real_serial }}</td>
+                        <td class="whitespace-nowrap">
+                          <div class="badge badge-outline badge-sm md:badge-md border-base-300 text-base-content"
+                            v-if="device.connect_type == '0'">USB</div>
+                          <div class="badge badge-primary badge-sm md:badge-md" v-else>TCP</div>
+                        </td>
+                        <td class="whitespace-nowrap">{{ device.group_name }}</td>
+                        <td class="whitespace-nowrap">
+                          <div class="badge badge-success badge-sm md:badge-md badge-outline text-success-content"
+                            v-if="device.task_status == '1'">
+                            {{ $t('running') }}
+                          </div>
+                          <div class="badge badge-info badge-sm md:badge-md badge-outline text-info-content" v-else>
+                            {{ $t('ready') }}
+                          </div>
+                        </td>
+                        <td class="text-base-content/70 whitespace-nowrap">{{ device.sort }}</td>
+                        <td class="whitespace-nowrap">
+                          <div class="flex items-center justify-end gap-2">
+                            <button class="btn btn-xs btn-outline btn-primary" @click="showSetSortDialog(device)">{{
+                              $t('setSort') }}</button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div :style="gridStyle" v-else class="grid auto-rows-fr gap-4">
+                <Miniremote :device="device" :key="device.real_serial" :no="device.key"
+                  v-for="(device, index) in slotProps.items" @sizeChanged="sizeChanged" />
+              </div>
+            </div>
+          </template>
+        </Pagination>
+
+        <!-- 未激活提示信息 -->
+        <div v-if="!isLicensed" class="alert alert-warning shadow-lg">
+          <div class="flex w-full justify-between items-center gap-2">
+            <div class="flex items-center">
+              <font-awesome-icon icon="fa-solid fa-exclamation-triangle" class="h-6 w-6 text-warning" />
+              <div class="ml-3">
+                <h3 class="font-bold text-lg">{{ $t('licenseRequired') }}</h3>
+                <div class="text-sm">{{ $t('pleaseActivateSoftware') }}</div>
+              </div>
+            </div>
+            <button class="btn btn-primary" @click="showLicenseDialog">
+              {{ $t('activateNow') }}
+            </button>
+            <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
+              target="_blank">
+              <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
+              {{ $t('telegramSupport') }}
+            </a>
+            <a class="link link-primary text-md flex items-center gap-1 min-w-max"
+              @click="copyText('support@tikmatrix.com', $event)" target="_blank">
+              <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
+              support@tikmatrix.com
+            </a>
           </div>
         </div>
-        <button class="btn btn-primary" @click="showLicenseDialog">
-          {{ $t('activateNow') }}
-        </button>
-        <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
-          target="_blank">
-          <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
-          {{ $t('telegramSupport') }}
-        </a>
-        <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-          @click="copyText('support@tikmatrix.com', $event)" target="_blank">
-          <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
-          support@tikmatrix.com
-        </a>
-      </div>
-    </div>
-    <div v-else-if="devices.length == 0"
-      class="w-full min-h-screen bg-base-100 flex flex-col items-center justify-center">
-      <div class="relative flex justify-center items-center">
-        <div class="absolute animate-spin rounded-full h-48 w-48 border-t-4 border-b-4 border-purple-500"></div>
-        <svg class="fill-current text-info h-32 w-32" xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 471.117 471.117" xml:space="preserve">
-          <g>
-            <path d="M447.564,129.817h-68.192c-8.213,0-14.871,6.675-14.871,14.872v129.155
+        <div v-else-if="devices.length == 0"
+          class="w-full min-h-[40vh] bg-base-100 flex flex-col items-center justify-center rounded-xl border border-dashed border-base-300 p-8">
+          <div class="relative flex justify-center items-center">
+            <div class="absolute animate-spin rounded-full h-48 w-48 border-t-4 border-b-4 border-purple-500"></div>
+            <svg class="fill-current text-info h-32 w-32" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 471.117 471.117" xml:space="preserve">
+              <g>
+                <path d="M447.564,129.817h-68.192c-8.213,0-14.871,6.675-14.871,14.872v129.155
 		c0,8.213,6.658,14.873,14.871,14.873h68.192c8.197,0,14.856-6.66,14.856-14.873V144.689
 		C462.42,136.492,455.761,129.817,447.564,129.817z M446.81,144.689v115.13h-66.776l-0.662-114.377L446.81,144.689z
 		 M406.025,273.461c0-4.076,3.321-7.429,7.428-7.429c4.122,0,7.443,3.353,7.443,7.429c0,4.107-3.321,7.444-7.443,7.444
 		C409.346,280.905,406.025,277.568,406.025,273.461z" />
-            <path d="M116.123,216.788v38.371h-12.365c-8.627,0-15.61,6.999-15.61,15.626
+                <path d="M116.123,216.788v38.371h-12.365c-8.627,0-15.61,6.999-15.61,15.626
 		c0,8.629,6.983,15.609,15.61,15.609h101.765c8.629,0,15.626-6.98,15.626-15.609c0-8.627-6.997-15.626-15.626-15.626h-12.364
 		v-38.371H271.5c16.04,0,29.083-13.041,29.083-29.083V29.082C300.583,13.042,287.54,0,271.5,0H37.781
 		C21.739,0,8.697,13.042,8.697,29.082v158.623c0,16.042,13.042,29.083,29.084,29.083H116.123z M39.933,31.236h229.415v154.316
 		H39.933V31.236z" />
-            <path
-              d="M345.138,298.622h-170.42c-16.118,0-29.237,13.118-29.237,29.235v114.024
+                <path
+                  d="M345.138,298.622h-170.42c-16.118,0-29.237,13.118-29.237,29.235v114.024
 		c0,16.117,13.119,29.235,29.237,29.235h170.42c16.117,0,29.235-13.118,29.235-29.235V327.857
 		C374.374,311.74,361.255,298.622,345.138,298.622z M165.583,395.805c-6.044,0-10.935-4.876-10.935-10.936
 		c0-6.059,4.891-10.95,10.935-10.95c6.028,0,10.95,4.892,10.95,10.95C176.533,390.929,171.611,395.805,165.583,395.805z
 		 M350.951,441.882c0,3.198-2.614,5.813-5.813,5.813H184.577V322.045h160.562c3.198,0,5.813,2.614,5.813,5.813V441.882z" />
-            <path d="M49.36,399.558v-133.34v-25.452H25.937v170.511c0,6.46,5.244,11.704,11.705,11.704h78.48v-23.423
+                <path d="M49.36,399.558v-133.34v-25.452H25.937v170.511c0,6.46,5.244,11.704,11.705,11.704h78.48v-23.423
 		h-5.383H49.36z" />
-            <path d="M418.989,343.237v56.32h-20.485h-4.26v23.423h36.465c6.459,0,11.703-5.244,11.703-11.704V311.033
+                <path d="M418.989,343.237v56.32h-20.485h-4.26v23.423h36.465c6.459,0,11.703-5.244,11.703-11.704V311.033
 		h-23.423V343.237z" />
-          </g>
-        </svg>
+              </g>
+            </svg>
+          </div>
+          <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
+          <a class="link link-primary text-md flex items-center gap-1 min-w-max"
+            href="https://tikmatrix.com/docs/troubleshooting/unable-detect-phone" target="_blank">
+            <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5" />
+            {{ $t('unableDetectPhoneTip') }}
+          </a>
+        </div>
       </div>
-      <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
-      <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-        href="https://tikmatrix.com/docs/troubleshooting/unable-detect-phone" target="_blank">
-        <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5" />
-        {{ $t('unableDetectPhoneTip') }}
-      </a>
     </div>
   </div>
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
@@ -383,7 +391,7 @@ export default {
           gridTemplateColumns: `repeat(${this.mydevices.length}, minmax(${this.cardMinWidth}px, auto))`,
           justifyContent: 'flex-start',
           autoRows: 'auto',
-          gap: '0.5rem',
+          gap: '1rem',
           flex: 1
         }
       }
@@ -392,7 +400,7 @@ export default {
         display: 'grid',
         gridTemplateColumns: `repeat(auto-fit, minmax(${this.cardMinWidth}px, 1fr))`,
         autoRows: 'auto',
-        gap: '0.5rem',
+        gap: '1.25rem',
         flex: 1
       }
     }

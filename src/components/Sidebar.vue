@@ -1,51 +1,70 @@
 <template>
-  <div class="sidebar bg-base-100 m-1 flex flex-col rounded-lg shadow w-1/4 h-screen overflow-y-scroll no-scrollbar">
-    <div class="pl-2 pr-2 pt-2 pb-14">
+  <div ref="sidebarContainer"
+    class="sidebar relative bg-base-100 flex flex-col w-full max-w-xs lg/max-w-sm h-full overflow-y-auto no-scrollbar rounded-xl shadow-lg border border-base-200/70">
+    <div class="px-2 pt-3 pb-16 space-y-4">
 
-      <div class="tabs tabs-md tabs-border border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
-        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('general')" checked="checked" />
-        <div class="tab-content mt-2">
-          <General :settings="settings" />
+      <section class="space-y-3">
+        <div class="border border-base-300/70 bg-base-200/60 rounded-2xl shadow-sm p-3">
+          <div class="flex items-center gap-1 bg-base-100/90 rounded-2xl p-1">
+            <button type="button" class="flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-xl
+                text-xs font-semibold transition-all duration-200 min-w-0" :class="tabClasses('general')"
+              @click="setActiveTab('general')">
+              <font-awesome-icon icon="fa-solid fa-sliders" class="h-3 w-3 flex-shrink-0" />
+              <span>{{ $t('general') }}</span>
+            </button>
+            <button type="button" class="flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-xl
+                text-xs font-semibold transition-all duration-200 min-w-0" :class="tabClasses('customCommands')"
+              @click="setActiveTab('customCommands')">
+              <font-awesome-icon icon="fa-solid fa-terminal" class="h-3 w-3 flex-shrink-0" />
+              <span>{{ $t('customCommands') }}</span>
+            </button>
+            <button type="button" class="flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-xl
+                text-xs font-semibold transition-all duration-200 min-w-0" :class="tabClasses('scripts')"
+              @click="setActiveTab('scripts')">
+              <font-awesome-icon icon="fa-solid fa-code" class="h-3 w-3 flex-shrink-0" />
+              <span>{{ $t('scripts') }}</span>
+            </button>
+          </div>
+          <div class="mt-5">
+            <General v-if="selectedTab === 'general'" :settings="settings" />
+            <CustomCommands v-else-if="selectedTab === 'customCommands'" :settings="settings" />
+            <Scripts v-else :settings="settings" />
+          </div>
         </div>
-        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('customCommands')" />
-        <div class="tab-content mt-2">
-          <CustomCommands :settings="settings" />
-        </div>
-        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('scripts')" />
-        <div class="tab-content mt-2">
-          <Scripts :settings="settings" />
-        </div>
-      </div>
+      </section>
 
-      <div class="flex flex-col">
-        <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('tasks') }}</span>
-        <div class="flex flex-row flex-wrap border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
+      <section class="space-y-2">
+        <header class="flex items-center justify-between">
+          <h2 class="text-xs font-semibold tracking-wide uppercase text-base-content/70">{{ $t('tasks') }}</h2>
+        </header>
+        <div class="flex flex-col gap-2 border border-base-300/60 bg-base-200/60 rounded-2xl shadow-sm p-2">
           <Tasks :settings="settings" />
         </div>
-      </div>
-      <div class="flex flex-col">
-        <span class="font-sans p-2 bg-base-200 rounded-md font-bold mt-2">{{ $t('groups') }}</span>
-        <button class="btn btn-md btn-primary border-1 border-success text-primary-content p-0 mt-1" @click="addGroup">
-          <font-awesome-icon icon="fa-solid fa-plus" class="h-4 w-4" />
-          <span class="text-md">{{ $t('addGroup') }}</span>
-        </button>
+      </section>
+
+      <section class="space-y-3">
+        <header class="flex items-center justify-between">
+          <h2 class="text-xs font-semibold tracking-wide uppercase text-base-content/70">{{ $t('groups') }}</h2>
+          <button class="btn btn-xs btn-primary gap-1 px-3 py-1" @click="addGroup">
+            <font-awesome-icon icon="fa-solid fa-plus" class="h-3 w-3" />
+            <span class="text-xs">{{ $t('addGroup') }}</span>
+          </button>
+        </header>
         <input ref="groupNameInput" v-if="showAddGroup"
-          class="input input-md input-bordered w-full max-w-xs mt-2 ring-1 ring-success" type="text"
-          v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
-        <div class="bg-base-300 rounded-md mt-2 shadow-lg ring-1">
-          <div class="flex flex-row form-control items-center">
-            <label class="label cursor-pointer m-1">
-              <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(0)"
+          class="input input-sm input-bordered w-full mt-1 rounded-xl border-base-300 focus:ring-2 focus:ring-primary/40"
+          type="text" v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
+        <div class="bg-base-200/70 rounded-2xl shadow-sm border border-base-300/60">
+          <div class="flex flex-wrap items-center gap-2 p-2">
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-xs font-medium">
+              <input type="checkbox" class="checkbox checkbox-sm ring-1" @change="selectAll(0)"
                 :checked="isSelectAll(0)" />
-              <span class="label-text text-primary text-md select-none">{{ $t('allDevices') }} ({{
-                groupDevices[0].length
-              }})</span>
+              <span class="whitespace-nowrap">{{ $t('allDevices') }} ({{ groupDevices[0].length }})</span>
             </label>
 
-            <div ref="moveToGroupMenu" class="dropdown dropdown-top label-text text-md text-right flex-1">
-              <div tabindex="0" role="button" class="text-primary cursor-pointer">
-                <span class="text-md">{{ $t('moveToGroup') }}</span>
-                <font-awesome-icon icon="fa-solid fa-share" class="text-primary ml-1"></font-awesome-icon>
+            <div ref="moveToGroupMenu" class="dropdown dropdown-top ml-auto shrink-0">
+              <div tabindex="0" role="button" class="text-primary cursor-pointer flex items-center gap-1">
+                <span class="text-xs font-medium whitespace-nowrap">{{ $t('moveToGroup') }}</span>
+                <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3"></font-awesome-icon>
               </div>
 
               <ul tabindex="0"
@@ -56,75 +75,66 @@
                 </li>
               </ul>
             </div>
-            <span class="label-text text-md text-right flex-1 mr-2 select-none">{{ $t('selected') }}
+            <span class="text-xs text-base-content/70 select-none shrink-0 whitespace-nowrap">{{ $t('selected') }}
               {{ selections[0].length }}
               {{ $t('units') }}
             </span>
           </div>
-          <drag-select v-model="selection">
-            <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index">
-              {{ index + 1 }}
-            </drag-select-option>
-          </drag-select>
+          <div class="px-2 py-2">
+            <drag-select v-model="selection" class="flex flex-wrap gap-2">
+              <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index"
+                :class="deviceIndexClasses(item.real_serial)">
+                <span class="font-semibold text-xs">{{ index + 1 }}</span>
+              </drag-select-option>
+            </drag-select>
+          </div>
         </div>
 
-        <div class="bg-base-300 rounded-md mt-2 shadow-lg ring-1" v-for="(item, index) in sortedGroups" :key="item.id">
-          <div class="flex flex-row form-control items-center">
-            <label class="label cursor-pointer m-1">
-              <input type="checkbox" class="checkbox checkbox-md ring-1 mr-1" @change="selectAll(item.id)"
-                :checked="isSelectAll(item.id)" />
-              <span class="label-text text-primary  text-md select-none">{{ item.name }}({{ groupDevices[item.id].length
-              }})</span>
-            </label>
-            <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer ml-2"
-              @click="renameGroup(item)"></font-awesome-icon>
-            <div class="tooltip" :data-tip="$t('deleteGroup')">
-              <font-awesome-icon icon="fa-solid fa-trash" class="text-error cursor-pointer ml-2"
-                @click="deleteGroup(item.id)"></font-awesome-icon>
+        <div class="space-y-3 mt-3">
+          <div class="bg-base-200/70 rounded-2xl shadow-sm border border-base-300/60 scroll-mt-6"
+            v-for="(item, index) in sortedGroups" :key="item.id">
+            <div class="flex flex-wrap items-center gap-2 p-2 border-b border-base-300/50">
+              <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-xs font-medium">
+                <input type="checkbox" class="checkbox checkbox-sm ring-1" @change="selectAll(item.id)"
+                  :checked="isSelectAll(item.id)" />
+                <span class="whitespace-nowrap">{{ item.name }} ({{ groupDevices[item.id].length }})</span>
+              </label>
+
+              <div class="flex items-center gap-2 ml-auto">
+                <span class="text-xs text-base-content/70 select-none whitespace-nowrap">{{ $t('selected') }}
+                  {{ selections[item.id].length }}
+                  {{ $t('units') }}
+                </span>
+                <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer h-3 w-3"
+                  @click="renameGroup(item)"></font-awesome-icon>
+                <div class="tooltip" :data-tip="$t('deleteGroup')">
+                  <font-awesome-icon icon="fa-solid fa-trash" class="text-error cursor-pointer h-3 w-3"
+                    @click="deleteGroup(item.id)"></font-awesome-icon>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 px-2 pb-2 pt-1.5 border-b border-base-300/50">
+              <button class="btn btn-xs btn-primary gap-1 px-2"
+                @click="$emiter('showDialog', { name: 'accountWarmup', group: item })">
+                <font-awesome-icon icon="cog" class="h-2.5 w-2.5" />
+                <span class="text-xs">{{ $t('accountWarmup') }}</span>
+              </button>
+              <button class="btn btn-xs btn-primary gap-1 px-2"
+                @click="$emiter('showDialog', { name: 'post', group: item })">
+                <font-awesome-icon icon="cog" class="h-2.5 w-2.5" />
+                <span class="text-xs">{{ $t('post') }}</span>
+              </button>
+              <button class="btn btn-xs btn-primary gap-1 px-2"
+                @click="$emiter('showDialog', { name: 'materials', group: item })">
+                <font-awesome-icon icon="fa-solid fa-film" class="h-2.5 w-2.5" />
+                <span class="text-xs">{{ $t('materials') }}</span>
+              </button>
             </div>
 
-            <span class="label-text text-md text-right flex-1 mr-2 select-none">{{ $t('selected') }}
-              {{ selections[item.id].length }}
-              {{ $t('units') }}
-            </span>
-
-          </div>
-          <div class="flex flex-row form-control items-center mt-1">
-            <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'accountWarmup', group: item })">
-              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('accountWarmup') }}
-            </button>
-            <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'post', group: item })">
-              <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('post') }}
-            </button>
-            <button class="btn btn-md btn-primary ml-1 mb-1"
-              @click="$emiter('showDialog', { name: 'materials', group: item })">
-              <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
-            </button>
           </div>
         </div>
+      </section>
 
-
-
-      </div>
-      <div class="mt-4 ring-1 ring-base-300 rounded-lg overflow-hidden relative" v-if="!hideAd">
-        <a href="http://www.niaozun.shop?cid=934ec2fe" target="_blank"
-          class="block w-full h-full relative hover:opacity-90 transition-opacity">
-          <img src="https://gou.niaozun.com/media/product/1/image/2024/06/26/e4c4d51d0598b76eeb0e2f4ef84bdea2.png"
-            class="w-full h-full object-cover" />
-        </a>
-        <div class="absolute top-10 bg-black/50 text-white text-md p-1 text-center">
-          <span class="text-md font-bold">
-            {{ $t('adTips') }}
-          </span>
-        </div>
-        <div class="absolute top-0 right-0">
-          <button class="btn btn-md btn-primary" @click="hideAd = true">
-            {{ $t('close') }}
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -191,15 +201,11 @@ export default {
       adImage: '',
       adLink: '',
       adTitle: '',
-      hideAd: true,
-      // hideAd: localStorage.getItem('hideAd_v1') == 'true' ? true : false,
     }
   },
 
   watch: {
-    hideAd(newVal) {
-      localStorage.setItem('hideAd_v1', newVal)
-    },
+
     selection(newVal) {
       this.$emiter('selecedDevices', newVal)
       this.refreshSelections()
@@ -216,10 +222,29 @@ export default {
       },
       deep: true
     },
-
-
   },
   methods: {
+    setActiveTab(tab) {
+      this.selectedTab = tab
+    },
+    tabClasses(tab) {
+      const isActive = this.selectedTab === tab
+      return [
+        'rounded-xl shadow-sm',
+        isActive
+          ? 'bg-gradient-to-r from-primary via-secondary to-primary/80 text-primary-content shadow-md ring-1 ring-primary/50 scale-[1.02]'
+          : 'text-base-content/70 hover:text-base-content hover:bg-primary/10'
+      ]
+    },
+    deviceIndexClasses(serial) {
+      const isSelected = this.selection.includes(serial)
+      return [
+        'inline-flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-150 select-none',
+        isSelected
+          ? 'bg-primary text-primary-content border-primary shadow-md scale-[1.05]'
+          : 'bg-base-100/80 text-base-content/70 border-base-300 hover:border-primary/60 hover:text-base-content'
+      ]
+    },
 
     async renameGroup(item) {
       if (this.showAddGroup) {
@@ -484,6 +509,7 @@ export default {
         this.selections[group_id] = this.devices.filter(device => device.group_id === group_id)
           .filter(device => this.selection.includes(device.real_serial)).map(device => device.real_serial)
       }
+      await this.$nextTick()
     },
     async get_menus() {
       this.$service.get_menus().then(res => {

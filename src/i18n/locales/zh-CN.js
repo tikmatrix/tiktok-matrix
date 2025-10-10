@@ -200,7 +200,7 @@ export default {
   creatingOrder: '创建订单中...',
   currentDevice: '当前设备',
   custom: '自定义',
-  customCommands: '自定义ADB命令',
+  customCommands: '命令',
   customResolution: '自定义分辨率',
   customerSupport: '客服支持',
   dashboard: '仪表盘',

@@ -200,7 +200,7 @@ export default {
   creatingOrder: 'Creating Order...',
   currentDevice: 'Current Device',
   custom: 'Custom',
-  customCommands: 'ADB Commands',
+  customCommands: 'Commands',
   customResolution: 'Custom Resolution',
   customerSupport: 'Customer Support',
   dashboard: 'Dashboard',

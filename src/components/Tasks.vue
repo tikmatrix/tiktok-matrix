@@ -39,10 +39,10 @@
                 <input type="checkbox" checked="checked" class="toggle toggle-primary" v-model="autoRetry" />
             </label>
         </fieldset>
-        <a class="link link-primary text-md flex items-center gap-1 min-w-max"
+        <a class="link link-primary flex items-start gap-2 text-sm leading-snug max-w-full md:max-w-xs whitespace-normal break-words"
             href="https://tikmatrix.com/docs/troubleshooting/task_failed" target="_blank">
-            <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5" />
-            {{ $t('taskFailedTip') }}
+            <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5 shrink-0" />
+            <span class="text-left">{{ $t('taskFailedTip') }}</span>
         </a>
     </div>
 

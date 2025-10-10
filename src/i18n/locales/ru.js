@@ -200,7 +200,7 @@ export default {
   creatingOrder: 'Создание заказа...',
   currentDevice: 'Текущее устройство',
   custom: 'Пользовательский',
-  customCommands: 'ADB команды',
+  customCommands: 'команды',
   customResolution: 'Пользовательское разрешение',
   customerSupport: 'Поддержка клиентов',
   dashboard: 'Панель управления',

@@ -1,10 +1,12 @@
 <template>
-  <div class="flex flex-col items-start h-screen w-screen overflow-hidden">
+  <div class="min-h-screen w-screen bg-base-200 text-base-content overflow-hidden">
     <TitleBar />
-    <div class="flex flex-row items-start bg-base-300 h-screen w-screen overflow-hidden mt-12">
+    <div class="flex flex-row items-stretch gap-3 mt-12 h-[calc(100vh-3rem)] w-full px-3 overflow-hidden">
       <Sidebar :devices="devices" :settings="settings" :groups="groups" :selecedDevices="selecedDevices"
         v-if="showSidebar" />
-      <ManageDevices :devices="devices" :settings="settings" />
+      <div class="flex-1 h-full overflow-hidden">
+        <ManageDevices :devices="devices" :settings="settings" />
+      </div>
     </div>
     <AppDialog :devices="devices" :settings="settings" :selecedDevices="selecedDevices" />
   </div>
