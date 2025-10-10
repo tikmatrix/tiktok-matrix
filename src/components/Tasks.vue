@@ -40,7 +40,7 @@
             </label>
         </fieldset>
         <a class="link link-primary flex items-start gap-2 text-sm leading-snug max-w-full md:max-w-xs whitespace-normal break-words"
-            href="https://tikmatrix.com/docs/troubleshooting/task_failed" target="_blank">
+            :href="whitelabelConfig.officialWebsite + '/docs/troubleshooting/task_failed'" target="_blank">
             <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5 shrink-0" />
             <span class="text-left">{{ $t('taskFailedTip') }}</span>
         </a>
@@ -50,6 +50,7 @@
 </template>
 <script>
 import Countup from './Countup.vue'
+import { getWhiteLabelConfig } from '../config/whitelabel.js';
 export default {
     name: 'Tasks',
     props: ['settings'],
@@ -58,6 +59,7 @@ export default {
     },
     data() {
         return {
+            whitelabelConfig: getWhiteLabelConfig(),
             taskCounts: {},
             autoRetry: localStorage.getItem('autoRetry') === 'true'
         }

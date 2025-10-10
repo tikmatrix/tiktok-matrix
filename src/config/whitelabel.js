@@ -9,28 +9,23 @@ import defaultIcon from '../assets/logo.png';
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
     appName: '',
+    officialWebsite: 'https://tikmatrix.com', // 官网域名
+    apiDomain: 'https://api.tikmatrix.com', // API域名
 
     // Logo配置
     logo: {
         main: defaultIcon, // 主要logo
-        favicon: '/favicon.ico',   // 网页图标
         titleBar: defaultIcon, // 标题栏图标
     },
 
     // 品牌配置
     branding: {
-        supportEmail: 'support@tikmatrix.com',
-        tutorialUrl: 'https://tikmatrix.com/docs/intro',
-        rewardsUrl: 'https://tikmatrix.com/rewards',
-        telegramUrl: 'https://t.me/tikmatrix',
+        emailSupport: 'support@tikmatrix.com',
+        telegramSupport: 'https://t.me/tikmatrix',
+        whatsappSupport: '',
     },
 
-    // 功能开关
-    features: {
-        showTutorial: true,
-        showRewards: true,
-        showBranding: true,
-    }
+
 };
 
 /**

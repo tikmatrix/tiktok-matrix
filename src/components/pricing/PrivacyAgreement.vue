@@ -8,12 +8,12 @@
                         class="checkbox checkbox-primary checkbox-sm" />
                     <span class="label-text text-sm">
                         {{ $t('iAgreeWith') }}
-                        <a href="https://tikmatrix.com/privacy-policy" target="_blank"
+                        <a :href="whitelabelConfig.officialWebsite + '/privacy-policy'" target="_blank"
                             class="link link-primary font-medium hover:link-hover transition-all duration-200">
                             {{ $t('privacyPolicy') }}
                         </a>
                         {{ $t('and') }}
-                        <a href="https://tikmatrix.com/terms-of-service" target="_blank"
+                        <a :href="whitelabelConfig.officialWebsite + '/terms-of-service'" target="_blank"
                             class="link link-primary font-medium hover:link-hover transition-all duration-200">
                             {{ $t('termsOfService') }}
                         </a>
@@ -25,6 +25,7 @@
 </template>
 
 <script>
+import { getWhiteLabelConfig } from '../config/whitelabel.js';
 export default {
     name: 'PrivacyAgreement',
     props: {
@@ -33,6 +34,11 @@ export default {
             required: true
         }
     },
-    emits: ['update:modelValue']
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            whitelabelConfig: getWhiteLabelConfig(),
+        }
+    },
 }
 </script>

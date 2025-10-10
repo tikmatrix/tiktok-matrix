@@ -129,16 +129,7 @@
             <button class="btn btn-primary" @click="showLicenseDialog">
               {{ $t('activateNow') }}
             </button>
-            <a class="link link-primary text-md flex items-center gap-1 min-w-max" href="https://t.me/tikmatrix"
-              target="_blank">
-              <font-awesome-icon icon="fab fa-telegram" class="h-5 w-5" />
-              {{ $t('telegramSupport') }}
-            </a>
-            <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-              @click="copyText('support@tikmatrix.com', $event)" target="_blank">
-              <font-awesome-icon icon="fas fa-envelope" class="h-5 w-5" />
-              support@tikmatrix.com
-            </a>
+            <ContactSupport />
           </div>
         </div>
         <div v-else-if="devices.length == 0"
@@ -173,7 +164,7 @@
           </div>
           <span class="mt-8 text-lg font-semibold text-base-content animate-bounce">{{ $t('detecting_devices') }}</span>
           <a class="link link-primary text-md flex items-center gap-1 min-w-max"
-            href="https://tikmatrix.com/docs/troubleshooting/unable-detect-phone" target="_blank">
+            :href="whitelabelConfig.officialWebsite + '/docs/troubleshooting/unable-detect-phone'" target="_blank">
             <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5" />
             {{ $t('unableDetectPhoneTip') }}
           </a>
@@ -237,6 +228,9 @@ import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
 import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
+import ContactSupport from '../pricing/ContactSupport.vue'
+import { getWhiteLabelConfig } from '../config/whitelabel.js';
+
 
 export default {
   name: 'devices',
@@ -255,11 +249,13 @@ export default {
     Miniremote,
     Modal,
     Pagination,
-    DeviceDebugDialog
+    DeviceDebugDialog,
+    ContactSupport
   },
   data() {
     return {
       device: null,
+      whitelabelConfig: getWhiteLabelConfig(),
       listMode: localStorage.getItem('listMode') === 'true' || false,
       mydevices: [],
       ip_1: localStorage.getItem('ip_1')?.replace(/"/g, '') || 192,

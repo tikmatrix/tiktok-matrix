@@ -5,7 +5,7 @@
         <div class="flex items-center space-x-2">
             <img ref="logo" :src="whitelabelConfig.logo?.main || '../assets/logo.png'" class="h-10 w-auto logo"
                 alt="TikMatrix Logo" />
-            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || '' }}</span>
+            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName }}</span>
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
                 class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">
@@ -13,10 +13,10 @@
                 <span>v{{ version }}</span>
             </button>
         </div>
-        <!-- 教程链接 -->
-        <a v-if="whitelabelConfig.features?.showTutorial"
+        <!-- 官网 -->
+        <a v-if="whitelabelConfig.officialWebsite"
             class="flex items-center space-x-1 text-md text-info ml-2 hover:underline"
-            :href="whitelabelConfig.branding?.tutorialUrl || 'https://tikmatrix.com/docs/intro'" target="_blank">
+            :href="whitelabelConfig.officialWebsite + '/docs/intro'" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>

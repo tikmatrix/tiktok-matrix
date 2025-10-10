@@ -13,22 +13,6 @@ export function updateDocumentTitle(appName) {
 }
 
 /**
- * 更新favicon
- */
-export function updateFavicon(logoUrl) {
-    if (!logoUrl) return;
-
-    const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-    link.type = 'image/x-icon';
-    link.rel = 'shortcut icon';
-    link.href = logoUrl;
-
-    if (!document.querySelector("link[rel*='icon']")) {
-        document.getElementsByTagName('head')[0].appendChild(link);
-    }
-}
-
-/**
  * 初始化白标配置
  */
 export function initWhiteLabel() {
@@ -37,8 +21,6 @@ export function initWhiteLabel() {
     // 更新标题
     updateDocumentTitle(config.appName);
 
-    // 更新favicon
-    updateFavicon(config.logo.favicon);
 
     return config;
 }

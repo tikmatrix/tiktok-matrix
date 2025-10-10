@@ -42,47 +42,32 @@
                     </div>
                 </div>
 
-                <!-- 功能开关 -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">{{ $t('featureToggles') }}</span>
-                    </label>
-                    <div class="space-y-2">
-                        <label class="cursor-pointer label">
-                            <span class="label-text">{{ $t('showTutorial') }}</span>
-                            <input type="checkbox" v-model="localConfig.features.showTutorial" class="checkbox" />
-                        </label>
-                        <label class="cursor-pointer label">
-                            <span class="label-text">{{ $t('showBranding') }}</span>
-                            <input type="checkbox" v-model="localConfig.features.showBranding" class="checkbox" />
-                        </label>
-                    </div>
-                </div>
+
             </div>
 
             <!-- 品牌设置 -->
             <div v-show="activeTab === 'branding'" class="space-y-4">
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text">{{ $t('supportEmail') }}</span>
+                        <span class="label-text">{{ $t('emailSupport') }}</span>
                     </label>
-                    <input type="email" v-model="localConfig.branding.supportEmail" class="input input-bordered"
+                    <input type="email" v-model="localConfig.branding.emailSupport" class="input input-bordered"
                         :placeholder="$t('enterSupportEmail')" />
                 </div>
 
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text">{{ $t('tutorialUrl') }}</span>
+                        <span class="label-text">{{ $t('officialWebsite') }}</span>
                     </label>
-                    <input type="url" v-model="localConfig.branding.tutorialUrl" class="input input-bordered"
-                        :placeholder="$t('enterTutorialUrl')" />
+                    <input type="url" v-model="localConfig.officialWebsite" class="input input-bordered"
+                        :placeholder="$t('enterOfficialWebsite')" />
                 </div>
 
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text">{{ $t('telegramUrl') }}</span>
+                        <span class="label-text">{{ $t('telegramSupport') }}</span>
                     </label>
-                    <input type="url" v-model="localConfig.branding.telegramUrl" class="input input-bordered"
+                    <input type="url" v-model="localConfig.branding.telegramSupport" class="input input-bordered"
                         :placeholder="$t('enterTelegramUrl')" />
                 </div>
             </div>
@@ -137,30 +122,7 @@ export default {
     data() {
         return {
             activeTab: 'basic',
-            localConfig: {
-                features: {
-                    showTutorial: true,
-                    showRewards: true,
-                    showBranding: true,
-                    customTheme: false,
-                },
-                branding: {
-                    supportEmail: 'support@tikmatrix.com',
-                    tutorialUrl: 'https://tikmatrix.com/docs/intro',
-                    rewardsUrl: 'https://tikmatrix.com/rewards',
-                    telegramUrl: 'https://t.me/tikmatrix',
-                },
-                theme: {
-                    primaryColor: '#3b82f6',
-                    secondaryColor: '#10b981',
-                    accentColor: '#f59e0b',
-                },
-                logo: {
-                    main: '/src/assets/app-icon.png',
-                    favicon: '/favicon.ico',
-                    titleBar: '/src/assets/app-icon.png',
-                },
-            },
+            localConfig: {},
             logoPreview: '',
         };
     },
@@ -171,38 +133,6 @@ export default {
         loadConfig() {
             this.localConfig = JSON.parse(JSON.stringify(getWhiteLabelConfig()));
             this.logoPreview = this.localConfig.logo?.main || '';
-
-            // 确保所有必需的对象都存在
-            if (!this.localConfig.features) {
-                this.localConfig.features = {
-                    showTutorial: true,
-                    showRewards: true,
-                    showBranding: true,
-                    customTheme: false,
-                };
-            }
-            if (!this.localConfig.branding) {
-                this.localConfig.branding = {
-                    supportEmail: 'support@tikmatrix.com',
-                    tutorialUrl: 'https://tikmatrix.com/docs/intro',
-                    rewardsUrl: 'https://tikmatrix.com/rewards',
-                    telegramUrl: 'https://t.me/tikmatrix',
-                };
-            }
-            if (!this.localConfig.theme) {
-                this.localConfig.theme = {
-                    primaryColor: '#3b82f6',
-                    secondaryColor: '#10b981',
-                    accentColor: '#f59e0b',
-                };
-            }
-            if (!this.localConfig.logo) {
-                this.localConfig.logo = {
-                    main: '/src/assets/app-icon.png',
-                    favicon: '/favicon.ico',
-                    titleBar: '/src/assets/app-icon.png',
-                };
-            }
         },
 
         async handleLogoUpload(event) {
