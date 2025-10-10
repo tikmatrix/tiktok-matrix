@@ -214,6 +214,10 @@
       <button>close</button>
     </form>
   </dialog>
+
+  <!-- Debug Dialog -->
+  <DeviceDebugDialog v-if="debugDevice" v-model="showDebugDialog" :device="debugDevice"
+    @close="handleCloseDebugDialog" />
 </template>
 <style>
 @import "vue-draggable-resizable/style.css";
@@ -223,6 +227,7 @@ import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
 import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
+import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
 
 export default {
@@ -241,7 +246,8 @@ export default {
     MyButton,
     Miniremote,
     Modal,
-    Pagination
+    Pagination,
+    DeviceDebugDialog
   },
   data() {
     return {
@@ -263,6 +269,9 @@ export default {
       cardMinWidth: Number(localStorage.getItem('deviceWidth')) || 150,
       licenseData: {},
       showKeyboardTip: localStorage.getItem('showKeyboardTip') !== 'false',
+      // Debug Dialog
+      showDebugDialog: false,
+      debugDevice: null,
     }
   },
   watch: {
@@ -357,6 +366,10 @@ export default {
     async showLicenseDialog() {
       await this.$emiter('LICENSE', { show: true });
     },
+    handleCloseDebugDialog() {
+      this.showDebugDialog = false
+      this.debugDevice = null
+    },
   },
   computed: {
     isLicensed() {
@@ -404,6 +417,17 @@ export default {
     // 监听TitleBar组件的授权状态变更
     await this.$listen('LICENSE_STATUS_CHANGED', async (e) => {
       this.licenseData = e.payload;
+    });
+
+    // 监听打开 Debug Dialog 事件
+    await this.$listen('openDebugDialog', async (e) => {
+      const { serial, real_serial } = e.payload
+      // 查找设备
+      const device = this.mydevices.find(d => d.serial === serial || d.real_serial === real_serial)
+      if (device) {
+        this.debugDevice = device
+        this.showDebugDialog = true
+      }
     });
 
   },

@@ -343,20 +343,10 @@ export default {
       }
     },
     async openDebugWindow() {
-      localStorage.setItem('serial', this.serial);
-      const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-      localStorage.setItem('port', port);
-      const webview = new WebviewWindow('Debug', {
-        title: 'Debug Tools',
-        url: 'debug.html',
-        maximized: true
-      })
-
-      webview.once('tauri://created', function () {
-        // webview window successfully created
-      })
-      webview.once('tauri://error', function (e) {
-        // an error happened creating the webview window
+      // 触发打开 Debug Dialog
+      this.$emiter('openDebugDialog', {
+        serial: this.serial,
+        real_serial: this.real_serial
       })
     },
     async show_text_input_dialog() {
