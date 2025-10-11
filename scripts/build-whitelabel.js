@@ -179,13 +179,16 @@ function updateMainRs() {
     backupTextFile(mainRsPath);
     let content = fs.readFileSync(mainRsPath, 'utf-8');
 
-    const matrixRegex = /std::env::set_var\("MATRIX_APP_NAME", "[^"]*"\);/;
-    if (!matrixRegex.test(content)) {
-        throw new Error('无法在 main.rs 中找到 MATRIX_APP_NAME 设置。');
+    // 在 setup_env 函数的 debug_assertions 块之后添加 MOSS_URL 设置
+    const debugBlockRegex = /(if cfg!\(debug_assertions\) \{[\s\S]*?\})\s*(\})/;
+    if (!debugBlockRegex.test(content)) {
+        throw new Error('无法在 main.rs 中找到 setup_env 函数的 debug_assertions 块。');
     }
+
+    // 在 debug_assertions 的 if 块之后、setup_env 函数结束之前插入 MOSS_URL
     content = content.replace(
-        matrixRegex,
-        `std::env::set_var("MATRIX_APP_NAME", "${escapeRust(appName)}");\n    std::env::set_var("MOSS_URL", "${escapeRust(mossUrl)}");`
+        debugBlockRegex,
+        `$1\n    std::env::set_var("MOSS_URL", "${escapeRust(mossUrl)}");$2`
     );
 
     fs.writeFileSync(mainRsPath, content, 'utf-8');
