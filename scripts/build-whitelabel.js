@@ -66,7 +66,7 @@ const appId = sanitizeAppId(rawConfig.appId?.trim() || appName);
 if (!appId) {
     throw new Error('无法根据 appName 生成有效的 appId，请在 config.json 中显式设置 appId');
 }
-const updaterEndpoint = `${apiDomain}/front-api/check_update?app=${appId}`;
+const updaterEndpoint = `https://api.tikmatrix.com/front-api/check_update?app=${appId}`;
 const mossUrl = `${apiDomain}/moss`;
 
 if (verbose) {
