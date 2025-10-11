@@ -154,14 +154,7 @@ function updateTauriConfig() {
         json.tauri.updater.endpoints = [updaterEndpoint];
     }
 
-    if (json.tauri?.allowlist?.http?.scope) {
-        json.tauri.allowlist.http.scope = json.tauri.allowlist.http.scope.map(scope => {
-            if (/api\.tikmatrix\.com/.test(scope) || scope === '') {
-                return `${apiDomain}/*/*`;
-            }
-            return scope;
-        });
-    }
+
 
     fs.writeFileSync(tauriConfigPath, JSON.stringify(json, null, 2) + '\n');
 }

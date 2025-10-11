@@ -21,7 +21,6 @@
 
 5. API 域名
     * src\config\whitelabel.js 中的 DEFAULT_WHITELABEL_CONFIG.apiDomain 需要配置为 {apiDomain}
-    * tauri.conf.json 中的 allowlist.http.scope 需要替换为 {apiDomain}
     * src-tauri\src\main.rs 中的 setup_env 函数最后一行添加
 
       ```rust
