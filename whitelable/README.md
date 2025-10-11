@@ -41,6 +41,9 @@
 
 现在可以使用 `scripts/build-whitelabel.js` 脚本自动完成白标配置注入与打包流程：
 
+* Windows 平台自动调用 `build.ps1`
+* macOS 平台自动调用 `build.sh`
+
 ```powershell
 node scripts/build-whitelabel.js <品牌目录>
 ```

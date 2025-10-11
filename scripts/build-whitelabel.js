@@ -6,6 +6,8 @@ import { execSync } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
+const isWindows = process.platform === 'win32';
+const isMac = process.platform === 'darwin';
 
 const args = process.argv.slice(2).filter(Boolean);
 const hasFlag = flag => args.includes(flag);
@@ -27,6 +29,11 @@ const verbose = hasFlag('--verbose');
 
 const brandDir = path.join(rootDir, 'whitelable', brandArg);
 const configPath = path.join(brandDir, 'config.json');
+const buildScriptPath = isWindows
+    ? path.join(rootDir, 'build.ps1')
+    : isMac
+        ? path.join(rootDir, 'build.sh')
+        : null;
 
 if (!fs.existsSync(brandDir)) {
     console.error(`❌ 未找到白标目录: ${brandDir}`);
@@ -95,7 +102,7 @@ try {
     }
 
     if (!skipBuild) {
-        runCommand('npm run tauri build');
+        runBuild();
         console.log('🎉 构建完成，产物位于 src-tauri/target/release');
     } else {
         console.log('⚠️ 已按要求跳过 tauri build，配置已应用但未打包。');
@@ -246,6 +253,24 @@ function runCommand(command, quiet = false) {
         stdio: 'inherit',
         shell: true,
     });
+}
+
+function runBuild() {
+    if (isWindows || isMac) {
+        if (!buildScriptPath || !fs.existsSync(buildScriptPath)) {
+            throw new Error(`未找到构建脚本: ${buildScriptPath}`);
+        }
+
+        const command = isWindows
+            ? `powershell -ExecutionPolicy Bypass -File "${buildScriptPath}"`
+            : `bash "${buildScriptPath}"`;
+
+        runCommand(command);
+        return;
+    }
+
+    console.warn('⚠️ 当前平台不在支持列表(仅 Windows/macOS)，回退到 `npm run tauri build`。');
+    runCommand('npm run tauri build');
 }
 
 function mustHave(value, key) {
