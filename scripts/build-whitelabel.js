@@ -82,6 +82,7 @@ if (verbose) {
 
 const backups = new Map();
 const iconBackups = new Map();
+const generatedIconsBackup = new Map();
 let iconUpdated = false;
 let iconGenerated = false;
 let hadError = false;
@@ -95,6 +96,7 @@ try {
     updateIcons();
 
     if (!skipIcon) {
+        backupGeneratedIcons();
         runCommand('npm run tauri icon');
         iconGenerated = true;
     } else {
@@ -115,6 +117,7 @@ try {
 } finally {
     restoreTextFiles();
     restoreIcons();
+    restoreGeneratedIcons();
 
     if (iconUpdated && iconGenerated) {
         try {
@@ -222,6 +225,27 @@ function restoreTextFiles() {
 
 function restoreIcons() {
     for (const [filePath, buffer] of iconBackups.entries()) {
+        fs.writeFileSync(filePath, buffer);
+    }
+}
+
+function backupGeneratedIcons() {
+    const iconsDir = path.join(rootDir, 'src-tauri', 'icons');
+    if (!fs.existsSync(iconsDir)) {
+        return;
+    }
+
+    const files = fs.readdirSync(iconsDir);
+    files.forEach(file => {
+        const filePath = path.join(iconsDir, file);
+        if (fs.statSync(filePath).isFile()) {
+            generatedIconsBackup.set(filePath, fs.readFileSync(filePath));
+        }
+    });
+}
+
+function restoreGeneratedIcons() {
+    for (const [filePath, buffer] of generatedIconsBackup.entries()) {
         fs.writeFileSync(filePath, buffer);
     }
 }
