@@ -83,6 +83,7 @@ if (verbose) {
 const backups = new Map();
 const iconBackups = new Map();
 const generatedIconsBackup = new Map();
+const generatedIconsOriginalPaths = new Set();
 let iconUpdated = false;
 let iconGenerated = false;
 let hadError = false;
@@ -120,12 +121,7 @@ try {
     restoreGeneratedIcons();
 
     if (iconUpdated && iconGenerated) {
-        try {
-            runCommand('npm run tauri icon', true);
-            console.log('♻️ 已恢复默认图标集。');
-        } catch (error) {
-            console.warn(`⚠️ 恢复默认图标失败: ${error.message}`);
-        }
+        console.log('♻️ 已恢复默认图标集 (使用备份文件)。');
     }
 
     if (!hadError) {
@@ -238,13 +234,33 @@ function backupGeneratedIcons() {
     const files = fs.readdirSync(iconsDir);
     files.forEach(file => {
         const filePath = path.join(iconsDir, file);
-        if (fs.statSync(filePath).isFile()) {
+        const stat = fs.statSync(filePath);
+        if (stat.isFile()) {
+            generatedIconsOriginalPaths.add(filePath);
             generatedIconsBackup.set(filePath, fs.readFileSync(filePath));
         }
     });
 }
 
 function restoreGeneratedIcons() {
+    const iconsDir = path.join(rootDir, 'src-tauri', 'icons');
+    if (!fs.existsSync(iconsDir)) {
+        return;
+    }
+
+    const currentFiles = fs.readdirSync(iconsDir);
+    currentFiles.forEach(file => {
+        const filePath = path.join(iconsDir, file);
+        const stat = fs.statSync(filePath);
+        if (!stat.isFile()) {
+            return;
+        }
+
+        if (!generatedIconsBackup.has(filePath)) {
+            fs.rmSync(filePath, { force: true });
+        }
+    });
+
     for (const [filePath, buffer] of generatedIconsBackup.entries()) {
         fs.writeFileSync(filePath, buffer);
     }
