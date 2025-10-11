@@ -229,7 +229,7 @@ import Pagination from '../Pagination.vue'
 import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
 import ContactSupport from '../pricing/ContactSupport.vue'
-import { getWhiteLabelConfig } from '../config/whitelabel.js';
+import { getWhiteLabelConfig } from '../../config/whitelabel.js';
 
 
 export default {

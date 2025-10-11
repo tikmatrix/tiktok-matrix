@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { getWhiteLabelConfig } from '../config/whitelabel.js';
+import { getWhiteLabelConfig } from '../../config/whitelabel.js';
 export default {
     name: 'PrivacyAgreement',
     props: {

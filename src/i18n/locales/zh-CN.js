@@ -281,6 +281,8 @@ export default {
   enterTelegramUrl: '输入Telegram地址',
   enterTips: '输入关键字',
   enterOfficialWebsite: '输入官方网站地址',
+  officialWebsite: '官方网站',
+  enterWhatsappUrl: '输入Whatsapp地址',
   error: '错误',
   every: '每',
   execing: '执行中',

@@ -59,6 +59,8 @@ export default {
   appConfiguration: 'App Configuration',
   application: 'Application',
   applicationName: 'Application Name',
+  officialWebsite: 'Official Website',
+  enterWhatsappUrl: 'Enter Whatsapp URL',
   applied: 'Applied',
   apply: 'Apply',
   artistName: 'Artist Name',

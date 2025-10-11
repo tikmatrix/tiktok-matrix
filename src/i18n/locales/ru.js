@@ -281,6 +281,8 @@ export default {
   enterTelegramUrl: 'Введите URL Telegram',
   enterTips: 'Введите ключевые слова',
   enterOfficialWebsite: 'Введите URL официального сайта',
+  officialWebsite: 'Официальный сайт',
+  enterWhatsappUrl: 'Введите URL Whatsapp',
   error: 'Ошибка',
   every: 'Каждые',
   execing: 'Выполняется',

@@ -10,9 +10,7 @@
                 <a class="tab" :class="{ 'tab-active': activeTab === 'branding' }" @click="activeTab = 'branding'">
                     {{ $t('brandingSettings') }}
                 </a>
-                <a class="tab" :class="{ 'tab-active': activeTab === 'preview' }" @click="activeTab = 'preview'">
-                    {{ $t('preview') }}
-                </a>
+
             </div>
 
             <!-- 基本设置 -->
@@ -49,18 +47,17 @@
             <div v-show="activeTab === 'branding'" class="space-y-4">
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text">{{ $t('emailSupport') }}</span>
-                    </label>
-                    <input type="email" v-model="localConfig.branding.emailSupport" class="input input-bordered"
-                        :placeholder="$t('enterSupportEmail')" />
-                </div>
-
-                <div class="form-control">
-                    <label class="label">
                         <span class="label-text">{{ $t('officialWebsite') }}</span>
                     </label>
                     <input type="url" v-model="localConfig.officialWebsite" class="input input-bordered"
                         :placeholder="$t('enterOfficialWebsite')" />
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">{{ $t('emailSupport') }}</span>
+                    </label>
+                    <input type="email" v-model="localConfig.branding.emailSupport" class="input input-bordered"
+                        :placeholder="$t('enterSupportEmail')" />
                 </div>
 
                 <div class="form-control">
@@ -70,39 +67,21 @@
                     <input type="url" v-model="localConfig.branding.telegramSupport" class="input input-bordered"
                         :placeholder="$t('enterTelegramUrl')" />
                 </div>
-            </div>
-
-            <!-- 预览 -->
-            <div v-show="activeTab === 'preview'" class="space-y-4">
-                <div class="mockup-window border bg-base-300">
-                    <div class="flex justify-center bg-base-200">
-                        <!-- 模拟标题栏 -->
-                        <div
-                            class="h-12 bg-base-100 select-none flex items-center justify-between w-full px-4 shadow-md">
-                            <div class="flex items-center space-x-2">
-                                <img :src="logoPreview" class="h-10 w-10" />
-                                <span class="text-2xl text-base-content font-bold">{{ localConfig.appName }}</span>
-                                <span class="text-md text-base-content">v2.7.4</span>
-                            </div>
-                            <div class="flex-1"></div>
-                            <div class="flex items-center space-x-4">
-                                <span class="text-sm">{{ $t('previewMode') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-center text-sm text-gray-500">
-                    {{ $t('previewDescription') }}
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">{{ $t('whatsappSupport') }}</span>
+                    </label>
+                    <input type="url" v-model="localConfig.branding.whatsappSupport" class="input input-bordered"
+                        :placeholder="$t('enterWhatsappUrl')" />
                 </div>
             </div>
+
+
 
             <!-- 操作按钮 -->
             <div class="modal-action">
                 <button class="btn btn-ghost" @click="closeDialog">{{ $t('cancel') }}</button>
                 <button class="btn btn-warning" @click="resetToDefault">{{ $t('resetToDefault') }}</button>
-                <button class="btn btn-primary" @click="exportConfig">{{ $t('exportConfig') }}</button>
-                <button class="btn btn-secondary" @click="importConfig">{{ $t('importConfig') }}</button>
                 <button class="btn btn-success" @click="saveConfig">{{ $t('save') }}</button>
             </div>
 
@@ -114,8 +93,6 @@
 
 <script>
 import { getWhiteLabelConfig, saveWhiteLabelConfig, resetWhiteLabelConfig, validateWhiteLabelConfig } from '../config/whitelabel.js';
-import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
-import { save, open } from '@tauri-apps/api/dialog';
 
 export default {
     name: 'WhiteLabelDialog',
@@ -223,65 +200,7 @@ export default {
             }
         },
 
-        async exportConfig() {
-            try {
-                const filePath = await save({
-                    filters: [{
-                        name: 'JSON',
-                        extensions: ['json']
-                    }],
-                    defaultPath: 'whitelabel-config.json'
-                });
 
-                if (filePath) {
-                    await writeTextFile(filePath, JSON.stringify(this.localConfig, null, 2));
-                    await this.$emiter('NOTIFY', {
-                        type: 'success',
-                        message: this.$t('configExported'),
-                        timeout: 3000
-                    });
-                }
-            } catch (error) {
-                await this.$emiter('NOTIFY', {
-                    type: 'error',
-                    message: this.$t('exportFailed'),
-                    timeout: 3000
-                });
-                console.error('Export failed:', error);
-            }
-        },
-
-        importConfig() {
-            this.$refs.configFile.click();
-        },
-
-        async handleConfigImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            try {
-                const text = await file.text();
-                const config = JSON.parse(text);
-
-                validateWhiteLabelConfig(config);
-
-                this.localConfig = { ...this.localConfig, ...config };
-                this.logoPreview = this.localConfig.logo?.main || '';
-
-                await this.$emiter('NOTIFY', {
-                    type: 'success',
-                    message: this.$t('configImported'),
-                    timeout: 3000
-                });
-            } catch (error) {
-                await this.$emiter('NOTIFY', {
-                    type: 'error',
-                    message: this.$t('importFailed') + ': ' + error.message,
-                    timeout: 3000
-                });
-                console.error('Import failed:', error);
-            }
-        },
 
         showDialog() {
             this.loadConfig();
