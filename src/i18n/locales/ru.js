@@ -237,6 +237,8 @@ export default {
   disableProxy: 'Отключить прокси',
   disabled: 'Выключено',
   displayMode: 'Режим отображения',
+  gridMode: 'Сетка',
+  listMode: 'Список',
   dmSettings: 'Настройки сообщений',
   dockedWindow: 'Прикрепленное окно',
   document: 'Документ',

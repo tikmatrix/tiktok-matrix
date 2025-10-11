@@ -237,6 +237,8 @@ export default {
   disableProxy: '禁用代理',
   disabled: '已禁用',
   displayMode: '显示模式',
+  gridMode: '网格',
+  listMode: '列表',
   dmSettings: '私信设置',
   dockedWindow: '悬浮窗口',
   document: '文档',

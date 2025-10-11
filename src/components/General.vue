@@ -64,21 +64,6 @@
         <font-awesome-icon icon="fa-solid fa-calendar-check" class="h-3 w-3 mr-1" />
         {{ $t('followPlan') }}
     </button>
-    <div>
-        <label class="label">
-            <span class="label-text">{{ $t('screenSize') }}: </span>
-        </label>
-        <kbd class="kbd p-4 cursor-pointer ml-4 select-none" @click="screenSizePlus">+</kbd>
-        <kbd class="kbd p-4 cursor-pointer ml-4 select-none" @click="screenSizeMinus">-</kbd>
-        <div role="alert" class="alert alert-info alert-sm mt-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                class="h-6 w-6 shrink-0 stroke-current">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span>{{ $t('screenScaledNote') }}</span>
-        </div>
-    </div>
     <dialog ref="uninstall_dialog" class="modal">
         <div class="modal-box">
             <h3 class="font-bold text-lg">{{ $t('inputPackageName') }}</h3>
@@ -188,7 +173,6 @@ export default {
         return {
             proxy_host: localStorage.getItem('proxy_host') || '127.0.0.1',
             proxy_port: localStorage.getItem('proxy_port') || 8080,
-            screenScaled: 100,
             resolution: Number(localStorage.getItem('screenResolution')) || 512,
             customResolution: 512,
             uninstall_package: '',
@@ -252,12 +236,6 @@ export default {
             });
         },
 
-        async screenSizePlus() {
-            await this.$emiter('screenScaled', { action: 'plus' })
-        },
-        async screenSizeMinus() {
-            await this.$emiter('screenScaled', { action: 'minus' })
-        },
         async setResolution(value) {
             this.resolution = value;
             localStorage.setItem('screenResolution', value);

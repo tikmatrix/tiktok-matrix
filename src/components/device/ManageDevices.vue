@@ -39,16 +39,50 @@
                 </button>
               </div>
 
-              <div
-                class="form-control px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-sm flex-row items-center">
-                <label class="label cursor-pointer flex items-center gap-3 whitespace-nowrap">
-                  <span class="text-sm font-medium">{{ $t('displayMode') }}</span>
-                  <label class="swap swap-rotate">
-                    <input type="checkbox" v-model="listMode" />
-                    <font-awesome-icon icon="fa-solid fa-list" class="swap-on fill-current w-5 h-5 text-primary" />
-                    <font-awesome-icon icon="fa-solid fa-th" class="swap-off fill-current w-5 h-5 text-primary" />
-                  </label>
-                </label>
+              <div class="flex flex-wrap items-center gap-2">
+                <div
+                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-sm"
+                  role="group" :aria-label="$t('displayMode')">
+                  <div
+                    class="join rounded-lg overflow-hidden border border-base-300 bg-base-100 shadow-inner text-sm font-medium">
+                    <button type="button"
+                      class="join-item btn btn-xs md:btn-sm gap-1 px-3 py-1.5 border-0 bg-transparent hover:bg-primary/10"
+                      :class="{ 'btn-active bg-primary text-primary-content shadow': !listMode }"
+                      :aria-pressed="!listMode" @click="setDisplayMode('grid')">
+                      <font-awesome-icon icon="fa-solid fa-th" class="h-3 w-3" />
+                      <span class="hidden sm:inline">{{ $t('gridMode') }}</span>
+                    </button>
+                    <button type="button"
+                      class="join-item btn btn-xs md:btn-sm gap-1 px-3 py-1.5 border-0 bg-transparent hover:bg-primary/10"
+                      :class="{ 'btn-active bg-primary text-primary-content shadow': listMode }"
+                      :aria-pressed="listMode" @click="setDisplayMode('list')">
+                      <font-awesome-icon icon="fa-solid fa-list" class="h-3 w-3" />
+                      <span class="hidden sm:inline">{{ $t('listMode') }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-sm">
+                  <span class="text-sm font-medium whitespace-nowrap">{{ $t('screenSize') }}</span>
+                  <div class="join">
+                    <button class="btn btn-sm join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
+                      @click="$emiter('screenScaled', { action: 'minus' })">
+                      <font-awesome-icon icon="fa-solid fa-minus" class="h-3 w-3" />
+                    </button>
+                    <div
+                      class="join-item px-3 py-1 text-sm font-semibold rounded-none bg-base-100 border border-base-300 text-base-content">
+                      {{ screenSizeDisplay }}px
+                    </div>
+                    <button class="btn btn-sm join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
+                      @click="$emiter('screenScaled', { action: 'plus' })">
+                      <font-awesome-icon icon="fa-solid fa-plus" class="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div class="tooltip tooltip-bottom" :data-tip="$t('screenScaledNote')">
+                    <font-awesome-icon icon="fa-solid fa-circle-info" class="h-4 w-4 text-info" />
+                  </div>
+                </div>
               </div>
             </div>
           </template>
@@ -301,6 +335,9 @@ export default {
     }
   },
   methods: {
+    setDisplayMode(mode) {
+      this.listMode = mode === 'list';
+    },
     async copyText(text, event) {
       await writeText(text)
       await this.$emiter('NOTIFY', {
@@ -378,6 +415,9 @@ export default {
   computed: {
     isLicensed() {
       return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active;
+    },
+    screenSizeDisplay() {
+      return Math.round(this.cardMinWidth || 0);
     },
     gridStyle() {
       // 当元素数量<=5个时，限制最大宽度而不是占满整行

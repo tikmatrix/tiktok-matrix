@@ -239,6 +239,8 @@ export default {
   disableProxy: 'Disable Proxy',
   disabled: 'Disabled',
   displayMode: 'Display Mode',
+  gridMode: 'Grid',
+  listMode: 'List',
   dmSettings: 'Message Settings',
   dockedWindow: 'Docked Window',
   document: 'Document',
