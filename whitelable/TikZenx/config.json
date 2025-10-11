@@ -1,0 +1,10 @@
+{
+    "appName": "TikZenX",
+    "appId": "tikzenx",
+    "officialWebsite": "https://tikzenx.com",
+    "apiDomain": "https://api.tikzenx.com",
+    "emailSupport": "admin@tikzenx.com",
+    "telegramSupport": "https://t.me/tikzenx",
+    "whatsappSupport": "https://wa.me/+6588387587",
+    "iconFile": "app-icon.png"
+}
