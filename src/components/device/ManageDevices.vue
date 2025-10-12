@@ -150,23 +150,8 @@
           </template>
         </Pagination>
 
-        <!-- 未激活提示信息 -->
-        <div v-if="!isLicensed" class="alert alert-warning shadow-lg">
-          <div class="flex w-full justify-between items-center gap-2">
-            <div class="flex items-center">
-              <font-awesome-icon icon="fa-solid fa-exclamation-triangle" class="h-6 w-6 text-warning" />
-              <div class="ml-3">
-                <h3 class="font-bold text-lg">{{ $t('licenseRequired') }}</h3>
-                <div class="text-sm">{{ $t('pleaseActivateSoftware') }}</div>
-              </div>
-            </div>
-            <button class="btn btn-primary" @click="showLicenseDialog">
-              {{ $t('activateNow') }}
-            </button>
-            <ContactSupport />
-          </div>
-        </div>
-        <div v-else-if="devices.length == 0"
+
+        <div v-if="isLicensed && devices.length == 0"
           class="w-full min-h-[40vh] bg-base-100 flex flex-col items-center justify-center rounded-xl border border-dashed border-base-300 p-8">
           <div class="relative flex justify-center items-center">
             <div class="absolute animate-spin rounded-full h-48 w-48 border-t-4 border-b-4 border-purple-500"></div>
@@ -414,7 +399,7 @@ export default {
   },
   computed: {
     isLicensed() {
-      return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active;
+      return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active == 1;
     },
     screenSizeDisplay() {
       return Math.round(this.cardMinWidth || 0);

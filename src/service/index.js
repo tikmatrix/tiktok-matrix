@@ -263,6 +263,12 @@ export function get_license() {
     params: {}
   })
 }
+export function get_license_concurrency_limit() {
+  return request({
+    method: 'get',
+    url: api.get_license_concurrency_limit
+  })
+}
 export function create_order(data) {
   return request({
     method: 'post',
