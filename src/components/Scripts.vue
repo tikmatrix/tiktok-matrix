@@ -3,7 +3,7 @@
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'register' } })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
         {{ $t('register') }}
-    </button>
+    </button> -->
     <button class="btn btn-sm btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'login' } })">
         <font-awesome-icon icon="fa-solid fa-right-to-bracket" class="h-3 w-3" />

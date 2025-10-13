@@ -15,8 +15,8 @@ const rootDir = process.cwd()
 function parseArgs() {
     const args = process.argv.slice(2)
     const params = {
-        app: 'tikmatrix',
-        appName: 'TikMatrix'
+        app: 'igmatrix',
+        appName: 'IgMatrix'
     }
 
     for (const arg of args) {
