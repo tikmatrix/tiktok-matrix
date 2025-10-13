@@ -1,10 +1,9 @@
 <template>
     <div data-tauri-drag-region
         class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
-        <!-- 左侧：应用图标、名称、版本和检查更新 -->
+        <!-- 左侧:应用图标、名称、版本和检查更新 -->
         <div class="flex items-center space-x-2">
-            <img ref="logo" :src="whitelabelConfig.logo?.main || '../assets/logo.png'" class="h-10 w-auto logo"
-                alt="TikMatrix Logo" />
+            <img ref="logo" :src="currentLogoSrc" class="h-10 w-auto logo" alt="TikMatrix Logo" />
             <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName }}</span>
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
@@ -183,7 +182,7 @@
 
             <!-- 主题切换 -->
             <label class="swap swap-rotate">
-                <input type="checkbox" class="theme-controller" value="dark" v-model="darkMode" @change="changeTheme" />
+                <input type="checkbox" class="theme-controller" value="dark" v-model="darkMode" />
                 <font-awesome-icon icon="fa-solid fa-sun" class="swap-off fill-current w-6 h-6 text-base-content" />
                 <font-awesome-icon icon="fa-solid fa-moon" class="swap-on fill-current w-6 h-6 text-base-content" />
             </label>
@@ -316,7 +315,32 @@ export default {
         }
     },
     computed: {
+        // 根据暗色模式动态计算 logo 路径
+        currentLogoSrc() {
+            // 如果有白标配置的logo,优先使用
+            // if (this.whitelabelConfig.logo?.main) {
+            //     const logoPath = this.whitelabelConfig.logo.main;
+            //     // 如果是暗色模式,尝试使用暗色logo
+            //     if (this.darkMode) {
+            //         // 如果有单独配置的暗色logo,使用它
+            //         if (this.whitelabelConfig.logo?.dark) {
+            //             return this.whitelabelConfig.logo.dark;
+            //         }
+            //         // 否则尝试将文件名中的 .png 替换为 _dark.png
+            //         // 但要处理可能已经带 hash 的情况
+            //         if (typeof logoPath === 'string') {
+            //             return logoPath.replace(/(\.[^.]+)$/, '_dark$1');
+            //         }
+            //     }
+            //     return logoPath;
+            // }
 
+            // 使用默认logo
+            if (this.darkMode) {
+                return new URL('../assets/logo_dark.png', import.meta.url).href;
+            }
+            return new URL('../assets/logo.png', import.meta.url).href;
+        }
     },
     methods: {
 
@@ -409,14 +433,6 @@ export default {
         },
         changeLocale() {
             this.$i18n.locale = this.currentLocale;
-        },
-        changeTheme() {
-            if (this.darkMode) {
-                //logo.png -> logo_dark.png
-                this.$refs.logo.src = this.$refs.logo.src.replace('logo.png', 'logo_dark.png');
-            } else {
-                this.$refs.logo.src = this.$refs.logo.src.replace('logo_dark.png', 'logo.png');
-            }
         },
         showLicenseDialog() {
             this.$refs.licenseManagementDialog.show()
@@ -813,13 +829,7 @@ export default {
         // 设置主题
         console.log('darkMode:', this.darkMode);
         this.darkMode = this.darkMode === 'true' || this.darkMode === true;
-        if (this.darkMode) {
-            console.log('set dark theme');
-            //logo.png -> logo_dark.png
-            this.$refs.logo.src = this.$refs.logo.src.replace('logo.png', 'logo_dark.png');
-        } else {
-            this.$refs.logo.src = this.$refs.logo.src.replace('logo_dark.png', 'logo.png');
-        }
+
         // 获取版本号
         this.version = await getVersion();
         this.name = await getName();
