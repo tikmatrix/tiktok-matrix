@@ -26,6 +26,9 @@
                                         <p class="text-xs text-base-content/70">
                                             {{ device.serial || device.real_serial }}
                                         </p>
+                                        <p class="text-xs text-base-content/60">
+                                            Activity: {{ activity || 'Unknown' }}
+                                        </p>
                                     </div>
                                 </div>
 
@@ -131,9 +134,11 @@ const {
     loading,
     screenshot,
     hierarchy,
+    activity,
     error,
     dumpHierarchy,
     getScreenshot,
+    getActivity,
     tap
 } = useDeviceDebugService(deviceSerial.value)
 
@@ -176,6 +181,7 @@ const handleDumpHierarchy = async () => {
     try {
         await dumpHierarchy()
         await getScreenshot()
+        await getActivity()
     } catch (err) {
         console.error('Failed to dump hierarchy:', err)
     }

@@ -398,10 +398,10 @@ export default {
         },
         changeTheme() {
             if (this.darkMode) {
-                //invert logo color
-                this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
+                //logo.png -> logo_dark.png
+                this.$refs.logo.src = this.$refs.logo.src.replace('logo.png', 'logo_dark.png');
             } else {
-                this.$refs.logo.style.filter = 'none';
+                this.$refs.logo.src = this.$refs.logo.src.replace('logo_dark.png', 'logo.png');
             }
         },
         showLicenseDialog() {
@@ -801,10 +801,10 @@ export default {
         this.darkMode = this.darkMode === 'true' || this.darkMode === true;
         if (this.darkMode) {
             console.log('set dark theme');
-            //invert logo color
-            this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
+            //logo.png -> logo_dark.png
+            this.$refs.logo.src = this.$refs.logo.src.replace('logo.png', 'logo_dark.png');
         } else {
-            this.$refs.logo.style.filter = 'none';
+            this.$refs.logo.src = this.$refs.logo.src.replace('logo_dark.png', 'logo.png');
         }
         // 获取版本号
         this.version = await getVersion();

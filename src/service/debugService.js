@@ -25,6 +25,21 @@ export async function dumpDeviceHierarchy(serial) {
     return { code: 0, data: response.data }
 }
 
+// 获取当前 Activity
+export async function getDeviceActivity(serial) {
+    const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData })
+    const url = `http://127.0.0.1:${port}/api/device/activity?serial=${serial}&_=${Date.now()}`
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Cache-Control': 'no-cache'
+        },
+        responseType: ResponseType.Text
+    })
+
+    return { code: 0, data: response.data }
+}
+
 // 在设备上执行 tap 操作
 export async function tapDevice(serial, x, y) {
     const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData })
@@ -42,6 +57,7 @@ export function useDeviceDebugService(deviceSerial) {
     const screenshot = ref(null)
     const hierarchy = ref(null)
     const error = ref(null)
+    const activity = ref('')
 
     const dumpHierarchy = async () => {
         loading.value = true
@@ -88,6 +104,25 @@ export function useDeviceDebugService(deviceSerial) {
         }
     }
 
+    const getActivity = async () => {
+        loading.value = true
+        error.value = null
+
+        try {
+            const res = await getDeviceActivity(deviceSerial)
+            if (res.code === 0) {
+                activity.value = res.data ? res.data.trim() : ''
+            } else {
+                error.value = res.error || 'Failed to get activity'
+            }
+        } catch (err) {
+            error.value = err.message
+            throw err
+        } finally {
+            loading.value = false
+        }
+    }
+
     const tap = async (x, y) => {
         try {
             const res = await tapDevice(deviceSerial, x, y)
@@ -114,9 +149,11 @@ export function useDeviceDebugService(deviceSerial) {
         loading,
         screenshot,
         hierarchy,
+        activity,
         error,
         dumpHierarchy,
         getScreenshot,
+        getActivity,
         tap
     }
 }
