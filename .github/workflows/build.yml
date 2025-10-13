@@ -45,15 +45,15 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
-      - name: clear uploaded files
-        run: |
-          Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force
       - name: update version
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-version.js
+      - name: clear uploaded files
+        run: |
+          Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
       - name: build TikZenX whitelabel package
         run: |
           node scripts/build-whitelabel.js TikZenX
@@ -66,15 +66,15 @@ jobs:
           r2-bucket: tikmatrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
-      - name: clear uploaded files
-        run: |
-          Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force
       - name: update TikZenX version
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-version.js --app=tikzenx --app-name=TikZenX
+      - name: clear uploaded files
+        run: |
+          Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
       - name: update TikZenX download url
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
@@ -95,7 +95,7 @@ jobs:
           destination-dir: ./distributors
       - name: clear uploaded files
         run: |
-          Remove-Item -Path .\dist-distributors\* -Force
+          Remove-Item -Path .\dist-distributors\* -Force -Recurse
       - name: update distributor download urls
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
