@@ -318,22 +318,22 @@ export default {
         // 根据暗色模式动态计算 logo 路径
         currentLogoSrc() {
             // 如果有白标配置的logo,优先使用
-            // if (this.whitelabelConfig.logo?.main) {
-            //     const logoPath = this.whitelabelConfig.logo.main;
-            //     // 如果是暗色模式,尝试使用暗色logo
-            //     if (this.darkMode) {
-            //         // 如果有单独配置的暗色logo,使用它
-            //         if (this.whitelabelConfig.logo?.dark) {
-            //             return this.whitelabelConfig.logo.dark;
-            //         }
-            //         // 否则尝试将文件名中的 .png 替换为 _dark.png
-            //         // 但要处理可能已经带 hash 的情况
-            //         if (typeof logoPath === 'string') {
-            //             return logoPath.replace(/(\.[^.]+)$/, '_dark$1');
-            //         }
-            //     }
-            //     return logoPath;
-            // }
+            if (this.whitelabelConfig.logo?.main) {
+                const logoPath = this.whitelabelConfig.logo.main;
+                // 如果是暗色模式,尝试使用暗色logo
+                if (this.darkMode) {
+                    // 如果有单独配置的暗色logo,使用它
+                    if (this.whitelabelConfig.logo?.dark) {
+                        return this.whitelabelConfig.logo.dark;
+                    }
+                    // 否则尝试将文件名中的 .png 替换为 _dark.png
+                    // 但要处理可能已经带 hash 的情况
+                    if (typeof logoPath === 'string') {
+                        return logoPath.replace(/(\.[^.]+)$/, '_dark$1');
+                    }
+                }
+                return logoPath;
+            }
 
             // 使用默认logo
             if (this.darkMode) {

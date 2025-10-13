@@ -3,19 +3,18 @@
  * 支持动态修改应用名称、logo、主题色等
  */
 
-// 导入默认图标
-import defaultIcon from '../assets/logo.png';
 
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
     appName: '',
     officialWebsite: 'https://tikmatrix.com', // 官网域名
     apiDomain: 'https://api.tikmatrix.com', // API域名
+    enablePay: true, // 是否启用支付功能
 
     // Logo配置
     logo: {
-        main: defaultIcon, // 主要logo
-        titleBar: defaultIcon, // 标题栏图标
+        main: '', // 主logo
+        dark: '', // 暗色模式logo
     },
 
     // 品牌配置

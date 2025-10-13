@@ -51,6 +51,10 @@ const rawConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 const appName = mustHave(rawConfig.appName, 'appName');
 const officialWebsite = mustHave(rawConfig.officialWebsite, 'officialWebsite');
 const apiDomain = normalizeDomain(mustHave(rawConfig.apiDomain, 'apiDomain'));
+const enablePay = rawConfig.enablePay !== false; // 默认为 true
+if (!enablePay) {
+    console.warn('⚠️ 警告: 支付功能被禁用 (enablePay=false)');
+}
 const emailSupport = rawConfig.emailSupport?.trim() || '';
 const telegramSupport = rawConfig.telegramSupport?.trim() || '';
 const whatsappSupport = rawConfig.whatsappSupport?.trim() || '';
@@ -166,6 +170,7 @@ function updateWhitelabelConfig() {
     content = replaceConfigString(content, 'appName', appName);
     content = replaceConfigString(content, 'officialWebsite', officialWebsite);
     content = replaceConfigString(content, 'apiDomain', apiDomain);
+    content = replaceConfigBoolean(content, 'enablePay', enablePay);
     content = replaceConfigString(content, 'emailSupport', emailSupport);
     content = replaceConfigString(content, 'telegramSupport', telegramSupport);
     content = replaceConfigString(content, 'whatsappSupport', whatsappSupport);
@@ -335,6 +340,13 @@ function replaceConfigString(content, key, value) {
         throw new Error(`无法在 whitelabel.js 中找到字段 ${key}`);
     }
     return content.replace(regex, (_, prefix) => `${prefix}'${escapeJs(value)}'`);
+}
+function replaceConfigBoolean(content, key, value) {
+    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false)`);
+    if (!regex.test(content)) {
+        throw new Error(`无法在 whitelabel.js 中找到字段 ${key}`);
+    }
+    return content.replace(regex, (_, prefix) => `${prefix}${value ? 'true' : 'false'}`);
 }
 
 function runCommand(command, quiet = false) {
