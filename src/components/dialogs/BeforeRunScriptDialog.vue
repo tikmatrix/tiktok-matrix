@@ -34,6 +34,18 @@
           {{ $t('noDevicesSelected') }}
         </div>
       </div>
+      <div v-if="licenseLimit !== null" class="mt-2 text-sm" :class="licenseHintClass">
+        <span>{{ $t('licenseConcurrencyLimitLabel', { count: licenseLimit }) }}</span>
+        <span v-if="licenseLimit === 0" class="ml-1">
+          {{ $t('licenseConcurrencyLimitInactiveHint') }}
+        </span>
+        <span v-else class="ml-1">
+          {{ $t('licenseConcurrencyLimitQueueHint') }}
+        </span>
+        <span v-if="licenseLimit > 0 && selecedDevices.length > licenseLimit" class="ml-1 font-medium">
+          {{ $t('licenseConcurrencyLimitOverSelectedHint', { extra: selecedDevices.length - licenseLimit }) }}
+        </span>
+      </div>
     </div>
 
     <RegisterDialog v-if="script.name === 'register'" ref="currentDialog" :settings="settings" />
@@ -142,6 +154,7 @@ export default {
   data() {
     return {
       // 其他非设置相关的数据可以保留在这里
+      licenseLimit: null,
     }
   },
   methods: {
@@ -149,6 +162,16 @@ export default {
       await this.$service.update_settings(this.settings)
       //reload settings
       await this.$emiter('reload_settings', {})
+    },
+    async fetchLicenseLimit() {
+      try {
+        const res = await this.$service.get_license_concurrency_limit()
+        if (res && res.code === 0 && typeof res.data !== 'undefined') {
+          this.licenseLimit = Number(res.data)
+        }
+      } catch (error) {
+        console.warn('Failed to load license concurrency limit', error)
+      }
     },
     async runScript() {
       if (this.selecedDevices.length === 0) {
@@ -161,8 +184,22 @@ export default {
       }
     },
   },
+  computed: {
+    licenseHintClass() {
+      if (this.licenseLimit === null) {
+        return ''
+      }
+      if (this.licenseLimit === 0) {
+        return 'text-error'
+      }
+      if (this.selecedDevices.length > this.licenseLimit) {
+        return 'text-warning'
+      }
+      return 'text-info'
+    }
+  },
   async mounted() {
-
+    await this.fetchLicenseLimit()
   }
 }
 </script>

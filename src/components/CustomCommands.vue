@@ -2,11 +2,11 @@
     <div class="custom-commands">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <button class="btn btn-md btn-primary" @click="showCreateDialog">
+                <button class="btn btn-sm btn-primary" @click="showCreateDialog">
                     <font-awesome-icon icon="fa-plus" class="h-3 w-3 mr-1" />
                     {{ $t('addCommand') }}
                 </button>
-                <button class="btn btn-md btn-outline btn-warning ml-2" @click="confirmReset">
+                <button class="btn btn-sm btn-outline btn-warning ml-2" @click="confirmReset">
                     <font-awesome-icon icon="fa-refresh" class="h-3 w-3 mr-1" />
                     {{ $t('resetCommands') }}
                 </button>
@@ -16,7 +16,7 @@
         <div class="saved-commands" v-if="commands.length > 0">
             <div v-for="(cmd, index) in commands" :key="index" class="bg-base-300 p-2 rounded-md mb-1">
                 <div class="flex justify-between items-center">
-                    <h3 class="font-bold text-md">{{ cmd.name }}</h3>
+                    <h3 class="font-bold text-sm">{{ cmd.name }}</h3>
                     <div>
                         <button class="btn btn-xs btn-primary mr-1" @click="executeCommand(cmd)">
                             <font-awesome-icon icon="fa-play" class="h-3 w-3" />
@@ -41,19 +41,19 @@
                 <h3 class="font-bold text-lg mb-4">
                     {{ editing ? $t('updateCommand') : $t('addCommand') }}
                 </h3>
-                
+
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">{{ $t('commandName') }}</span>
                     </label>
-                    <input type="text" class="input input-bordered input-md w-full" v-model="newCommand.name" 
-                           :placeholder="$t('enterCommandName')" />
-                    
+                    <input type="text" class="input input-bordered input-md w-full" v-model="newCommand.name"
+                        :placeholder="$t('enterCommandName')" />
+
                     <label class="label mt-2">
                         <span class="label-text">{{ $t('commandArgs') }}</span>
                     </label>
-                    <textarea class="textarea textarea-bordered h-20 w-full text-md" v-model="newCommand.args" 
-                              :placeholder="$t('enterCommandArgs')"></textarea>
+                    <textarea class="textarea textarea-bordered h-20 w-full text-md" v-model="newCommand.args"
+                        :placeholder="$t('enterCommandArgs')"></textarea>
 
                     <div class="divider">{{ $t('tips') }}</div>
                     <div class="bg-base-200 p-3 rounded-md text-md mb-4">
@@ -67,12 +67,12 @@
                         </ul>
                     </div>
                 </div>
-                
+
                 <div class="modal-action">
-                    <button class="btn btn-md btn-primary" @click="addCommand" :disabled="!isValidCommand">
+                    <button class="btn btn-sm btn-primary" @click="addCommand" :disabled="!isValidCommand">
                         {{ editing ? $t('updateCommand') : $t('addCommand') }}
                     </button>
-                    <button class="btn btn-md" @click="closeDialog">
+                    <button class="btn btn-sm" @click="closeDialog">
                         {{ $t('cancel') }}
                     </button>
                 </div>
@@ -88,10 +88,10 @@
                 <h3 class="font-bold text-lg mb-4">{{ $t('resetConfirmTitle') }}</h3>
                 <p>{{ $t('resetConfirmMessage') }}</p>
                 <div class="modal-action">
-                    <button class="btn btn-md btn-error" @click="resetCommands">
+                    <button class="btn btn-sm btn-error" @click="resetCommands">
                         {{ $t('reset') }}
                     </button>
-                    <button class="btn btn-md" @click="$refs.resetDialog.close()">
+                    <button class="btn btn-sm" @click="$refs.resetDialog.close()">
                         {{ $t('cancel') }}
                     </button>
                 </div>
@@ -158,11 +158,11 @@ export default {
         loadCommands() {
             const savedCommands = localStorage.getItem('tikmatrix_custom_commands');
             const presetsLoaded = localStorage.getItem('tikmatrix_presets_loaded');
-            
+
             if (savedCommands) {
                 this.commands = JSON.parse(savedCommands);
             }
-            
+
             // 如果预置命令尚未加载，则添加它们
             if (!presetsLoaded) {
                 this.commands = [...this.commands, ...this.presetCommands];
@@ -183,7 +183,7 @@ export default {
         },
         addCommand() {
             if (!this.isValidCommand) return;
-            
+
             if (this.editing) {
                 this.commands[this.editIndex] = {
                     name: this.newCommand.name,
@@ -197,10 +197,10 @@ export default {
                     args: this.newCommand.args
                 });
             }
-            
+
             this.saveCommands();
             this.closeDialog();
-            
+
             this.$emiter('NOTIFY', {
                 type: 'success',
                 message: this.editing ? this.$t('commandUpdated') : this.$t('commandAdded'),
@@ -218,7 +218,7 @@ export default {
         deleteCommand(index) {
             this.commands.splice(index, 1);
             this.saveCommands();
-            
+
             this.$emiter('NOTIFY', {
                 type: 'success',
                 message: this.$t('commandDeleted'),
@@ -234,10 +234,10 @@ export default {
         executeCommand(cmd) {
             // 检查命令参数是否是字符串格式（从表单编辑时可能是字符串）
             const argsStr = typeof cmd.args === 'string' ? cmd.args : this.formatArgs(cmd.args);
-            
+
             // 按行分割命令
             const commandLines = argsStr.split('\n').filter(line => line.trim() !== '');
-            
+
             if (commandLines.length === 0) {
                 this.$emiter('NOTIFY', {
                     type: 'error',
@@ -246,21 +246,21 @@ export default {
                 });
                 return;
             }
-            
+
             // 显示开始执行的通知
             this.$emiter('NOTIFY', {
                 type: 'info',
-                message: commandLines.length > 1 
-                    ? this.$t('executingMultipleCommands', { count: commandLines.length }) 
+                message: commandLines.length > 1
+                    ? this.$t('executingMultipleCommands', { count: commandLines.length })
                     : this.$t('commandExecuting'),
                 timeout: 2000
             });
-            
+
             // 依次执行每行命令
             commandLines.forEach((line, index) => {
                 // 将每行命令解析为参数数组
                 const args = this.parseArgs(line);
-                
+
                 // 使用setTimeout增加一点延迟，防止命令执行太快
                 setTimeout(() => {
                     this.$emiter('adbEventData', { args: args });
@@ -279,26 +279,26 @@ export default {
         confirmReset() {
             this.$refs.resetDialog.showModal();
         },
-        
+
         // 重置命令
         resetCommands() {
             // 清除本地存储中的命令数据
             localStorage.removeItem('tikmatrix_custom_commands');
             localStorage.removeItem('tikmatrix_presets_loaded');
-            
+
             // 清空当前命令列表
             this.commands = [];
-            
+
             // 重新加载预设命令
             this.commands = [...this.presetCommands];
-            
+
             // 保存到本地存储
             localStorage.setItem('tikmatrix_presets_loaded', 'true');
             this.saveCommands();
-            
+
             // 关闭对话框
             this.$refs.resetDialog.close();
-            
+
             // 显示成功通知
             this.$emiter('NOTIFY', {
                 type: 'success',

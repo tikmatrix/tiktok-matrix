@@ -95,13 +95,6 @@ adb -s <device_id> shell am instrument -w -r -e debug false -e class com.github.
   }
 ```
 
-- src/i18n.js
-
-```shell
- siteName: 'TikMatrix',
- siteUrl: 'https://www.tikmatrix.com',
-```
-
 ### How to fix vcruntime140_1.dll not found?
 
 Need to install Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019.

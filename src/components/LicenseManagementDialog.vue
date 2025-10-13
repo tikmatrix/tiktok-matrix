@@ -20,17 +20,18 @@
                         @show-license-migration="showLicenseMigration" @activate="activate" @copy-text="copyText" />
 
                     <!-- 订单显示区域 -->
-                    <OrderDisplay v-if="order && order.status == 0" :order="order" :remaining-time="remainingTime"
-                        :refresh-time="refreshTime" @close-order="closeOrder" @copy-text="copyText" />
+                    <OrderDisplay v-if="whitelabelConfig.enablePay && order && order.status == 0" :order="order"
+                        :remaining-time="remainingTime" :refresh-time="refreshTime" @close-order="closeOrder"
+                        @copy-text="copyText" />
 
                     <!-- 定价表 -->
                     <PricingTable v-else-if="priceTableInfo && priceTableInfo.plans.length > 0"
                         :plans="priceTableInfo.plans" :license="license"
                         @create-stripe-checkout="createStripeCheckoutUrl" @create-order="createOrder"
-                        @manage-subscription="manageStripeSubscription" />
+                        @manage-subscription="manageStripeSubscription" v-if="whitelabelConfig.enablePay" />
 
                     <!-- 隐私协议 -->
-                    <PrivacyAgreement v-model="agreePolicy" />
+                    <PrivacyAgreement v-model="agreePolicy" v-if="whitelabelConfig.enablePay" />
                 </div>
             </div>
         </div>
@@ -63,6 +64,7 @@ import LicenseMigrationDialog from './LicenseMigrationDialog.vue'
 import paymentMixin from '../mixins/paymentMixin'
 import licenseMixin from '../mixins/licenseMixin'
 import orderMixin from '../mixins/orderMixin'
+import { getWhiteLabelConfig } from '../config/whitelabel.js';
 
 export default {
     name: 'LicenseManagementDialog',
@@ -90,7 +92,8 @@ export default {
             refreshTime: 10,
             agreePolicy: localStorage.getItem('agreePolicy') === 'true',
             currentLocale: localStorage.getItem('locale')?.replace(/"/g, '') || 'en',
-            priceTableInfo: null
+            priceTableInfo: null,
+            whitelabelConfig: getWhiteLabelConfig(),
         };
     },
     watch: {

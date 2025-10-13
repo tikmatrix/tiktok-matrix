@@ -1,12 +1,10 @@
 <template>
     <div data-tauri-drag-region
         class="h-12 bg-base-100 select-none flex items-center justify-between fixed top-0 left-0 right-0 z-50 px-4 shadow-md">
-        <!-- 左侧：应用图标、名称、版本和检查更新 -->
+        <!-- 左侧:应用图标、名称、版本和检查更新 -->
         <div class="flex items-center space-x-2">
-            <img ref="logo" :src="whitelabelConfig.logo?.main || '../assets/logo.png'" class="h-10 w-auto logo"
-                alt="TikMatrix Logo" />
-            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName || '' }}</span>
-            <!-- <span class="text-md text-base-content">v{{ version }}</span> -->
+            <img ref="logo" :src="currentLogoSrc" class="h-10 w-auto logo" alt="TikMatrix Logo" />
+            <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName }}</span>
             <!-- 检查更新按钮 -->
             <button @click="check_update(true)"
                 class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">
@@ -14,27 +12,20 @@
                 <span>v{{ version }}</span>
             </button>
         </div>
-        <!-- 教程链接 -->
-        <a v-if="whitelabelConfig.features?.showTutorial"
+        <!-- 官网 -->
+        <a v-if="whitelabelConfig.officialWebsite"
             class="flex items-center space-x-1 text-md text-info ml-2 hover:underline"
-            :href="whitelabelConfig.branding?.tutorialUrl || 'https://tikmatrix.com/docs/intro'" target="_blank">
+            :href="whitelabelConfig.officialWebsite + '/docs/intro'" target="_blank">
             <font-awesome-icon icon="fa-solid fa-file-lines" class="h-4 w-4" />
             <span>{{ $t('tutorial') }}</span>
         </a>
-        <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" @click="open_dir('')">
-            <font-awesome-icon icon="fa fa-folder" class="h-4 w-4" />
-            <span>{{ $t('openAppDir') }}</span>
-        </a> -->
-        <!-- Rewards-->
-        <!-- <a class="flex items-center space-x-1 text-md text-info ml-2 hover:underline" :href="$t('siteUrl') + '/rewards'"
-            target="_blank">
-            <font-awesome-icon icon="fa-solid fa-gift" class="h-4 w-4" />
-            <span>{{ $t('rewards') }}</span>
-        </a> -->
+
         <!-- 中间：灵活空间 -->
         <div class="flex-1"></div>
         <!-- 右侧：功能按钮和控制按钮 -->
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center gap-2">
+            <LicenseLifecycle :is-loading="isLoadingLicense" :licenseData="licenseData"
+                @open-license="showLicenseDialog" />
             <!-- 侧边栏切换 -->
             <label class="swap swap-rotate" :title="$t('toggleSidebar')">
                 <input type="checkbox" value="true" v-model="sidebarVisible" />
@@ -169,42 +160,18 @@
                     </g>
                 </svg>
             </label>
-            <!-- 许可证状态 -->
-            <button
-                class="btn btn-md flex items-center gap-2 px-4 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md cursor-pointer"
-                :class="[
-                    isLoadingLicense ? 'btn-neutral' :
-                        is_licensed() ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-none' : 'btn-error text-white'
-                ]" @click="showLicenseDialog">
-                <font-awesome-icon v-if="isLoadingLicense" icon="fa-solid fa-spinner" class="h-4 w-4 animate-spin" />
-                <font-awesome-icon v-else-if="is_licensed()" icon="fa-solid fa-crown" class="h-5 w-5 text-yellow-200" />
-                <font-awesome-icon v-else :icon="'fa fa-lock'" class="h-4 w-4" />
-                <span v-if="isLoadingLicense" class="font-semibold whitespace-nowrap">{{ $t('loading') }}</span>
-                <span v-else-if="is_licensed()" class="font-semibold whitespace-nowrap">{{ licenseData.plan_name
-                }}</span>
-                <span class="font-semibold whitespace-nowrap" v-else>{{ $t('unlicensed') }}</span>
-                <div class="flex items-center flex-row gap-2 w-full" v-if="licenseData.is_stripe_active == 1">
 
-                    <label class="text-xs text-warning" v-if="licenseData.stripe_cancel_at">{{ $t('cancelTips', {
-                        date: new Date(licenseData.stripe_cancel_at *
-                            1000).toLocaleDateString()
-                    }) }}</label>
-                    <label class="text-xs text-warning" v-else>{{ $t('renewTips', {
-                        date: new Date(licenseData.stripe_renew_at *
-                            1000).toLocaleDateString()
-                    }) }}</label>
-                </div>
-                <div class="flex items-center flex-row gap-2 w-full" v-else>
-                    <label class="text-xs text-warning" v-if="licenseData.leftdays > 0">{{ $t('expiredTips', {
-                        date: new Date(new Date().getTime() + licenseData.leftdays * 24 * 60 * 60 *
-                            1000).toLocaleDateString()
-                    }) }}</label>
-                </div>
-            </button>
             <!-- 白标设置按钮 - 仅在解锁后显示 -->
-            <button v-if="isWhiteLabelUnlocked" @click="openWhiteLabelDialog" class="p-1 hover:bg-gray-200 rounded"
+            <button v-if="isWhiteLabelUnlocked" @click="openWhiteLabelDialog"
+                class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
                 :title="$t('whitelabelSettings')">
                 <font-awesome-icon icon="fa-solid fa-palette" class="h-6 w-6 text-base-content" />
+            </button>
+            <!-- 全局设置 -->
+            <button @click="$emiter('showDialog', { name: 'tiktokSettings' })"
+                class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
+                :title="$t('settings')">
+                <font-awesome-icon icon="fa-solid fa-gear" class="h-6 w-6 text-base-content" />
             </button>
             <!-- 语言选择 -->
             <select class="select select-info select-md" v-model="currentLocale" @change="changeLocale">
@@ -215,21 +182,28 @@
 
             <!-- 主题切换 -->
             <label class="swap swap-rotate">
-                <input type="checkbox" class="theme-controller" value="dark" v-model="darkMode" @change="changeTheme" />
+                <input type="checkbox" class="theme-controller" value="dark" v-model="darkMode" />
                 <font-awesome-icon icon="fa-solid fa-sun" class="swap-off fill-current w-6 h-6 text-base-content" />
                 <font-awesome-icon icon="fa-solid fa-moon" class="swap-on fill-current w-6 h-6 text-base-content" />
             </label>
 
             <!-- 窗口控制按钮 -->
             <div class="flex space-x-2">
-                <button @click="minimizeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa-solid fa-minus" class="h-8 w-8 text-base-content" />
+                <button @click="minimizeWindow"
+                    class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
+                    :title="$t('minimize')" :aria-label="$t('minimize')">
+                    <font-awesome-icon icon="fa-solid fa-minus" class="h-5 w-5 text-base-content" />
                 </button>
-                <button @click="maximizeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa fa-window-restore" class="h-8 w-8 text-base-content" />
+                <button @click="maximizeWindow"
+                    class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
+                    :title="$t('maximize')" :aria-label="$t('maximize')">
+                    <font-awesome-icon icon="fa-solid fa-up-right-and-down-left-from-center"
+                        class="h-5 w-5 text-base-content" />
                 </button>
-                <button @click="closeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-8 w-8 text-base-content" />
+                <button @click="closeWindow"
+                    class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-error dark:hover:bg-base-300/60 dark:hover:text-error"
+                    :title="$t('close')" :aria-label="$t('close')">
+                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-5 w-5 text-base-content" />
                 </button>
             </div>
         </div>
@@ -295,13 +269,15 @@ import { Command } from '@tauri-apps/api/shell'
 import AgentErrorDialog from './AgentErrorDialog.vue';
 import { getWhiteLabelConfig } from '../config/whitelabel.js';
 import { isFeatureUnlocked } from '../utils/features.js';
+import LicenseLifecycle from './LicenseLifecycle.vue';
 
 export default {
     name: 'TitleBar',
     components: {
         LicenseManagementDialog,
         WhiteLabelDialog,
-        AgentErrorDialog
+        AgentErrorDialog,
+        LicenseLifecycle
     },
     data() {
         return {
@@ -338,13 +314,40 @@ export default {
             this.$i18n.locale = val;
         }
     },
+    computed: {
+        // 根据暗色模式动态计算 logo 路径
+        currentLogoSrc() {
+            // 如果有白标配置的logo,优先使用
+            if (this.whitelabelConfig.logo?.main) {
+                const logoPath = this.whitelabelConfig.logo.main;
+                // 如果是暗色模式,尝试使用暗色logo
+                if (this.darkMode) {
+                    // 如果有单独配置的暗色logo,使用它
+                    if (this.whitelabelConfig.logo?.dark) {
+                        return this.whitelabelConfig.logo.dark;
+                    }
+                    // 否则尝试将文件名中的 .png 替换为 _dark.png
+                    // 但要处理可能已经带 hash 的情况
+                    if (typeof logoPath === 'string') {
+                        return logoPath.replace(/(\.[^.]+)$/, '_dark$1');
+                    }
+                }
+                return logoPath;
+            }
 
+            // 使用默认logo
+            if (this.darkMode) {
+                return new URL('../assets/logo_dark.png', import.meta.url).href;
+            }
+            return new URL('../assets/logo.png', import.meta.url).href;
+        }
+    },
     methods: {
 
-        is_licensed() {
-            return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active;
-        },
 
+        isLicensed() {
+            return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active == 1;
+        },
         async startAgent() {
             try {
                 this.$refs.download_dialog.showModal();
@@ -431,16 +434,7 @@ export default {
         changeLocale() {
             this.$i18n.locale = this.currentLocale;
         },
-        changeTheme() {
-            if (this.darkMode) {
-                //invert logo color
-                this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
-            } else {
-                this.$refs.logo.style.filter = 'none';
-            }
-        },
         showLicenseDialog() {
-            // this.$refs.buyLicenseDialog.show()
             this.$refs.licenseManagementDialog.show()
         },
         async loadLicense() {
@@ -835,13 +829,7 @@ export default {
         // 设置主题
         console.log('darkMode:', this.darkMode);
         this.darkMode = this.darkMode === 'true' || this.darkMode === true;
-        if (this.darkMode) {
-            console.log('set dark theme');
-            //invert logo color
-            this.$refs.logo.style.filter = 'invert(1.0) brightness(1.0)';
-        } else {
-            this.$refs.logo.style.filter = 'none';
-        }
+
         // 获取版本号
         this.version = await getVersion();
         this.name = await getName();
@@ -882,7 +870,7 @@ export default {
         // 监听代理启动事件
         await this.$listen('agent_started', async (e) => {
             await this.loadLicense();
-            if (!this.is_licensed()) {
+            if (!this.isLicensed()) {
                 this.showLicenseDialog();
             }
         });

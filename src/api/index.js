@@ -17,6 +17,7 @@ const api = {
   settings: '/api/settings',
   running_task: '/api/running_task',
   get_license: '/api/get_license',
+  get_license_concurrency_limit: '/api/license/concurrency_limit',
   create_order: '/api/create_order',
   get_order: '/api/get_order',
   close_order: '/api/close_order',

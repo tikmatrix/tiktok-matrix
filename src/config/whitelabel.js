@@ -3,34 +3,28 @@
  * 支持动态修改应用名称、logo、主题色等
  */
 
-// 导入默认图标
-import defaultIcon from '../assets/logo.png';
 
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
     appName: '',
+    officialWebsite: 'https://tikmatrix.com', // 官网域名
+    apiDomain: 'https://api.tikmatrix.com', // API域名
+    enablePay: true, // 是否启用支付功能
 
     // Logo配置
     logo: {
-        main: defaultIcon, // 主要logo
-        favicon: '/favicon.ico',   // 网页图标
-        titleBar: defaultIcon, // 标题栏图标
+        main: '', // 主logo
+        dark: '', // 暗色模式logo
     },
 
     // 品牌配置
     branding: {
-        supportEmail: 'support@tikmatrix.com',
-        tutorialUrl: 'https://tikmatrix.com/docs/intro',
-        rewardsUrl: 'https://tikmatrix.com/rewards',
-        telegramUrl: 'https://t.me/tikmatrix',
+        emailSupport: 'support@tikmatrix.com',
+        telegramSupport: 'https://t.me/tikmatrix',
+        whatsappSupport: '',
     },
 
-    // 功能开关
-    features: {
-        showTutorial: true,
-        showRewards: true,
-        showBranding: true,
-    }
+
 };
 
 /**

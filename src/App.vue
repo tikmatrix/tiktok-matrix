@@ -1,10 +1,12 @@
 <template>
-  <div class="flex flex-col items-start h-screen w-screen overflow-hidden">
+  <div class="min-h-screen w-screen bg-base-200 text-base-content overflow-hidden">
     <TitleBar />
-    <div class="flex flex-row items-start bg-base-300 h-screen w-screen overflow-hidden mt-12">
+    <div class="flex flex-row items-stretch gap-3 mt-12 h-[calc(100vh-3rem)] w-full px-3 overflow-hidden">
       <Sidebar :devices="devices" :settings="settings" :groups="groups" :selecedDevices="selecedDevices"
         v-if="showSidebar" />
-      <ManageDevices :devices="devices" :settings="settings" />
+      <div class="flex-1 h-full overflow-hidden">
+        <ManageDevices :devices="devices" :settings="settings" />
+      </div>
     </div>
     <AppDialog :devices="devices" :settings="settings" :selecedDevices="selecedDevices" />
   </div>
@@ -409,25 +411,7 @@ export default {
     // 设置用户活动监听
     this.setupUserActivityListeners();
 
-    // 动态插入 AnythingLLM 聊天小部件
-    const script = document.createElement('script');
-    script.src = 'https://llm.tikmatrix.com/embed/anythingllm-chat-widget.min.js';
-    script.async = true;
-    script.setAttribute('data-embed-id', 'b69ccd65-9f2b-4d8c-9c6e-66f523abc798');
-    script.setAttribute('data-base-api-url', 'https://llm.tikmatrix.com/api/embed');
-    script.setAttribute('data-chat-icon', 'support');
-    script.setAttribute('data-brand-image-url', 'https://r2.tikmatrix.com/icon.png');
-    script.setAttribute('data-assistant-icon', 'https://r2.tikmatrix.com/icon.png');
-    script.setAttribute('data-no-sponsor', '1');
-    script.setAttribute('data-assistant-name', 'TikMatrix Support');
-    script.setAttribute('data-button-color', '#007bff');
-    script.onload = () => {
-      console.log('AnythingLLM chat widget script loaded');
-    };
-    script.onerror = () => {
-      console.error('Failed to load AnythingLLM chat widget script');
-    };
-    // document.body.appendChild(script);
+
   },
   unmounted() {
     this.listeners.forEach(listener => {
