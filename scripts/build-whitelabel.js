@@ -194,24 +194,80 @@ function updateMainRs() {
 }
 
 function updateIcons() {
-    const targets = [
-        path.join(rootDir, 'app-icon.png'),
-        path.join(rootDir, 'src', 'assets', 'logo.png'),
-        path.join(rootDir, 'src', 'assets', 'logo_dark.png'),
-        path.join(rootDir, 'src', 'assets', 'app-icon.png'),
-    ].filter(fs.existsSync);
+    // 检查白标目录中的图标文件
+    const brandAppIcon = path.join(brandDir, 'app-icon.png');
+    const brandLogo = path.join(brandDir, 'logo.png');
+    const brandLogoDark = path.join(brandDir, 'logo_dark.png');
 
-    if (targets.length === 0) {
-        console.warn('⚠️ 未找到需要替换的图标文件，跳过。');
-        return;
+    // 目标文件路径
+    const targetAppIcon = path.join(rootDir, 'app-icon.png');
+    const targetAssetsAppIcon = path.join(rootDir, 'src', 'assets', 'app-icon.png');
+    const targetLogo = path.join(rootDir, 'src', 'assets', 'logo.png');
+    const targetLogoDark = path.join(rootDir, 'src', 'assets', 'logo_dark.png');
+
+    // 1. 如果白标目录中没有 app-icon.png，提示必须自定义 icon
+    if (!fs.existsSync(brandAppIcon)) {
+        console.error(`❌ 白标目录中必须提供 app-icon.png 文件: ${brandAppIcon}`);
+        process.exit(1);
     }
 
-    targets.forEach(target => {
-        iconBackups.set(target, fs.readFileSync(target));
-        fs.copyFileSync(iconSource, target);
-    });
+    // 备份并复制 app-icon.png 到根目录
+    if (fs.existsSync(targetAppIcon)) {
+        iconBackups.set(targetAppIcon, fs.readFileSync(targetAppIcon));
+    }
+    fs.copyFileSync(brandAppIcon, targetAppIcon);
+
+    // 备份并复制 app-icon.png 到 src/assets/app-icon.png
+    if (fs.existsSync(targetAssetsAppIcon)) {
+        iconBackups.set(targetAssetsAppIcon, fs.readFileSync(targetAssetsAppIcon));
+    }
+    fs.copyFileSync(brandAppIcon, targetAssetsAppIcon);
+
+    // 2. 处理 logo_dark.png
+    if (fs.existsSync(brandLogoDark)) {
+        // 白标目录中有 logo_dark.png，直接使用
+        if (fs.existsSync(targetLogoDark)) {
+            iconBackups.set(targetLogoDark, fs.readFileSync(targetLogoDark));
+        }
+        fs.copyFileSync(brandLogoDark, targetLogoDark);
+    } else if (fs.existsSync(brandLogo)) {
+        // 白标目录中没有 logo_dark.png 但有 logo.png，复制 logo.png 到 logo_dark.png
+        if (fs.existsSync(targetLogoDark)) {
+            iconBackups.set(targetLogoDark, fs.readFileSync(targetLogoDark));
+        }
+        fs.copyFileSync(brandLogo, targetLogoDark);
+    } else {
+        // 白标目录中都没有，使用 app-icon.png
+        if (fs.existsSync(targetLogoDark)) {
+            iconBackups.set(targetLogoDark, fs.readFileSync(targetLogoDark));
+        }
+        fs.copyFileSync(brandAppIcon, targetLogoDark);
+    }
+
+    // 3. 处理 logo.png
+    if (fs.existsSync(brandLogo)) {
+        // 白标目录中有 logo.png，直接使用
+        if (fs.existsSync(targetLogo)) {
+            iconBackups.set(targetLogo, fs.readFileSync(targetLogo));
+        }
+        fs.copyFileSync(brandLogo, targetLogo);
+    } else {
+        // 白标目录中没有 logo.png，使用 app-icon.png
+        if (fs.existsSync(targetLogo)) {
+            iconBackups.set(targetLogo, fs.readFileSync(targetLogo));
+        }
+        fs.copyFileSync(brandAppIcon, targetLogo);
+    }
 
     iconUpdated = true;
+
+    if (verbose) {
+        console.log('📦 图标文件已更新:');
+        console.log(`   • app-icon.png (根目录)`);
+        console.log(`   • app-icon.png (src/assets)`);
+        console.log(`   • logo.png (src/assets) - 源: ${fs.existsSync(brandLogo) ? 'logo.png' : 'app-icon.png'}`);
+        console.log(`   • logo_dark.png (src/assets) - 源: ${fs.existsSync(brandLogoDark) ? 'logo_dark.png' : fs.existsSync(brandLogo) ? 'logo.png' : 'app-icon.png'}`);
+    }
 }
 
 function restoreTextFiles() {
