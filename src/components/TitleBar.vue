@@ -163,9 +163,16 @@
             </label>
 
             <!-- 白标设置按钮 - 仅在解锁后显示 -->
-            <button v-if="isWhiteLabelUnlocked" @click="openWhiteLabelDialog" class="p-1 hover:bg-gray-200 rounded"
+            <button v-if="isWhiteLabelUnlocked" @click="openWhiteLabelDialog"
+                class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
                 :title="$t('whitelabelSettings')">
                 <font-awesome-icon icon="fa-solid fa-palette" class="h-6 w-6 text-base-content" />
+            </button>
+            <!-- 全局设置 -->
+            <button @click="$emiter('showDialog', { name: 'tiktokSettings' })"
+                class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
+                :title="$t('settings')">
+                <font-awesome-icon icon="fa-solid fa-gear" class="h-6 w-6 text-base-content" />
             </button>
             <!-- 语言选择 -->
             <select class="select select-info select-md" v-model="currentLocale" @change="changeLocale">
@@ -183,14 +190,21 @@
 
             <!-- 窗口控制按钮 -->
             <div class="flex space-x-2">
-                <button @click="minimizeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa-solid fa-minus" class="h-8 w-8 text-base-content" />
+                <button @click="minimizeWindow"
+                    class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
+                    :title="$t('minimize')" :aria-label="$t('minimize')">
+                    <font-awesome-icon icon="fa-solid fa-minus" class="h-5 w-5 text-base-content" />
                 </button>
-                <button @click="maximizeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa fa-window-restore" class="h-8 w-8 text-base-content" />
+                <button @click="maximizeWindow"
+                    class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
+                    :title="$t('maximize')" :aria-label="$t('maximize')">
+                    <font-awesome-icon icon="fa-solid fa-up-right-and-down-left-from-center"
+                        class="h-5 w-5 text-base-content" />
                 </button>
-                <button @click="closeWindow" class="p-1 hover:bg-gray-200 rounded">
-                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-8 w-8 text-base-content" />
+                <button @click="closeWindow"
+                    class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-error dark:hover:bg-base-300/60 dark:hover:text-error"
+                    :title="$t('close')" :aria-label="$t('close')">
+                    <font-awesome-icon icon="fa-solid fa-xmark" class="h-5 w-5 text-base-content" />
                 </button>
             </div>
         </div>

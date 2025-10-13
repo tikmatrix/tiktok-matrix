@@ -33,10 +33,6 @@
                   @click="$emiter('showDialog', { name: 'materials', group: item })">
                   <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
                 </button>
-                <button class="btn btn-sm md:btn-md btn-primary"
-                  @click="$emiter('showDialog', { name: 'tiktokSettings' })">
-                  <font-awesome-icon icon="cog" class="h-3 w-3" />{{ $t('settings') }}
-                </button>
               </div>
 
               <div class="flex flex-wrap items-center gap-2">
