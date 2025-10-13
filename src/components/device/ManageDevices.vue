@@ -68,7 +68,7 @@
                     </button>
                     <div
                       class="join-item px-3 py-1 text-sm font-semibold rounded-none bg-base-100 border border-base-300 text-base-content">
-                      {{ screenSizeDisplay }}px
+                      {{ screenSizeDisplay }}
                     </div>
                     <button class="btn btn-sm join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
                       @click="$emiter('screenScaled', { action: 'plus' })">

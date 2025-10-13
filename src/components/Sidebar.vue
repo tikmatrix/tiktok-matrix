@@ -114,20 +114,20 @@
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-1.5 px-2 pb-2 pt-1.5 border-b border-base-300/50">
-              <button class="btn btn-xs btn-primary gap-1 px-2"
+              <button class="btn btn-sm btn-primary gap-1 px-2"
                 @click="$emiter('showDialog', { name: 'accountWarmup', group: item })">
                 <font-awesome-icon icon="cog" class="h-2.5 w-2.5" />
-                <span class="text-xs">{{ $t('accountWarmup') }}</span>
+                {{ $t('accountWarmup') }}
               </button>
-              <button class="btn btn-xs btn-primary gap-1 px-2"
+              <button class="btn btn-sm btn-primary gap-1 px-2"
                 @click="$emiter('showDialog', { name: 'post', group: item })">
                 <font-awesome-icon icon="cog" class="h-2.5 w-2.5" />
-                <span class="text-xs">{{ $t('post') }}</span>
+                {{ $t('post') }}
               </button>
-              <button class="btn btn-xs btn-primary gap-1 px-2"
+              <button class="btn btn-sm btn-primary gap-1 px-2"
                 @click="$emiter('showDialog', { name: 'materials', group: item })">
                 <font-awesome-icon icon="fa-solid fa-film" class="h-2.5 w-2.5" />
-                <span class="text-xs">{{ $t('materials') }}</span>
+                {{ $t('materials') }}
               </button>
             </div>
 

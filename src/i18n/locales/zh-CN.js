@@ -1,4 +1,6 @@
 export default {
+  minimize: '最小化',
+  maximize: '最大化',
   account: '帐号',
   accountCount: '帐号数量',
   accountWarmup: '账号预热',

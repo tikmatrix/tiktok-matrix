@@ -99,7 +99,7 @@ export default {
     data() {
         return {
             activeTab: 'basic',
-            localConfig: {},
+            localConfig: getWhiteLabelConfig(),
             logoPreview: '',
         };
     },
@@ -108,7 +108,7 @@ export default {
     },
     methods: {
         loadConfig() {
-            this.localConfig = JSON.parse(JSON.stringify(getWhiteLabelConfig()));
+            // this.localConfig = JSON.parse(JSON.stringify(getWhiteLabelConfig()));
             this.logoPreview = this.localConfig.logo?.main || '';
         },
 

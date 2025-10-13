@@ -1,4 +1,6 @@
 export default {
+  minimize: 'Свернуть',
+  maximize: 'Развернуть',
   account: 'Аккаунт',
   accountCount: 'Количество аккаунтов',
   accountWarmup: 'Прогрев аккаунтов',

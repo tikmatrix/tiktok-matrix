@@ -1,4 +1,6 @@
 export default {
+  minimize: 'Minimize',
+  maximize: 'Maximize',
   account: 'Account',
   accountCount: 'Account Count',
   accountWarmup: 'Account Warmup',
