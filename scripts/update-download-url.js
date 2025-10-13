@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename)
  *   node update-download-url.js --platform=mac --distributor=TEST001
  *   node update-download-url.js --platform=windows --all-distributors
  *   node update-download-url.js --platform=mac --all-distributors
+ *   node update-download-url.js --platform=windows --distributor=OFFICIAL --app-name=CustomApp
  */
 
 const configPath = path.join(__dirname, '..', 'src-tauri', 'tauri.conf.json')
@@ -24,7 +25,8 @@ function parseArgs() {
         platform: null,
         distributor: null,
         allDistributors: false,
-        app: 'tikmatrix'
+        app: 'tikmatrix',
+        appName: 'TikMatrix'
     }
 
     for (const arg of args) {
@@ -36,6 +38,8 @@ function parseArgs() {
             params.allDistributors = true
         } else if (arg.startsWith('--app=')) {
             params.app = arg.split('=')[1]
+        } else if (arg.startsWith('--app-name=')) {
+            params.appName = arg.split('=')[1]
         }
     }
 
@@ -58,18 +62,18 @@ function getDistributors() {
 }
 
 // 构建下载URL
-function buildDownloadUrl(platform, version, distributorCode) {
+function buildDownloadUrl(platform, version, distributorCode, appName) {
     let fileName
     let basePath
 
     if (platform === 'windows') {
         fileName = distributorCode === 'OFFICIAL'
-            ? `TikMatrix_${version}_x64_en-US.msi`
-            : `TikMatrix_${version}_x64_en-US_${distributorCode}.msi`
+            ? `${appName}_${version}_x64_en-US.msi`
+            : `${appName}_${version}_x64_en-US_${distributorCode}.msi`
     } else if (platform === 'mac') {
         fileName = distributorCode === 'OFFICIAL'
-            ? `TikMatrix_${version}_universal.dmg`
-            : `TikMatrix_${version}_universal_${distributorCode}.dmg`
+            ? `${appName}_${version}_universal.dmg`
+            : `${appName}_${version}_universal_${distributorCode}.dmg`
     } else {
         throw new Error(`Unknown platform: ${platform}`)
     }
@@ -124,6 +128,7 @@ async function main() {
         console.log('  node update-download-url.js --platform=mac --distributor=TEST001')
         console.log('  node update-download-url.js --platform=windows --all-distributors')
         console.log('  node update-download-url.js --platform=mac --all-distributors')
+        console.log('  node update-download-url.js --platform=windows --distributor=OFFICIAL --app-name=CustomApp')
         process.exit(1)
     }
 
@@ -140,7 +145,8 @@ async function main() {
     const version = getVersion()
     console.log(`Version: ${version}`)
     console.log(`Platform: ${params.platform}`)
-    console.log(`App: ${params.app}\n`)
+    console.log(`App: ${params.app}`)
+    console.log(`App Name: ${params.appName}\n`)
 
     if (params.allDistributors) {
         // 更新所有分发商
@@ -149,7 +155,7 @@ async function main() {
 
         let successCount = 0
         for (const distributor of distributors) {
-            const downloadUrl = buildDownloadUrl(params.platform, version, distributor.code)
+            const downloadUrl = buildDownloadUrl(params.platform, version, distributor.code, params.appName)
             const success = await updateDownloadUrl(params.platform, params.app, distributor.code, downloadUrl)
             if (success) successCount++
         }
@@ -157,7 +163,7 @@ async function main() {
         console.log(`\n✅ Updated ${successCount}/${distributors.length} distributor download URLs!`)
     } else {
         // 更新单个分发商
-        const downloadUrl = buildDownloadUrl(params.platform, version, params.distributor)
+        const downloadUrl = buildDownloadUrl(params.platform, version, params.distributor, params.appName)
         const success = await updateDownloadUrl(params.platform, params.app, params.distributor, downloadUrl)
 
         if (success) {

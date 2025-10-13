@@ -197,6 +197,7 @@ function updateIcons() {
     const targets = [
         path.join(rootDir, 'app-icon.png'),
         path.join(rootDir, 'src', 'assets', 'logo.png'),
+        path.join(rootDir, 'src', 'assets', 'logo_dark.png'),
         path.join(rootDir, 'src', 'assets', 'app-icon.png'),
     ].filter(fs.existsSync);
 
