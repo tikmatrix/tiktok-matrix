@@ -56,54 +56,60 @@
                 {{ $t('userRelatedActions') }}
             </h3>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
 
                 <!-- 关注操作配置 -->
-                <div class="border border-base-200 rounded-lg p-4 bg-base-50">
-                    <div class="flex items-center mb-3">
-                        <input type="checkbox" class="checkbox checkbox-primary mr-3" v-model="features.followUsers" />
-                        <font-awesome-icon icon="fa-solid fa-user-plus" class="text-success mr-2" />
-                        <span class="font-semibold text-lg">{{ $t('followUsersAction') }}</span>
-                    </div>
-
-                    <div class="ml-8 space-y-3">
-                        <div class="flex gap-4">
-                            <label class="cursor-pointer flex items-center gap-2">
-                                <input type="radio" name="followType" class="radio radio-sm radio-primary"
-                                    value="follow" v-model="followSettings.boost_type" />
-                                <span>{{ $t('follow') }}</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-2">
-                                <input type="radio" name="followType" class="radio radio-sm radio-primary"
-                                    value="unFollow" v-model="followSettings.boost_type" />
-                                <span>{{ $t('unFollow') }}</span>
-                            </label>
+                <div :class="[
+                    'border border-base-200 rounded-lg p-3 transition-all',
+                    features.followUsers ? 'bg-success/10 border-success shadow' : 'bg-base-50'
+                ]">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <font-awesome-icon icon="fa-solid fa-user-plus" class="text-success" />
+                            <span class="font-semibold">{{ $t('followUsersAction') }}</span>
                         </div>
+                        <input type="checkbox" class="toggle toggle-success toggle-sm" v-model="features.followUsers" />
+                    </div>
+                </div>
+
+                <!-- 取消关注配置 -->
+                <div :class="[
+                    'border border-base-200 rounded-lg p-3 transition-all',
+                    features.unfollowUsers ? 'bg-error/10 border-error shadow' : 'bg-base-50'
+                ]">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <font-awesome-icon icon="fa-solid fa-user-minus" class="text-error" />
+                            <span class="font-semibold">{{ $t('unfollowUsersAction') }}</span>
+                        </div>
+                        <input type="checkbox" class="toggle toggle-error toggle-sm" v-model="features.unfollowUsers" />
                     </div>
                 </div>
 
                 <!-- 私信操作配置 -->
-                <div class="border border-base-200 rounded-lg p-4 bg-base-50">
-                    <div class="flex items-center mb-3">
-                        <input type="checkbox" class="checkbox checkbox-primary mr-3" v-model="features.sendDM" />
-                        <font-awesome-icon icon="fa-solid fa-envelope" class="text-info mr-2" />
-                        <span class="font-semibold text-lg">{{ $t('sendDMAction') }}</span>
+                <div :class="[
+                    'border border-base-200 rounded-lg p-3 transition-all space-y-3',
+                    features.sendDM ? 'bg-info/10 border-info shadow' : 'bg-base-50'
+                ]">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <font-awesome-icon icon="fa-solid fa-envelope" class="text-info" />
+                            <span class="font-semibold">{{ $t('sendDMAction') }}</span>
+                        </div>
+                        <input type="checkbox" class="toggle toggle-info toggle-sm" v-model="features.sendDM" />
                     </div>
 
-                    <div class="ml-8 space-y-3">
-                        <div class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-sm">{{ $t('messageContents') }}</span>
-                            </label>
-                            <textarea class="textarea textarea-sm textarea-bordered h-16"
-                                v-model="dmSettings.message_contents"
-                                :placeholder="$t('messageContentsTips')"></textarea>
-                        </div>
+                    <div v-if="features.sendDM" class="form-control">
+                        <label class="label py-1">
+                            <span class="label-text text-xs">{{ $t('messageContents') }}</span>
+                        </label>
+                        <textarea class="textarea textarea-xs textarea-bordered h-16"
+                            v-model="dmSettings.message_contents" :placeholder="$t('messageContentsTips')"></textarea>
 
-                        <label class="cursor-pointer flex items-center gap-2">
-                            <input type="checkbox" class="checkbox checkbox-sm checkbox-accent"
+                        <label class="cursor-pointer flex items-center gap-2 mt-2">
+                            <input type="checkbox" class="checkbox checkbox-xs checkbox-accent"
                                 v-model="dmSettings.insert_emoji" />
-                            <span class="text-sm">{{ $t('insertEmoji') }}</span>
+                            <span class="text-xs">{{ $t('insertEmoji') }}</span>
                         </label>
                     </div>
                 </div>
@@ -120,31 +126,28 @@
             </h3>
 
             <!-- 帖子处理设置 -->
-            <div class="mb-4 p-4 bg-base-50 rounded-lg border border-base-200">
-                <label class="label">
-                    <span class="label-text font-semibold">{{ $t('postProcessSettings') }}</span>
-                </label>
+            <div class="mb-4 p-3 bg-base-50 rounded-lg border border-base-200">
                 <div class="flex items-center gap-4">
                     <span class="text-sm font-medium">{{ $t('maxPostsToProcess') }}:</span>
                     <input type="number" class="input input-sm input-bordered w-20"
                         v-model.number="postSettings.max_posts_count" min="1" max="50" />
                     <span class="text-sm">{{ $t('posts') }}</span>
+                    <span class="text-xs text-gray-500 ml-2">{{ $t('postProcessTip') }}</span>
                 </div>
-                <div class="text-xs text-gray-500 mt-1">{{ $t('postProcessTip') }}</div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                 <!-- 帖子互动操作 -->
                 <div class="border border-base-200 rounded-lg p-4 bg-base-50">
-                    <div class="flex items-center mb-3">
+                    <div class="flex items-center mb-4">
                         <input type="checkbox" class="checkbox checkbox-primary mr-3" v-model="features.boostPosts" />
                         <font-awesome-icon icon="fa-solid fa-heart" class="text-error mr-2" />
                         <span class="font-semibold text-lg">{{ $t('postInteractionAction') }}</span>
                     </div>
 
-                    <div class="ml-8 space-y-3">
-                        <div class="grid grid-cols-3 gap-2">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <label class="cursor-pointer flex items-center gap-2">
                                 <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
                                     v-model="postSettings.enable_like" />
@@ -160,27 +163,51 @@
                                     v-model="postSettings.enable_repost" />
                                 <span class="text-sm">{{ $t('repost') }}</span>
                             </label>
+                            <label class="cursor-pointer flex items-center gap-2">
+                                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                    v-model="postSettings.enable_share" />
+                                <span class="text-sm">{{ $t('share') }}</span>
+                            </label>
                         </div>
 
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-medium">{{ $t('viewDuration') }}:</span>
-                            <input type="number" class="input input-sm input-bordered w-16"
-                                v-model.number="postSettings.view_duration" min="1" max="300" />
-                            <span class="text-sm">{{ $t('seconds') }}</span>
-                        </div>
+                        <div class="divider my-2"></div>
 
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm font-medium min-w-[100px]">{{ $t('viewDuration') }}:</span>
+                                <input type="number" class="input input-sm input-bordered w-20"
+                                    v-model.number="postSettings.view_duration" min="1" max="300" />
+                                <span class="text-sm">{{ $t('seconds') }}</span>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm font-medium min-w-[100px]">{{ $t('repeatTimes') }}:</span>
+                                <input type="number" class="input input-sm input-bordered w-20"
+                                    v-model.number="postSettings.repeat_times" min="1" max="20" />
+                                <span class="text-sm">{{ $t('times') }}</span>
+                            </div>
+
+                            <div class="alert alert-info py-2 px-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    class="stroke-current shrink-0 w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-xs">{{ $t('repeatTimesTip') }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- 评论操作 -->
                 <div class="border border-base-200 rounded-lg p-4 bg-base-50">
-                    <div class="flex items-center mb-3">
+                    <div class="flex items-center mb-4">
                         <input type="checkbox" class="checkbox checkbox-primary mr-3" v-model="features.massComment" />
                         <font-awesome-icon icon="fa-solid fa-comment" class="text-warning mr-2" />
                         <span class="font-semibold text-lg">{{ $t('commentAction') }}</span>
                     </div>
 
-                    <div class="ml-8 space-y-3">
+                    <div class="space-y-3">
                         <div class="flex flex-row items-center gap-2 mb-3">
                             <label class="font-bold text-sm">{{ $t('generateByChatGPT') }}:</label>
                             <input type="checkbox" class="toggle toggle-accent toggle-sm"
@@ -230,7 +257,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-xs btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                }}</button>
+                                    }}</button>
                                 <span :class="testResultStyle" class="text-xs">{{ testResult }}</span>
                             </div>
                         </div>
@@ -284,6 +311,7 @@ export default {
                 accessMethod: 'search',
                 features: {
                     followUsers: false,
+                    unfollowUsers: false,
                     sendDM: false,
                     boostPosts: false,
                     massComment: false
@@ -300,6 +328,8 @@ export default {
                     enable_like: false,
                     enable_favorite: false,
                     enable_repost: false,
+                    enable_share: false,
+                    repeat_times: 1,
                     view_duration: 10
                 },
                 commentSettings: {
@@ -336,6 +366,7 @@ export default {
             // 功能开关
             features: {
                 followUsers: false,
+                unfollowUsers: false,
                 sendDM: false,
                 boostPosts: false,
                 massComment: false
@@ -358,6 +389,8 @@ export default {
                 enable_like: false,
                 enable_favorite: false,
                 enable_repost: false,
+                enable_share: false,
+                repeat_times: 1, // 默认值为 1
                 view_duration: 10
             },
 
@@ -378,10 +411,21 @@ export default {
     }, async mounted() {
         let needsReset = false;
 
+        if (typeof this.features.unfollowUsers === 'undefined') {
+            this.$set(this.features, 'unfollowUsers', false);
+        }
+
         // 检查 postSettings 是否为有效对象
         if (typeof this.postSettings === 'string' || !this.postSettings) {
             console.error(`postSettings 异常: ${typeof this.postSettings}`, this.postSettings);
             needsReset = true;
+        } else {
+            if (typeof this.postSettings.enable_share === 'undefined') {
+                this.$set(this.postSettings, 'enable_share', false);
+            }
+            if (!this.postSettings.repeat_times || this.postSettings.repeat_times < 1) {
+                this.$set(this.postSettings, 'repeat_times', 1);
+            }
         }
 
         // 检查 commentSettings 是否为有效对象
@@ -416,6 +460,7 @@ export default {
                     accessMethod: 'search',
                     features: {
                         followUsers: false,
+                        unfollowUsers: false,
                         sendDM: false,
                         boostPosts: false,
                         massComment: false
@@ -432,6 +477,8 @@ export default {
                         enable_like: false,
                         enable_favorite: false,
                         enable_repost: false,
+                        enable_share: false,
+                        repeat_times: 1,
                         view_duration: 10
                     },
                     commentSettings: {
@@ -508,7 +555,7 @@ export default {
             }
 
             // 如果选择了需要用户名列表的功能，检查文件路径
-            if ((this.features.followUsers || this.features.sendDM) && !this.targetUsernamesPath) {
+            if ((this.features.followUsers || this.features.unfollowUsers || this.features.sendDM) && !this.targetUsernamesPath) {
                 errors.push(this.$t('selectUsernameFileRequired'));
             }
 
@@ -518,8 +565,12 @@ export default {
 
             if (this.features.boostPosts &&
                 !this.postSettings.enable_like && !this.postSettings.enable_favorite &&
-                !this.postSettings.enable_repost) {
+                !this.postSettings.enable_repost && !this.postSettings.enable_share) {
                 errors.push(this.$t('selectAtLeastOnePostAction'));
+            }
+
+            if (this.features.boostPosts && (!Number.isInteger(this.postSettings.repeat_times) || this.postSettings.repeat_times < 1)) {
+                this.postSettings.repeat_times = 1;
             }
 
             if (this.features.massComment && !this.commentSettings.generate_by_chatgpt && !this.commentSettings.comment_content.trim()) {
@@ -540,7 +591,7 @@ export default {
 
             // 发送到后端执行
             await this.$emiter('run_now_by_account', {
-                name: 'super_boost',
+                name: 'super_boost_v2',
                 args: { enable_multi_account }
             });
         }
