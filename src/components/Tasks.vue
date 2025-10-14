@@ -61,7 +61,8 @@ export default {
         return {
             whitelabelConfig: getWhiteLabelConfig(),
             taskCounts: {},
-            autoRetry: localStorage.getItem('autoRetry') === 'true'
+            autoRetry: localStorage.getItem('autoRetry') === 'true',
+            isCountingTasks: false
         }
     },
     watch: {
@@ -82,6 +83,13 @@ export default {
     },
     methods: {
         countTasks() {
+            // 如果正在执行,则忽略新的请求
+            if (this.isCountingTasks) {
+                console.log('countTasks is already running, skipping...');
+                return;
+            }
+
+            this.isCountingTasks = true;
             this.$service.count_task_by_status().then((res) => {
                 const counts = {};
                 let needRetryAll = false;
@@ -99,11 +107,17 @@ export default {
                             console.log('retry_all_failed_tasks');
                             this.countTasks();
                         })
+                        .finally(() => {
+                            this.isCountingTasks = false;
+                        });
+                } else {
+                    this.isCountingTasks = false;
                 }
+            }).catch((error) => {
+                console.error('countTasks error:', error);
+                this.isCountingTasks = false;
             });
-
         }
-
     },
     async mounted() {
         this.countTasks();
