@@ -33,131 +33,9 @@
           </button>
         </div>
       </div>
-      <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('viewDuration') }}:</label>
-        <VueSlider v-model="view_duration" :width="300" :min="10" :max="180"
-          :marks="{ 10: '10' + $t('second'), 90: '90' + $t('second'), 180: '180' + $t('second') }" />
 
-        <div role="alert" class="alert w-96 ml-8">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <span>{{ $t('viewDurationTips') }}</span>
-        </div>
-      </div>
-      <div class="flex w-full items-center gap-2 mb-8">
-        <label class="font-bold w-40">{{ $t('taskDuration') }}:</label>
-        <VueSlider v-model="trainDurationInMinutes" :width="700" :min="5" :max="60"
-          :marks="{ 5: '5' + $t('minute'), 10: '10' + $t('minute'), 20: '20' + $t('minute'), 30: '30' + $t('minute'), 40: '40' + $t('minute'), 50: '50' + $t('minute'), 60: '60' + $t('minute') }" />
-      </div>
-      <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('topics') }}:</label>
-        <textarea class="textarea textarea-success w-xl" :placeholder="$t('topicsTips')" autocomplete="off"
-          v-model="mygroup.topic"> </textarea>
-      </div>
-      <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('comments') }}:</label>
-        <div class="flex flex-col w-full gap-2">
-          <div class="flex flex-row items-center gap-2">
-            <label class="font-bold">{{ $t('generateByChatGPT') }}:</label>
-            <input type="checkbox" class="toggle toggle-accent" :true-value=1 :false-value=0
-              v-model="mygroup.generate_by_chatgpt" />
-          </div>
-          <div v-if="mygroup.generate_by_chatgpt" class="flex flex-col gap-2">
-            <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
-              <legend class="fieldset-legend">{{ $t('chatgptSettings') }}</legend>
-
-              <label class="label">{{ $t('url') }}</label>
-              <input type="text" class="input w-full" placeholder="https://api.openai.com/v1/chat/completions"
-                v-model="chatgpt_settings.url" />
-
-              <label class="label">{{ $t('apiKey') }}</label>
-              <input type="password" class="input w-full" placeholder="sk-********"
-                v-model="chatgpt_settings.api_key" />
-
-              <label class="label">{{ $t('model') }}</label>
-              <input type="text" class="input" placeholder="gpt-3.5-turbo" v-model="chatgpt_settings.model" />
-              <label class="label">{{ $t('systemPrompt') }}</label>
-              <textarea class="textarea textarea-success w-full" :placeholder="$t('systemPromptTips')"
-                autocomplete="off" v-model="chatgpt_settings.system_prompt"> </textarea>
-            </fieldset>
-            <button class="btn btn-primary" @click="testChatGPT">Test ChatGPT</button>
-            <span :class="testResultStyle">{{ testResult }}</span>
-
-          </div>
-          <div class="flex flex-col gap-2 relative" v-else>
-            <textarea class="textarea textarea-success w-full" :placeholder="$t('commentsTips')" autocomplete="off"
-              v-model="mygroup.comment"> </textarea>
-            <div class="flex flex-row items-center gap-2 absolute top-2 right-4 pl-2 pr-2 rounded">
-              <label class="font-bold">{{ $t('insertEmoji') }}:</label>
-              <input type="checkbox" class="toggle toggle-accent" v-model="mygroup.insert_emoji" :true-value=1
-                :false-value=0
-                title="😃, 😄, 😁, 😆, 😅, 😂, 🤣, 😊, 😇, 🙂, 🙃, 😉, 😋, 😛, 😝, 😜, 🤪, 😎, 🤩, 🥳, 😏, 🤗, 🤠, 😍, 😘, 😚, 😙, 😗, 🥰, 🤤, 😻, 😽, 💖, 💗, 💓, 💞, 💕, 💟, ❣️, 💌, 🌟, ✨, 💫, 🎉, 🎊, 🎁, 🎈, 🍾, 🥂, 🍻" />
-            </div>
-            <div class="flex flex-row items-center absolute top-8 right-4 pl-2 pr-2 rounded">
-              <label class="font-bold">{{ $t('commentOrder') }}:</label>
-              <div class="flex items-center">
-                <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="radio" name="commentOrder" value="random" class="radio radio-sm radio-primary"
-                    v-model="mygroup.comment_order" />
-                  <span>{{ $t('random') }}</span>
-                </label>
-                <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="radio" name="commentOrder" value="sequential" class="radio radio-sm radio-primary"
-                    v-model="mygroup.comment_order" />
-                  <span>{{ $t('sequential') }}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex w-full items-center gap-2 mb-2">
-        <label class="font-bold w-40">{{ $t('interact') }}:</label>
-        <div class="flex flex-wrap gap-8">
-          <!-- 关注概率滑块 -->
-          <div class="flex flex-col">
-            <div class="flex justify-between items-center mb-1">
-              <label class="text-md">{{ $t('follow') }}: </label>
-              <span class="text-md font-medium">{{ mygroup.floow_probable }}%</span>
-            </div>
-            <VueSlider v-model="mygroup.floow_probable" :width="100" :min="0" :max="100"
-              :marks="{ 0: '0%', 50: '50%', 100: '100%' }" />
-          </div>
-
-          <!-- 点赞概率滑块 -->
-          <div class="flex flex-col">
-            <div class="flex justify-between items-center mb-1">
-              <label class="text-md">{{ $t('like') }}: </label>
-              <span class="text-md font-medium">{{ mygroup.like_probable }}%</span>
-            </div>
-            <VueSlider v-model="mygroup.like_probable" :width="100" :min="0" :max="100"
-              :marks="{ 0: '0%', 50: '50%', 100: '100%' }" />
-          </div>
-
-          <!-- 收藏概率滑块 -->
-          <div class="flex flex-col">
-            <div class="flex justify-between items-center mb-1">
-              <label class="text-md">{{ $t('favorite') }}: </label>
-              <span class="text-md font-medium">{{ mygroup.collect_probable }}%</span>
-            </div>
-            <VueSlider v-model="mygroup.collect_probable" :width="100" :min="0" :max="100"
-              :marks="{ 0: '0%', 50: '50%', 100: '100%' }" />
-          </div>
-
-          <!-- 评论概率滑块 -->
-          <div class="flex flex-col">
-            <div class="flex justify-between items-center mb-1">
-              <label class="text-md">{{ $t('comment') }}: </label>
-              <span class="text-md font-medium">{{ mygroup.comment_probable }}%</span>
-            </div>
-            <VueSlider v-model="mygroup.comment_probable" :width="100" :min="0" :max="100"
-              :marks="{ 0: '0%', 50: '50%', 100: '100%' }" />
-          </div>
-        </div>
-      </div>
+      <!-- 使用公共表单组件 -->
+      <AccountWarmupFormFields :formData="formDataForFields" @update:formData="updateFormData" />
     </div>
 
     <!-- other fields... -->
@@ -171,9 +49,12 @@
 
 <script>
 import VueSlider from "vue-3-slider-component";
+import AccountWarmupFormFields from '@/components/common/AccountWarmupFormFields.vue';
+
 export default {
   components: {
-    VueSlider
+    VueSlider,
+    AccountWarmupFormFields
   },
   props: {
     group: {
@@ -182,24 +63,26 @@ export default {
     }
   },
   computed: {
-    trainDurationInMinutes: {
-      get() {
-        return (this.mygroup.train_duration / 60) || 5
-      },
-      set(value) {
-        this.mygroup.train_duration = value * 60
-      }
-    },
-    view_duration: {
-      get() {
-        const minDuration = this.mygroup.min_duration ?? 10
-        const maxDuration = this.mygroup.max_duration ?? 90
-        return [minDuration, maxDuration]
-      },
-      set(value) {
-        this.mygroup.min_duration = value[0]
-        this.mygroup.max_duration = value[1]
-      }
+    // 为 AccountWarmupFormFields 组件准备数据
+    formDataForFields() {
+      const minDuration = this.mygroup.min_duration ?? 10;
+      const maxDuration = this.mygroup.max_duration ?? 90;
+      const trainDuration = this.mygroup.train_duration || 300;
+
+      return {
+        view_duration: [minDuration, maxDuration],
+        taskDurationInMinutes: trainDuration / 60,
+        topic: this.mygroup.topic || '',
+        comment: this.mygroup.comment || '',
+        generate_by_chatgpt: this.mygroup.generate_by_chatgpt,
+        chatgpt_settings: this.chatgpt_settings,
+        insert_emoji: this.mygroup.insert_emoji,
+        comment_order: this.mygroup.comment_order || 'random',
+        floow_probable: this.mygroup.floow_probable ?? 50,
+        like_probable: this.mygroup.like_probable ?? 50,
+        collect_probable: this.mygroup.collect_probable ?? 50,
+        comment_probable: this.mygroup.comment_probable ?? 50,
+      };
     }
   },
   data() {
@@ -207,63 +90,44 @@ export default {
       mygroup: {},
       trainTimes: [],
       chatgpt_settings: {},
-      testResult: '',
-      testResultStyle: 'text-gray-500',
     }
   },
   watch: {
     'mygroup.auto_train': function (val) {
       this.mygroup.auto_train = Number(val)
     },
-    'mygroup.insert_emoji': function (val) {
-      this.mygroup.insert_emoji = Number(val)
-    },
-
-    'mygroup.train_duration': function (val) {
-      this.mygroup.train_duration = Number(val)
-    },
-    'mygroup.like_probable': function (val) {
-      this.mygroup.like_probable = Number(val)
-    },
-    'mygroup.collect_probable': function (val) {
-      this.mygroup.collect_probable = Number(val)
-    },
-    'mygroup.comment_probable': function (val) {
-      this.mygroup.comment_probable = Number(val)
-    },
-    'mygroup.floow_probable': function (val) {
-      this.mygroup.floow_probable = Number(val)
-    },
-    'mygroup.comment_order': function (val) {
-      if (val !== 'random' && val !== 'sequential') {
-        this.mygroup.comment_order = 'random'
-      }
-    },
   },
   methods: {
-    async testChatGPT() {
-      try {
-        this.testResult = 'Testing...';
-        this.testResultStyle = 'text-warning';
-        const response = await this.$service.chatgpt_completion({
-          url: this.chatgpt_settings.url,
-          api_key: this.chatgpt_settings.api_key,
-          model: this.chatgpt_settings.model,
-          system_prompt: this.chatgpt_settings.system_prompt,
-          post_caption: 'This is a test post caption for TikTok.',
-        });
-        console.log(response);
-        if (response.code == 0) {
-          this.testResult = response.data;
-          this.testResultStyle = 'text-success';
-        } else {
-          this.testResult = response.data;
-          this.testResultStyle = 'text-error';
-        }
-      } catch (error) {
-        this.testResult = 'Error: ' + error.message;
-        this.testResultStyle = 'text-error';
+    // 更新表单数据
+    updateFormData(newData) {
+      // 处理 view_duration
+      if (newData.view_duration) {
+        this.mygroup.min_duration = newData.view_duration[0];
+        this.mygroup.max_duration = newData.view_duration[1];
       }
+
+      // 处理 taskDurationInMinutes
+      if (newData.taskDurationInMinutes !== undefined) {
+        this.mygroup.train_duration = newData.taskDurationInMinutes * 60;
+      }
+
+      // 处理 chatgpt_settings
+      if (newData.chatgpt_settings) {
+        this.chatgpt_settings = newData.chatgpt_settings;
+      }
+
+      // 处理其他字段
+      const fieldsToUpdate = [
+        'topic', 'comment', 'generate_by_chatgpt', 'insert_emoji',
+        'comment_order', 'floow_probable', 'like_probable',
+        'collect_probable', 'comment_probable'
+      ];
+
+      fieldsToUpdate.forEach(key => {
+        if (newData[key] !== undefined) {
+          this.mygroup[key] = newData[key];
+        }
+      });
     },
     addTime() {
       const currentTime = new Date();
