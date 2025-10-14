@@ -61,7 +61,7 @@
         </div>
 
         <!-- 添加声音 -->
-        <div class="flex w-full items-center gap-2 mb-2">
+        <!-- <div class="flex w-full items-center gap-2 mb-2">
             <label class="font-bold w-40">{{ $t('addSound') }}:</label>
             <div class="flex items-center gap-4">
                 <div class="flex items-center">
@@ -88,7 +88,7 @@
                     <span>{{ $t('addSoundTips') }}</span>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- 加载时间 -->
         <div class="flex w-full items-center gap-2 mb-4">
@@ -148,7 +148,7 @@
         </div>
 
         <!-- 添加商品链接 -->
-        <div class="flex w-full items-center gap-2 mb-2">
+        <!-- <div class="flex w-full items-center gap-2 mb-2">
             <label class="font-bold w-40">{{ $t('addProductLink') }}:</label>
             <div class="flex items-center gap-4">
                 <div class="flex items-center">
@@ -170,7 +170,7 @@
                     <span>{{ $t('addProductLinkTips') }}</span>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- 文案 -->
         <div class="flex w-full items-center gap-2 mb-2">
