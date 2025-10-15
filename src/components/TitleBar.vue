@@ -664,10 +664,6 @@ export default {
         async performSilentUpdate() {
             console.log('开始执行静默更新...');
             try {
-                let hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate');
-                // 强制检查更新，忽略hasCheckedUpdate状态
-                localStorage.removeItem('hasCheckedUpdate');
-
                 const osType = await os.type();
                 const arch = await os.arch();
                 console.log('osType:', osType, 'arch:', arch);
@@ -678,18 +674,6 @@ export default {
                         platform = 'mac-arm';
                     } else {
                         platform = 'mac-intel';
-                    }
-                }
-
-                // 静默检查系统更新（仅Windows）
-                if (platform === 'windows') {
-                    try {
-                        const { shouldUpdate, manifest } = await checkUpdate();
-                        if (shouldUpdate) {
-                            console.log('发现系统更新，但静默更新不安装系统更新，跳过');
-                        }
-                    } catch (e) {
-                        console.log('检查系统更新失败:', e);
                     }
                 }
 
