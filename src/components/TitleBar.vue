@@ -413,13 +413,15 @@ export default {
                             timeout: 3000
                         });
                     }
-                    return;
+                    // return;
                 }
             } catch (e) {
                 closeDialog();
                 let error = e.toString();
                 if (showDialog) {
-                    await message(error, { title: 'Agent Start Error', type: 'error' });
+                    // 使用自定义dialog替代message弹窗
+                    this.agentErrorType = 'start';
+                    this.$refs.agentErrorDialog.show();
                 } else {
                     console.error('Silent agent start error:', e);
                     await this.$emiter('NOTIFY', {

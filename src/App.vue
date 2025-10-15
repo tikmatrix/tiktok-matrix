@@ -258,7 +258,13 @@ export default {
     },
 
     isSystemIdle() {
-      const idleThreshold = 5 * 60 * 1000; // 5分钟无用户活动
+      let idleThreshold = 5 * 60 * 1000; // 5分钟无用户活动
+      //如果是dev环境，改为1分钟
+      const isDev = import.meta.env.DEV;
+      if (isDev) {
+        console.log("current is dev environment, set idle threshold to 1 minute")
+        idleThreshold = 1 * 60 * 1000;
+      }
       return (Date.now() - this.lastUserActivity) > idleThreshold;
     },
 
@@ -282,8 +288,14 @@ export default {
         return;
       }
 
-      const interval = 10 * 60 * 1000; // 固定10分钟间隔
-      console.log(`启动自动更新定时器，间隔: 10 分钟`);
+      let interval = 10 * 60 * 1000; // 固定10分钟间隔
+      //如果是dev环境，间隔改为1分钟
+      const isDev = import.meta.env.DEV;
+      if (isDev) {
+        console.log("current is dev environment, set auto update interval to 1 minute")
+        interval = 1 * 60 * 1000;
+      }
+      console.log(`启动自动更新定时器，间隔: ${interval / 1000 / 60} 分钟`);
 
       this.autoUpdateTimer = setInterval(() => {
         // 检查是否有正在运行的任务

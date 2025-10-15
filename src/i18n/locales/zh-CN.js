@@ -600,7 +600,6 @@ export default {
   postInteractionAction: '帖子互动操作',
   postLimit: '处理帖子数量',
   postProcessSettings: '帖子处理设置',
-  postProcessTip: '系统会自动在用户主页按顺序点击指定数量的帖子进行操作',
   postRelatedActions: '帖子相关操作',
   postUrl: '帖子链接',
   postUrlFormatTip: '每行一个帖子URL，系统会自动清理查询参数',

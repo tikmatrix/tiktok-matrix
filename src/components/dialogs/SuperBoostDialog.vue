@@ -180,7 +180,6 @@
                     <input type="number" class="input input-sm input-bordered w-20"
                         v-model.number="postSettings.max_posts_count" min="1" max="50" />
                     <span class="text-sm">{{ $t('posts') }}</span>
-                    <span class="text-xs text-gray-500 ml-2">{{ $t('postProcessTip') }}</span>
                 </div>
             </div>
 

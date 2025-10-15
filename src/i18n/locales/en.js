@@ -600,7 +600,6 @@ export default {
   postInteractionAction: 'Post Interaction Action',
   postLimit: 'Post Limit',
   postProcessSettings: 'Post Processing Settings',
-  postProcessTip: 'System will automatically click specified number of posts on user profile page in sequence',
   postRelatedActions: 'Post Related Actions',
   postUrl: 'Post Url',
   postUrlFormatTip: 'One post URL per line, system will automatically clean query parameters',
