@@ -304,7 +304,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-xs btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                }}</button>
+                                    }}</button>
                                 <span :class="testResultStyle" class="text-xs">{{ testResult }}</span>
                             </div>
                         </div>
@@ -667,12 +667,6 @@ export default {
 
             if (this.features.sendDM && !this.dmSettings.message_contents.trim()) {
                 errors.push(this.$t('enterMessageContent'));
-            }
-
-            if (this.features.boostPosts &&
-                !this.postSettings.enable_like && !this.postSettings.enable_favorite &&
-                !this.postSettings.enable_repost && !this.postSettings.enable_share) {
-                errors.push(this.$t('selectAtLeastOnePostAction'));
             }
 
             if (this.features.boostPosts && (!Number.isInteger(this.postSettings.repeat_times) || this.postSettings.repeat_times < 1)) {
