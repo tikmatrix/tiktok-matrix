@@ -348,52 +348,89 @@ export default {
         isLicensed() {
             return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active == 1;
         },
-        async startAgent() {
+        async startAgent(silent = false) {
+            const showDialog = !silent;
+            const closeDialog = () => {
+                if (showDialog && this.$refs.download_dialog?.open) {
+                    this.$refs.download_dialog.close();
+                }
+            };
+
             try {
-                this.$refs.download_dialog.showModal();
-                this.check_update_dialog_title = 'Checking agent...';
+                if (showDialog) {
+                    this.$refs.download_dialog.showModal();
+                    this.check_update_dialog_title = 'Checking agent...';
+                }
 
                 //check agent.exe is running
                 let pname = await invoke("is_agent_running");
                 console.log('agent_running:', pname)
                 if (pname === '') {
                     console.log('agent is not running')
-                    this.check_update_dialog_title = 'Starting agent...';
+                    if (showDialog) {
+                        this.check_update_dialog_title = 'Starting agent...';
+                    }
                     //check agent.exe is exists
                     const osType = await os.type();
                     const agentFilename = osType === 'Darwin' ? 'agent' : 'agent.exe';
                     let agent_exists = await exists(`bin/${agentFilename}`, { dir: BaseDirectory.AppData })
                     if (!agent_exists) {
                         console.log(`${agentFilename} not found`)
-                        this.$refs.download_dialog.close();
-                        // 使用自定义dialog显示agent未找到错误
-                        this.agentErrorType = 'notfound';
-                        this.$refs.agentErrorDialog.show();
+                        closeDialog();
+                        if (showDialog) {
+                            // 使用自定义dialog显示agent未找到错误
+                            this.agentErrorType = 'notfound';
+                            this.$refs.agentErrorDialog.show();
+                        } else {
+                            await this.$emiter('NOTIFY', {
+                                type: 'error',
+                                message: 'Agent 可执行文件缺失，自动更新无法完成启动',
+                                timeout: 4000
+                            });
+                        }
                         return;
                     }
                     const command = new Command('start-agent', [])
                     command.on('close', data => {
                         console.log(`command exit: ${JSON.stringify(data)}`)
                     });
-                    // command.on('error', error => console.error(`command error: "${error}"`));
-                    // command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-                    // command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
                     const child = await command.spawn();
                     console.log('pid:', child.pid);
                     //write pid to file
                     await writeTextFile('agent.pid', `${child.pid}`, { dir: BaseDirectory.AppData });
                 } else {
                     console.log('50809 port is used, process name:', pname)
-                    this.$refs.download_dialog.close();
-                    // 使用自定义dialog替代ask弹窗
-                    this.agentProcessName = pname;
-                    this.agentErrorType = 'port';
-                    this.$refs.agentErrorDialog.show();
+                    closeDialog();
+                    if (showDialog) {
+                        // 使用自定义dialog替代ask弹窗
+                        this.agentProcessName = pname;
+                        this.agentErrorType = 'port';
+                        this.$refs.agentErrorDialog.show();
+                    } else {
+                        await this.$emiter('NOTIFY', {
+                            type: 'info',
+                            message: `Agent 已在运行 (进程: ${pname})`,
+                            timeout: 3000
+                        });
+                    }
+                    return;
                 }
             } catch (e) {
+                closeDialog();
                 let error = e.toString();
-                await message(error, { title: 'Agent Start Error', type: 'error' });
+                if (showDialog) {
+                    await message(error, { title: 'Agent Start Error', type: 'error' });
+                } else {
+                    console.error('Silent agent start error:', e);
+                    await this.$emiter('NOTIFY', {
+                        type: 'error',
+                        message: `后台服务启动失败: ${error}`,
+                        timeout: 4000
+                    });
+                }
+                return;
             }
+
             console.log('waiting for agent startup')
             // wait for agent startup by listening to port
             for (let i = 0; i < 10; i++) {
@@ -402,14 +439,29 @@ export default {
                 if (port > 0) {
                     console.log('agent started')
                     await this.$emiter('agent_started', {})
-                    this.$refs.download_dialog.close();
+                    if (!showDialog) {
+                        await this.$emiter('NOTIFY', {
+                            type: 'success',
+                            message: '后台服务已重新启动',
+                            timeout: 3000
+                        });
+                    }
+                    closeDialog();
                     return;
                 }
             }
-            this.$refs.download_dialog.close();
-            // 使用自定义dialog替代message弹窗
-            this.agentErrorType = 'timeout';
-            this.$refs.agentErrorDialog.show();
+            closeDialog();
+            if (showDialog) {
+                // 使用自定义dialog替代message弹窗
+                this.agentErrorType = 'timeout';
+                this.$refs.agentErrorDialog.show();
+            } else {
+                await this.$emiter('NOTIFY', {
+                    type: 'error',
+                    message: 'Agent 启动超时，请稍后手动检查。',
+                    timeout: 4000
+                });
+            }
         },
         async minimizeWindow() {
             appWindow.minimize();
@@ -698,11 +750,18 @@ export default {
                 if (response?.ok && response?.data?.code === 20000) {
                     const libs = response.data.data.libs;
                     let hasUpdates = false;
+                    let agentUpdated = false;
+                    let scriptUpdated = false;
 
                     for (const lib of libs) {
                         const updated = await this.silentDownloadAndUpdateLib(lib, this.getLibStorageKey(lib.name));
                         if (updated) {
                             hasUpdates = true;
+                            if (lib.name === 'agent') {
+                                agentUpdated = true;
+                            } else if (lib.name === 'script') {
+                                scriptUpdated = true;
+                            }
                         }
                     }
 
@@ -714,6 +773,9 @@ export default {
                             message: '后台自动更新已完成',
                             timeout: 3000
                         });
+                        if (agentUpdated || scriptUpdated) {
+                            await this.startAgent(true);
+                        }
                     } else {
                         console.log('静默更新完成，没有发现新的更新');
                     }
@@ -749,30 +811,37 @@ export default {
 
                 console.log(`静默检查 ${lib.name}: 本地版本 ${localversion}, 远程版本 ${lib.version}`);
 
-                if (localversion === lib.version) {
-                    return false; // 无需更新
-                }
-
                 let url = lib.downloadUrl;
                 let work_path = await appDataDir();
                 let name = url.split('/').pop();
                 let path = work_path + 'tmp/' + name;
+                let updated = false;
 
-                console.log(`静默下载 ${lib.name} 从 ${url}`);
-                // 使用版本号作为缓存参数，提高CDN缓存命中率
-                await invoke('download_file_with_version', {
-                    url,
-                    path,
-                    version: lib.version
-                });
+                const downloaded = await exists(`tmp/${name}`, { dir: BaseDirectory.AppData });
+                if (!downloaded || localversion !== lib.version) {
+                    console.log(`静默下载 ${lib.name} 从 ${url}`);
+                    // 使用版本号作为缓存参数，提高CDN缓存命中率
+                    await invoke('download_file_with_version', {
+                        url,
+                        path,
+                        version: lib.version
+                    });
+                    updated = true;
+                } else {
+                    console.log(`${lib.name} 已是最新版本，跳过下载`);
+                }
 
                 localStorage.setItem(localStorageKey, lib.version);
 
                 // 执行特定的更新操作（静默版本，不显示进度）
-                await this.silentUpdateLib(lib, path, work_path);
+                await this.silentUpdateLib(lib, path, work_path, name, updated);
 
-                console.log(`静默更新 ${lib.name} 完成`);
-                return true; // 已更新
+                if (updated) {
+                    console.log(`静默更新 ${lib.name} 完成`);
+                } else {
+                    console.log(`静默校验 ${lib.name} 完成，未检测到新版本`);
+                }
+                return updated; // 是否执行了更新
             } catch (e) {
                 console.error(`静默更新 ${lib.name} 失败:`, e);
                 return false;
@@ -780,12 +849,12 @@ export default {
         },
 
         // 静默更新库（无UI反馈）
-        async silentUpdateLib(lib, path, work_path) {
+        async silentUpdateLib(lib, path, work_path, name, updated) {
             if (lib.name === 'platform-tools') {
                 const osType = await os.type();
                 const adbFileName = osType === 'Darwin' ? 'adb' : 'adb.exe';
                 let adb_exists = await exists(`platform-tools/${adbFileName}`, { dir: BaseDirectory.AppData });
-                if (!adb_exists) {
+                if (updated || !adb_exists) {
                     await invoke("kill_process", { name: "adb" });
                     await new Promise(r => setTimeout(r, 3000));
                     await invoke("unzip_file", { zipPath: path, destDir: work_path });
@@ -795,17 +864,26 @@ export default {
                 const osType = await os.type();
                 const paddleFileName = osType === 'Darwin' ? 'PaddleOCR-json' : 'PaddleOCR-json.exe';
                 let paddle_exists = await exists(`PaddleOCR-json/${paddleFileName}`, { dir: BaseDirectory.AppData });
-                if (!paddle_exists) {
+                if (updated || !paddle_exists) {
                     await invoke("kill_process", { name: "PaddleOCR-json" });
                     await invoke("unzip_file", { zipPath: path, destDir: work_path });
                 }
             } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
-                await copyFile(path, path.replace('tmp', 'bin'));
+                const destRelative = `bin/${name}`;
+                if (updated || !(await exists(destRelative, { dir: BaseDirectory.AppData }))) {
+                    await copyFile(path, path.replace('tmp', 'bin'));
+                    if (lib.name === 'apk' || lib.name === 'test-apk') {
+                        await invoke("set_env", { key: "agent_version", value: lib.version });
+                    }
+                }
             } else if (lib.name === 'script' || lib.name === 'agent') {
-                await invoke("kill_process", { name: lib.name });
-                await new Promise(r => setTimeout(r, 3000));
-                await copyFile(path, path.replace('tmp', 'bin'));
-                await invoke("grant_permission", { path: `bin/${lib.name}` });
+                const destRelative = `bin/${name}`;
+                if (updated || !(await exists(destRelative, { dir: BaseDirectory.AppData }))) {
+                    await invoke("kill_process", { name: lib.name });
+                    await new Promise(r => setTimeout(r, 3000));
+                    await copyFile(path, path.replace('tmp', 'bin'));
+                    await invoke("grant_permission", { path: `bin/${lib.name}` });
+                }
             }
         },
     },

@@ -83,6 +83,7 @@ const postMixin = postSettings.createVueMixin(
     },
     // 添加素材相关字段
     sound_name: '',
+    custom_sound_keyword: '',
     content_type: 0,
     image_count: 1,
     add_sound: '-1',
@@ -104,7 +105,7 @@ const postMixin = postSettings.createVueMixin(
     'comment_on_own_post_delay_min', 'comment_on_own_post_delay_max',
     'own_post_comment', 'own_post_comment_emoji', 'generate_by_chatgpt',
     'chatgpt_settings', 'sound_name', 'content_type', 'image_count',
-    'add_sound', 'sound_wait_time', 'upload_wait_time', 'origin_sound_volume', 'add_sound_volume',
+    'custom_sound_keyword', 'add_sound', 'sound_wait_time', 'upload_wait_time', 'origin_sound_volume', 'add_sound_volume',
     'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path'
   ]
 );
@@ -126,6 +127,7 @@ export default {
       return {
         post_way: this.post_way,
         sound_name: this.sound_name,
+        custom_sound_keyword: this.custom_sound_keyword,
         content_type: this.content_type,
         image_count: this.image_count,
         add_sound: this.add_sound,
@@ -156,6 +158,15 @@ export default {
         await this.$emiter('NOTIFY', {
           type: 'error',
           message: this.$t('soundInputRequired'),
+          timeout: 2000
+        });
+        return;
+      }
+
+      if (this.add_sound === 'custom' && !this.custom_sound_keyword) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('customSoundInputRequired'),
           timeout: 2000
         });
         return;

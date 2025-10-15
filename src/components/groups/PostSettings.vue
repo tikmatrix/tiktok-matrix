@@ -64,7 +64,9 @@ export default {
   },
   data() {
     return {
-      mygroup: {},
+      mygroup: {
+        custom_sound_keyword: ''
+      },
       publishTimes: [],
     }
   },
@@ -74,6 +76,7 @@ export default {
       return {
         post_way: this.mygroup.post_way,
         sound_name: this.mygroup.sound_name,
+        custom_sound_keyword: this.mygroup.custom_sound_keyword,
         content_type: this.mygroup.content_type,
         image_count: this.mygroup.image_count,
         add_sound: this.mygroup.add_sound,
@@ -131,6 +134,15 @@ export default {
         return
       }
 
+      if (this.mygroup.add_sound === 'custom' && !this.mygroup.custom_sound_keyword) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('customSoundInputRequired'),
+          timeout: 2000
+        });
+        return
+      }
+
       // 验证素材配置
       if (this.mygroup.material_source === 'localFolder' && !this.mygroup.material_path) {
         await this.$emiter('NOTIFY', {
@@ -158,6 +170,7 @@ export default {
           publish_start_time: this.mygroup.publish_start_time,
           post_way: this.mygroup.post_way,
           sound_name: this.mygroup.sound_name,
+          custom_sound_keyword: this.mygroup.custom_sound_keyword,
           content_type: this.mygroup.content_type,
           image_count: this.mygroup.image_count,
           add_sound: this.mygroup.add_sound,
@@ -203,6 +216,9 @@ export default {
   },
   async mounted() {
     this.mygroup = { ...this.group }
+    if (this.mygroup.custom_sound_keyword === undefined || this.mygroup.custom_sound_keyword === null) {
+      this.mygroup.custom_sound_keyword = ''
+    }
     if (this.mygroup.publish_type !== undefined) {
       // 向后兼容旧的字段名
       this.mygroup.content_type = this.mygroup.publish_type;
@@ -235,6 +251,9 @@ export default {
         }
         if (config.sound_name !== undefined) {
           this.mygroup.sound_name = config.sound_name;
+        }
+        if (config.custom_sound_keyword !== undefined) {
+          this.mygroup.custom_sound_keyword = config.custom_sound_keyword;
         }
         if (config.content_type !== undefined) {
           this.mygroup.content_type = config.content_type;
