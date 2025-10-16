@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   minimize: 'Minimize',
   maximize: 'Maximize',
   account: 'Account',
@@ -971,3 +971,4 @@ export default {
   yearlyDiscount: 'Yearly(Save {percent}%)',
   yearlyPlans: 'Yearly Plans',
 };
+

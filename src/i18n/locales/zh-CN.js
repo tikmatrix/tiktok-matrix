@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   minimize: '最小化',
   maximize: '最大化',
   account: '帐号',
@@ -971,3 +971,4 @@ export default {
   yearlyDiscount: '年度（立省 {percent}%）',
   yearlyPlans: '年度套餐',
 };
+

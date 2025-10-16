@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   minimize: 'Свернуть',
   maximize: 'Развернуть',
   account: 'Аккаунт',
@@ -971,3 +971,4 @@ export default {
   yearlyDiscount: 'Ежегодно(Сэкономьте {percent}%)',
   yearlyPlans: 'Годовые планы',
 };
+
