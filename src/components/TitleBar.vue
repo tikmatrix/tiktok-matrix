@@ -299,7 +299,8 @@ export default {
             agentProcessName: '',
             agentErrorType: 'port', // 默认为端口问题
             whitelabelConfig: getWhiteLabelConfig(),
-            isWhiteLabelUnlocked: isFeatureUnlocked('whiteLabel')
+            isWhiteLabelUnlocked: isFeatureUnlocked('whiteLabel'),
+            checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=1',//changeme
         }
     },
     watch: {
@@ -566,7 +567,7 @@ export default {
             let response = null;
             try {
 
-                response = await fetch(`https://api.tikmatrix.com/front-api/check_libs?time=${new Date().getTime()}`, {
+                response = await fetch(`${this.checkLibsUrl}&time=${new Date().getTime()}`, {
                     method: 'GET',
                     timeout: 10,
                     responseType: ResponseType.JSON,
@@ -734,7 +735,7 @@ export default {
                 // 检查库更新
                 let response = null;
                 try {
-                    response = await fetch(`https://api.tikmatrix.com/front-api/check_libs?time=${new Date().getTime()}`, {
+                    response = await fetch(`${this.checkLibsUrl}&time=${new Date().getTime()}`, {
                         method: 'GET',
                         timeout: 10,
                         responseType: ResponseType.JSON,

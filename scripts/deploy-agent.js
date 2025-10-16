@@ -1,6 +1,5 @@
 import { execSync } from 'child_process';
 import readline from 'readline';
-import https from 'https';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -10,7 +9,11 @@ const __dirname = path.dirname(__filename);
 // API Configuration
 const API_KEY = 'LUfAkEaQ3Hwd5Cs6KbJr8FVGYDSzMj9R';
 const API_URL = 'https://api.tikmatrix.com/ci/update_lib';
+// const API_URL = 'http://127.0.0.1:8787/ci/update_lib';
 const PLATFORM = 'windows';
+const BETA = '1'; //changeme 设置为 '1' 以使用测试环境
+const SCRIPT_NAME = BETA === '1' ? 'beta/script.exe' : 'script.exe';
+const AGENT_NAME = BETA === '1' ? 'beta/agent.exe' : 'agent.exe';
 
 // tiktok-agent 项目路径(相对于当前项目)
 const AGENT_PROJECT_PATH = path.resolve(__dirname, '../../tiktok-agent');
@@ -34,42 +37,26 @@ function promptForVersion() {
 }
 
 // Function to make HTTP POST request
-function updateLibrary(data) {
-    return new Promise((resolve, reject) => {
-        const postData = JSON.stringify(data);
-
-        const options = {
+async function updateLibrary(data) {
+    try {
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(postData),
                 'Authorization': `Bearer ${API_KEY}`
-            }
-        };
-
-        const req = https.request(API_URL, options, (res) => {
-            let responseData = '';
-
-            res.on('data', (chunk) => {
-                responseData += chunk;
-            });
-
-            res.on('end', () => {
-                if (res.statusCode >= 200 && res.statusCode < 300) {
-                    resolve(JSON.parse(responseData));
-                } else {
-                    reject(new Error(`HTTP ${res.statusCode}: ${responseData}`));
-                }
-            });
+            },
+            body: JSON.stringify(data)
         });
 
-        req.on('error', (error) => {
-            reject(error);
-        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
 
-        req.write(postData);
-        req.end();
-    });
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
 }
 
 // Main deployment function
@@ -95,14 +82,14 @@ async function deploy() {
         });
 
         // Upload to R2
-        console.log('Uploading agent.exe to R2...');
-        execSync('wrangler r2 object put tikmatrix/agent.exe --file=target/release/agent.exe --remote', {
+        console.log(`Uploading ${AGENT_NAME} to R2...`);
+        execSync(`wrangler r2 object put tikmatrix/${AGENT_NAME} --file=target/release/agent.exe --remote`, {
             stdio: 'inherit',
             cwd: AGENT_PROJECT_PATH
         });
 
-        console.log('Uploading script.exe to R2...');
-        execSync('wrangler r2 object put tikmatrix/script.exe --file=target/release/script.exe --remote', {
+        console.log(`Uploading ${SCRIPT_NAME} to R2...`);
+        execSync(`wrangler r2 object put tikmatrix/${SCRIPT_NAME} --file=target/release/script.exe --remote`, {
             stdio: 'inherit',
             cwd: AGENT_PROJECT_PATH
         });
@@ -114,10 +101,11 @@ async function deploy() {
             oldName: 'agent',
             oldPlatform: PLATFORM,
             name: 'agent',
-            downloadUrl: 'https://r2.tikmatrix.com/agent.exe',
+            downloadUrl: `https://r2.tikmatrix.com/${AGENT_NAME}`,
             platform: PLATFORM,
             version: version,
-            app: 'TikMatrix'
+            app: 'TikMatrix',
+            beta: BETA
         };
 
         console.log('Updating agent library...');
@@ -133,10 +121,11 @@ async function deploy() {
             oldName: 'script',
             oldPlatform: PLATFORM,
             name: 'script',
-            downloadUrl: 'https://r2.tikmatrix.com/script.exe',
+            downloadUrl: `https://r2.tikmatrix.com/${SCRIPT_NAME}`,
             platform: PLATFORM,
             version: version,
-            app: 'TikMatrix'
+            app: 'TikMatrix',
+            beta: BETA
         };
 
         console.log('Updating script library...');

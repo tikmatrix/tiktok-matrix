@@ -130,13 +130,9 @@ export default {
               } else if (status === 0 && device.task_status !== 1) {
                 //task is not running
                 device.task_status = 0
-              } else {
-                //task is running,do nothing
-                console.log('task is running,do nothing')
               }
             }
           })
-          // await this.$emiter('reload_tasks', {})
         } else if (json.action === 'heartbeat') {
           await this.$emiter('heartbeat', {})
         }
