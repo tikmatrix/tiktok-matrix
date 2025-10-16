@@ -15,14 +15,28 @@
                 <div class="property-value font-mono">{{ element.className }}</div>
             </div>
 
-            <div v-if="element.text" class="property-item">
+            <div v-if="element.text !== undefined" class="property-item">
                 <div class="property-label">Text</div>
-                <div class="property-value">{{ element.text }}</div>
+                <div class="property-value property-value-mono">
+                    <span class="value-boundary">“</span>
+                    <span class="value-content" v-text="element.text"></span>
+                    <span class="value-boundary">”</span>
+                </div>
+                <div class="property-meta" v-if="element.text && element.text.length">
+                    Length: {{ element.text.length }}
+                </div>
             </div>
 
             <div v-if="element.contentDesc" class="property-item">
                 <div class="property-label">Content Description</div>
-                <div class="property-value">{{ element.contentDesc }}</div>
+                <div class="property-value property-value-mono">
+                    <span class="value-boundary">“</span>
+                    <span class="value-content" v-text="element.contentDesc"></span>
+                    <span class="value-boundary">”</span>
+                </div>
+                <div class="property-meta" v-if="element.contentDesc && element.contentDesc.length">
+                    Length: {{ element.contentDesc.length }}
+                </div>
             </div>
 
             <div v-if="element.resourceId" class="property-item">
@@ -204,6 +218,35 @@ const handleTapCenter = () => {
 .property-value {
     font-size: 0.875rem;
     color: hsl(var(--bc));
+}
+
+.property-value-mono {
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    background-color: hsl(var(--b1));
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    flex-wrap: wrap;
+}
+
+.property-value-mono .value-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.value-boundary {
+    color: hsl(var(--bc) / 0.5);
+    font-size: 0.75rem;
+}
+
+.property-meta {
+    margin-top: 0.25rem;
+    font-size: 0.65rem;
+    color: hsl(var(--bc) / 0.45);
 }
 
 .property-item-compact {

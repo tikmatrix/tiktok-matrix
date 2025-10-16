@@ -17,7 +17,7 @@
         </div>
 
         <!-- 树形结构 -->
-        <div class="flex-1 overflow-auto">
+        <div class="flex-1 overflow-auto" ref="scrollContainer">
             <div v-if="hierarchyTree" class="tree-view">
                 <TreeNode :node="hierarchyTree" :selected-id="selectedNode?.id" :search-results="searchResults"
                     @select="handleNodeSelect" @hover="handleNodeHover" />
@@ -38,9 +38,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import TreeNode from './TreeNode.vue'
-import { flattenTree, findNodesByText } from '@/utils/hierarchyParser'
+import { flattenTree } from '@/utils/hierarchyParser'
 
 const props = defineProps({
     hierarchy: Object,
@@ -51,6 +51,7 @@ const emit = defineEmits(['node-select', 'node-hover'])
 
 const searchQuery = ref('')
 const hierarchyTree = ref(null)
+const scrollContainer = ref(null)
 
 // 监听 hierarchy 变化
 watch(() => props.hierarchy, (newHierarchy) => {
@@ -83,6 +84,19 @@ const totalNodes = computed(() => {
     return flattenTree(hierarchyTree.value).length
 })
 
+// 滚动到选中的节点
+const scrollToSelectedNode = async (nodeId) => {
+    if (!nodeId) return
+    await nextTick()
+    const container = scrollContainer.value
+    if (!container) return
+
+    const target = container.querySelector(`[data-node-id="${nodeId}"]`)
+    if (target && typeof target.scrollIntoView === 'function') {
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }
+}
+
 // 选择节点
 const handleNodeSelect = (node) => {
     emit('node-select', node)
@@ -92,6 +106,20 @@ const handleNodeSelect = (node) => {
 const handleNodeHover = (node) => {
     emit('node-hover', node)
 }
+
+// 监听选中节点变化以自动滚动
+watch(() => props.selectedNode?.id, (newId) => {
+    if (newId) {
+        scrollToSelectedNode(newId)
+    }
+})
+
+// 当层级数据变化时，重新定位选中节点
+watch(() => props.hierarchy, () => {
+    if (props.selectedNode?.id) {
+        scrollToSelectedNode(props.selectedNode.id)
+    }
+})
 </script>
 
 <style scoped>

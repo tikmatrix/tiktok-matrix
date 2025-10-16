@@ -40,6 +40,13 @@
                                         Refresh
                                     </button>
 
+                                    <!-- 下载按钮 -->
+                                    <button @click="handleDownloadHierarchy" :disabled="loading || !hierarchy"
+                                        class="btn btn-sm btn-ghost" title="Download hierarchy XML">
+                                        <font-awesome-icon icon="download" />
+                                        Download XML
+                                    </button>
+
                                     <!-- 关闭按钮 -->
                                     <button @click="handleClose" class="btn btn-sm btn-circle btn-ghost">
                                         <font-awesome-icon icon="times" />
@@ -149,11 +156,50 @@ const hoveredElement = ref(null)
 const deviceWidth = ref(1080)
 const deviceHeight = ref(1920)
 
+const areBoundsEqual = (a, b) => {
+    if (!a || !b) return false
+    return a.x === b.x && a.y === b.y && a.x2 === b.x2 && a.y2 === b.y2
+}
+
+const findMatchingNode = (root, target) => {
+    if (!root || !target) return null
+
+    const candidates = flattenTree(root)
+
+    const matchers = [
+        node => target.resourceId && node.resourceId === target.resourceId,
+        node => target.bounds && node.bounds && areBoundsEqual(node.bounds, target.bounds),
+        node => target.text && node.text === target.text && node.className === target.className,
+        node => target.contentDesc && node.contentDesc === target.contentDesc,
+        node => target.className && node.className === target.className && node.index === target.index
+    ]
+
+    for (const matcher of matchers) {
+        const match = candidates.find(matcher)
+        if (match) {
+            return match
+        }
+    }
+
+    return null
+}
+
 // 监听 hierarchy 变化
 watch(hierarchy, (newHierarchy) => {
     if (newHierarchy) {
         try {
-            hierarchyTree.value = parseXmlHierarchy(newHierarchy)
+            const parsedTree = parseXmlHierarchy(newHierarchy)
+            hierarchyTree.value = parsedTree
+
+            if (parsedTree && selectedElement.value) {
+                const matchedNode = findMatchingNode(parsedTree, selectedElement.value)
+                selectedElement.value = matchedNode
+            }
+
+            if (parsedTree && hoveredElement.value) {
+                hoveredElement.value = findMatchingNode(parsedTree, hoveredElement.value)
+            }
+
             console.log('Hierarchy parsed:', hierarchyTree.value)
         } catch (err) {
             console.error('Failed to parse hierarchy:', err)
@@ -184,6 +230,55 @@ const handleDumpHierarchy = async () => {
         await getActivity()
     } catch (err) {
         console.error('Failed to dump hierarchy:', err)
+    }
+}
+
+// 下载当前层级结构
+const handleDownloadHierarchy = async () => {
+    if (!hierarchy.value) {
+        console.warn('No hierarchy available to download')
+        return
+    }
+
+    try {
+        const safeSerial = (deviceSerial.value || 'device')
+            .toString()
+            .replace(/[^a-zA-Z0-9-_]/g, '') || 'device'
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        const defaultPath = `device-hierarchy-${safeSerial}-${timestamp}.xml`
+
+        const isTauri = typeof window !== 'undefined' && window.__TAURI__
+
+        if (!isTauri) {
+            const blob = new Blob([hierarchy.value], { type: 'application/xml' })
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = defaultPath
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+            return
+        }
+
+        const [{ save }, { writeTextFile }] = await Promise.all([
+            import('@tauri-apps/api/dialog'),
+            import('@tauri-apps/api/fs')
+        ])
+
+        const filePath = await save({
+            title: 'Save hierarchy XML',
+            defaultPath,
+            filters: [{ name: 'XML Files', extensions: ['xml'] }]
+        })
+
+        if (!filePath) return
+
+        await writeTextFile(filePath, hierarchy.value)
+    } catch (err) {
+        console.error('Failed to download hierarchy:', err)
+        error.value = err?.message || 'Failed to save hierarchy file'
     }
 }
 

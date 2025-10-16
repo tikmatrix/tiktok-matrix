@@ -1,6 +1,6 @@
 <template>
     <div class="tree-node">
-        <div class="node-content" :class="{
+        <div class="node-content" :data-node-id="node.id" :class="{
             'selected': isSelected,
             'highlighted': isHighlighted
         }" @click.stop="handleClick" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { getNodeDisplayText } from '@/utils/hierarchyParser'
 
 const props = defineProps({
@@ -111,6 +111,30 @@ const nodeFullText = computed(() => {
 const toggleExpanded = () => {
     isExpanded.value = !isExpanded.value
 }
+
+const containsDescendant = (node, id) => {
+    if (!node || !node.children || node.children.length === 0) return false
+    return node.children.some(child => {
+        return child.id === id || containsDescendant(child, id)
+    })
+}
+
+watch(() => props.selectedId, (newId) => {
+    if (!newId) return
+    if (props.node.id === newId || containsDescendant(props.node, newId)) {
+        isExpanded.value = true
+    }
+})
+
+watch(() => props.searchResults, (results) => {
+    if (!results || results.length === 0) return
+    const matched = results.some(result => {
+        return result.id === props.node.id || containsDescendant(props.node, result.id)
+    })
+    if (matched) {
+        isExpanded.value = true
+    }
+})
 
 // 点击节点
 const handleClick = () => {
