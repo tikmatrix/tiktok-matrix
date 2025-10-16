@@ -294,7 +294,8 @@ const handleElementClick = (coordinates) => {
         const node = allNodes[i]
         if (node.bounds && isPointInBounds(coordinates.x, coordinates.y, node.bounds)) {
             selectedElement.value = node
-            console.log('Selected element:', node)
+            console.log('Selected element from canvas:', node)
+            // 触发树节点的选中事件，让树自动展开和滚动到该节点
             break
         }
     }
