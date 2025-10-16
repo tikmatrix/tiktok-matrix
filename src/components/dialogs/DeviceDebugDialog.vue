@@ -344,7 +344,10 @@ const handleTapCoordinates = async (coordinates) => {
 
 // 选择树节点
 const handleNodeSelect = (node) => {
+    if (!node) return
+
     selectedElement.value = node
+    hoveredElement.value = node
     console.log('Node selected from tree:', node)
 }
 
