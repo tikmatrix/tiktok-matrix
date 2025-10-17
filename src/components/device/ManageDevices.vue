@@ -118,11 +118,11 @@
                         </td>
                         <td class="whitespace-nowrap">{{ device.group_name }}</td>
                         <td class="whitespace-nowrap">
-                          <div class="badge badge-success badge-md md:badge-md badge-outline text-success-content"
+                          <div class="badge badge-success badge-md md:badge-md  text-success-content"
                             v-if="device.task_status == '1'">
                             {{ $t('running') }}
                           </div>
-                          <div class="badge badge-info badge-md md:badge-md badge-outline text-info-content" v-else>
+                          <div class="badge badge-info badge-md md:badge-md  text-info-content" v-else>
                             {{ $t('ready') }}
                           </div>
                         </td>
