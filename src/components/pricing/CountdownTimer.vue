@@ -4,12 +4,12 @@
             {{ formattedTime }}
         </div>
         <button @click="$emit('close-order')"
-            class="btn btn-sm btn-outline btn-error hover:btn-error hover:text-white transition-all duration-200 gap-1">
+            class="btn btn-md btn-outline btn-error hover:btn-error hover:text-white transition-all duration-200 gap-1">
             <font-awesome-icon icon="fas fa-times-circle" class="w-4 h-4" />
             {{ $t('closeOrder') }}
         </button>
     </div>
-    <p class="text-xs text-base-content/70 mt-1">{{ $t('paymentTimeRemaining') }}</p>
+    <p class="text-md text-base-content/70 mt-1">{{ $t('paymentTimeRemaining') }}</p>
 </template>
 
 <script>

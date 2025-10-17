@@ -1,69 +1,54 @@
 <template>
   <div ref="sidebarContainer"
-    class="sidebar relative bg-base-100 flex flex-col w-full max-w-xs lg/max-w-sm h-full overflow-y-auto no-scrollbar rounded-xl shadow-lg border border-base-200/70">
+    class="sidebar relative bg-base-100 flex flex-col w-full max-w-md lg/max-w-md h-full overflow-y-auto no-scrollbar rounded-xl shadow-lg border border-base-200/70">
     <div class="px-2 pt-3 pb-16 space-y-4">
 
-      <section class="space-y-3">
-        <div class="border border-base-300/70 bg-base-200/60 rounded-2xl shadow-sm p-3">
-          <div class="flex items-center gap-1 bg-base-100/90 rounded-2xl p-1">
-            <button type="button" class="flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-xl
-                text-xs font-semibold transition-all duration-200 min-w-0" :class="tabClasses('general')"
-              @click="setActiveTab('general')">
-              <font-awesome-icon icon="fa-solid fa-sliders" class="h-3 w-3 flex-shrink-0" />
-              <span>{{ $t('general') }}</span>
-            </button>
-            <button type="button" class="flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-xl
-                text-xs font-semibold transition-all duration-200 min-w-0" :class="tabClasses('customCommands')"
-              @click="setActiveTab('customCommands')">
-              <font-awesome-icon icon="fa-solid fa-terminal" class="h-3 w-3 flex-shrink-0" />
-              <span>{{ $t('customCommands') }}</span>
-            </button>
-            <button type="button" class="flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-xl
-                text-xs font-semibold transition-all duration-200 min-w-0" :class="tabClasses('scripts')"
-              @click="setActiveTab('scripts')">
-              <font-awesome-icon icon="fa-solid fa-code" class="h-3 w-3 flex-shrink-0" />
-              <span>{{ $t('scripts') }}</span>
-            </button>
-          </div>
-          <div class="mt-5">
-            <General v-if="selectedTab === 'general'" :settings="settings" />
-            <CustomCommands v-else-if="selectedTab === 'customCommands'" :settings="settings" />
-            <Scripts v-else :settings="settings" />
-          </div>
+      <div class="tabs tabs-md tabs-border border border-base-300 bg-base-500 rounded-md shadow-lg p-2">
+        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('general')" checked="checked" />
+        <div class="tab-content mt-2">
+          <General :settings="settings" />
         </div>
-      </section>
+        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('customCommands')" />
+        <div class="tab-content mt-2">
+          <CustomCommands :settings="settings" />
+        </div>
+        <input type="radio" name="my_tabs_3" class="tab" :aria-label="$t('scripts')" />
+        <div class="tab-content mt-2">
+          <Scripts :settings="settings" />
+        </div>
+      </div>
 
       <section class="space-y-2">
         <header class="flex items-center justify-between">
-          <h2 class="text-xs font-semibold tracking-wide uppercase text-base-content/70">{{ $t('tasks') }}</h2>
+          <h2 class="text-md font-semibold tracking-wide uppercase text-base-content/70">{{ $t('tasks') }}</h2>
         </header>
-        <div class="flex flex-col gap-2 border border-base-300/60 bg-base-200/60 rounded-2xl shadow-sm p-2">
+        <div class="flex flex-col gap-2 border border-base-300/60 bg-base-200/60 rounded-2xl shadow-md p-2">
           <Tasks :settings="settings" />
         </div>
       </section>
 
       <section class="space-y-3">
         <header class="flex items-center justify-between">
-          <h2 class="text-xs font-semibold tracking-wide uppercase text-base-content/70">{{ $t('groups') }}</h2>
-          <button class="btn btn-xs btn-primary gap-1 px-3 py-1" @click="addGroup">
+          <h2 class="text-md font-semibold tracking-wide uppercase text-base-content/70">{{ $t('groups') }}</h2>
+          <button class="btn btn-md btn-primary gap-1 px-3 py-1" @click="addGroup">
             <font-awesome-icon icon="fa-solid fa-plus" class="h-3 w-3" />
-            <span class="text-xs">{{ $t('addGroup') }}</span>
+            <span class="text-md">{{ $t('addGroup') }}</span>
           </button>
         </header>
         <input ref="groupNameInput" v-if="showAddGroup"
-          class="input input-sm input-bordered w-full mt-1 rounded-xl border-base-300 focus:ring-2 focus:ring-primary/40"
+          class="input input-md input-bordered w-full mt-1 rounded-xl border-base-300 focus:ring-2 focus:ring-primary/40"
           type="text" v-model="newGroupName" v-on:keyup.enter="saveGroup" @focus="(event) => event.target.select()" />
-        <div class="bg-base-200/70 rounded-2xl shadow-sm border border-base-300/60">
+        <div class="bg-base-200/70 rounded-2xl shadow-md border border-base-300/60">
           <div class="flex flex-wrap items-center gap-2 p-2">
-            <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-xs font-medium">
-              <input type="checkbox" class="checkbox checkbox-sm ring-1" @change="selectAll(0)"
+            <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-md font-medium">
+              <input type="checkbox" class="checkbox checkbox-md ring-1" @change="selectAll(0)"
                 :checked="isSelectAll(0)" />
               <span class="whitespace-nowrap">{{ $t('allDevices') }} ({{ groupDevices[0].length }})</span>
             </label>
 
             <div ref="moveToGroupMenu" class="dropdown dropdown-top ml-auto shrink-0">
               <div tabindex="0" role="button" class="text-primary cursor-pointer flex items-center gap-1">
-                <span class="text-xs font-medium whitespace-nowrap">{{ $t('moveToGroup') }}</span>
+                <span class="text-md font-medium whitespace-nowrap">{{ $t('moveToGroup') }}</span>
                 <font-awesome-icon icon="fa-solid fa-share" class="h-3 w-3"></font-awesome-icon>
               </div>
 
@@ -75,7 +60,7 @@
                 </li>
               </ul>
             </div>
-            <span class="text-xs text-base-content/70 select-none shrink-0 whitespace-nowrap">{{ $t('selected') }}
+            <span class="text-md text-base-content/70 select-none shrink-0 whitespace-nowrap">{{ $t('selected') }}
               {{ selections[0].length }}
               {{ $t('units') }}
             </span>
@@ -84,24 +69,24 @@
             <drag-select v-model="selection" class="flex flex-wrap gap-2">
               <drag-select-option v-for="(item, index) in devices" :value="item.real_serial" :key="index"
                 :class="deviceIndexClasses(item.real_serial)">
-                <span class="font-semibold text-xs">{{ index + 1 }}</span>
+                <span class="font-semibold text-md">{{ index + 1 }}</span>
               </drag-select-option>
             </drag-select>
           </div>
         </div>
 
         <div class="space-y-3 mt-3">
-          <div class="bg-base-200/70 rounded-2xl shadow-sm border border-base-300/60 scroll-mt-6"
+          <div class="bg-base-200/70 rounded-2xl shadow-md border border-base-300/60 scroll-mt-6"
             v-for="(item, index) in sortedGroups" :key="item.id">
             <div class="flex flex-wrap items-center gap-2 p-2 border-b border-base-300/50">
-              <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-xs font-medium">
-                <input type="checkbox" class="checkbox checkbox-sm ring-1" @change="selectAll(item.id)"
+              <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-md font-medium">
+                <input type="checkbox" class="checkbox checkbox-md ring-1" @change="selectAll(item.id)"
                   :checked="isSelectAll(item.id)" />
                 <span class="whitespace-nowrap">{{ item.name }} ({{ groupDevices[item.id].length }})</span>
               </label>
 
               <div class="flex items-center gap-2 ml-auto">
-                <span class="text-xs text-base-content/70 select-none whitespace-nowrap">{{ $t('selected') }}
+                <span class="text-md text-base-content/70 select-none whitespace-nowrap">{{ $t('selected') }}
                   {{ selections[item.id].length }}
                   {{ $t('units') }}
                 </span>
@@ -114,17 +99,17 @@
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-1.5 px-2 pb-2 pt-1.5 border-b border-base-300/50">
-              <button class="btn btn-sm btn-primary gap-1 px-2"
+              <button class="btn btn-md btn-primary gap-1 px-2"
                 @click="$emiter('showDialog', { name: 'accountWarmup', group: item })">
                 <font-awesome-icon icon="cog" class="h-2.5 w-2.5" />
                 {{ $t('accountWarmup') }}
               </button>
-              <button class="btn btn-sm btn-primary gap-1 px-2"
+              <button class="btn btn-md btn-primary gap-1 px-2"
                 @click="$emiter('showDialog', { name: 'post', group: item })">
                 <font-awesome-icon icon="cog" class="h-2.5 w-2.5" />
                 {{ $t('post') }}
               </button>
-              <button class="btn btn-sm btn-primary gap-1 px-2"
+              <button class="btn btn-md btn-primary gap-1 px-2"
                 @click="$emiter('showDialog', { name: 'materials', group: item })">
                 <font-awesome-icon icon="fa-solid fa-film" class="h-2.5 w-2.5" />
                 {{ $t('materials') }}
@@ -230,7 +215,7 @@ export default {
     tabClasses(tab) {
       const isActive = this.selectedTab === tab
       return [
-        'rounded-xl shadow-sm',
+        'rounded-xl shadow-md',
         isActive
           ? 'bg-gradient-to-r from-primary via-secondary to-primary/80 text-primary-content shadow-md ring-1 ring-primary/50 scale-[1.02]'
           : 'text-base-content/70 hover:text-base-content hover:bg-primary/10'

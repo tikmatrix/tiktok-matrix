@@ -1,6 +1,6 @@
 <template>
     <button @click="handleCreateOrder"
-        class="btn btn-outline btn-block btn-xs hover:btn-secondary transition-all duration-200" :class="buttonClass">
+        class="btn btn-outline btn-block btn-md hover:btn-secondary transition-all duration-200" :class="buttonClass">
         <component :is="iconComponent" class="w-3 h-3 mr-1 fill-current" />
         {{ buttonText }}
     </button>

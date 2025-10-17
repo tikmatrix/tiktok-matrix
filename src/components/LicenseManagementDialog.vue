@@ -5,7 +5,7 @@
             <!-- 关闭按钮 -->
             <form method="dialog">
                 <button
-                    class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-10 hover:bg-base-300 transition-all duration-200">
+                    class="btn btn-md btn-circle btn-ghost absolute right-4 top-4 z-10 hover:bg-base-300 transition-all duration-200">
                     <font-awesome-icon icon="fas fa-times" class="text-lg" />
                 </button>
             </form>

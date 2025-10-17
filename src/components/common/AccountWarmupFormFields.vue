@@ -81,12 +81,12 @@
                         <div class="flex items-center">
                             <label class="flex items-center gap-1 cursor-pointer">
                                 <input type="radio" name="commentOrder" value="random"
-                                    class="radio radio-sm radio-primary" v-model="localFormData.comment_order" />
+                                    class="radio radio-md radio-primary" v-model="localFormData.comment_order" />
                                 <span>{{ $t('random') }}</span>
                             </label>
                             <label class="flex items-center gap-1 cursor-pointer">
                                 <input type="radio" name="commentOrder" value="sequential"
-                                    class="radio radio-sm radio-primary" v-model="localFormData.comment_order" />
+                                    class="radio radio-md radio-primary" v-model="localFormData.comment_order" />
                                 <span>{{ $t('sequential') }}</span>
                             </label>
                         </div>

@@ -77,7 +77,7 @@
         </h3>
         <div class="py-4">
           <p class="text-lg mb-2">{{ $t('clearAllTasksConfirm') }}</p>
-          <p class="text-sm text-base-content/70">{{ $t('operationCannotBeUndone') }}</p>
+          <p class="text-md text-base-content/70">{{ $t('operationCannotBeUndone') }}</p>
         </div>
         <div class="modal-action">
           <form method="dialog">

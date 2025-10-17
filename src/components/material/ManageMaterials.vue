@@ -17,7 +17,7 @@
           </select>
           <div v-if="selectedTag" class="badge badge-primary py-3 px-4">
             {{ selectedTag.name }}
-            <button class="btn btn-xs btn-ghost ml-1" @click="clearTagFilter"><i class="fa fa-times"></i></button>
+            <button class="btn btn-md btn-ghost ml-1" @click="clearTagFilter"><i class="fa fa-times"></i></button>
           </div>
         </div>
         <button class="btn ml-2 btn-primary" @click="showTagManager">{{ $t('manageTags') }}</button>
@@ -70,21 +70,21 @@
                   <span v-else>{{ $t('unknown') }}</span>
                 </td>
                 <td>
-                  <div class="flex flex-wrap gap-1 max-w-xs">
+                  <div class="flex flex-wrap gap-1 max-w-md">
                     <div v-for="tag in material.tags" :key="tag.id" class="badge badge-primary badge-outline gap-1">
                       {{ tag.name }}
                       <button @click="removeTagFromMaterialDirect(material.id, tag.id)"
-                        class="btn btn-xs btn-circle btn-ghost">×</button>
+                        class="btn btn-md btn-circle btn-ghost">×</button>
                     </div>
                     <div class="dropdown dropdown-hover">
-                      <label tabindex="0" class="btn btn-xs btn-circle btn-outline">+</label>
+                      <label tabindex="0" class="btn btn-md btn-circle btn-outline">+</label>
                       <div tabindex="0" class="dropdown-content z-[1] card card-compact shadow bg-base-100 p-2">
                         <div class="card-body p-2 ring-info ring-1 rounded-md shadow-md">
                           <!-- 已存在的标签列表 -->
                           <div v-if="tags.length > 0">
                             <div class="flex flex-wrap gap-1">
                               <div v-for="tag in availableTagsForMaterial(material)" :key="tag.id"
-                                class="badge badge-sm badge-outline cursor-pointer hover:bg-primary hover:text-primary-content ring-primary ring-1"
+                                class="badge badge-md badge-outline cursor-pointer hover:bg-primary hover:text-primary-content ring-primary ring-1"
                                 @click="addTagToMaterialDirect(material.id, tag.id)">
                                 {{ tag.name }}
                               </div>
@@ -92,7 +92,7 @@
                           </div>
                           <!-- 请先添加标签 -->
                           <div v-else>
-                            <div class="text-xs text-warning mb-1">{{ $t('noTags') }}</div>
+                            <div class="text-md text-warning mb-1">{{ $t('noTags') }}</div>
                           </div>
                         </div>
                       </div>
@@ -217,7 +217,7 @@
           <button class="btn btn-primary" @click="addTag">{{ $t('add') }}</button>
         </div>
         <div class="overflow-x-auto">
-          <table class="table table-sm">
+          <table class="table table-md">
             <thead>
               <tr>
                 <th>ID</th>
@@ -229,11 +229,11 @@
               <tr v-for="tag in tags" :key="tag.id">
                 <td>{{ tag.id }}</td>
                 <td>
-                  <input type="text" class="input input-bordered input-sm" v-model="tag.name" />
+                  <input type="text" class="input input-bordered input-md" v-model="tag.name" />
                 </td>
                 <td class="flex gap-2">
-                  <button class="btn btn-primary btn-sm" @click="updateTag(tag)">{{ $t('save') }}</button>
-                  <button class="btn btn-error btn-sm" @click="deleteTag(tag)">{{ $t('delete') }}</button>
+                  <button class="btn btn-primary btn-md" @click="updateTag(tag)">{{ $t('save') }}</button>
+                  <button class="btn btn-error btn-md" @click="deleteTag(tag)">{{ $t('delete') }}</button>
                 </td>
               </tr>
             </tbody>
@@ -254,7 +254,7 @@
       </h3>
       <div class="py-4">
         <p class="text-lg mb-2">{{ $t('clearAllMaterialsConfirm') }}</p>
-        <p class="text-sm text-base-content/70">{{ $t('operationCannotBeUndone') }}</p>
+        <p class="text-md text-base-content/70">{{ $t('operationCannotBeUndone') }}</p>
       </div>
       <div class="modal-action">
         <form method="dialog">

@@ -1,20 +1,20 @@
 <template>
     <div class="flex items-center gap-2">
-        <a class="btn btn-outline btn-xs btn-info shrink whitespace-nowrap"
+        <a class="btn btn-outline btn-md btn-info shrink whitespace-nowrap"
             :href="whitelabelConfig.branding?.telegramSupport" target="_blank"
             v-if="whitelabelConfig.branding?.telegramSupport">
-            <font-awesome-icon icon="fab fa-telegram" class="text-sm" />
+            <font-awesome-icon icon="fab fa-telegram" class="text-md" />
             {{ $t('telegramSupport') }}
         </a>
-        <a class="btn btn-outline btn-xs btn-success shrink whitespace-nowrap"
+        <a class="btn btn-outline btn-md btn-success shrink whitespace-nowrap"
             :href="whitelabelConfig.branding?.whatsappSupport" target="_blank"
             v-if="whitelabelConfig.branding?.whatsappSupport">
-            <font-awesome-icon icon="fab fa-whatsapp" class="text-sm" />
+            <font-awesome-icon icon="fab fa-whatsapp" class="text-md" />
             {{ $t('whatsappSupport') }}
         </a>
-        <button class="btn btn-outline btn-xs btn-secondary shrink" @click="copyEmail"
+        <button class="btn btn-outline btn-md btn-secondary shrink" @click="copyEmail"
             v-if="whitelabelConfig.branding?.emailSupport">
-            <font-awesome-icon icon="fas fa-envelope" class="text-sm" />
+            <font-awesome-icon icon="fas fa-envelope" class="text-md" />
             <span class="hidden lg:inline " :title="whitelabelConfig.branding?.emailSupport">{{
                 whitelabelConfig.branding?.emailSupport }}</span>
         </button>

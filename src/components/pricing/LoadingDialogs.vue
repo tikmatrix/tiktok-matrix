@@ -4,7 +4,7 @@
         <dialog ref="agreePolicyDialog" class="modal">
             <div class="modal-box max-w-md bg-gradient-to-br from-warning/10 to-error/10 border border-warning/20">
                 <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4">✕</button>
+                    <button class="btn btn-md btn-circle btn-ghost absolute right-4 top-4">✕</button>
                 </form>
                 <div class="text-center">
                     <div class="w-16 h-16 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -30,7 +30,7 @@
 
         <!-- 创建订单加载对话框 -->
         <dialog ref="createOrderLoadingDialog" class="modal">
-            <div class="modal-box max-w-sm bg-gradient-to-br from-primary/10 to-secondary/10">
+            <div class="modal-box max-w-md bg-gradient-to-br from-primary/10 to-secondary/10">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span class="loading loading-spinner loading-lg text-primary"></span>
@@ -51,7 +51,7 @@
 
         <!-- 管理订阅加载对话框 -->
         <dialog ref="manageSubscriptionLoadingDialog" class="modal">
-            <div class="modal-box max-w-sm bg-gradient-to-br from-success/10 to-info/10">
+            <div class="modal-box max-w-md bg-gradient-to-br from-success/10 to-info/10">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span class="loading loading-dots loading-lg text-success"></span>

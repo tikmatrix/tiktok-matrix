@@ -40,11 +40,11 @@
             <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
                     <span class="font-bold">{{ $t('syncProgress') }}: {{ syncProgress.current }} / {{ syncProgress.total
-                    }}</span>
+                        }}</span>
                     <div class="flex items-center gap-4">
-                        <span class="text-sm">{{ $t('success') }}: {{ syncProgress.success }}, {{ $t('failed') }}: {{
+                        <span class="text-md">{{ $t('success') }}: {{ syncProgress.success }}, {{ $t('failed') }}: {{
                             syncProgress.failed }}</span>
-                        <button @click="cancelBatchSync" class="btn btn-sm btn-error">
+                        <button @click="cancelBatchSync" class="btn btn-md btn-error">
                             <font-awesome-icon icon="fa-solid fa-times" class="mr-1" />
                             {{ $t('cancel') }}
                         </button>
@@ -61,7 +61,7 @@
                 <font-awesome-icon icon="fa-solid fa-clock" class="h-6 w-6 text-warning" />
                 <div class="ml-3">
                     <h3 class="font-bold">{{ $t('batchSyncLimitReached') }}</h3>
-                    <div class="text-sm">{{ $t('nextSyncAvailable') }}: {{ nextSyncAvailableTime ?
+                    <div class="text-md">{{ $t('nextSyncAvailable') }}: {{ nextSyncAvailableTime ?
                         nextSyncAvailableTime.toLocaleString() : '-' }}</div>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                 <font-awesome-icon icon="fa-solid fa-info-circle" class="h-6 w-6 text-info" />
                 <div class="ml-3">
                     <h3 class="font-bold text-lg">{{ $t('noAccountsFound') }}</h3>
-                    <div class="text-sm">{{ $t('pleaseAddAccountsFirst') }}</div>
+                    <div class="text-md">{{ $t('pleaseAddAccountsFirst') }}</div>
                 </div>
             </div>
         </div>
@@ -171,7 +171,7 @@
                 </h3>
                 <div class="py-4">
                     <p class="text-lg mb-2">{{ $t('clearAllDataConfirm') }}</p>
-                    <p class="text-sm text-base-content/70">{{ $t('operationCannotBeUndone') }}</p>
+                    <p class="text-md text-base-content/70">{{ $t('operationCannotBeUndone') }}</p>
                 </div>
                 <div class="modal-action">
                     <form method="dialog">

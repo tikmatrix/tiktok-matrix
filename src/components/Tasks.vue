@@ -2,34 +2,34 @@
     <!--status-->
     <div class="flex flex-wrap">
         <div class="w-1/5 text-center tooltip ml-2" :data-tip="$t('waitingTasks')">
-            <div class="bg-warning font-bold text-sm flex justify-center items-center rounded-3xl ring-1">
+            <div class="bg-warning font-bold text-md flex justify-center items-center rounded-3xl ring-1">
                 <font-awesome-icon icon="clock" class="h-3 w-3 mr-1" />
                 <Countup :end="taskCounts[0] || 0" :options="{ duration: 3 }" />
             </div>
         </div>
         <div class="w-1/5 text-center tooltip ml-2" :data-tip="$t('runningTasks')">
-            <div class="bg-info font-bold text-sm flex justify-center items-center rounded-3xl ring-1">
+            <div class="bg-info font-bold text-md flex justify-center items-center rounded-3xl ring-1">
                 <font-awesome-icon icon="spinner" class="h-3 w-3 mr-1" />
                 <Countup :end="taskCounts[1] || 0" :options="{ duration: 3 }" />
             </div>
         </div>
         <div class="w-1/5 text-center tooltip ml-2" :data-tip="$t('successTasks')">
-            <div class="bg-success font-bold text-sm flex justify-center items-center rounded-3xl ring-1">
+            <div class="bg-success font-bold text-md flex justify-center items-center rounded-3xl ring-1">
                 <font-awesome-icon icon="check" class="h-3 w-3 mr-1" />
                 <Countup :end="taskCounts[2] || 0" :options="{ duration: 3 }" />
             </div>
         </div>
         <div class="w-1/5 text-center tooltip ml-2" :data-tip="$t('failedTasks')">
-            <div class="bg-error font-bold text-sm flex justify-center items-center rounded-3xl ring-1">
+            <div class="bg-error font-bold text-md flex justify-center items-center rounded-3xl ring-1">
                 <font-awesome-icon icon="times" class="h-4 w-4 mr-1" />
                 <Countup :end="taskCounts[3] || 0" :options="{ duration: 3 }" />
             </div>
         </div>
-        <button class="btn btn-sm btn-primary mt-1 mb-1" @click="$emiter('showDialog', { name: 'tasks' })">
+        <button class="btn btn-md btn-primary mt-1 mb-1" @click="$emiter('showDialog', { name: 'tasks' })">
             <font-awesome-icon icon="random" class="h-3 w-3" />{{ $t('tasks') }}
         </button>
 
-        <button class="btn btn-sm btn-primary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
+        <button class="btn btn-md btn-primary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
             <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-error" />{{ $t('stopTask') }}
         </button>
         <fieldset
@@ -39,7 +39,7 @@
                 <input type="checkbox" checked="checked" class="toggle toggle-primary" v-model="autoRetry" />
             </label>
         </fieldset>
-        <a class="link link-primary flex items-start gap-2 text-sm leading-snug max-w-full md:max-w-xs whitespace-normal break-words"
+        <a class="link link-primary flex items-start gap-2 text-md leading-snug max-w-full md:max-w-md whitespace-normal break-words"
             :href="whitelabelConfig.officialWebsite + '/docs/troubleshooting/task_failed'" target="_blank">
             <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5 shrink-0" />
             <span class="text-left">{{ $t('taskFailedTip') }}</span>

@@ -11,12 +11,12 @@
       <label class="font-bold w-40">{{ $t('taskArgs') }}:</label>
       <div class="flex items-center gap-4">
         <label class="flex items-center gap-1 cursor-pointer">
-          <input type="radio" name="settingsOption" value="group" class="radio radio-sm radio-primary"
+          <input type="radio" name="settingsOption" value="group" class="radio radio-md radio-primary"
             v-model="settings" />
           <span>{{ $t('group') }}</span>
         </label>
         <label class="flex items-center gap-1 cursor-pointer">
-          <input type="radio" name="settingsOption" value="custom" class="radio radio-sm radio-primary"
+          <input type="radio" name="settingsOption" value="custom" class="radio radio-md radio-primary"
             v-model="settings" />
           <span>{{ $t('custom') }}</span>
         </label>
@@ -27,12 +27,12 @@
         <label class="font-bold w-40">{{ $t('startTime') }}:</label>
         <div class="flex items-center gap-4">
           <label class="flex items-center gap-1 cursor-pointer">
-            <input type="radio" name="startOption" value="now" class="radio radio-sm radio-primary"
+            <input type="radio" name="startOption" value="now" class="radio radio-md radio-primary"
               v-model="startOption" />
             <span>{{ $t('startNow') }}</span>
           </label>
           <label class="flex items-center gap-1 cursor-pointer">
-            <input type="radio" name="startOption" value="scheduled" class="radio radio-sm radio-primary"
+            <input type="radio" name="startOption" value="scheduled" class="radio radio-md radio-primary"
               v-model="startOption" />
             <span>{{ $t('scheduleTime') }}</span>
           </label>
@@ -125,19 +125,19 @@ export default {
         this.min_duration = newData.view_duration[0];
         this.max_duration = newData.view_duration[1];
       }
-      
+
       // 处理 taskDurationInMinutes
       if (newData.taskDurationInMinutes !== undefined) {
         this.task_duration = newData.taskDurationInMinutes * 60;
       }
-      
+
       // 处理其他字段
       const fieldsToUpdate = [
         'topic', 'comment', 'generate_by_chatgpt', 'chatgpt_settings',
         'insert_emoji', 'comment_order', 'floow_probable', 'like_probable',
         'collect_probable', 'comment_probable'
       ];
-      
+
       fieldsToUpdate.forEach(key => {
         if (newData[key] !== undefined) {
           this[key] = newData[key];

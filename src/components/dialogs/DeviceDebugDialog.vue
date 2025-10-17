@@ -4,7 +4,7 @@
             <!-- 背景遮罩 -->
             <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
                 leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-                <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+                <div class="fixed inset-0 bg-black/50 backdrop-blur-md" />
             </TransitionChild>
 
             <!-- 对话框容器 -->
@@ -23,10 +23,10 @@
                                         <DialogTitle class="text-lg font-semibold">
                                             Device Debug Inspector
                                         </DialogTitle>
-                                        <p class="text-xs text-base-content/70">
+                                        <p class="text-md text-base-content/70">
                                             {{ device.serial || device.real_serial }}
                                         </p>
-                                        <p class="text-xs text-base-content/60">
+                                        <p class="text-md text-base-content/60">
                                             Activity: {{ activity || 'Unknown' }}
                                         </p>
                                     </div>
@@ -35,13 +35,20 @@
                                 <div class="flex items-center gap-2">
                                     <!-- 刷新按钮 -->
                                     <button @click="handleDumpHierarchy" :disabled="loading"
-                                        class="btn btn-sm btn-ghost" title="Dump Hierarchy">
+                                        class="btn btn-md btn-ghost" title="Dump Hierarchy">
                                         <font-awesome-icon icon="refresh" :class="{ 'fa-spin': loading }" />
                                         Refresh
                                     </button>
 
+                                    <!-- 下载按钮 -->
+                                    <button @click="handleDownloadHierarchy" :disabled="loading || !hierarchy"
+                                        class="btn btn-md btn-ghost" title="Download hierarchy XML">
+                                        <font-awesome-icon icon="download" />
+                                        Download XML
+                                    </button>
+
                                     <!-- 关闭按钮 -->
-                                    <button @click="handleClose" class="btn btn-sm btn-circle btn-ghost">
+                                    <button @click="handleClose" class="btn btn-md btn-circle btn-ghost">
                                         <font-awesome-icon icon="times" />
                                     </button>
                                 </div>
@@ -74,15 +81,15 @@
 
                             <!-- Footer -->
                             <div class="flex items-center justify-between p-4 border-t border-base-300 bg-base-200">
-                                <div class="text-xs text-base-content/70">
+                                <div class="text-md text-base-content/70">
                                     Device: {{ deviceSerial }}
                                 </div>
 
-                                <div v-if="error" class="text-xs text-error">
+                                <div v-if="error" class="text-md text-error">
                                     {{ error }}
                                 </div>
 
-                                <div class="text-xs text-base-content/70">
+                                <div class="text-md text-base-content/70">
                                     Double-click on canvas to tap
                                 </div>
                             </div>
@@ -149,11 +156,50 @@ const hoveredElement = ref(null)
 const deviceWidth = ref(1080)
 const deviceHeight = ref(1920)
 
+const areBoundsEqual = (a, b) => {
+    if (!a || !b) return false
+    return a.x === b.x && a.y === b.y && a.x2 === b.x2 && a.y2 === b.y2
+}
+
+const findMatchingNode = (root, target) => {
+    if (!root || !target) return null
+
+    const candidates = flattenTree(root)
+
+    const matchers = [
+        node => target.resourceId && node.resourceId === target.resourceId,
+        node => target.bounds && node.bounds && areBoundsEqual(node.bounds, target.bounds),
+        node => target.text && node.text === target.text && node.className === target.className,
+        node => target.contentDesc && node.contentDesc === target.contentDesc,
+        node => target.className && node.className === target.className && node.index === target.index
+    ]
+
+    for (const matcher of matchers) {
+        const match = candidates.find(matcher)
+        if (match) {
+            return match
+        }
+    }
+
+    return null
+}
+
 // 监听 hierarchy 变化
 watch(hierarchy, (newHierarchy) => {
     if (newHierarchy) {
         try {
-            hierarchyTree.value = parseXmlHierarchy(newHierarchy)
+            const parsedTree = parseXmlHierarchy(newHierarchy)
+            hierarchyTree.value = parsedTree
+
+            if (parsedTree && selectedElement.value) {
+                const matchedNode = findMatchingNode(parsedTree, selectedElement.value)
+                selectedElement.value = matchedNode
+            }
+
+            if (parsedTree && hoveredElement.value) {
+                hoveredElement.value = findMatchingNode(parsedTree, hoveredElement.value)
+            }
+
             console.log('Hierarchy parsed:', hierarchyTree.value)
         } catch (err) {
             console.error('Failed to parse hierarchy:', err)
@@ -187,6 +233,55 @@ const handleDumpHierarchy = async () => {
     }
 }
 
+// 下载当前层级结构
+const handleDownloadHierarchy = async () => {
+    if (!hierarchy.value) {
+        console.warn('No hierarchy available to download')
+        return
+    }
+
+    try {
+        const safeSerial = (deviceSerial.value || 'device')
+            .toString()
+            .replace(/[^a-zA-Z0-9-_]/g, '') || 'device'
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        const defaultPath = `device-hierarchy-${safeSerial}-${timestamp}.xml`
+
+        const isTauri = typeof window !== 'undefined' && window.__TAURI__
+
+        if (!isTauri) {
+            const blob = new Blob([hierarchy.value], { type: 'application/xml' })
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = defaultPath
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+            return
+        }
+
+        const [{ save }, { writeTextFile }] = await Promise.all([
+            import('@tauri-apps/api/dialog'),
+            import('@tauri-apps/api/fs')
+        ])
+
+        const filePath = await save({
+            title: 'Save hierarchy XML',
+            defaultPath,
+            filters: [{ name: 'XML Files', extensions: ['xml'] }]
+        })
+
+        if (!filePath) return
+
+        await writeTextFile(filePath, hierarchy.value)
+    } catch (err) {
+        console.error('Failed to download hierarchy:', err)
+        error.value = err?.message || 'Failed to save hierarchy file'
+    }
+}
+
 // 点击画布上的元素
 const handleElementClick = (coordinates) => {
     if (!hierarchyTree.value) return
@@ -199,7 +294,8 @@ const handleElementClick = (coordinates) => {
         const node = allNodes[i]
         if (node.bounds && isPointInBounds(coordinates.x, coordinates.y, node.bounds)) {
             selectedElement.value = node
-            console.log('Selected element:', node)
+            console.log('Selected element from canvas:', node)
+            // 触发树节点的选中事件，让树自动展开和滚动到该节点
             break
         }
     }
@@ -248,7 +344,10 @@ const handleTapCoordinates = async (coordinates) => {
 
 // 选择树节点
 const handleNodeSelect = (node) => {
+    if (!node) return
+
     selectedElement.value = node
+    hoveredElement.value = node
     console.log('Node selected from tree:', node)
 }
 

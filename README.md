@@ -44,7 +44,7 @@ Note: The TikTok app on the phone must be in English for all features to work pr
 <https://tikmatrix.com/docs/category/troubleshooting>
 
 DM <https://t.me/tikmatrixcom>
-Chat Group <https://t.me/tikmatrix_support>
+Chat Group <https://t.me/tikmatrix_chat>
 
 ## Quick start
 
@@ -54,7 +54,7 @@ Chat Group <https://t.me/tikmatrix_support>
 
 ## Discussions
 
-[Join our Telegram](https://t.me/tikmatrix)
+[Join our Telegram](https://t.me/tikmatrix_chat)
 
 ## Development
 

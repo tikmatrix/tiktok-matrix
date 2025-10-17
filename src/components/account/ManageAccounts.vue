@@ -75,22 +75,22 @@
                   }}</span>
                 </td>
                 <td>
-                  <div class="flex flex-wrap gap-1 max-w-xs">
+                  <div class="flex flex-wrap gap-1 max-w-md">
                     <div v-for="tag in accountTags[account.id] || []" :key="tag"
                       class="badge badge-primary badge-outline gap-1">
                       {{ tag }}
-                      <button @click="removeTag(account.id, tag)" class="btn btn-xs btn-circle btn-ghost">×</button>
+                      <button @click="removeTag(account.id, tag)" class="btn btn-md btn-circle btn-ghost">×</button>
                     </div>
                     <div class="dropdown dropdown-hover">
-                      <label tabindex="0" class="btn btn-xs btn-circle btn-outline">+</label>
+                      <label tabindex="0" class="btn btn-md btn-circle btn-outline">+</label>
                       <div tabindex="0" class="dropdown-content z-[1] card card-compact shadow bg-base-100 p-2">
                         <div class="card-body p-2">
                           <!-- 已存在的标签列表 -->
                           <div class="mb-2" v-if="allUniqueTags.length > 0">
-                            <div class="text-xs font-semibold mb-1">{{ $t('existingTags') }}</div>
+                            <div class="text-md font-semibold mb-1">{{ $t('existingTags') }}</div>
                             <div class="flex flex-wrap gap-1">
                               <div v-for="tag in allUniqueTags" :key="tag"
-                                class="badge badge-sm badge-outline cursor-pointer hover:bg-primary hover:text-primary-content"
+                                class="badge badge-md badge-outline cursor-pointer hover:bg-primary hover:text-primary-content"
                                 @click="selectExistingTag(account.id, tag)">
                                 {{ tag }}
                               </div>
@@ -98,11 +98,11 @@
                           </div>
                           <!-- 添加新标签 -->
                           <div>
-                            <div class="text-xs font-semibold mb-1">{{ $t('newTag') }}</div>
+                            <div class="text-md font-semibold mb-1">{{ $t('newTag') }}</div>
                             <div class="join">
-                              <input v-model="newTagInput[account.id]" class="input input-bordered input-sm join-item"
+                              <input v-model="newTagInput[account.id]" class="input input-bordered input-md join-item"
                                 :placeholder="$t('enterNewTag')" @keyup.enter="addTag(account.id)" />
-                              <button class="btn btn-sm btn-primary join-item" @click="addTag(account.id)">
+                              <button class="btn btn-md btn-primary join-item" @click="addTag(account.id)">
                                 {{ $t('add') }}
                               </button>
                             </div>

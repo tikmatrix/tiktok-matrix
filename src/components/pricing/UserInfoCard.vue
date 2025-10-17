@@ -9,11 +9,11 @@
                 </div>
                 <div class="flex-1 flex items-center gap-2">
                     <input id="mid" type="text" placeholder="mid"
-                        class="input input-sm input-bordered flex-1 bg-base-200 text-center font-mono"
+                        class="input input-md input-bordered flex-1 bg-base-200 text-center font-mono"
                         :value="license.mid" readonly disabled />
-                    <span v-if="!license.mid" class="text-warning text-xs">{{ $t('networkProblem') }}</span>
+                    <span v-if="!license.mid" class="text-warning text-md">{{ $t('networkProblem') }}</span>
                     <button @click="copyText(license.mid)"
-                        class="btn btn-sm btn-primary hover:btn-primary-focus transition-all duration-200">
+                        class="btn btn-md btn-primary hover:btn-primary-focus transition-all duration-200">
                         <font-awesome-icon icon="fas fa-copy" class="mr-1" />
                         {{ $t('copy') }}
                     </button>

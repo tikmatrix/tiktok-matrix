@@ -32,8 +32,8 @@
                         <img :src="logoPreview" class="w-16 h-16 object-contain border rounded" />
                         <div class="flex flex-col space-y-2">
                             <input type="file" ref="logoFile" @change="handleLogoUpload" accept="image/*"
-                                class="file-input file-input-bordered file-input-sm" />
-                            <div class="text-xs text-gray-500">
+                                class="file-input file-input-bordered file-input-md" />
+                            <div class="text-md text-gray-500">
                                 {{ $t('logoSizeHint') }}
                             </div>
                         </div>

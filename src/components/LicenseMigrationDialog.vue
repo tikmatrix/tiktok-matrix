@@ -2,7 +2,7 @@
     <dialog ref="licenseMigrationDialog" class="modal">
         <div class="modal-box w-11/12 max-w-4xl">
             <form method="dialog">
-                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                <button class="btn btn-md btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
 
             <h3 class="font-bold text-lg mb-4">{{ $t('migrateLicense') }}</h3>
@@ -17,8 +17,8 @@
                     <div class="space-y-2">
                         <div class="flex items-center gap-2">
                             <span class="font-medium">{{ $t('machineId') }}:</span>
-                            <code class="bg-base-300 px-2 py-1 rounded text-sm">{{ currentMachineId }}</code>
-                            <button @click="copyText(currentMachineId, $event)" class="btn btn-sm btn-ghost">
+                            <code class="bg-base-300 px-2 py-1 rounded text-md">{{ currentMachineId }}</code>
+                            <button @click="copyText(currentMachineId, $event)" class="btn btn-md btn-ghost">
                                 <font-awesome-icon icon="fas fa-copy" class="h-4 w-4" />
                             </button>
                         </div>
@@ -35,7 +35,7 @@
                     <font-awesome-icon icon="fas fa-info-circle" class="h-5 w-5" />
                     <div>
                         <h4 class="font-bold">{{ $t('migrationInstructions') }}</h4>
-                        <div class="text-sm mt-2">
+                        <div class="text-md mt-2">
                             <ul class="list-disc list-inside space-y-1">
                                 <li>{{ $t('migrationStep1') }}</li>
                                 <li>{{ $t('migrationStep2') }}</li>
@@ -57,7 +57,7 @@
                             v-model="targetMachineId" :class="{ 'input-error': showError && !targetMachineId }" />
                         <button @click="validateMachineId" class="btn btn-primary"
                             :disabled="!targetMachineId || isValidating">
-                            <span v-if="isValidating" class="loading loading-spinner loading-sm"></span>
+                            <span v-if="isValidating" class="loading loading-spinner loading-md"></span>
                             <font-awesome-icon v-else icon="fas fa-search" class="h-4 w-4" />
                             {{ $t('validate') }}
                         </button>
@@ -77,10 +77,10 @@
                 <div v-if="machineIdValidationResult && machineIdValidationResult.valid && machineIdValidationResult.licenseInfo"
                     class="bg-info/10 border border-info rounded-lg p-4">
                     <h4 class="font-semibold text-info mb-2">{{ $t('licenseDetails') }}</h4>
-                    <div class="space-y-1 text-sm">
+                    <div class="space-y-1 text-md">
                         <div class="flex justify-between">
                             <span>{{ $t('licenseCode') }}:</span>
-                            <code class="text-xs">{{ machineIdValidationResult.licenseInfo.license_code }}</code>
+                            <code class="text-md">{{ machineIdValidationResult.licenseInfo.license_code }}</code>
                         </div>
                         <div class="flex justify-between"
                             v-if="!machineIdValidationResult.licenseInfo.is_stripe_active">
@@ -90,7 +90,7 @@
                         </div>
                         <div class="flex justify-between" v-if="machineIdValidationResult.licenseInfo.is_stripe_active">
                             <span>{{ $t('subscriptionType') }}:</span>
-                            <span class="badge badge-success badge-sm">{{ $t('stripeSubscription') }}</span>
+                            <span class="badge badge-success badge-md">{{ $t('stripeSubscription') }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>{{ $t('application') }}:</span>
@@ -106,7 +106,7 @@
                         <font-awesome-icon icon="fas fa-exclamation-triangle" class="h-5 w-5" />
                         {{ $t('migrationWarning') }}
                     </h4>
-                    <div class="space-y-2 text-sm">
+                    <div class="space-y-2 text-md">
                         <p>{{ $t('migrationWarningText1') }}</p>
                         <p>{{ $t('migrationWarningText2') }}</p>
                     </div>
@@ -126,7 +126,7 @@
                         {{ $t('cancel') }}
                     </button>
                     <button @click="migrateLicense" class="btn btn-warning" :disabled="!canMigrate || isMigrating">
-                        <span v-if="isMigrating" class="loading loading-spinner loading-sm"></span>
+                        <span v-if="isMigrating" class="loading loading-spinner loading-md"></span>
                         <font-awesome-icon v-else icon="fas fa-exchange-alt" class="h-4 w-4" />
                         {{ isMigrating ? $t('migrating') : $t('migrateLicense') }}
                     </button>

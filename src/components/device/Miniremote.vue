@@ -39,7 +39,7 @@
                 <div class="font-bold text-info text-md">
                   {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
                 </div>
-                <div class="text-info font-bold text-sm">
+                <div class="text-info font-bold text-md">
                   {{ name }}
                 </div>
               </div>
@@ -199,13 +199,13 @@ export default {
   },
   watch: {
     scaled(newVal) {
-      console.log(`scaled: ${newVal}`)
+      // console.log(`scaled: ${newVal}`)
       if (this.real_width == 0 || this.real_height == 0 || newVal == 0) {
         return
       }
       this.width = this.real_width * newVal
       this.height = this.real_height * newVal
-      console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
+      // console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
       this.$emit('sizeChanged', this.width)
     },
     width(newVal) {
@@ -459,7 +459,7 @@ export default {
             console.error(`${this.no}Error VideoDecoder:`, error, `code: ${error.code}`);
           },
         });
-        console.log(`${this.no}-${this.device.serial} videoDecoder initialized`)
+        // console.log(`${this.no}-${this.device.serial} videoDecoder initialized`)
 
 
       } catch (e) {
@@ -548,7 +548,7 @@ export default {
             codec: codec,
             optimizeForLatency: true,
           });
-          console.log(`${this.no}-${this.device.serial} configure`)
+          // console.log(`${this.no}-${this.device.serial} configure`)
           return
         }
 
@@ -586,7 +586,7 @@ export default {
       this.scrcpy = new WebSocket(wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onopen`)
+        // console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onopen`)
         let max_size = this.big ? 1024 : this.screenResolution
         this.scrcpy.send(`${this.device.serial}`)
         // max size
@@ -598,7 +598,7 @@ export default {
       }
       this.scrcpy.onclose = () => {
         this.loading = true
-        console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onclose`)
+        // console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onclose`)
       }
       this.scrcpy.onerror = () => {
         this.loading = true
@@ -629,7 +629,7 @@ export default {
               this.real_width = message.data.split('x')[0]
               this.real_height = message.data.split('x')[1]
               this.scaled = this.height / this.real_height
-              console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
+              // console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
 
               break
           }
@@ -654,7 +654,7 @@ export default {
           if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
             // 发送关闭帧
             this.scrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
-            console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
+            // console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
           }
 
           // 清空事件处理器
@@ -662,7 +662,7 @@ export default {
           this.scrcpy.onmessage = null;
           this.scrcpy.onclose = null;
           this.scrcpy.onopen = null;
-          console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
+          // console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
 
 
         } catch (error) {

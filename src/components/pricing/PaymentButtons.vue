@@ -2,18 +2,18 @@
     <div class="space-y-2">
         <!-- 主要订阅按钮 -->
         <button v-if="license.is_stripe_active == 1" @click="$emit('manage-subscription')"
-            class="btn btn-success btn-block btn-sm hover:btn-success-focus transition-all duration-200">
+            class="btn btn-success btn-block btn-md hover:btn-success-focus transition-all duration-200">
             <font-awesome-icon icon="fas fa-cog" class="mr-1 w-3 h-3" />
             {{ $t('manageSubscription') }}
         </button>
 
         <button v-else @click="handleStripeCheckout"
-            class="btn btn-block btn-sm hover:btn-primary-focus transition-all duration-200" :class="stripeButtonClass">
+            class="btn btn-block btn-md hover:btn-primary-focus transition-all duration-200" :class="stripeButtonClass">
             <div class="flex items-center justify-center gap-1">
                 <div class="flex -space-x-0.5">
-                    <font-awesome-icon icon="fas fa-credit-card" class="text-sm" />
-                    <font-awesome-icon icon="fab fa-cc-visa" class="text-sm" />
-                    <font-awesome-icon icon="fab fa-cc-mastercard" class="text-sm" />
+                    <font-awesome-icon icon="fas fa-credit-card" class="text-md" />
+                    <font-awesome-icon icon="fab fa-cc-visa" class="text-md" />
+                    <font-awesome-icon icon="fab fa-cc-mastercard" class="text-md" />
                 </div>
                 <span>{{ $t('subscribe') }}</span>
             </div>
