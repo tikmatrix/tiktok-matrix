@@ -54,33 +54,33 @@ jobs:
       - name: clear uploaded files
         run: |
           Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
-      - name: build TikZenX whitelabel package
-        run: |
-          node scripts/build-whitelabel.js TikZenX
-      - name: upload TikZenX package to r2
-        uses: ryand56/r2-upload-action@v1.4
-        with:
-          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
-          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          r2-bucket: tikmatrix
-          source-dir: ./src-tauri/target/release/bundle/msi
-          destination-dir: ./
-      - name: update TikZenX version
-        env:
-          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
-          API_KEY: ${{ secrets.API_KEY }}
-        run: |
-          node scripts/update-version.js --app=tikzenx --app-name=TikZenX
-      - name: clear uploaded files
-        run: |
-          Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
-      - name: update TikZenX download url
-        env:
-          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
-          API_KEY: ${{ secrets.API_KEY }}
-        run: |
-          node scripts/update-download-url.js --platform=windows --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
+      # - name: build TikZenX whitelabel package
+      #   run: |
+      #     node scripts/build-whitelabel.js TikZenX
+      # - name: upload TikZenX package to r2
+      #   uses: ryand56/r2-upload-action@v1.4
+      #   with:
+      #     r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+      #     r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+      #     r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      #     r2-bucket: tikmatrix
+      #     source-dir: ./src-tauri/target/release/bundle/msi
+      #     destination-dir: ./
+      # - name: update TikZenX version
+      #   env:
+      #     TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+      #     API_KEY: ${{ secrets.API_KEY }}
+      #   run: |
+      #     node scripts/update-version.js --app=tikzenx --app-name=TikZenX
+      # - name: clear uploaded files
+      #   run: |
+      #     Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
+      # - name: update TikZenX download url
+      #   env:
+      #     TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+      #     API_KEY: ${{ secrets.API_KEY }}
+      #   run: |
+      #     node scripts/update-download-url.js --platform=windows --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
       - name: build distributor packages
         run: |
           node scripts/build-distributor-packages-windows.js
@@ -147,27 +147,27 @@ jobs:
       - name: clear uploaded files
         run: |
           rm -rf ./src-tauri/target/universal-apple-darwin/release/bundle/dmg/*
-      - name: build TikZenX whitelabel package
-        run: |
-          node scripts/build-whitelabel.js TikZenX
-      - name: upload TikZenX package to r2
-        uses: ryand56/r2-upload-action@v1.4
-        with:
-          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
-          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          r2-bucket: tikmatrix
-          source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
-          destination-dir: ./
-      - name: clear uploaded files
-        run: |
-          rm -rf ./src-tauri/target/universal-apple-darwin/release/bundle/dmg/*
-      - name: update TikZenX download url
-        env:
-          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
-          API_KEY: ${{ secrets.API_KEY }}
-        run: |
-          node scripts/update-download-url.js --platform=mac --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
+      # - name: build TikZenX whitelabel package
+      #   run: |
+      #     node scripts/build-whitelabel.js TikZenX
+      # - name: upload TikZenX package to r2
+      #   uses: ryand56/r2-upload-action@v1.4
+      #   with:
+      #     r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+      #     r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+      #     r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      #     r2-bucket: tikmatrix
+      #     source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
+      #     destination-dir: ./
+      # - name: clear uploaded files
+      #   run: |
+      #     rm -rf ./src-tauri/target/universal-apple-darwin/release/bundle/dmg/*
+      # - name: update TikZenX download url
+      #   env:
+      #     TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+      #     API_KEY: ${{ secrets.API_KEY }}
+      #   run: |
+      #     node scripts/update-download-url.js --platform=mac --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
       - name: build distributor packages
         run: |
           node scripts/build-distributor-packages-mac.js
