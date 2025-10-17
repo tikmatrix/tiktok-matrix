@@ -107,12 +107,13 @@ export default {
           let serial = json.serial
           let status = json.status
           if (status === 1) {
-            this.running_devices.push(serial)
-          } else {
-            let index = this.running_devices.indexOf(serial)
-            if (index > -1) {
-              this.running_devices.splice(index, 1)
+            // 避免重复插入导致数组无限增长
+            if (!this.running_devices.includes(serial)) {
+              this.running_devices.push(serial)
             }
+          } else if (this.running_devices.length) {
+            // 移除所有相关条目，防止残留重复数据
+            this.running_devices = this.running_devices.filter(item => item !== serial)
           }
           this.devices.forEach(device => {
             if (device.real_serial === serial) {
