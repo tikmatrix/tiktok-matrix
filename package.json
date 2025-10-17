@@ -6,6 +6,7 @@
   "scripts": {
     "start": "tauri dev",
     "build:agent": "node scripts/build-agent.js",
+    "build:agent-debug": "node scripts/build-agent.js --debug",
     "build:whitelabel": "node scripts/build-whitelabel.js",
     "deploy:agent": "node scripts/deploy-agent.js",
     "run:tikmatrix-agent": "npm run build:agent && node scripts/run-agent.js tikmatrix",
