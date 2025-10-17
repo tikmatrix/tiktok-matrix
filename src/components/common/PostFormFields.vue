@@ -103,11 +103,11 @@
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
-                            <label class="flex items-center gap-2">
+                            <!-- <label class="flex items-center gap-2">
                                 <input type="radio" id="customSound" value="custom" v-model="localFormData.add_sound"
                                     class="form-radio text-primary">
                                 <span>{{ $t('customSound') }}</span>
-                            </label>
+                            </label> -->
                         </div>
                     </div>
                     <div v-if="localFormData.post_way !== 'useSound' && localFormData.add_sound === 'custom'"
@@ -195,7 +195,7 @@
             <div class="card-body space-y-6">
                 <h3 class="card-title text-lg font-semibold">{{ $t('productAndCaptionSettings') }}</h3>
                 <div class="space-y-4">
-                    <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
+                    <!-- <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
                             <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('addProductLink') }}</span>
@@ -219,7 +219,7 @@
                                 <span>{{ $t('enable') }}</span>
                             </label>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
                             <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
