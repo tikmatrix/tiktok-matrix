@@ -34,7 +34,7 @@
           {{ $t('noDevicesSelected') }}
         </div>
       </div>
-      <div v-if="licenseLimit !== null" class="mt-2 text-sm" :class="licenseHintClass">
+      <div v-if="licenseLimit !== null" class="mt-2 text-md" :class="licenseHintClass">
         <span>{{ $t('licenseConcurrencyLimitLabel', { count: licenseLimit }) }}</span>
         <span v-if="licenseLimit === 0" class="ml-1">
           {{ $t('licenseConcurrencyLimitInactiveHint') }}

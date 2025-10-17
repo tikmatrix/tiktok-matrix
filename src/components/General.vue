@@ -1,65 +1,65 @@
 <template>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('openTikTok', {})">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('openTikTok', {})">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-primary-content" />
         {{ $t('openTiktok') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('stopTiktok', {})">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('stopTiktok', {})">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
         {{ $t('stopTiktok') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.clear_cache_dialog.showModal()">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$refs.clear_cache_dialog.showModal()">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
         {{ $t('clearData') }}
     </button>
 
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="grantTikTok">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="grantTikTok">
         <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />
         {{ $t('grantTikTok') }}
     </button>
 
 
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="app_install">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="app_install">
         <font-awesome-icon icon="fa fa-download" class="h-3 w-3 text-primary-content" />
         {{ $t('installApk') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.uninstall_dialog.showModal()">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$refs.uninstall_dialog.showModal()">
         <font-awesome-icon icon="fa-brands fa-android" class="h-3 w-3 text-primary-content" />
         {{ $t('uninstallApk') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="uploadVideo">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="uploadVideo">
         <font-awesome-icon icon="fa fa-upload" class="h-3 w-3 text-primary-content" />
         {{ $t('uploadToGallery') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="clearGallery">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="clearGallery">
         <font-awesome-icon icon="fa fa-eraser" class="h-3 w-3 text-primary-content" />
         {{ $t('clearGallery') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('initDevice')">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('initDevice')">
         <font-awesome-icon icon="fa fa-undo" class="h-3 w-3 text-pink-500" />
         {{ $t('initAppAgent') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', 'com.github.tikmatrix/.MainActivity'] })">
         <font-awesome-icon icon="fa fa-play" class="h-3 w-3 text-success" />
         {{ $t('openAppAgent') }}
     </button>
 
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$refs.proxy_dialog.show()">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$refs.proxy_dialog.show()">
         <font-awesome-icon icon="fa fa-server" class="h-3 w-3" />
         {{ $t('setProxy') }}
     </button>
 
 
 
-    <button class="btn btn-sm btn-primary ml-1 mb-1" @click="$refs.resolution_dialog.show()">
+    <button class="btn btn-md btn-primary ml-1 mb-1" @click="$refs.resolution_dialog.show()">
         <font-awesome-icon icon="fa fa-tv" class="h-3 w-3" />
         {{ $t('adjustResolution') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" @click="$emiter('send_screen_mode', 'off')">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('send_screen_mode', 'off')">
         <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-primary-content" />
         {{ $t('screenOff') }}
     </button>
-    <button class="btn btn-sm btn-primary  ml-1 mb-1" v-if="isFeatureUnlocked('followPlan')"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="isFeatureUnlocked('followPlan')"
         @click="$emiter('showDialog', { name: 'plans' })">
         <font-awesome-icon icon="fa-solid fa-calendar-check" class="h-3 w-3 mr-1" />
         {{ $t('followPlan') }}
@@ -70,7 +70,7 @@
             <div class="flex flex-row items-center p-2">
                 <input class="input input-bordered input-md" type="text" v-model="uninstall_package" />
             </div>
-            <button class="btn btn-sm btn-success ml-2" @click="uninstallApk">{{
+            <button class="btn btn-md btn-success ml-2" @click="uninstallApk">{{
                 $t('confirm') }}</button>
 
         </div>
@@ -86,8 +86,8 @@
                 <span class="font-bold p-1">:</span>
                 <input class="input input-bordered input-md w-20" type="number" v-model="proxy_port" />
             </div>
-            <button class="btn btn-sm btn-success ml-2" @click="enableProxy">{{ $t('enableProxy') }}</button>
-            <button class="btn btn-sm btn-warning ml-2" @click="disableProxy">{{ $t('disableProxy') }}</button>
+            <button class="btn btn-md btn-success ml-2" @click="enableProxy">{{ $t('enableProxy') }}</button>
+            <button class="btn btn-md btn-warning ml-2" @click="disableProxy">{{ $t('disableProxy') }}</button>
 
         </div>
         <form method="dialog" class="modal-backdrop">
@@ -102,19 +102,19 @@
             <h3 class="font-bold text-lg">{{ $t('adjustResolution') }}</h3>
             <div class="flex flex-col p-2 gap-4">
                 <div class="flex flex-wrap gap-2">
-                    <button class="btn btn-sm" :class="{ 'btn-active': resolution === 256 }"
+                    <button class="btn btn-md" :class="{ 'btn-active': resolution === 256 }"
                         @click="setResolution(256)">
                         {{ $t('lowResolution') }} (256px)
                     </button>
-                    <button class="btn btn-sm" :class="{ 'btn-active': resolution === 512 }"
+                    <button class="btn btn-md" :class="{ 'btn-active': resolution === 512 }"
                         @click="setResolution(512)">
                         {{ $t('highResolution') }} (512px)
                     </button>
-                    <button class="btn btn-sm" :class="{ 'btn-active': resolution === 720 }"
+                    <button class="btn btn-md" :class="{ 'btn-active': resolution === 720 }"
                         @click="setResolution(720)">
                         {{ $t('ultraResolution') }} (720px)
                     </button>
-                    <button class="btn btn-sm" :class="{ 'btn-active': resolution === 1080 }"
+                    <button class="btn btn-md" :class="{ 'btn-active': resolution === 1080 }"
                         @click="setResolution(1080)">
                         {{ $t('fullHD') }} (1080px)
                     </button>
@@ -128,7 +128,7 @@
                         <input type="number" v-model="customResolution" min="128" max="1920" step="16"
                             class="input input-bordered input-md w-24" />
                         <span>px</span>
-                        <button @click="setResolution(Number(customResolution))" class="btn btn-sm btn-primary"
+                        <button @click="setResolution(Number(customResolution))" class="btn btn-md btn-primary"
                             :disabled="!isValidResolution">
                             {{ $t('apply') }}
                         </button>
@@ -150,8 +150,8 @@
             <h3 class="font-bold text-lg">{{ $t('clearData') }}</h3>
             <p class="py-4">{{ $t('clearCacheConfirm') }}</p>
             <div class="modal-action">
-                <button class="btn btn-sm btn-success" @click="confirmClearCache">{{ $t('confirm') }}</button>
-                <button class="btn btn-sm" @click="$refs.clear_cache_dialog.close()">{{ $t('cancel') }}</button>
+                <button class="btn btn-md btn-success" @click="confirmClearCache">{{ $t('confirm') }}</button>
+                <button class="btn btn-md" @click="$refs.clear_cache_dialog.close()">{{ $t('cancel') }}</button>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop">

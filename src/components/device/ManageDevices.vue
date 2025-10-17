@@ -1,19 +1,19 @@
 <template>
   <div class="flex-1 w-full h-full px-0">
     <div
-      class="flex-1 w-full h-full overflow-hidden rounded-2xl bg-base-100 border border-base-200/60 shadow-sm backdrop-blur-sm">
+      class="flex-1 w-full h-full overflow-hidden rounded-2xl bg-base-100 border border-base-200/60 shadow-md backdrop-blur-md">
       <div class="h-full overflow-y-auto no-scrollbar px-4 pb-20 pt-4 space-y-4">
 
         <!-- 键盘输入提示信息 -->
         <div v-if="showKeyboardTip" class="alert alert-info shadow-lg relative">
-          <button class="absolute top-2 right-2 btn btn-xs btn-ghost hover:btn-error" @click="closeKeyboardTip">
+          <button class="absolute top-2 right-2 btn btn-md btn-ghost hover:btn-error" @click="closeKeyboardTip">
             <font-awesome-icon icon="fa-solid fa-times" class="h-3 w-3" />
           </button>
           <div class="flex items-center pr-8">
             <font-awesome-icon icon="fa-solid fa-keyboard" class="h-6 w-6 text-info" />
             <div class="ml-3">
               <h3 class="font-bold text-lg">{{ $t('keyboardInput') }}</h3>
-              <div class="text-sm">{{ $t('keyboardInputTip') }}</div>
+              <div class="text-md">{{ $t('keyboardInputTip') }}</div>
             </div>
           </div>
         </div>
@@ -23,13 +23,13 @@
           <template #buttons>
             <div class="flex flex-wrap items-center justify-between gap-3 w-full px-1">
               <div class="flex flex-wrap items-center gap-2">
-                <button class="btn btn-sm md:btn-md btn-primary" @click="$refs.scan_dialog.show()">
+                <button class="btn btn-md md:btn-md btn-primary" @click="$refs.scan_dialog.show()">
                   <font-awesome-icon icon="fa-solid fa-network-wired" class="h-3 w-3" />{{ $t('scanTCPDevice') }}
                 </button>
-                <button class="btn btn-sm md:btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
+                <button class="btn btn-md md:btn-md btn-primary" @click="$emiter('showDialog', { name: 'accounts' })">
                   <font-awesome-icon icon="user" class="h-3 w-3" />{{ $t('accounts') }}
                 </button>
-                <button class="btn btn-sm md:btn-md btn-primary"
+                <button class="btn btn-md md:btn-md btn-primary"
                   @click="$emiter('showDialog', { name: 'materials', group: item })">
                   <font-awesome-icon icon="fa-solid fa-film" class="h-3 w-3" />{{ $t('materials') }}
                 </button>
@@ -37,19 +37,19 @@
 
               <div class="flex flex-wrap items-center gap-2">
                 <div
-                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-sm"
+                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-md"
                   role="group" :aria-label="$t('displayMode')">
                   <div
-                    class="join rounded-lg overflow-hidden border border-base-300 bg-base-100 shadow-inner text-sm font-medium">
+                    class="join rounded-lg overflow-hidden border border-base-300 bg-base-100 shadow-inner text-md font-medium">
                     <button type="button"
-                      class="join-item btn btn-xs md:btn-sm gap-1 px-3 py-1.5 border-0 bg-transparent hover:bg-primary/10"
+                      class="join-item btn btn-md md:btn-md gap-1 px-3 py-1.5 border-0 bg-transparent hover:bg-primary/10"
                       :class="{ 'btn-active bg-primary text-primary-content shadow': !listMode }"
                       :aria-pressed="!listMode" @click="setDisplayMode('grid')">
                       <font-awesome-icon icon="fa-solid fa-th" class="h-3 w-3" />
                       <span class="hidden sm:inline">{{ $t('gridMode') }}</span>
                     </button>
                     <button type="button"
-                      class="join-item btn btn-xs md:btn-sm gap-1 px-3 py-1.5 border-0 bg-transparent hover:bg-primary/10"
+                      class="join-item btn btn-md md:btn-md gap-1 px-3 py-1.5 border-0 bg-transparent hover:bg-primary/10"
                       :class="{ 'btn-active bg-primary text-primary-content shadow': listMode }"
                       :aria-pressed="listMode" @click="setDisplayMode('list')">
                       <font-awesome-icon icon="fa-solid fa-list" class="h-3 w-3" />
@@ -59,18 +59,18 @@
                 </div>
 
                 <div
-                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-sm">
-                  <span class="text-sm font-medium whitespace-nowrap">{{ $t('screenSize') }}</span>
+                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-md">
+                  <span class="text-md font-medium whitespace-nowrap">{{ $t('screenSize') }}</span>
                   <div class="join">
-                    <button class="btn btn-sm join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
+                    <button class="btn btn-md join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
                       @click="$emiter('screenScaled', { action: 'minus' })">
                       <font-awesome-icon icon="fa-solid fa-minus" class="h-3 w-3" />
                     </button>
                     <div
-                      class="join-item px-3 py-1 text-sm font-semibold rounded-none bg-base-100 border border-base-300 text-base-content">
+                      class="join-item px-3 py-1 text-md font-semibold rounded-none bg-base-100 border border-base-300 text-base-content">
                       {{ screenSizeDisplay }}
                     </div>
-                    <button class="btn btn-sm join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
+                    <button class="btn btn-md join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
                       @click="$emiter('screenScaled', { action: 'plus' })">
                       <font-awesome-icon icon="fa-solid fa-plus" class="h-3 w-3" />
                     </button>
@@ -86,8 +86,8 @@
           <template #default="slotProps">
             <div class="flex flex-wrap gap-4 p-4">
               <div class="flex flex-wrap gap-3 flex-1" v-if="listMode">
-                <div class="overflow-x-auto w-full rounded-2xl border border-base-300/60 bg-base-200/50 shadow-sm">
-                  <table class="table table-sm md:table-md align-middle">
+                <div class="overflow-x-auto w-full rounded-2xl border border-base-300/60 bg-base-200/50 shadow-md">
+                  <table class="table table-md md:table-md align-middle">
                     <thead class="bg-base-200/70 text-[0.7rem] uppercase tracking-wide text-base-content/60">
                       <tr>
                         <th class="font-semibold">{{ $t('no') }}</th>
@@ -101,7 +101,7 @@
                         <th class="font-semibold text-center">{{ $t('actions') }}</th>
                       </tr>
                     </thead>
-                    <tbody class="text-sm text-base-content/80">
+                    <tbody class="text-md text-base-content/80">
                       <tr v-for="(device, index) in slotProps.items" :key="index"
                         class="hover:bg-base-100/60 transition-colors">
                         <td class="font-semibold text-base-content/70 whitespace-nowrap">{{ device.key }}</td>
@@ -112,24 +112,24 @@
                         <td class="text-base-content/70 whitespace-nowrap">{{ device.mode }}</td>
                         <td class="text-base-content/70 whitespace-nowrap">{{ device.real_serial }}</td>
                         <td class="whitespace-nowrap">
-                          <div class="badge badge-outline badge-sm md:badge-md border-base-300 text-base-content"
+                          <div class="badge badge-outline badge-md md:badge-md border-base-300 text-base-content"
                             v-if="device.connect_type == '0'">USB</div>
-                          <div class="badge badge-primary badge-sm md:badge-md" v-else>TCP</div>
+                          <div class="badge badge-primary badge-md md:badge-md" v-else>TCP</div>
                         </td>
                         <td class="whitespace-nowrap">{{ device.group_name }}</td>
                         <td class="whitespace-nowrap">
-                          <div class="badge badge-success badge-sm md:badge-md badge-outline text-success-content"
+                          <div class="badge badge-success badge-md md:badge-md badge-outline text-success-content"
                             v-if="device.task_status == '1'">
                             {{ $t('running') }}
                           </div>
-                          <div class="badge badge-info badge-sm md:badge-md badge-outline text-info-content" v-else>
+                          <div class="badge badge-info badge-md md:badge-md badge-outline text-info-content" v-else>
                             {{ $t('ready') }}
                           </div>
                         </td>
                         <td class="text-base-content/70 whitespace-nowrap">{{ device.sort }}</td>
                         <td class="whitespace-nowrap">
                           <div class="flex items-center justify-end gap-2">
-                            <button class="btn btn-xs btn-outline btn-primary" @click="showSetSortDialog(device)">{{
+                            <button class="btn btn-md btn-outline btn-primary" @click="showSetSortDialog(device)">{{
                               $t('setSort') }}</button>
                           </div>
                         </td>

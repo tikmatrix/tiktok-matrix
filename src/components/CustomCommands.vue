@@ -2,11 +2,11 @@
     <div class="custom-commands">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <button class="btn btn-sm btn-primary" @click="showCreateDialog">
+                <button class="btn btn-md btn-primary" @click="showCreateDialog">
                     <font-awesome-icon icon="fa-plus" class="h-3 w-3 mr-1" />
                     {{ $t('addCommand') }}
                 </button>
-                <button class="btn btn-sm btn-outline btn-warning ml-2" @click="confirmReset">
+                <button class="btn btn-md btn-outline btn-warning ml-2" @click="confirmReset">
                     <font-awesome-icon icon="fa-refresh" class="h-3 w-3 mr-1" />
                     {{ $t('resetCommands') }}
                 </button>
@@ -16,15 +16,15 @@
         <div class="saved-commands" v-if="commands.length > 0">
             <div v-for="(cmd, index) in commands" :key="index" class="bg-base-300 p-2 rounded-md mb-1">
                 <div class="flex justify-between items-center">
-                    <h3 class="font-bold text-sm">{{ cmd.name }}</h3>
+                    <h3 class="font-bold text-md">{{ cmd.name }}</h3>
                     <div>
-                        <button class="btn btn-xs btn-primary mr-1" @click="executeCommand(cmd)">
+                        <button class="btn btn-md btn-primary mr-1" @click="executeCommand(cmd)">
                             <font-awesome-icon icon="fa-play" class="h-3 w-3" />
                         </button>
-                        <button class="btn btn-xs btn-outline mr-1" @click="editCommand(index)">
+                        <button class="btn btn-md btn-outline mr-1" @click="editCommand(index)">
                             <font-awesome-icon icon="fa-edit" class="h-3 w-3" />
                         </button>
-                        <button class="btn btn-xs btn-outline btn-error" @click="deleteCommand(index)">
+                        <button class="btn btn-md btn-outline btn-error" @click="deleteCommand(index)">
                             <font-awesome-icon icon="fa-trash" class="h-3 w-3" />
                         </button>
                     </div>
@@ -69,10 +69,10 @@
                 </div>
 
                 <div class="modal-action">
-                    <button class="btn btn-sm btn-primary" @click="addCommand" :disabled="!isValidCommand">
+                    <button class="btn btn-md btn-primary" @click="addCommand" :disabled="!isValidCommand">
                         {{ editing ? $t('updateCommand') : $t('addCommand') }}
                     </button>
-                    <button class="btn btn-sm" @click="closeDialog">
+                    <button class="btn btn-md" @click="closeDialog">
                         {{ $t('cancel') }}
                     </button>
                 </div>
@@ -88,10 +88,10 @@
                 <h3 class="font-bold text-lg mb-4">{{ $t('resetConfirmTitle') }}</h3>
                 <p>{{ $t('resetConfirmMessage') }}</p>
                 <div class="modal-action">
-                    <button class="btn btn-sm btn-error" @click="resetCommands">
+                    <button class="btn btn-md btn-error" @click="resetCommands">
                         {{ $t('reset') }}
                     </button>
-                    <button class="btn btn-sm" @click="$refs.resetDialog.close()">
+                    <button class="btn btn-md" @click="$refs.resetDialog.close()">
                         {{ $t('cancel') }}
                     </button>
                 </div>

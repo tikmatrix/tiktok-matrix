@@ -39,7 +39,7 @@
                 <div class="font-bold text-info text-md">
                   {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
                 </div>
-                <div class="text-info font-bold text-sm">
+                <div class="text-info font-bold text-md">
                   {{ name }}
                 </div>
               </div>

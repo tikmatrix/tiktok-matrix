@@ -16,7 +16,7 @@
 
       </div>
       <template v-if="uniqueGroupNames.length > 0">
-        <select v-model="searchGroup" class="select select-bordered max-w-xs ml-2 select-md">
+        <select v-model="searchGroup" class="select select-bordered max-w-md ml-2 select-md">
           <option value="">{{ $t('allGroups') }}</option>
           <option v-for="item in uniqueGroupNames" :key="item.group_name" :value="item.group_name">
             {{ item.group_name }}
@@ -51,14 +51,14 @@
       </div>
 
       <div class="flex items-center">
-        <button class="btn btn-sm btn-ghost" @click="goToPage(1)" :disabled="currentPage === 1">
+        <button class="btn btn-md btn-ghost" @click="goToPage(1)" :disabled="currentPage === 1">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m11 17-5-5 5-5" />
             <path d="m18 17-5-5 5-5" />
           </svg>
         </button>
-        <button class="btn btn-sm btn-ghost" @click="prevPage" :disabled="currentPage === 1">
+        <button class="btn btn-md btn-ghost" @click="prevPage" :disabled="currentPage === 1">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m15 18-6-6 6-6" />
@@ -66,20 +66,20 @@
         </button>
 
         <template v-for="page in visiblePageNumbers" :key="page">
-          <button v-if="page !== '...'" class="btn btn-sm mx-1"
+          <button v-if="page !== '...'" class="btn btn-md mx-1"
             :class="{ 'btn-primary': currentPage === page, 'btn-ghost': currentPage !== page }" @click="goToPage(page)">
             {{ page }}
           </button>
           <span v-else class="mx-2">...</span>
         </template>
 
-        <button class="btn btn-sm btn-ghost" @click="nextPage" :disabled="currentPage === pageCount">
+        <button class="btn btn-md btn-ghost" @click="nextPage" :disabled="currentPage === pageCount">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m9 18 6-6-6-6" />
           </svg>
         </button>
-        <button class="btn btn-sm btn-ghost" @click="goToPage(pageCount)" :disabled="currentPage === pageCount">
+        <button class="btn btn-md btn-ghost" @click="goToPage(pageCount)" :disabled="currentPage === pageCount">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m13 17 5-5-5-5" />
@@ -90,7 +90,7 @@
         <div class="flex items-center ml-4">
           <span class="mr-2">{{ $t('goTo') }}</span>
           <input type="number" v-model="gotoPage" @keyup.enter="handleGotoPage" min="1" :max="pageCount"
-            class="input input-bordered input-sm w-16 px-2" />
+            class="input input-bordered input-md w-16 px-2" />
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
     <div class="space-y-6">
       <!-- Email Field -->
       <div class="form-group">
-        <label class="block text-sm font-semibold text-base-content mb-2">
+        <label class="block text-md font-semibold text-base-content mb-2">
           {{ $t('email') }}
         </label>
         <input class="input input-bordered w-full focus:input-primary transition-all duration-200" type="email"
@@ -12,7 +12,7 @@
 
       <!-- Password Field -->
       <div class="form-group">
-        <label class="block text-sm font-semibold text-base-content mb-2">
+        <label class="block text-md font-semibold text-base-content mb-2">
           {{ $t('password') }}
         </label>
         <input class="input input-bordered w-full focus:input-primary transition-all duration-200" type="text"
@@ -21,7 +21,7 @@
 
       <!-- Username Field -->
       <div class="form-group">
-        <label class="block text-sm font-semibold text-base-content mb-2">
+        <label class="block text-md font-semibold text-base-content mb-2">
           {{ $t('username') }}
           <span class="text-error ml-1">*</span>
         </label>
@@ -31,7 +31,7 @@
 
       <!-- Package Name Field -->
       <div class="form-group">
-        <label class="block text-sm font-semibold text-base-content mb-2">
+        <label class="block text-md font-semibold text-base-content mb-2">
           {{ $t('packagename') }} - App Cloner | NomixCloner
         </label>
         <div class="flex gap-2">
@@ -54,16 +54,16 @@
 
       <!-- Login Status Field -->
       <div class="form-group">
-        <label class="block text-sm font-semibold text-base-content mb-3">
+        <label class="block text-md font-semibold text-base-content mb-3">
           {{ $t('loginStatus') }}
         </label>
         <div class="flex items-center gap-6">
           <label class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <input type="radio" id="logined" value="1" v-model="account.logined" class="radio radio-primary radio-sm">
+            <input type="radio" id="logined" value="1" v-model="account.logined" class="radio radio-primary radio-md">
             <span class="ml-2 text-base-content">{{ $t('logined') }}</span>
           </label>
           <label class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <input type="radio" id="unlogined" value="0" v-model="account.logined" class="radio radio-primary radio-sm">
+            <input type="radio" id="unlogined" value="0" v-model="account.logined" class="radio radio-primary radio-md">
             <span class="ml-2 text-base-content">{{ $t('unlogined') }}</span>
           </label>
         </div>
@@ -71,16 +71,16 @@
 
       <!-- Status Field -->
       <div class="form-group">
-        <label class="block text-sm font-semibold text-base-content mb-3">
+        <label class="block text-md font-semibold text-base-content mb-3">
           {{ $t('status') }}
         </label>
         <div class="flex items-center gap-6">
           <label class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <input type="radio" id="enable" value="0" v-model="account.status" class="radio radio-success radio-sm">
+            <input type="radio" id="enable" value="0" v-model="account.status" class="radio radio-success radio-md">
             <span class="ml-2 text-base-content">{{ $t('enable') }}</span>
           </label>
           <label class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <input type="radio" id="disable" value="1" v-model="account.status" class="radio radio-error radio-sm">
+            <input type="radio" id="disable" value="1" v-model="account.status" class="radio radio-error radio-md">
             <span class="ml-2 text-base-content">{{ $t('disable') }}</span>
           </label>
         </div>
@@ -88,21 +88,21 @@
 
       <!-- Device Field -->
       <div class="form-group">
-        <label class="block text-sm font-semibold text-base-content mb-3">
+        <label class="block text-md font-semibold text-base-content mb-3">
           {{ $t('device') }}
         </label>
         <div v-if="devices.length > 0" class="flex flex-wrap items-center gap-2">
-          <button type="button" class="btn btn-sm btn-error btn-circle" @click="clearDevice" title="Clear selection">
+          <button type="button" class="btn btn-md btn-error btn-circle" @click="clearDevice" title="Clear selection">
             ×
           </button>
           <button v-for="(device, index) in devices" :key="device.serial" type="button"
-            class="btn btn-sm transition-all duration-200"
+            class="btn btn-md transition-all duration-200"
             :class="device.key === myaccount.device_index ? 'btn-success' : 'btn-outline btn-success'"
             @click="selectDevice(device)">
             {{ device.key }}
           </button>
         </div>
-        <div v-else class="text-sm text-gray-400 italic bg-base-200 rounded-lg p-4 text-center">
+        <div v-else class="text-md text-gray-400 italic bg-base-200 rounded-lg p-4 text-center">
           {{ $t('noDevice') }}
         </div>
       </div>

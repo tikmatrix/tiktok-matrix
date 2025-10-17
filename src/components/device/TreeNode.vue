@@ -6,12 +6,12 @@
         }" @click.stop="handleClick" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
             <!-- 展开/折叠图标 - 所有节点都可以展开查看属性 -->
             <span class="toggle-icon" @click.stop="toggleExpanded">
-                <font-awesome-icon :icon="isExpanded ? 'chevron-down' : 'chevron-right'" class="text-xs" />
+                <font-awesome-icon :icon="isExpanded ? 'chevron-down' : 'chevron-right'" class="text-md" />
             </span>
 
             <!-- 节点图标 -->
             <span class="node-icon">
-                <font-awesome-icon :icon="nodeIcon" class="text-xs" />
+                <font-awesome-icon :icon="nodeIcon" class="text-md" />
             </span>
 
             <!-- 节点文本 -->
@@ -21,10 +21,10 @@
 
             <!-- 节点标签 -->
             <span v-if="node.clickable" class="node-badge" title="Clickable">
-                <font-awesome-icon icon="hand-pointer" class="text-xs" />
+                <font-awesome-icon icon="hand-pointer" class="text-md" />
             </span>
             <span v-if="node.scrollable" class="node-badge" title="Scrollable">
-                <font-awesome-icon icon="arrows-alt-v" class="text-xs" />
+                <font-awesome-icon icon="arrows-alt-v" class="text-md" />
             </span>
         </div>
 

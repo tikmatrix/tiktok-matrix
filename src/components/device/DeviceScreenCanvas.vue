@@ -6,12 +6,12 @@
             <!-- 操作按钮 -->
             <div class="absolute top-2 right-2 z-10 flex gap-2">
                 <button @click="handleRefresh" :disabled="loading"
-                    class="btn btn-sm btn-circle bg-base-100/80 backdrop-blur hover:bg-base-200"
+                    class="btn btn-md btn-circle bg-base-100/80 backdrop-blur hover:bg-base-200"
                     title="Refresh Screenshot">
                     <font-awesome-icon icon="refresh" :class="{ 'fa-spin': loading }" />
                 </button>
                 <button @click="handleClear"
-                    class="btn btn-sm btn-circle bg-base-100/80 backdrop-blur hover:bg-base-200"
+                    class="btn btn-md btn-circle bg-base-100/80 backdrop-blur hover:bg-base-200"
                     title="Clear Highlights">
                     <font-awesome-icon icon="eraser" />
                 </button>
@@ -27,19 +27,19 @@
 
             <!-- 加载指示器 -->
             <div v-if="loading"
-                class="absolute inset-0 flex items-center justify-center bg-base-300/50 backdrop-blur-sm">
+                class="absolute inset-0 flex items-center justify-center bg-base-300/50 backdrop-blur-md">
                 <span class="loading loading-spinner loading-lg"></span>
             </div>
 
             <!-- 坐标显示 -->
             <div v-if="cursorPosition"
-                class="absolute bottom-2 left-2 bg-base-100/80 backdrop-blur px-2 py-1 rounded text-xs font-mono">
+                class="absolute bottom-2 left-2 bg-base-100/80 backdrop-blur px-2 py-1 rounded text-md font-mono">
                 {{ cursorPosition.x }}, {{ cursorPosition.y }}
             </div>
 
             <!-- 设备信息 -->
             <div v-if="deviceInfo"
-                class="absolute top-2 left-2 bg-base-100/80 backdrop-blur px-2 py-1 rounded text-xs font-mono">
+                class="absolute top-2 left-2 bg-base-100/80 backdrop-blur px-2 py-1 rounded text-md font-mono">
                 {{ deviceInfo.width }} x {{ deviceInfo.height }}
             </div>
         </div>

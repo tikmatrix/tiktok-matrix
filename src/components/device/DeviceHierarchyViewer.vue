@@ -3,17 +3,17 @@
         <!-- 搜索栏 -->
         <div class="mb-4">
             <div class="form-control">
-                <div class="input-group input-group-sm">
+                <div class="input-group input-group-md">
                     <input v-model="searchQuery" type="text" placeholder="Search nodes..."
-                        class="input input-sm input-bordered flex-1" @keydown.enter.prevent="goToNextSearchResult" />
-                    <button class="btn btn-sm btn-square" type="button" :disabled="searchResults.length === 0"
+                        class="input input-md input-bordered flex-1" @keydown.enter.prevent="goToNextSearchResult" />
+                    <button class="btn btn-md btn-square" type="button" :disabled="searchResults.length === 0"
                         @click="goToNextSearchResult" :title="searchResults.length > 1 ? 'Next match' : 'Search'">
                         <font-awesome-icon icon="search" />
                     </button>
                 </div>
             </div>
             <div v-if="searchResults.length > 0"
-                class="text-xs text-base-content/70 mt-1 flex items-center justify-between gap-2">
+                class="text-md text-base-content/70 mt-1 flex items-center justify-between gap-2">
                 <span>
                     Found {{ searchResults.length }} node(s)
                     <template v-if="searchResults.length > 1">
@@ -21,11 +21,11 @@
                     </template>
                 </span>
                 <div v-if="searchResults.length > 1" class="join">
-                    <button type="button" class="btn btn-ghost btn-xs join-item" title="Previous match"
+                    <button type="button" class="btn btn-ghost btn-md join-item" title="Previous match"
                         @click="goToPreviousSearchResult">
                         <font-awesome-icon icon="chevron-up" />
                     </button>
-                    <button type="button" class="btn btn-ghost btn-xs join-item" title="Next match"
+                    <button type="button" class="btn btn-ghost btn-md join-item" title="Next match"
                         @click="goToNextSearchResult">
                         <font-awesome-icon icon="chevron-down" />
                     </button>
@@ -42,13 +42,13 @@
             <div v-else class="flex items-center justify-center h-full text-base-content/50">
                 <div class="text-center">
                     <font-awesome-icon icon="sitemap" class="text-4xl mb-2" />
-                    <p class="text-sm">No hierarchy data</p>
+                    <p class="text-md">No hierarchy data</p>
                 </div>
             </div>
         </div>
 
         <!-- 统计信息 -->
-        <div v-if="hierarchyTree" class="mt-2 text-xs text-base-content/70">
+        <div v-if="hierarchyTree" class="mt-2 text-md text-base-content/70">
             Total nodes: {{ totalNodes }}
         </div>
     </div>

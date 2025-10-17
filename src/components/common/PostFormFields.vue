@@ -1,12 +1,12 @@
 <template>
     <div class="space-y-6">
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
+        <div class="card bg-base-100 border border-base-200 shadow-md">
             <div class="card-body space-y-6">
                 <h3 class="card-title text-lg font-semibold">{{ $t('postBasicSettings') }}</h3>
                 <div class="space-y-4">
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <span
-                            class="text-sm font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
+                            class="text-md font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
                                 $t('postWay') }}</span>
                         <div class="flex flex-wrap gap-4">
                             <label class="flex items-center gap-2">
@@ -29,7 +29,7 @@
                     <div v-if="localFormData.post_way === 'useSound'"
                         class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
-                            <span class="text-sm font-semibold uppercase tracking-wide text-base-content/70">{{
+                            <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('soundName') }}</span>
                             <div class="tooltip tooltip-right" :data-tip="$t('soundInputTips')">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -44,7 +44,7 @@
                     </div>
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <span
-                            class="text-sm font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
+                            class="text-md font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
                                 $t('contentType') }}</span>
                         <div class="flex flex-wrap items-center gap-4">
                             <label class="flex items-center gap-2">
@@ -61,7 +61,7 @@
                                 <input class="input input-md input-bordered w-24"
                                     v-model.number="localFormData.image_count" :placeholder="$t('imageCount')"
                                     type="number" min="1" />
-                                <span class="text-sm text-base-content/70">{{ $t('imageCount') }}</span>
+                                <span class="text-md text-base-content/70">{{ $t('imageCount') }}</span>
                             </div>
                         </div>
                     </div>
@@ -69,14 +69,14 @@
             </div>
         </div>
 
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
+        <div class="card bg-base-100 border border-base-200 shadow-md">
             <div class="card-body space-y-6">
                 <h3 class="card-title text-lg font-semibold">{{ $t('soundSettings') }}</h3>
                 <div class="space-y-4">
                     <div v-if="localFormData.post_way !== 'useSound'"
                         class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
-                            <span class="text-sm font-semibold uppercase tracking-wide text-base-content/70">{{
+                            <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('addSound') }}</span>
 
                         </div>
@@ -113,7 +113,7 @@
                     <div v-if="localFormData.post_way !== 'useSound' && localFormData.add_sound === 'custom'"
                         class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
-                            <span class="text-sm font-semibold uppercase tracking-wide text-base-content/70">{{
+                            <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('customSound') }}</span>
                             <div class="tooltip tooltip-right" :data-tip="$t('customSoundTips')">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -128,7 +128,7 @@
                     </div>
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
-                            <span class="text-sm font-semibold uppercase tracking-wide text-base-content/70">{{
+                            <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('loadingTime') }}</span>
                             <div class="tooltip tooltip-right" :data-tip="$t('loadingTimeTips')">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -150,7 +150,7 @@
                     </div>
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
-                            <span class="text-sm font-semibold uppercase tracking-wide text-base-content/70">{{
+                            <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('uploadWaitTime') }}</span>
                             <div class="tooltip tooltip-right" :data-tip="$t('uploadWaitTimeTips')">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -172,16 +172,16 @@
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start"
                         v-if="localFormData.add_sound == 1 || localFormData.post_way == 'useSound' || localFormData.add_sound === 'custom'">
                         <span
-                            class="text-sm font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
+                            class="text-md font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
                                 $t('soundVolume') }}</span>
                         <div class="flex flex-wrap items-center gap-6">
                             <div class="flex items-center gap-3">
-                                <span class="text-sm text-base-content/70">{{ $t('originSound') }}</span>
+                                <span class="text-md text-base-content/70">{{ $t('originSound') }}</span>
                                 <VueSlider class="w-28" v-model="localFormData.origin_sound_volume" :width="100"
                                     :min="0" :max="100" :step="25" :marks="{ 0: '0', 100: '100' }" />
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="text-sm text-base-content/70">{{ $t('addSound') }}</span>
+                                <span class="text-md text-base-content/70">{{ $t('addSound') }}</span>
                                 <VueSlider class="w-28" v-model="localFormData.add_sound_volume" :width="100" :min="0"
                                     :max="100" :step="25" :marks="{ 0: '0', 100: '100' }" />
                             </div>
@@ -191,13 +191,13 @@
             </div>
         </div>
 
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
+        <div class="card bg-base-100 border border-base-200 shadow-md">
             <div class="card-body space-y-6">
                 <h3 class="card-title text-lg font-semibold">{{ $t('productAndCaptionSettings') }}</h3>
                 <div class="space-y-4">
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
-                            <span class="text-sm font-semibold uppercase tracking-wide text-base-content/70">{{
+                            <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('addProductLink') }}</span>
                             <div class="tooltip tooltip-right" :data-tip="$t('addProductLinkTips')">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -222,7 +222,7 @@
                     </div>
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
-                            <span class="text-sm font-semibold uppercase tracking-wide text-base-content/70">{{
+                            <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('captions') }}</span>
                             <div class="tooltip tooltip-right" :data-tip="$t('captionsTips')">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -240,13 +240,13 @@
             </div>
         </div>
 
-        <div class="card bg-base-100 border border-base-200 shadow-sm">
+        <div class="card bg-base-100 border border-base-200 shadow-md">
             <div class="card-body space-y-6">
                 <h3 class="card-title text-lg font-semibold">{{ $t('materialsSettings') }}</h3>
                 <div class="space-y-4">
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <span
-                            class="text-sm font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
+                            class="text-md font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
                                 $t('materials') }}</span>
                         <div class="space-y-4">
                             <div class="flex flex-wrap gap-4">
@@ -263,7 +263,7 @@
                             </div>
                             <div v-if="localFormData.material_source === 'localFolder'">
                                 <div class="flex items-center gap-1 mb-2">
-                                    <span class="text-sm text-base-content/70">{{ $t('materialPath') }}</span>
+                                    <span class="text-md text-base-content/70">{{ $t('materialPath') }}</span>
                                     <div class="tooltip tooltip-right" :data-tip="$t('materialsPathTips')">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             class="stroke-info shrink-0 w-4 h-4 cursor-help">
@@ -278,7 +278,7 @@
                             </div>
                             <div v-if="localFormData.material_source === 'materialLibrary'">
                                 <div class="flex items-center gap-1 mb-2">
-                                    <span class="text-sm text-base-content/70">{{ $t('selectTags') }}</span>
+                                    <span class="text-md text-base-content/70">{{ $t('selectTags') }}</span>
                                     <div class="tooltip tooltip-right" :data-tip="$t('materialsTagsTips')">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             class="stroke-info shrink-0 w-4 h-4 cursor-help">
@@ -298,7 +298,7 @@
                                                     @click.stop="removeTag(index)">×</span>
                                             </div>
                                         </template>
-                                        <span v-else class="text-gray-400 text-sm">{{ $t('clickToSelectTags') }}</span>
+                                        <span v-else class="text-gray-400 text-md">{{ $t('clickToSelectTags') }}</span>
                                     </div>
 
                                     <div v-if="showTagsDialog"
@@ -308,7 +308,7 @@
                                                 class="flex items-center p-1 hover:bg-base-200 rounded cursor-pointer"
                                                 @click.stop>
                                                 <input type="checkbox" :id="'tag-' + tag.id"
-                                                    class="checkbox checkbox-primary checkbox-sm mr-2"
+                                                    class="checkbox checkbox-primary checkbox-md mr-2"
                                                     :checked="selectedTags.includes(tag.name)" @change="toggleTag(tag)"
                                                     @click.stop />
                                                 <span class="truncate">{{ tag.name }}</span>

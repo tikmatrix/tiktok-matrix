@@ -18,7 +18,7 @@
                     <span class="text-2xl font-bold" :class="priceTextSize">
                         ${{ displayPrice }}
                     </span>
-                    <div class="text-base-content/70 text-sm">
+                    <div class="text-base-content/70 text-md">
                         <span>/ {{ $t('month') }}</span>
                         <span class="block">/ {{ $t('pc') }}</span>
                     </div>
@@ -26,15 +26,15 @@
 
                 <!-- 年度计划额外信息 -->
                 <div v-if="planType === 'yearly'" class="bg-accent/20 rounded-lg p-2 mb-2">
-                    <p class="text-sm font-semibold text-accent">
+                    <p class="text-md font-semibold text-accent">
                         ${{ plan.price.year.amount }} / {{ $t('year') }}
                     </p>
-                    <p class="text-xs text-success font-medium">
+                    <p class="text-md text-success font-medium">
                         {{ $t('save') }} ${{ yearlySavings }}
                     </p>
                 </div>
 
-                <p class="text-base-content/80 text-sm">
+                <p class="text-base-content/80 text-md">
                     {{ plan.description[$i18n.locale] }}
                 </p>
             </div>
@@ -45,7 +45,7 @@
                     <div class="w-4 h-4 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
                         <CheckIcon class="w-2.5 h-2.5 text-success" />
                     </div>
-                    <span class="text-xs">{{ feature }}</span>
+                    <span class="text-md">{{ feature }}</span>
                 </li>
             </ul>
 

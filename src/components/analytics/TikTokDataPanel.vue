@@ -1,6 +1,6 @@
 <template>
     <div class="flex items-center gap-2">
-        <span v-if="loading" class="loading loading-spinner loading-xs"></span>
+        <span v-if="loading" class="loading loading-spinner loading-md"></span>
         <template v-else-if="data">
             <span class="badge badge-accent">{{ formatValue(data) }}</span>
         </template>

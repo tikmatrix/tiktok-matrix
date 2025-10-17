@@ -4,7 +4,7 @@
             <!-- 背景遮罩 -->
             <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
                 leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-                <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+                <div class="fixed inset-0 bg-black/50 backdrop-blur-md" />
             </TransitionChild>
 
             <!-- 对话框容器 -->
@@ -23,10 +23,10 @@
                                         <DialogTitle class="text-lg font-semibold">
                                             Device Debug Inspector
                                         </DialogTitle>
-                                        <p class="text-xs text-base-content/70">
+                                        <p class="text-md text-base-content/70">
                                             {{ device.serial || device.real_serial }}
                                         </p>
-                                        <p class="text-xs text-base-content/60">
+                                        <p class="text-md text-base-content/60">
                                             Activity: {{ activity || 'Unknown' }}
                                         </p>
                                     </div>
@@ -35,20 +35,20 @@
                                 <div class="flex items-center gap-2">
                                     <!-- 刷新按钮 -->
                                     <button @click="handleDumpHierarchy" :disabled="loading"
-                                        class="btn btn-sm btn-ghost" title="Dump Hierarchy">
+                                        class="btn btn-md btn-ghost" title="Dump Hierarchy">
                                         <font-awesome-icon icon="refresh" :class="{ 'fa-spin': loading }" />
                                         Refresh
                                     </button>
 
                                     <!-- 下载按钮 -->
                                     <button @click="handleDownloadHierarchy" :disabled="loading || !hierarchy"
-                                        class="btn btn-sm btn-ghost" title="Download hierarchy XML">
+                                        class="btn btn-md btn-ghost" title="Download hierarchy XML">
                                         <font-awesome-icon icon="download" />
                                         Download XML
                                     </button>
 
                                     <!-- 关闭按钮 -->
-                                    <button @click="handleClose" class="btn btn-sm btn-circle btn-ghost">
+                                    <button @click="handleClose" class="btn btn-md btn-circle btn-ghost">
                                         <font-awesome-icon icon="times" />
                                     </button>
                                 </div>
@@ -81,15 +81,15 @@
 
                             <!-- Footer -->
                             <div class="flex items-center justify-between p-4 border-t border-base-300 bg-base-200">
-                                <div class="text-xs text-base-content/70">
+                                <div class="text-md text-base-content/70">
                                     Device: {{ deviceSerial }}
                                 </div>
 
-                                <div v-if="error" class="text-xs text-error">
+                                <div v-if="error" class="text-md text-error">
                                     {{ error }}
                                 </div>
 
-                                <div class="text-xs text-base-content/70">
+                                <div class="text-md text-base-content/70">
                                     Double-click on canvas to tap
                                 </div>
                             </div>

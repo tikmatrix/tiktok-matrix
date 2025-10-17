@@ -26,7 +26,7 @@
                         <input type="radio" class="radio radio-primary mt-1" value="usernames" v-model="dataSourceType">
                         <div>
                             <span class="font-semibold">{{ $t('dataSourceUsernames') }}</span>
-                            <p class="text-xs text-gray-500 mt-1">{{ $t('dataSourceUsernamesDesc') }}</p>
+                            <p class="text-md text-gray-500 mt-1">{{ $t('dataSourceUsernamesDesc') }}</p>
                         </div>
                     </label>
                     <label class="cursor-pointer flex items-start gap-3 p-3 rounded-lg border border-base-200"
@@ -34,7 +34,7 @@
                         <input type="radio" class="radio radio-info mt-1" value="post_links" v-model="dataSourceType">
                         <div>
                             <span class="font-semibold">{{ $t('dataSourcePostLinks') }}</span>
-                            <p class="text-xs text-gray-500 mt-1">{{ $t('dataSourcePostLinksDesc') }}</p>
+                            <p class="text-md text-gray-500 mt-1">{{ $t('dataSourcePostLinksDesc') }}</p>
                         </div>
                     </label>
                 </div>
@@ -84,7 +84,7 @@
                             class="input input-bordered join-item flex-1" v-model="postLinksPath" />
                         <button class="btn btn-info join-item" @click="selectPostLinksFile">{{ $t('select') }}</button>
                     </div>
-                    <span class="text-xs text-gray-500 mt-2">{{ $t('postLinksPathHint') }}</span>
+                    <span class="text-md text-gray-500 mt-2">{{ $t('postLinksPathHint') }}</span>
                 </div>
             </div>
         </div>
@@ -111,7 +111,7 @@
                             <font-awesome-icon icon="fa-solid fa-user-plus" class="text-success" />
                             <span class="font-semibold">{{ $t('followUsersAction') }}</span>
                         </div>
-                        <input type="checkbox" class="toggle toggle-success toggle-sm" v-model="features.followUsers"
+                        <input type="checkbox" class="toggle toggle-success toggle-md" v-model="features.followUsers"
                             :disabled="!isUsernameSource" />
                     </div>
                 </div>
@@ -127,7 +127,7 @@
                             <font-awesome-icon icon="fa-solid fa-user-minus" class="text-error" />
                             <span class="font-semibold">{{ $t('unfollowUsersAction') }}</span>
                         </div>
-                        <input type="checkbox" class="toggle toggle-error toggle-sm" v-model="features.unfollowUsers"
+                        <input type="checkbox" class="toggle toggle-error toggle-md" v-model="features.unfollowUsers"
                             :disabled="!isUsernameSource" />
                     </div>
                 </div>
@@ -143,21 +143,21 @@
                             <font-awesome-icon icon="fa-solid fa-envelope" class="text-info" />
                             <span class="font-semibold">{{ $t('sendDMAction') }}</span>
                         </div>
-                        <input type="checkbox" class="toggle toggle-info toggle-sm" v-model="features.sendDM"
+                        <input type="checkbox" class="toggle toggle-info toggle-md" v-model="features.sendDM"
                             :disabled="!isUsernameSource" />
                     </div>
 
                     <div v-if="features.sendDM" class="form-control">
                         <label class="label py-1">
-                            <span class="label-text text-xs">{{ $t('messageContents') }}</span>
+                            <span class="label-text text-md">{{ $t('messageContents') }}</span>
                         </label>
-                        <textarea class="textarea textarea-xs textarea-bordered h-16"
+                        <textarea class="textarea textarea-md textarea-bordered h-16"
                             v-model="dmSettings.message_contents" :placeholder="$t('messageContentsTips')"></textarea>
 
                         <label class="cursor-pointer flex items-center gap-2 mt-2">
-                            <input type="checkbox" class="checkbox checkbox-xs checkbox-accent"
+                            <input type="checkbox" class="checkbox checkbox-md checkbox-accent"
                                 v-model="dmSettings.insert_emoji" />
-                            <span class="text-xs">{{ $t('insertEmoji') }}</span>
+                            <span class="text-md">{{ $t('insertEmoji') }}</span>
                         </label>
                     </div>
                 </div>
@@ -176,10 +176,10 @@
             <!-- 帖子处理设置 -->
             <div class="mb-4 p-3 bg-base-50 rounded-lg border border-base-200">
                 <div class="flex items-center gap-4">
-                    <span class="text-sm font-medium">{{ $t('maxPostsToProcess') }}:</span>
-                    <input type="number" class="input input-sm input-bordered w-20"
+                    <span class="text-md font-medium">{{ $t('maxPostsToProcess') }}:</span>
+                    <input type="number" class="input input-md input-bordered w-20"
                         v-model.number="postSettings.max_posts_count" min="1" max="50" />
-                    <span class="text-sm">{{ $t('posts') }}</span>
+                    <span class="text-md">{{ $t('posts') }}</span>
                 </div>
             </div>
 
@@ -196,24 +196,24 @@
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <label class="cursor-pointer flex items-center gap-2">
-                                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                <input type="checkbox" class="checkbox checkbox-md checkbox-primary"
                                     v-model="postSettings.enable_like" />
-                                <span class="text-sm">{{ $t('like') }}</span>
+                                <span class="text-md">{{ $t('like') }}</span>
                             </label>
                             <label class="cursor-pointer flex items-center gap-2">
-                                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                <input type="checkbox" class="checkbox checkbox-md checkbox-primary"
                                     v-model="postSettings.enable_favorite" />
-                                <span class="text-sm">{{ $t('favorite') }}</span>
+                                <span class="text-md">{{ $t('favorite') }}</span>
                             </label>
                             <label class="cursor-pointer flex items-center gap-2">
-                                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                <input type="checkbox" class="checkbox checkbox-md checkbox-primary"
                                     v-model="postSettings.enable_repost" />
-                                <span class="text-sm">{{ $t('repost') }}</span>
+                                <span class="text-md">{{ $t('repost') }}</span>
                             </label>
                             <label class="cursor-pointer flex items-center gap-2">
-                                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                <input type="checkbox" class="checkbox checkbox-md checkbox-primary"
                                     v-model="postSettings.enable_share" />
-                                <span class="text-sm">{{ $t('share') }}</span>
+                                <span class="text-md">{{ $t('share') }}</span>
                             </label>
                         </div>
 
@@ -221,17 +221,17 @@
 
                         <div class="space-y-3">
                             <div class="flex items-center gap-3">
-                                <span class="text-sm font-medium min-w-[100px]">{{ $t('viewDuration') }}:</span>
-                                <input type="number" class="input input-sm input-bordered w-20"
+                                <span class="text-md font-medium min-w-[100px]">{{ $t('viewDuration') }}:</span>
+                                <input type="number" class="input input-md input-bordered w-20"
                                     v-model.number="postSettings.view_duration" min="1" max="300" />
-                                <span class="text-sm">{{ $t('seconds') }}</span>
+                                <span class="text-md">{{ $t('seconds') }}</span>
                             </div>
 
                             <div class="flex items-center gap-3">
-                                <span class="text-sm font-medium min-w-[100px]">{{ $t('repeatTimes') }}:</span>
-                                <input type="number" class="input input-sm input-bordered w-20"
+                                <span class="text-md font-medium min-w-[100px]">{{ $t('repeatTimes') }}:</span>
+                                <input type="number" class="input input-md input-bordered w-20"
                                     v-model.number="postSettings.repeat_times" min="1" max="20" />
-                                <span class="text-sm">{{ $t('times') }}</span>
+                                <span class="text-md">{{ $t('times') }}</span>
                             </div>
 
                             <div class="alert alert-info py-2 px-3">
@@ -240,7 +240,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <span class="text-xs">{{ $t('repeatTimesTip') }}</span>
+                                <span class="text-md">{{ $t('repeatTimesTip') }}</span>
                             </div>
                         </div>
                     </div>
@@ -256,46 +256,46 @@
 
                     <div class="space-y-3">
                         <div class="flex flex-row items-center gap-2 mb-3">
-                            <label class="font-bold text-sm">{{ $t('generateByChatGPT') }}:</label>
-                            <input type="checkbox" class="toggle toggle-accent toggle-sm"
+                            <label class="font-bold text-md">{{ $t('generateByChatGPT') }}:</label>
+                            <input type="checkbox" class="toggle toggle-accent toggle-md"
                                 v-model="commentSettings.generate_by_chatgpt" />
                         </div>
 
                         <div v-if="commentSettings.generate_by_chatgpt" class="space-y-3">
                             <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-3">
-                                <legend class="fieldset-legend text-sm">{{ $t('chatgptSettings') }}</legend>
+                                <legend class="fieldset-legend text-md">{{ $t('chatgptSettings') }}</legend>
 
                                 <div class="grid grid-cols-1 gap-2">
                                     <div>
                                         <label class="label py-1">
-                                            <span class="label-text text-xs">{{ $t('url') }}</span>
+                                            <span class="label-text text-md">{{ $t('url') }}</span>
                                         </label>
-                                        <input type="text" class="input input-xs w-full"
+                                        <input type="text" class="input input-md w-full"
                                             placeholder="https://api.openai.com/v1/chat/completions"
                                             v-model="commentSettings.chatgpt_settings.url" />
                                     </div>
 
                                     <div>
                                         <label class="label py-1">
-                                            <span class="label-text text-xs">{{ $t('apiKey') }}</span>
+                                            <span class="label-text text-md">{{ $t('apiKey') }}</span>
                                         </label>
-                                        <input type="password" class="input input-xs w-full" placeholder="sk-********"
+                                        <input type="password" class="input input-md w-full" placeholder="sk-********"
                                             v-model="commentSettings.chatgpt_settings.api_key" />
                                     </div>
 
                                     <div>
                                         <label class="label py-1">
-                                            <span class="label-text text-xs">{{ $t('model') }}</span>
+                                            <span class="label-text text-md">{{ $t('model') }}</span>
                                         </label>
-                                        <input type="text" class="input input-xs" placeholder="gpt-3.5-turbo"
+                                        <input type="text" class="input input-md" placeholder="gpt-3.5-turbo"
                                             v-model="commentSettings.chatgpt_settings.model" />
                                     </div>
 
                                     <div>
                                         <label class="label py-1">
-                                            <span class="label-text text-xs">{{ $t('systemPrompt') }}</span>
+                                            <span class="label-text text-md">{{ $t('systemPrompt') }}</span>
                                         </label>
-                                        <textarea class="textarea textarea-xs h-12"
+                                        <textarea class="textarea textarea-md h-12"
                                             :placeholder="$t('systemPromptTips')"
                                             v-model="commentSettings.chatgpt_settings.system_prompt"></textarea>
                                     </div>
@@ -303,18 +303,18 @@
                             </fieldset>
 
                             <div class="flex items-center gap-2">
-                                <button class="btn btn-xs btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
+                                <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
                                     }}</button>
-                                <span :class="testResultStyle" class="text-xs">{{ testResult }}</span>
+                                <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
 
                         <div v-else class="space-y-3">
                             <div class="form-control">
                                 <label class="label py-1">
-                                    <span class="label-text text-sm">{{ $t('comments') }}</span>
+                                    <span class="label-text text-md">{{ $t('comments') }}</span>
                                 </label>
-                                <textarea class="textarea textarea-sm textarea-bordered h-16"
+                                <textarea class="textarea textarea-md textarea-bordered h-16"
                                     v-model="commentSettings.comment_content"
                                     :placeholder="$t('commentContentTips')"></textarea>
                             </div>
@@ -322,20 +322,20 @@
                             <div class="flex gap-4">
                                 <label class="cursor-pointer flex items-center gap-2">
                                     <input type="radio" name="commentOrder" value="random"
-                                        class="radio radio-sm radio-primary" v-model="commentSettings.comment_order" />
-                                    <span class="text-sm">{{ $t('random') }}</span>
+                                        class="radio radio-md radio-primary" v-model="commentSettings.comment_order" />
+                                    <span class="text-md">{{ $t('random') }}</span>
                                 </label>
                                 <label class="cursor-pointer flex items-center gap-2">
                                     <input type="radio" name="commentOrder" value="sequential"
-                                        class="radio radio-sm radio-primary" v-model="commentSettings.comment_order" />
-                                    <span class="text-sm">{{ $t('sequential') }}</span>
+                                        class="radio radio-md radio-primary" v-model="commentSettings.comment_order" />
+                                    <span class="text-md">{{ $t('sequential') }}</span>
                                 </label>
                             </div>
 
                             <label class="cursor-pointer flex items-center gap-2">
-                                <input type="checkbox" class="checkbox checkbox-sm checkbox-accent"
+                                <input type="checkbox" class="checkbox checkbox-md checkbox-accent"
                                     v-model="commentSettings.insert_emoji" />
-                                <span class="text-sm">{{ $t('insertEmoji') }}</span>
+                                <span class="text-md">{{ $t('insertEmoji') }}</span>
                             </label>
                         </div>
                     </div>

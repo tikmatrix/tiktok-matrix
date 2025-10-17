@@ -14,7 +14,7 @@
                     </div>
                     <button @click="removeNotification(currentNotification.id)"
                         class="ml-3 opacity-70 hover:opacity-100 transition-opacity">
-                        <font-awesome-icon icon="fa-solid fa-times" class="text-sm" />
+                        <font-awesome-icon icon="fa-solid fa-times" class="text-md" />
                     </button>
                 </div>
             </transition>

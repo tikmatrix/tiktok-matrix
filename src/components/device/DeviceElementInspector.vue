@@ -1,16 +1,16 @@
 <template>
     <div class="device-element-inspector flex flex-col h-full">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-semibold">Element Inspector</h3>
+            <h3 class="text-md font-semibold">Element Inspector</h3>
         </div>
 
         <div v-if="element" class="flex-1 overflow-y-auto space-y-2 inspector-content">
-            <div class="divider text-xs">Main Properties</div>
+            <div class="divider text-md">Main Properties</div>
 
             <div v-if="element.className" class="property-item">
                 <div class="property-item-header">
                     <div class="property-label">Class</div>
-                    <button type="button" class="btn btn-ghost btn-xs copy-button" title="Copy Class"
+                    <button type="button" class="btn btn-ghost btn-md copy-button" title="Copy Class"
                         @click="copyToClipboard(element.className, 'Class')">
                         <font-awesome-icon icon="copy" />
                     </button>
@@ -21,7 +21,7 @@
             <div v-if="element.text !== undefined" class="property-item">
                 <div class="property-item-header">
                     <div class="property-label">Text</div>
-                    <button type="button" class="btn btn-ghost btn-xs copy-button" title="Copy Text"
+                    <button type="button" class="btn btn-ghost btn-md copy-button" title="Copy Text"
                         @click="copyToClipboard(element.text, 'Text')">
                         <font-awesome-icon icon="copy" />
                     </button>
@@ -38,7 +38,7 @@
             <div v-if="element.contentDesc !== undefined" class="property-item">
                 <div class="property-item-header">
                     <div class="property-label">Content Description</div>
-                    <button type="button" class="btn btn-ghost btn-xs copy-button" title="Copy Content Description"
+                    <button type="button" class="btn btn-ghost btn-md copy-button" title="Copy Content Description"
                         @click="copyToClipboard(element.contentDesc, 'Content Description')">
                         <font-awesome-icon icon="copy" />
                     </button>
@@ -55,7 +55,7 @@
             <div v-if="element.resourceId" class="property-item">
                 <div class="property-item-header">
                     <div class="property-label">Resource ID</div>
-                    <button type="button" class="btn btn-ghost btn-xs copy-button" title="Copy Resource ID"
+                    <button type="button" class="btn btn-ghost btn-md copy-button" title="Copy Resource ID"
                         @click="copyToClipboard(element.resourceId, 'Resource ID')">
                         <font-awesome-icon icon="copy" />
                     </button>
@@ -66,7 +66,7 @@
             <div v-if="element.bounds" class="property-item">
                 <div class="property-item-header">
                     <div class="property-label">Bounds</div>
-                    <button type="button" class="btn btn-ghost btn-xs copy-button" title="Copy Bounds"
+                    <button type="button" class="btn btn-ghost btn-md copy-button" title="Copy Bounds"
                         @click="copyToClipboard(formatBoundsText(element.bounds), 'Bounds')">
                         <font-awesome-icon icon="copy" />
                     </button>
@@ -80,7 +80,7 @@
             <div v-if="element.bounds" class="property-item">
                 <div class="property-item-header">
                     <div class="property-label">Size</div>
-                    <button type="button" class="btn btn-ghost btn-xs copy-button" title="Copy Size"
+                    <button type="button" class="btn btn-ghost btn-md copy-button" title="Copy Size"
                         @click="copyToClipboard(formatSizeText(element.bounds), 'Size')">
                         <font-awesome-icon icon="copy" />
                     </button>
@@ -94,11 +94,11 @@
                 <div class="property-item-header">
                     <div class="property-label">Center</div>
                     <div class="property-actions">
-                        <button type="button" class="btn btn-ghost btn-xs copy-button" title="Copy Center"
+                        <button type="button" class="btn btn-ghost btn-md copy-button" title="Copy Center"
                             @click="copyToClipboard(formatCenterText(element.bounds), 'Center')">
                             <font-awesome-icon icon="copy" />
                         </button>
-                        <button type="button" @click="handleTapCenter" class="btn btn-xs btn-ghost"
+                        <button type="button" @click="handleTapCenter" class="btn btn-md btn-ghost"
                             title="Tap on center">
                             <font-awesome-icon icon="hand-pointer" />
                         </button>
@@ -109,68 +109,68 @@
                 </div>
             </div>
 
-            <div class="divider text-xs">State</div>
+            <div class="divider text-md">State</div>
 
             <div class="grid grid-cols-2 gap-2">
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.clickable" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Clickable</span>
+                    <input type="checkbox" :checked="element.clickable" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Clickable</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.enabled" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Enabled</span>
+                    <input type="checkbox" :checked="element.enabled" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Enabled</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.focusable" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Focusable</span>
+                    <input type="checkbox" :checked="element.focusable" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Focusable</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.focused" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Focused</span>
+                    <input type="checkbox" :checked="element.focused" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Focused</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.scrollable" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Scrollable</span>
+                    <input type="checkbox" :checked="element.scrollable" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Scrollable</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.selected" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Selected</span>
+                    <input type="checkbox" :checked="element.selected" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Selected</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.checkable" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Checkable</span>
+                    <input type="checkbox" :checked="element.checkable" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Checkable</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.checked" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Checked</span>
+                    <input type="checkbox" :checked="element.checked" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Checked</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.longClickable" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Long-clickable</span>
+                    <input type="checkbox" :checked="element.longClickable" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Long-clickable</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" :checked="element.password" disabled class="checkbox checkbox-xs" />
-                    <span class="text-xs">Password</span>
+                    <input type="checkbox" :checked="element.password" disabled class="checkbox checkbox-md" />
+                    <span class="text-md">Password</span>
                 </div>
             </div>
 
-            <div v-if="Object.keys(filteredAttributes).length > 0" class="divider text-xs">Other Attributes</div>
+            <div v-if="Object.keys(filteredAttributes).length > 0" class="divider text-md">Other Attributes</div>
 
             <div v-for="(value, key) in filteredAttributes" :key="key" class="property-item-compact">
                 <span class="property-label-compact">{{ key }}:</span>
                 <div class="property-compact-value">
                     <span class="property-value-compact value-content" :class="whitespaceIndicators(value)"
                         v-text="coerceToString(value)"></span>
-                    <button type="button" class="btn btn-ghost btn-xs copy-button" :title="`Copy ${key}`"
+                    <button type="button" class="btn btn-ghost btn-md copy-button" :title="`Copy ${key}`"
                         @click="copyToClipboard(value, key)">
                         <font-awesome-icon icon="copy" />
                     </button>
@@ -181,7 +181,7 @@
         <div v-else class="flex-1 flex items-center justify-center text-base-content/50">
             <div class="text-center">
                 <font-awesome-icon icon="mouse-pointer" class="text-4xl mb-2" />
-                <p class="text-sm">Click on an element to inspect</p>
+                <p class="text-md">Click on an element to inspect</p>
             </div>
         </div>
     </div>

@@ -7,7 +7,7 @@
 
     <div v-else-if="!isLicensed" class="flex items-center gap-2">
         <div class="tooltip tooltip-bottom" :data-tip="$t('licenseInactiveShort')">
-            <button class="btn btn-sm btn-warning text-warning-content shadow whitespace-nowrap"
+            <button class="btn btn-md btn-warning text-warning-content shadow whitespace-nowrap"
                 @click="$emit('open-license')">
                 <font-awesome-icon icon="fa-solid fa-triangle-exclamation" class="h-4 w-4" />
                 {{ $t('activateNow') }}
@@ -23,15 +23,15 @@
         <font-awesome-icon icon="fa-solid fa-crown" class="h-5 w-5 text-yellow-200" />
         <span class="font-semibold whitespace-nowrap">{{ licenseData.plan_name }}</span>
         <div class="flex items-center flex-row gap-2 w-full" v-if="Number(licenseData.is_stripe_active) === 1">
-            <label class="text-xs text-yellow-100" v-if="licenseData.stripe_cancel_at">
+            <label class="text-md text-yellow-100" v-if="licenseData.stripe_cancel_at">
                 {{ $t('cancelTips', { date: formatTimestamp(licenseData.stripe_cancel_at) }) }}
             </label>
-            <label class="text-xs text-yellow-100" v-else>
+            <label class="text-md text-yellow-100" v-else>
                 {{ $t('renewTips', { date: formatTimestamp(licenseData.stripe_renew_at) }) }}
             </label>
         </div>
         <div class="flex items-center flex-row gap-2 w-full" v-else>
-            <label class="text-xs text-yellow-100" v-if="licenseData.leftdays > 0">
+            <label class="text-md text-yellow-100" v-if="licenseData.leftdays > 0">
                 {{ $t('expiredTips', { date: formatDaysAhead(licenseData.leftdays) }) }}
             </label>
         </div>
