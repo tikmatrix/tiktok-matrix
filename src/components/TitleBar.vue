@@ -300,7 +300,7 @@ export default {
             agentErrorType: 'port', // 默认为端口问题
             whitelabelConfig: getWhiteLabelConfig(),
             isWhiteLabelUnlocked: isFeatureUnlocked('whiteLabel'),
-            checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=1',//changeme
+            checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=0',//changeme
         }
     },
     watch: {

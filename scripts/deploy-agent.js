@@ -11,7 +11,7 @@ const API_KEY = 'LUfAkEaQ3Hwd5Cs6KbJr8FVGYDSzMj9R';
 const API_URL = 'https://api.tikmatrix.com/ci/update_lib';
 // const API_URL = 'http://127.0.0.1:8787/ci/update_lib';
 const PLATFORM = 'windows';
-const BETA = '1'; //changeme 设置为 '1' 以使用测试环境
+const BETA = '0'; //changeme 设置为 '1' 以使用测试环境
 const SCRIPT_NAME = BETA === '1' ? 'beta/script.exe' : 'script.exe';
 const AGENT_NAME = BETA === '1' ? 'beta/agent.exe' : 'agent.exe';
 
