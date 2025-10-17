@@ -161,12 +161,10 @@
                             </div>
                         </div>
                         <VueSlider class="md:w-[500px] max-w-full" v-model="localFormData.upload_wait_time" :width="500"
-                            :min="5" :max="60" :step="5" :marks="{
-                                5: '5',
-                                15: '15',
+                            :min="30" :max="300" :step="30" :marks="{
                                 30: '30',
-                                45: '45',
-                                60: '60' + ' ' + $t('second')
+                                150: '150',
+                                300: '300' + ' ' + $t('second')
                             }" />
                     </div>
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start"

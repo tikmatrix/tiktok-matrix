@@ -11,6 +11,11 @@ const __dirname = dirname(__filename);
 const agentDir = resolve(__dirname, '..', '..', 'tiktok-agent');
 const isWindows = platform() === 'win32';
 const isMac = platform() === 'darwin';
+const args = process.argv.slice(2);
+const debugMode = args.includes('--debug');
+if (debugMode) {
+    console.log('🐛 Debug mode enabled');
+}
 
 console.log(`🚀 Building tiktok-agent (${isWindows ? 'Windows' : isMac ? 'macOS' : 'Linux'})...`);
 console.log(`📁 Agent directory: ${agentDir}`);
@@ -39,9 +44,10 @@ function killProcesses() {
 // Step 2: Run cargo build
 function runCargoBuild() {
     return new Promise((resolve, reject) => {
-        console.log('🔨 Running cargo build --release...');
 
-        const cargo = spawn('cargo', ['build', '--release'], {
+        console.log(`🔨 Running cargo build ${debugMode ? '' : '--release'}...`);
+
+        const cargo = spawn('cargo', ['build', debugMode ? '' : '--release'], {
             cwd: agentDir,
             stdio: 'inherit',
             shell: true
@@ -66,7 +72,7 @@ function runCargoBuild() {
 function copyBinaries() {
     console.log('📦 Copying binaries...');
 
-    const releaseDir = join(agentDir, 'target', 'release');
+    const releaseDir = join(agentDir, 'target', debugMode ? 'debug' : 'release');
 
     if (isWindows) {
         // Windows paths
