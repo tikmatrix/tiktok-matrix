@@ -361,6 +361,14 @@ export function delete_all_accounts() {
   })
 }
 
+export function test_proxy_rotation(data) {
+  return request({
+    method: 'post',
+    url: api.proxy_rotation_test,
+    data
+  })
+}
+
 
 export function get_ip({ serial }) {
   return request({
