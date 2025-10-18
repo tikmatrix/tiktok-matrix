@@ -129,14 +129,30 @@ export default {
         },
 
         parseExpireAt(expireAt) {
-            if (!expireAt) {
+            if (expireAt === null || expireAt === undefined) {
+                return NaN;
+            }
+
+            if (typeof expireAt === 'number') {
+                if (!Number.isFinite(expireAt)) {
+                    return NaN;
+                }
+
+                // Support both second and millisecond precision timestamps.
+                return expireAt > 1e12 ? expireAt : expireAt * 1000;
+            }
+
+            const expireAtString = String(expireAt);
+            if (!expireAtString.trim()) {
                 return NaN;
             }
 
             const attempts = new Set();
-            attempts.add(expireAt);
+            attempts.add(expireAtString);
 
-            const normalized = expireAt.includes(' ') ? expireAt.replace(' ', 'T') : expireAt;
+            const normalized = expireAtString.includes(' ')
+                ? expireAtString.replace(' ', 'T')
+                : expireAtString;
             attempts.add(normalized);
 
             const timezonePattern = /([zZ])|([+-]\d{2}:?\d{2})$/;
