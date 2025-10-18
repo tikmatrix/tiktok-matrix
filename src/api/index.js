@@ -34,6 +34,7 @@ const api = {
   delete_all_materials: '/api/material/delete_all',
   delete_all_accounts: '/api/account/delete_all',
   proxy: '/agent/api/proxy',
+  proxy_rotation_test: '/api/proxy/rotate/test',
   get_ip: '/api/get_ip',
   analytics: '/api/data_analysis',
   adb_command: '/agent/api/adb_command',

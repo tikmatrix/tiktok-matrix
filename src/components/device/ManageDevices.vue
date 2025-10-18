@@ -98,6 +98,8 @@
                         <th class="font-semibold">{{ $t('group') }}</th>
                         <th class="font-semibold">{{ $t('task') }}</th>
                         <th class="font-semibold">{{ $t('sort') }}</th>
+                        <th class="font-semibold">{{ $t('proxyRotationUrl') }}</th>
+                        <th class="font-semibold">{{ $t('lastProxyRotation') }}</th>
                         <th class="font-semibold text-center">{{ $t('actions') }}</th>
                       </tr>
                     </thead>
@@ -128,7 +130,33 @@
                         </td>
                         <td class="text-base-content/70 whitespace-nowrap">{{ device.sort }}</td>
                         <td class="whitespace-nowrap">
+                          <div class="flex flex-col gap-1 min-w-[16rem]">
+                            <span v-if="device.proxyRotation?.rotation_url" class="truncate max-w-full"
+                              :title="device.proxyRotation.rotation_url">{{ device.proxyRotation.rotation_url }}</span>
+                            <span v-else class="text-base-content/50">{{ $t('proxyRotationNotConfigured') }}</span>
+                            <div class="flex flex-wrap gap-2">
+                              <button class="btn btn-xs btn-outline btn-secondary"
+                                @click="openProxyRotationDialog(device)">{{ $t('configure') }}</button>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="whitespace-nowrap">
+                          <div class="flex flex-col gap-1">
+                            <span>{{ formatRotationTime(device.proxyRotation?.last_rotated_at) }}</span>
+                            <span v-if="device.proxyRotation?.last_status"
+                              :class="['text-xs font-semibold', rotationStatusClass(device.proxyRotation?.last_status)]">
+                              {{ rotationStatusLabel(device.proxyRotation?.last_status) }}
+                            </span>
+                          </div>
+                        </td>
+                        <td class="whitespace-nowrap">
                           <div class="flex items-center justify-end gap-2">
+                            <button class="btn btn-md btn-outline btn-info"
+                              :class="{ 'loading': isTestingRotation(device) }"
+                              :disabled="!device.proxyRotation?.rotation_url || isTestingRotation(device)"
+                              @click="testProxyRotation(device)">
+                              <span v-if="!isTestingRotation(device)">{{ $t('testProxyRotation') }}</span>
+                            </button>
                             <button class="btn btn-md btn-outline btn-primary" @click="showSetSortDialog(device)">{{
                               $t('setSort') }}</button>
                           </div>
@@ -229,6 +257,68 @@
     </form>
   </dialog>
 
+  <dialog ref="proxy_rotation_dialog" class="modal">
+    <div class="modal-box bg-base-300 max-w-3xl">
+      <h3 class="font-bold text-lg mb-4">
+        {{ $t('proxyRotationConfig') }}
+        <span v-if="proxyRotationForm.device_label" class="text-sm text-base-content/70 ml-2">({{
+          proxyRotationForm.device_label }})</span>
+      </h3>
+      <form class="space-y-4" @submit.prevent="saveProxyRotation">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">{{ $t('proxyRotationUrl') }}</span>
+          </label>
+          <input class="input input-bordered input-md w-full" type="url" v-model.trim="proxyRotationForm.rotation_url"
+            required />
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">{{ $t('requestMethod') }}</span>
+            </label>
+            <select class="select select-bordered" v-model="proxyRotationForm.method">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">{{ $t('requestTimeout') }}</span>
+            </label>
+            <input class="input input-bordered input-md" type="number" min="1000"
+              v-model.number="proxyRotationForm.timeout_ms" />
+          </div>
+        </div>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">{{ $t('requestHeadersJson') }}</span>
+          </label>
+          <textarea class="textarea textarea-bordered font-mono" rows="4" v-model.trim="proxyRotationForm.headers_json"
+            :placeholder="$t('requestHeadersPlaceholder')"></textarea>
+        </div>
+        <div class="form-control" v-if="proxyRotationForm.method === 'POST'">
+          <label class="label">
+            <span class="label-text font-semibold">{{ $t('requestBodyJson') }}</span>
+          </label>
+          <textarea class="textarea textarea-bordered font-mono" rows="4" v-model.trim="proxyRotationForm.body_json"
+            :placeholder="$t('requestBodyPlaceholder')"></textarea>
+        </div>
+        <div class="modal-action">
+          <button type="button" class="btn" @click="closeProxyRotationDialog">{{ $t('cancel') }}</button>
+          <button type="button" class="btn btn-error" v-if="canClearProxyRotation"
+            @click="clearProxyRotation">{{ $t('clearConfiguration') }}</button>
+          <button type="submit" class="btn btn-primary" :class="{ 'loading': proxyRotationSaving }">
+            <span v-if="!proxyRotationSaving">{{ $t('save') }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
+
   <!-- Debug Dialog -->
   <DeviceDebugDialog v-if="debugDevice" v-model="showDebugDialog" :device="debugDevice"
     @close="handleCloseDebugDialog" />
@@ -243,6 +333,7 @@ import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
 import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
+import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs';
 import ContactSupport from '../pricing/ContactSupport.vue'
 import { getWhiteLabelConfig } from '../../config/whitelabel.js';
 
@@ -291,6 +382,18 @@ export default {
       // Debug Dialog
       showDebugDialog: false,
       debugDevice: null,
+      proxyRotationMap: {},
+      proxyRotationForm: {
+        device_serial: '',
+        device_label: '',
+        rotation_url: '',
+        method: 'GET',
+        headers_json: '',
+        body_json: '',
+        timeout_ms: 10000,
+      },
+      proxyRotationSaving: false,
+      testingRotations: {},
     }
   },
   watch: {
@@ -311,6 +414,7 @@ export default {
         this.mydevices.forEach(device => {
           device.group_name = this.groups.find(group => group.id === device.group_id)?.name
         })
+        this.applyProxyRotations()
       },
       deep: true
     }
@@ -352,11 +456,286 @@ export default {
       });
       this.$emiter('reload_devices', {})
     },
+    getDeviceSerial(device) {
+      return device?.real_serial || device?.serial || ''
+    },
     refreshPage() {
       this.$emiter('refreshDevice', {})
     },
     closeKeyboardTip() {
       this.showKeyboardTip = false
+    },
+    resetProxyRotationForm() {
+      this.proxyRotationForm = {
+        device_serial: '',
+        device_label: '',
+        rotation_url: '',
+        method: 'GET',
+        headers_json: '',
+        body_json: '',
+        timeout_ms: 10000,
+      }
+    },
+    async loadProxyRotations() {
+      try {
+        const fileExists = await exists('data/proxy-rotations.json', { dir: BaseDirectory.AppData })
+        if (!fileExists) {
+          this.proxyRotationMap = {}
+          return
+        }
+        const content = await readTextFile('data/proxy-rotations.json', { dir: BaseDirectory.AppData })
+        const parsed = JSON.parse(content || '[]')
+        if (Array.isArray(parsed)) {
+          this.proxyRotationMap = parsed.reduce((acc, item) => {
+            if (item && item.device_serial) {
+              acc[item.device_serial] = item
+            }
+            return acc
+          }, {})
+        } else {
+          this.proxyRotationMap = {}
+        }
+      } catch (error) {
+        console.error('Failed to load proxy rotations:', error)
+        this.proxyRotationMap = {}
+      } finally {
+        this.applyProxyRotations()
+      }
+    },
+    applyProxyRotations() {
+      if (!Array.isArray(this.mydevices)) {
+        return
+      }
+      this.mydevices.forEach(device => {
+        const serial = this.getDeviceSerial(device)
+        device.proxyRotation = this.proxyRotationMap[serial] ? { ...this.proxyRotationMap[serial] } : null
+      })
+      this.mydevices = [...this.mydevices]
+    },
+    openProxyRotationDialog(device) {
+      const serial = this.getDeviceSerial(device)
+      const config = this.proxyRotationMap[serial] || {
+        device_serial: serial,
+        rotation_url: '',
+        method: 'GET',
+        headers: {},
+        body: {},
+        timeout_ms: 10000,
+      }
+      this.proxyRotationForm.device_serial = serial
+      this.proxyRotationForm.device_label = device?.key || serial
+      this.proxyRotationForm.rotation_url = config.rotation_url || ''
+      this.proxyRotationForm.method = config.method || 'GET'
+      this.proxyRotationForm.timeout_ms = config.timeout_ms || 10000
+      this.proxyRotationForm.headers_json = config.headers ? JSON.stringify(config.headers, null, 2) : ''
+      this.proxyRotationForm.body_json = config.body ? JSON.stringify(config.body, null, 2) : ''
+      if (this.$refs.proxy_rotation_dialog?.showModal) {
+        this.$refs.proxy_rotation_dialog.showModal()
+      } else if (this.$refs.proxy_rotation_dialog?.show) {
+        this.$refs.proxy_rotation_dialog.show()
+      }
+    },
+    closeProxyRotationDialog() {
+      if (this.$refs.proxy_rotation_dialog?.close) {
+        this.$refs.proxy_rotation_dialog.close()
+      }
+      this.resetProxyRotationForm()
+    },
+    async persistProxyRotations() {
+      try {
+        const dataDirExists = await exists('data', { dir: BaseDirectory.AppData })
+        if (!dataDirExists) {
+          await createDir('data', { dir: BaseDirectory.AppData, recursive: true })
+        }
+        const payload = Object.values(this.proxyRotationMap)
+        await writeTextFile('data/proxy-rotations.json', JSON.stringify(payload, null, 2), {
+          dir: BaseDirectory.AppData
+        })
+      } catch (error) {
+        console.error('Failed to save proxy rotations:', error)
+        throw error
+      }
+    },
+    parseJsonInput(value, fallback = {}) {
+      if (!value || value.trim() === '') {
+        return fallback
+      }
+      try {
+        return JSON.parse(value)
+      } catch (error) {
+        throw new Error(this.$t('invalidJsonFormat'))
+      }
+    },
+    async saveProxyRotation() {
+      if (!this.proxyRotationForm.device_serial) {
+        return
+      }
+      this.proxyRotationSaving = true
+      try {
+        const headers = this.parseJsonInput(this.proxyRotationForm.headers_json, {})
+        const body = this.proxyRotationForm.method === 'POST'
+          ? this.parseJsonInput(this.proxyRotationForm.body_json, {})
+          : undefined
+        const config = {
+          device_serial: this.proxyRotationForm.device_serial,
+          rotation_url: this.proxyRotationForm.rotation_url,
+          method: this.proxyRotationForm.method,
+          headers,
+          body,
+          timeout_ms: Number(this.proxyRotationForm.timeout_ms) || 10000,
+          last_status: this.proxyRotationMap[this.proxyRotationForm.device_serial]?.last_status || null,
+          last_message: this.proxyRotationMap[this.proxyRotationForm.device_serial]?.last_message || '',
+          last_rotated_at: this.proxyRotationMap[this.proxyRotationForm.device_serial]?.last_rotated_at || null,
+        }
+        this.proxyRotationMap = {
+          ...this.proxyRotationMap,
+          [config.device_serial]: config,
+        }
+        await this.persistProxyRotations()
+        this.applyProxyRotations()
+        await this.$emiter('NOTIFY', {
+          type: 'success',
+          message: this.$t('proxyRotationSaved'),
+          timeout: 3000,
+        })
+        this.closeProxyRotationDialog()
+      } catch (error) {
+        console.error('Failed to save proxy rotation:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: error.message || this.$t('proxyRotationSaveFailed'),
+          timeout: 4000,
+        })
+      } finally {
+        this.proxyRotationSaving = false
+      }
+    },
+    async clearProxyRotation() {
+      const serial = this.proxyRotationForm.device_serial
+      if (!serial) {
+        return
+      }
+      this.proxyRotationSaving = true
+      try {
+        const updatedMap = { ...this.proxyRotationMap }
+        delete updatedMap[serial]
+        this.proxyRotationMap = updatedMap
+        await this.persistProxyRotations()
+        this.applyProxyRotations()
+        await this.$emiter('NOTIFY', {
+          type: 'success',
+          message: this.$t('proxyRotationCleared'),
+          timeout: 3000,
+        })
+        this.closeProxyRotationDialog()
+      } catch (error) {
+        console.error('Failed to clear proxy rotation:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('proxyRotationSaveFailed'),
+          timeout: 4000,
+        })
+      } finally {
+        this.proxyRotationSaving = false
+      }
+    },
+    formatRotationTime(timestamp) {
+      if (!timestamp) {
+        return this.$t('proxyRotationNever')
+      }
+      const date = new Date(timestamp)
+      if (Number.isNaN(date.getTime())) {
+        return this.$t('proxyRotationNever')
+      }
+      return date.toLocaleString()
+    },
+    rotationStatusClass(status) {
+      if (status === 'success') {
+        return 'text-success'
+      }
+      if (status === 'failure') {
+        return 'text-error'
+      }
+      return 'text-base-content/70'
+    },
+    rotationStatusLabel(status) {
+      if (status === 'success') {
+        return this.$t('proxyRotationSuccess')
+      }
+      if (status === 'failure') {
+        return this.$t('proxyRotationFailure')
+      }
+      return this.$t('proxyRotationUnknown')
+    },
+    isTestingRotation(device) {
+      const serial = this.getDeviceSerial(device)
+      return !!this.testingRotations[serial]
+    },
+    async testProxyRotation(device) {
+      const serial = this.getDeviceSerial(device)
+      const config = this.proxyRotationMap[serial]
+      if (!config || !config.rotation_url) {
+        await this.$emiter('NOTIFY', {
+          type: 'warning',
+          message: this.$t('proxyRotationNotConfigured'),
+          timeout: 3000,
+        })
+        return
+      }
+      this.testingRotations = { ...this.testingRotations, [serial]: true }
+      try {
+        const payload = {
+          device_serial: config.device_serial,
+          rotation_url: config.rotation_url,
+          method: config.method,
+          headers: config.headers || {},
+          body: config.body,
+          timeout_ms: config.timeout_ms,
+        }
+        const response = await this.$service.test_proxy_rotation(payload)
+        const result = response?.data ?? response
+        const isSuccess = response?.code === 0 ? (result?.success !== false) : (result?.success ?? true)
+        const status = result?.status || (isSuccess ? 'success' : 'failure')
+        const message = result?.message || (isSuccess ? this.$t('proxyRotationTestSuccess') : this.$t('proxyRotationTestFailed'))
+        const rotatedAt = result?.rotated_at || new Date().toISOString()
+        this.proxyRotationMap = {
+          ...this.proxyRotationMap,
+          [serial]: {
+            ...config,
+            last_status: status,
+            last_message: message,
+            last_rotated_at: rotatedAt,
+          }
+        }
+        await this.persistProxyRotations()
+        this.applyProxyRotations()
+        await this.$emiter('NOTIFY', {
+          type: isSuccess ? 'success' : 'error',
+          message,
+          timeout: 3000,
+        })
+      } catch (error) {
+        console.error('Proxy rotation test failed:', error)
+        this.proxyRotationMap = {
+          ...this.proxyRotationMap,
+          [serial]: {
+            ...config,
+            last_status: 'failure',
+            last_message: error.message || this.$t('proxyRotationTestFailed'),
+            last_rotated_at: new Date().toISOString(),
+          }
+        }
+        await this.persistProxyRotations()
+        this.applyProxyRotations()
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: error.message || this.$t('proxyRotationTestFailed'),
+          timeout: 4000,
+        })
+      } finally {
+        const { [serial]: removed, ...rest } = this.testingRotations
+        this.testingRotations = rest
+      }
     },
 
     async scan() {
@@ -420,10 +799,15 @@ export default {
         gap: '1.25rem',
         flex: 1
       }
+    },
+    canClearProxyRotation() {
+      return !!this.proxyRotationForm.device_serial && !!this.proxyRotationMap[this.proxyRotationForm.device_serial]
     }
   },
   async mounted() {
+    await this.loadProxyRotations()
     this.mydevices = this.devices
+    this.applyProxyRotations()
     await this.$listen('openDevice', async (e) => {
       const bigScreen = localStorage.getItem('bigScreen') || 'standard'
       if (bigScreen === 'standard') {

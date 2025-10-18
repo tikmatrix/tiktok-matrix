@@ -15,8 +15,11 @@ export default {
     }
   },
   methods: {
-    async runScript(enable_multi_account) {
-      await this.$emiter('run_now_by_account', { name: 'switch_account', args: { enable_multi_account } })
+    async runScript(enable_multi_account, rotate_proxy_before_switch = false) {
+      await this.$emiter('run_now_by_account', {
+        name: 'switch_account',
+        args: { enable_multi_account, rotate_proxy_before_switch }
+      })
     },
   },
   async mounted() {

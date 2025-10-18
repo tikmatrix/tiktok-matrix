@@ -25,6 +25,11 @@
           <label class="font-bold text-info">{{ $t('enableMultiAccount') }}:</label>
           <input type="checkbox" class="toggle toggle-accent" v-model="enable_multi_account" />
         </div>
+        <div class="flex flex-row items-center gap-2" v-if="script.name === 'switchAccount'">
+          <label class="font-bold text-info">{{ $t('rotateProxyBeforeSwitch') }}:</label>
+          <input type="checkbox" class="toggle toggle-accent" v-model="rotate_proxy_before_switch"
+            :disabled="!enable_multi_account" />
+        </div>
       </div>
       <div class="flex flex-wrap gap-2 mt-1 max-h-24 overflow-y-auto bg-base-200 p-2 rounded-md">
         <div v-for="real_serial in selecedDevices" :key="real_serial" class="badge badge-outline">
@@ -98,6 +103,7 @@ import { beforeRunScriptSettings } from '@/utils/settingsManager';
 const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
   {
     enable_multi_account: false,
+    rotate_proxy_before_switch: false,
     selected_accounts: [],
     account_filters: {
       proxy_status: 'all',
@@ -106,7 +112,7 @@ const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
     }
   },
   [
-    'enable_multi_account', 'selected_accounts', 'account_filters'
+    'enable_multi_account', 'rotate_proxy_before_switch', 'selected_accounts', 'account_filters'
   ]
 );
 export default {
@@ -157,6 +163,13 @@ export default {
       licenseLimit: null,
     }
   },
+  watch: {
+    enable_multi_account(val) {
+      if (!val && this.rotate_proxy_before_switch) {
+        this.rotate_proxy_before_switch = false
+      }
+    }
+  },
   methods: {
     async update_settings() {
       await this.$service.update_settings(this.settings)
@@ -179,7 +192,7 @@ export default {
       }
 
       if (this.$refs.currentDialog && typeof this.$refs.currentDialog.runScript === 'function') {
-        await this.$refs.currentDialog.runScript(this.enable_multi_account);
+        await this.$refs.currentDialog.runScript(this.enable_multi_account, this.rotate_proxy_before_switch);
         await this.$emiter('closeDialog', {})
       }
     },
