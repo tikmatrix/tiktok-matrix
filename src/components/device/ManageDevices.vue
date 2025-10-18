@@ -693,10 +693,16 @@ export default {
           timeout_ms: config.timeout_ms,
         }
         const response = await this.$service.test_proxy_rotation(payload)
-        const result = response?.data ?? response
-        const isSuccess = response?.code === 0 ? (result?.success !== false) : (result?.success ?? true)
+        const result = response?.data ?? response ?? {}
+        const responseCode = typeof response?.code === 'number' ? response.code : 0
+        const isSuccess = responseCode === 0
+          ? (result?.success !== false)
+          : (result?.success === true)
         const status = result?.status || (isSuccess ? 'success' : 'failure')
-        const message = result?.message || (isSuccess ? this.$t('proxyRotationTestSuccess') : this.$t('proxyRotationTestFailed'))
+        const message =
+          result?.message ||
+          response?.error ||
+          (isSuccess ? this.$t('proxyRotationTestSuccess') : this.$t('proxyRotationTestFailed'))
         const rotatedAt = result?.rotated_at || new Date().toISOString()
         this.proxyRotationMap = {
           ...this.proxyRotationMap,
