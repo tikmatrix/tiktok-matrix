@@ -162,7 +162,7 @@ export default {
   computed: {
     sortedGroups() {
       //sort by device count
-      return this.groups.sort((a, b) => this.groupDevices[b.id]?.length - this.groupDevices[a.id]?.length)
+      return [...this.groups].sort((a, b) => this.groupDevices[b.id]?.length - this.groupDevices[a.id]?.length)
     }
   },
   data() {
