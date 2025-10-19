@@ -648,7 +648,7 @@
   requestMethod: 'Request method',
   requestTimeout: 'Request timeout (ms)',
   requestHeadersJson: 'Request headers (JSON)',
-  requestHeadersPlaceholder: 'e.g. { "Authorization": "Bearer token" }',
+  requestHeadersPlaceholder: 'e.g. {authorizationHeader}',
   requestBodyJson: 'Request body (JSON)',
   requestBodyPlaceholder: 'JSON payload to send when using POST',
   clearConfiguration: 'Clear configuration',

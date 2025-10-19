@@ -295,7 +295,7 @@
             <span class="label-text font-semibold">{{ $t('requestHeadersJson') }}</span>
           </label>
           <textarea class="textarea textarea-bordered font-mono" rows="4" v-model.trim="proxyRotationForm.headers_json"
-            :placeholder="$t('requestHeadersPlaceholder')"></textarea>
+            :placeholder="$t('requestHeadersPlaceholder', { authorizationHeader: requestHeadersSample })"></textarea>
         </div>
         <div class="form-control" v-if="proxyRotationForm.method === 'POST'">
           <label class="label">
@@ -394,6 +394,7 @@ export default {
       },
       proxyRotationSaving: false,
       testingRotations: {},
+      requestHeadersSample: '{ "Authorization": "Bearer token" }',
     }
   },
   watch: {
