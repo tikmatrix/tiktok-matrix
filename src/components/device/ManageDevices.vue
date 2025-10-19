@@ -510,11 +510,13 @@ export default {
         ?? device.group_name
         ?? (this.groups || []).find(group => group.id === device.group_id)?.name
 
-      if (resolvedGroupName !== undefined) {
+      if (resolvedGroupName !== undefined && device.group_name !== resolvedGroupName) {
         device.group_name = resolvedGroupName
       }
 
-      device.proxyRotation = rotation ? { ...rotation } : null
+      if (device.proxyRotation !== rotation) {
+        device.proxyRotation = rotation
+      }
       return device
     },
     syncDisplayedDevices() {
@@ -522,10 +524,13 @@ export default {
         this.mydevices = []
         return
       }
+      this.mydevices = this.devices
       const groupNameMap = new Map(
         (this.groups || []).map(group => [group.id, group.name])
       )
-      this.mydevices = this.devices.map(device => this.decorateDevice(device, groupNameMap))
+      this.mydevices.forEach(device => {
+        this.decorateDevice(device, groupNameMap)
+      })
     },
     openProxyRotationDialog(device) {
       const serial = this.getDeviceSerial(device)
