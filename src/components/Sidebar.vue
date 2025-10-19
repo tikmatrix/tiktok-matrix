@@ -465,10 +465,9 @@ export default {
       }
     },
     isSelectAll(id) {
-      if (!this.groupDevices[id]) {
-        this.refreshSelections()
-      }
-      return this.groupDevices[id].length > 0 && this.selections[id].length == this.groupDevices[id].length
+      const devices = this.groupDevices[id] || []
+      const selected = this.selections[id] || []
+      return devices.length > 0 && selected.length === devices.length
     },
     async selectAll(id) {
       if (!this.isSelectAll(id)) {
