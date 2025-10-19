@@ -400,21 +400,18 @@ export default {
     showKeyboardTip(val) {
       localStorage.setItem('showKeyboardTip', val)
     },
-    groups(val) {
-      this.mydevices.forEach(device => {
-        device.group_name = this.groups.find(group => group.id === device.group_id)?.name
-      })
+    groups: {
+      handler() {
+        this.syncDisplayedDevices()
+      },
+      deep: true
     },
     listMode(val) {
       localStorage.setItem('listMode', val)
     },
     devices: {
-      handler(val) {
-        this.mydevices = val
-        this.mydevices.forEach(device => {
-          device.group_name = this.groups.find(group => group.id === device.group_id)?.name
-        })
-        this.applyProxyRotations()
+      handler() {
+        this.syncDisplayedDevices()
       },
       deep: true
     }
@@ -499,18 +496,33 @@ export default {
         console.error('Failed to load proxy rotations:', error)
         this.proxyRotationMap = {}
       } finally {
-        this.applyProxyRotations()
+        this.syncDisplayedDevices()
       }
     },
-    applyProxyRotations() {
-      if (!Array.isArray(this.mydevices)) {
+    decorateDevice(device, groupNameMap) {
+      if (!device) {
+        return null
+      }
+      const serial = this.getDeviceSerial(device)
+      const rotation = this.proxyRotationMap[serial] || null
+      const resolvedGroupName =
+        groupNameMap?.get(device.group_id) ??
+        (this.groups || []).find(group => group.id === device.group_id)?.name
+      return {
+        ...device,
+        group_name: resolvedGroupName !== undefined ? resolvedGroupName : device.group_name,
+        proxyRotation: rotation ? { ...rotation } : null,
+      }
+    },
+    syncDisplayedDevices() {
+      if (!Array.isArray(this.devices)) {
+        this.mydevices = []
         return
       }
-      this.mydevices.forEach(device => {
-        const serial = this.getDeviceSerial(device)
-        device.proxyRotation = this.proxyRotationMap[serial] ? { ...this.proxyRotationMap[serial] } : null
-      })
-      this.mydevices = [...this.mydevices]
+      const groupNameMap = new Map(
+        (this.groups || []).map(group => [group.id, group.name])
+      )
+      this.mydevices = this.devices.map(device => this.decorateDevice(device, groupNameMap))
     },
     openProxyRotationDialog(device) {
       const serial = this.getDeviceSerial(device)
@@ -592,7 +604,7 @@ export default {
           [config.device_serial]: config,
         }
         await this.persistProxyRotations()
-        this.applyProxyRotations()
+        this.syncDisplayedDevices()
         await this.$emiter('NOTIFY', {
           type: 'success',
           message: this.$t('proxyRotationSaved'),
@@ -621,7 +633,7 @@ export default {
         delete updatedMap[serial]
         this.proxyRotationMap = updatedMap
         await this.persistProxyRotations()
-        this.applyProxyRotations()
+        this.syncDisplayedDevices()
         await this.$emiter('NOTIFY', {
           type: 'success',
           message: this.$t('proxyRotationCleared'),
@@ -714,7 +726,7 @@ export default {
           }
         }
         await this.persistProxyRotations()
-        this.applyProxyRotations()
+        this.syncDisplayedDevices()
         await this.$emiter('NOTIFY', {
           type: isSuccess ? 'success' : 'error',
           message,
@@ -732,7 +744,7 @@ export default {
           }
         }
         await this.persistProxyRotations()
-        this.applyProxyRotations()
+        this.syncDisplayedDevices()
         await this.$emiter('NOTIFY', {
           type: 'error',
           message: error.message || this.$t('proxyRotationTestFailed'),
@@ -812,15 +824,18 @@ export default {
   },
   async mounted() {
     await this.loadProxyRotations()
-    this.mydevices = this.devices
-    this.applyProxyRotations()
+    this.syncDisplayedDevices()
     await this.$listen('openDevice', async (e) => {
       const bigScreen = localStorage.getItem('bigScreen') || 'standard'
       if (bigScreen === 'standard') {
         this.device = e.payload
+        const groupNameMap = new Map(
+          (this.groups || []).map(group => [group.id, group.name])
+        )
+        const decoratedDevice = this.decorateDevice(this.device, groupNameMap) || this.device
         for (let i = 0; i < this.mydevices.length; i++) {
           if (this.mydevices[i].serial === this.device.serial) {
-            this.mydevices[i] = this.device
+            this.mydevices[i] = decoratedDevice
             break
           }
         }
