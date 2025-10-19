@@ -186,6 +186,7 @@ export default {
       adImage: '',
       adLink: '',
       adTitle: '',
+      isRefreshingSelections: false,
     }
   },
 
@@ -482,18 +483,37 @@ export default {
       this.refreshSelections()
     },
     async refreshSelections() {
-      this.groupDevices[0] = this.devices;
-      for (let i = 0; i < this.groups.length; i++) {
-        this.selections[this.groups[i].id] = []
-        this.groupDevices[this.groups[i].id] = this.devices.filter(device => device.group_id === this.groups[i].id)
+      if (this.isRefreshingSelections) {
+        return
       }
-      this.selections[0] = this.devices.filter(device => this.selection.includes(device.real_serial)).map(device => device.real_serial)
-      for (let i = 0; i < this.groups.length; i++) {
-        let group_id = this.groups[i].id
-        this.selections[group_id] = this.devices.filter(device => device.group_id === group_id)
-          .filter(device => this.selection.includes(device.real_serial)).map(device => device.real_serial)
+
+      this.isRefreshingSelections = true
+      try {
+        const selectionSet = new Set(this.selection)
+        const groupDevices = {
+          0: [...this.devices]
+        }
+        const selections = {
+          0: this.devices
+            .filter(device => selectionSet.has(device.real_serial))
+            .map(device => device.real_serial)
+        }
+
+        for (let i = 0; i < this.groups.length; i++) {
+          const groupId = this.groups[i].id
+          const devicesInGroup = this.devices.filter(device => device.group_id === groupId)
+          groupDevices[groupId] = devicesInGroup
+          selections[groupId] = devicesInGroup
+            .filter(device => selectionSet.has(device.real_serial))
+            .map(device => device.real_serial)
+        }
+
+        this.groupDevices = groupDevices
+        this.selections = selections
+        await this.$nextTick()
+      } finally {
+        this.isRefreshingSelections = false
       }
-      await this.$nextTick()
     },
     async get_menus() {
       this.$service.get_menus().then(res => {

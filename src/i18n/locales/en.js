@@ -648,7 +648,7 @@
   requestMethod: 'Request method',
   requestTimeout: 'Request timeout (ms)',
   requestHeadersJson: 'Request headers (JSON)',
-  requestHeadersPlaceholder: 'e.g. {"Authorization": "Bearer token"}',
+  requestHeadersPlaceholder: '@.literal e.g. {"Authorization": "Bearer token"}',
   requestBodyJson: 'Request body (JSON)',
   requestBodyPlaceholder: 'JSON payload to send when using POST',
   clearConfiguration: 'Clear configuration',
@@ -995,4 +995,3 @@
   yearlyDiscount: 'Yearly(Save {percent}%)',
   yearlyPlans: 'Yearly Plans',
 };
-

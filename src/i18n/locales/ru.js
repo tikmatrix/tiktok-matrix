@@ -649,7 +649,7 @@
   requestMethod: 'Метод запроса',
   requestTimeout: 'Тайм-аут запроса (мс)',
   requestHeadersJson: 'Заголовки запроса (JSON)',
-  requestHeadersPlaceholder: 'например {"Authorization": "Bearer token"}',
+  requestHeadersPlaceholder: '@.literal например {"Authorization": "Bearer token"}',
   requestBodyJson: 'Тело запроса (JSON)',
   requestBodyPlaceholder: 'JSON-данные для отправки при POST',
   clearConfiguration: 'Очистить конфигурацию',
@@ -995,4 +995,3 @@
   yearlyDiscount: 'Ежегодно(Сэкономьте {percent}%)',
   yearlyPlans: 'Годовые планы',
 };
-

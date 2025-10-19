@@ -649,7 +649,7 @@
   requestMethod: '请求方式',
   requestTimeout: '请求超时时间 (毫秒)',
   requestHeadersJson: '请求头 (JSON)',
-  requestHeadersPlaceholder: '例如 {"Authorization": "Bearer token"}',
+  requestHeadersPlaceholder: '@.literal 例如 {"Authorization": "Bearer token"}',
   requestBodyJson: '请求体 (JSON)',
   requestBodyPlaceholder: 'POST 时发送的 JSON 数据',
   clearConfiguration: '清除配置',
@@ -995,4 +995,3 @@
   yearlyDiscount: '年度（立省 {percent}%）',
   yearlyPlans: '年度套餐',
 };
-
