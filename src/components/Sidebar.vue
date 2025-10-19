@@ -472,10 +472,12 @@ export default {
     },
     async selectAll(id) {
       if (!this.isSelectAll(id)) {
-        if (id == 0) {
+        if (id === 0) {
           this.selection = this.devices.map(device => device.real_serial)
         } else {
-          this.selection = this.devices.filter(device => device.group_id === id).map(device => device.real_serial)
+          this.selection = this.devices
+            .filter(device => device.group_id === id)
+            .map(device => device.real_serial)
         }
       } else {
         this.selection = []
@@ -490,26 +492,32 @@ export default {
       this.isRefreshingSelections = true
       try {
         const selectionSet = new Set(this.selection)
-        const groupDevices = {
-          0: [...this.devices]
-        }
-        const selections = {
-          0: this.devices
-            .filter(device => selectionSet.has(device.real_serial))
-            .map(device => device.real_serial)
-        }
+        const activeGroupIds = new Set([0])
+
+        this.groupDevices[0] = [...this.devices]
+        this.selections[0] = this.devices
+          .filter(device => selectionSet.has(device.real_serial))
+          .map(device => device.real_serial)
 
         for (let i = 0; i < this.groups.length; i++) {
           const groupId = this.groups[i].id
+          activeGroupIds.add(groupId)
+
           const devicesInGroup = this.devices.filter(device => device.group_id === groupId)
-          groupDevices[groupId] = devicesInGroup
-          selections[groupId] = devicesInGroup
+          this.groupDevices[groupId] = devicesInGroup
+          this.selections[groupId] = devicesInGroup
             .filter(device => selectionSet.has(device.real_serial))
             .map(device => device.real_serial)
         }
 
-        this.groupDevices = groupDevices
-        this.selections = selections
+        Object.keys(this.groupDevices).forEach((key) => {
+          const numericKey = Number(key)
+          if (!activeGroupIds.has(numericKey)) {
+            delete this.groupDevices[numericKey]
+            delete this.selections[numericKey]
+          }
+        })
+
         await this.$nextTick()
       } finally {
         this.isRefreshingSelections = false
