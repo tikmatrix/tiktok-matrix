@@ -502,18 +502,20 @@ export default {
     },
     decorateDevice(device, groupNameMap) {
       if (!device) {
-        return null
+        return device
       }
       const serial = this.getDeviceSerial(device)
       const rotation = this.proxyRotationMap[serial] || null
-      const resolvedGroupName =
-        groupNameMap?.get(device.group_id) ??
-        (this.groups || []).find(group => group.id === device.group_id)?.name
-      return {
-        ...device,
-        group_name: resolvedGroupName !== undefined ? resolvedGroupName : device.group_name,
-        proxyRotation: rotation ? { ...rotation } : null,
+      const resolvedGroupName = groupNameMap?.get(device.group_id)
+        ?? device.group_name
+        ?? (this.groups || []).find(group => group.id === device.group_id)?.name
+
+      if (resolvedGroupName !== undefined) {
+        device.group_name = resolvedGroupName
       }
+
+      device.proxyRotation = rotation ? { ...rotation } : null
+      return device
     },
     syncDisplayedDevices() {
       if (!Array.isArray(this.devices)) {
