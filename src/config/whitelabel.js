@@ -20,7 +20,7 @@ export const DEFAULT_WHITELABEL_CONFIG = {
     // 品牌配置
     branding: {
         emailSupport: 'support@tikmatrix.com',
-        telegramSupport: 'https://t.me/tikmatrix_chat',
+        telegramSupport: 'https://t.me/tikmatrix_agent_bot',
         whatsappSupport: '',
     },
 
