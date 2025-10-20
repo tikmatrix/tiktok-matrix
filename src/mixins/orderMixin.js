@@ -82,9 +82,17 @@ export default {
             }
 
             this.order.qrcode = await QRCode.toDataURL(this.order.to_address);
-            const expireAt = new Date(this.order.expire_at).getTime();
+
+            const expireAt = this.parseExpireAt(this.order.expire_at);
+            if (Number.isNaN(expireAt)) {
+                console.warn(`Invalid expire_at received: ${this.order.expire_at}`);
+                this.remainingTime = 0;
+                return;
+            }
+
             const now = new Date().getTime();
             this.remainingTime = Math.floor((expireAt - now) / 1000);
+            this.refreshTime = 10;
 
             this.interval = setInterval(async () => {
                 if (this.remainingTime > 0) {
@@ -118,6 +126,49 @@ export default {
                     timeout: 2000
                 });
             }
+        },
+
+        parseExpireAt(expireAt) {
+            if (expireAt === null || expireAt === undefined) {
+                return NaN;
+            }
+
+            if (typeof expireAt === 'number') {
+                if (!Number.isFinite(expireAt)) {
+                    return NaN;
+                }
+
+                // Support both second and millisecond precision timestamps.
+                return expireAt > 1e12 ? expireAt : expireAt * 1000;
+            }
+
+            const expireAtString = String(expireAt);
+            if (!expireAtString.trim()) {
+                return NaN;
+            }
+
+            const attempts = new Set();
+            attempts.add(expireAtString);
+
+            const normalized = expireAtString.includes(' ')
+                ? expireAtString.replace(' ', 'T')
+                : expireAtString;
+            attempts.add(normalized);
+
+            const timezonePattern = /([zZ])|([+-]\d{2}:?\d{2})$/;
+            if (!timezonePattern.test(normalized)) {
+                attempts.add(`${normalized}Z`);
+            }
+
+            for (const attempt of attempts) {
+                const parsed = Date.parse(attempt);
+                if (!Number.isNaN(parsed)) {
+                    return parsed;
+                }
+            }
+
+            console.warn(`Unable to parse expire_at value: ${expireAt}`);
+            return NaN;
         }
     }
 };

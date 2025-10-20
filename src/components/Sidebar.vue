@@ -43,7 +43,7 @@
             <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-md font-medium">
               <input type="checkbox" class="checkbox checkbox-md ring-1" @change="selectAll(0)"
                 :checked="isSelectAll(0)" />
-              <span class="whitespace-nowrap">{{ $t('allDevices') }} ({{ groupDevices[0].length }})</span>
+              <span class="whitespace-nowrap">{{ $t('allDevices') }} ({{ groupDeviceCount(0) }})</span>
             </label>
 
             <div ref="moveToGroupMenu" class="dropdown dropdown-top ml-auto shrink-0">
@@ -61,7 +61,7 @@
               </ul>
             </div>
             <span class="text-md text-base-content/70 select-none shrink-0 whitespace-nowrap">{{ $t('selected') }}
-              {{ selections[0].length }}
+              {{ selectionCount(0) }}
               {{ $t('units') }}
             </span>
           </div>
@@ -82,12 +82,12 @@
               <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-md font-medium">
                 <input type="checkbox" class="checkbox checkbox-md ring-1" @change="selectAll(item.id)"
                   :checked="isSelectAll(item.id)" />
-                <span class="whitespace-nowrap">{{ item.name }} ({{ groupDevices[item.id].length }})</span>
+                <span class="whitespace-nowrap">{{ item.name }} ({{ groupDeviceCount(item.id) }})</span>
               </label>
 
               <div class="flex items-center gap-2 ml-auto">
                 <span class="text-md text-base-content/70 select-none whitespace-nowrap">{{ $t('selected') }}
-                  {{ selections[item.id].length }}
+                  {{ selectionCount(item.id) }}
                   {{ $t('units') }}
                 </span>
                 <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer h-3 w-3"
@@ -162,7 +162,7 @@ export default {
   computed: {
     sortedGroups() {
       //sort by device count
-      return this.groups.sort((a, b) => this.groupDevices[b.id]?.length - this.groupDevices[a.id]?.length)
+      return [...this.groups].sort((a, b) => this.groupDevices[b.id]?.length - this.groupDevices[a.id]?.length)
     }
   },
   data() {
@@ -186,6 +186,7 @@ export default {
       adImage: '',
       adLink: '',
       adTitle: '',
+      isRefreshingSelections: false,
     }
   },
 
@@ -465,17 +466,24 @@ export default {
       }
     },
     isSelectAll(id) {
-      if (!this.groupDevices[id]) {
-        this.refreshSelections()
-      }
-      return this.groupDevices[id].length > 0 && this.selections[id].length == this.groupDevices[id].length
+      const devices = this.groupDevices[id] || []
+      const selected = this.selections[id] || []
+      return devices.length > 0 && selected.length === devices.length
+    },
+    groupDeviceCount(id) {
+      return this.groupDevices[id]?.length ?? 0
+    },
+    selectionCount(id) {
+      return this.selections[id]?.length ?? 0
     },
     async selectAll(id) {
       if (!this.isSelectAll(id)) {
-        if (id == 0) {
+        if (id === 0) {
           this.selection = this.devices.map(device => device.real_serial)
         } else {
-          this.selection = this.devices.filter(device => device.group_id === id).map(device => device.real_serial)
+          this.selection = this.devices
+            .filter(device => device.group_id === id)
+            .map(device => device.real_serial)
         }
       } else {
         this.selection = []
@@ -483,18 +491,43 @@ export default {
       this.refreshSelections()
     },
     async refreshSelections() {
-      this.groupDevices[0] = this.devices;
-      for (let i = 0; i < this.groups.length; i++) {
-        this.selections[this.groups[i].id] = []
-        this.groupDevices[this.groups[i].id] = this.devices.filter(device => device.group_id === this.groups[i].id)
+      if (this.isRefreshingSelections) {
+        return
       }
-      this.selections[0] = this.devices.filter(device => this.selection.includes(device.real_serial)).map(device => device.real_serial)
-      for (let i = 0; i < this.groups.length; i++) {
-        let group_id = this.groups[i].id
-        this.selections[group_id] = this.devices.filter(device => device.group_id === group_id)
-          .filter(device => this.selection.includes(device.real_serial)).map(device => device.real_serial)
+
+      this.isRefreshingSelections = true
+      try {
+        const selectionSet = new Set(this.selection)
+        const activeGroupIds = new Set([0])
+
+        this.groupDevices[0] = [...this.devices]
+        this.selections[0] = this.devices
+          .filter(device => selectionSet.has(device.real_serial))
+          .map(device => device.real_serial)
+
+        for (let i = 0; i < this.groups.length; i++) {
+          const groupId = this.groups[i].id
+          activeGroupIds.add(groupId)
+
+          const devicesInGroup = this.devices.filter(device => device.group_id === groupId)
+          this.groupDevices[groupId] = devicesInGroup
+          this.selections[groupId] = devicesInGroup
+            .filter(device => selectionSet.has(device.real_serial))
+            .map(device => device.real_serial)
+        }
+
+        Object.keys(this.groupDevices).forEach((key) => {
+          const numericKey = Number(key)
+          if (!activeGroupIds.has(numericKey)) {
+            delete this.groupDevices[numericKey]
+            delete this.selections[numericKey]
+          }
+        })
+
+        await this.$nextTick()
+      } finally {
+        this.isRefreshingSelections = false
       }
-      await this.$nextTick()
     },
     async get_menus() {
       this.$service.get_menus().then(res => {
