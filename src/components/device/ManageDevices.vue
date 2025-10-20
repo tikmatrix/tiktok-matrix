@@ -103,7 +103,6 @@
                         <th class="font-semibold text-left">{{ $t('sort') }}</th>
                         <th class="font-semibold text-left">{{ $t('proxyRotationUrl') }}</th>
                         <th class="font-semibold text-left">{{ $t('lastProxyRotation') }}</th>
-                        <th class="font-semibold text-center whitespace-nowrap">{{ $t('actions') }}</th>
                       </tr>
                     </thead>
                     <tbody class="text-md text-base-content/80">
@@ -131,7 +130,13 @@
                             {{ $t('ready') }}
                           </div>
                         </td>
-                        <td class="text-base-content/70 px-2 whitespace-nowrap">{{ device.sort }}</td>
+                        <td class="px-2">
+                          <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-base-content/70 whitespace-nowrap">{{ device.sort }}</span>
+                            <button class="btn btn-xs md:btn-sm btn-outline btn-primary"
+                              @click="showSetSortDialog(device)">{{ $t('setSort') }}</button>
+                          </div>
+                        </td>
                         <td class="px-2">
                           <div class="flex flex-col gap-2 max-w-[14rem] md:max-w-[18rem]">
                             <span v-if="device.proxyRotation?.rotation_url"
@@ -145,24 +150,20 @@
                           </div>
                         </td>
                         <td class="px-2">
-                          <div class="flex flex-col gap-1 text-sm md:text-base">
-                            <span>{{ formatRotationTime(device.proxyRotation?.last_rotated_at) }}</span>
-                            <span v-if="device.proxyRotation?.last_status"
-                              :class="['text-xs font-semibold', rotationStatusClass(device.proxyRotation?.last_status)]">
-                              {{ rotationStatusLabel(device.proxyRotation?.last_status) }}
-                            </span>
-                          </div>
-                        </td>
-                        <td class="px-2 whitespace-nowrap">
-                          <div class="flex flex-wrap justify-end gap-2">
-                            <button class="btn btn-sm md:btn-md btn-outline btn-info"
+                          <div class="flex flex-col gap-2 text-sm md:text-base">
+                            <div class="flex flex-col gap-1">
+                              <span>{{ formatRotationTime(device.proxyRotation?.last_rotated_at) }}</span>
+                              <span v-if="device.proxyRotation?.last_status"
+                                :class="['text-xs font-semibold', rotationStatusClass(device.proxyRotation?.last_status)]">
+                                {{ rotationStatusLabel(device.proxyRotation?.last_status) }}
+                              </span>
+                            </div>
+                            <button class="btn btn-xs md:btn-sm btn-outline btn-info w-full md:w-auto"
                               :class="{ 'loading': isTestingRotation(device) }"
                               :disabled="!device.proxyRotation?.rotation_url || isTestingRotation(device)"
                               @click="testProxyRotation(device)">
                               <span v-if="!isTestingRotation(device)">{{ $t('testProxyRotation') }}</span>
                             </button>
-                            <button class="btn btn-sm md:btn-md btn-outline btn-primary"
-                              @click="showSetSortDialog(device)">{{ $t('setSort') }}</button>
                           </div>
                         </td>
                       </tr>

@@ -43,7 +43,7 @@
             <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-md font-medium">
               <input type="checkbox" class="checkbox checkbox-md ring-1" @change="selectAll(0)"
                 :checked="isSelectAll(0)" />
-              <span class="whitespace-nowrap">{{ $t('allDevices') }} ({{ groupDevices[0].length }})</span>
+              <span class="whitespace-nowrap">{{ $t('allDevices') }} ({{ groupDeviceCount(0) }})</span>
             </label>
 
             <div ref="moveToGroupMenu" class="dropdown dropdown-top ml-auto shrink-0">
@@ -61,7 +61,7 @@
               </ul>
             </div>
             <span class="text-md text-base-content/70 select-none shrink-0 whitespace-nowrap">{{ $t('selected') }}
-              {{ selections[0].length }}
+              {{ selectionCount(0) }}
               {{ $t('units') }}
             </span>
           </div>
@@ -82,12 +82,12 @@
               <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-md font-medium">
                 <input type="checkbox" class="checkbox checkbox-md ring-1" @change="selectAll(item.id)"
                   :checked="isSelectAll(item.id)" />
-                <span class="whitespace-nowrap">{{ item.name }} ({{ groupDevices[item.id].length }})</span>
+                <span class="whitespace-nowrap">{{ item.name }} ({{ groupDeviceCount(item.id) }})</span>
               </label>
 
               <div class="flex items-center gap-2 ml-auto">
                 <span class="text-md text-base-content/70 select-none whitespace-nowrap">{{ $t('selected') }}
-                  {{ selections[item.id].length }}
+                  {{ selectionCount(item.id) }}
                   {{ $t('units') }}
                 </span>
                 <font-awesome-icon icon="fa-solid fa-edit" class="text-primary cursor-pointer h-3 w-3"
@@ -469,6 +469,12 @@ export default {
       const devices = this.groupDevices[id] || []
       const selected = this.selections[id] || []
       return devices.length > 0 && selected.length === devices.length
+    },
+    groupDeviceCount(id) {
+      return this.groupDevices[id]?.length ?? 0
+    },
+    selectionCount(id) {
+      return this.selections[id]?.length ?? 0
     },
     async selectAll(id) {
       if (!this.isSelectAll(id)) {

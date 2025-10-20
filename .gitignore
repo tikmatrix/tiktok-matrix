@@ -1,4 +1,3 @@
-# Logs
 logs
 *.log
 npm-debug.log*
@@ -12,7 +11,6 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -23,8 +21,5 @@ dist-ssr
 *.sln
 *.sw?
 target
-videos
-tiktok-agent/
 dist-distributors
 src-tauri/distributor.txt
-todo.md
