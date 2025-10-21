@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { getWhiteLabelConfig } from '../../config/whitelabel.js';
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 export default {
     name: 'PrivacyAgreement',
     props: {
@@ -37,8 +37,14 @@ export default {
     emits: ['update:modelValue'],
     data() {
         return {
-            whitelabelConfig: getWhiteLabelConfig(),
+            whitelabelConfig: cloneDefaultWhiteLabelConfig(),
         }
     },
+    async created() {
+        const config = await getWhiteLabelConfig();
+        if (config) {
+            this.whitelabelConfig = config;
+        }
+    }
 }
 </script>

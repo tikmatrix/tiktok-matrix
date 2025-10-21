@@ -104,6 +104,7 @@
 </template>
 
 <script>
+import { getJsonItem, setJsonItem, getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
 export default {
     name: 'CustomCommands',
     props: ['settings'],
@@ -155,23 +156,23 @@ export default {
         }
     },
     methods: {
-        loadCommands() {
-            const savedCommands = localStorage.getItem('tikmatrix_custom_commands');
-            const presetsLoaded = localStorage.getItem('tikmatrix_presets_loaded');
+        async loadCommands() {
+            const savedCommands = await getJsonItem('tikmatrix_custom_commands', null);
+            const presetsLoaded = await getItem('tikmatrix_presets_loaded');
 
-            if (savedCommands) {
-                this.commands = JSON.parse(savedCommands);
+            if (Array.isArray(savedCommands)) {
+                this.commands = savedCommands;
             }
 
             // 如果预置命令尚未加载，则添加它们
             if (!presetsLoaded) {
                 this.commands = [...this.commands, ...this.presetCommands];
-                localStorage.setItem('tikmatrix_presets_loaded', 'true');
-                this.saveCommands();
+                await setItem('tikmatrix_presets_loaded', 'true');
+                await this.saveCommands();
             }
         },
-        saveCommands() {
-            localStorage.setItem('tikmatrix_custom_commands', JSON.stringify(this.commands));
+        async saveCommands() {
+            await setJsonItem('tikmatrix_custom_commands', this.commands);
         },
         showCreateDialog() {
             this.editing = false;
@@ -181,7 +182,7 @@ export default {
         closeDialog() {
             this.$refs.commandDialog.close();
         },
-        addCommand() {
+        async addCommand() {
             if (!this.isValidCommand) return;
 
             if (this.editing) {
@@ -198,7 +199,7 @@ export default {
                 });
             }
 
-            this.saveCommands();
+            await this.saveCommands();
             this.closeDialog();
 
             this.$emiter('NOTIFY', {
@@ -215,9 +216,9 @@ export default {
             this.editIndex = index;
             this.$refs.commandDialog.showModal();
         },
-        deleteCommand(index) {
+        async deleteCommand(index) {
             this.commands.splice(index, 1);
-            this.saveCommands();
+            await this.saveCommands();
 
             this.$emiter('NOTIFY', {
                 type: 'success',
@@ -281,10 +282,10 @@ export default {
         },
 
         // 重置命令
-        resetCommands() {
-            // 清除本地存储中的命令数据
-            localStorage.removeItem('tikmatrix_custom_commands');
-            localStorage.removeItem('tikmatrix_presets_loaded');
+        async resetCommands() {
+            // 清除持久化存储中的命令数据
+            await removeItem('tikmatrix_custom_commands');
+            await removeItem('tikmatrix_presets_loaded');
 
             // 清空当前命令列表
             this.commands = [];
@@ -293,8 +294,8 @@ export default {
             this.commands = [...this.presetCommands];
 
             // 保存到本地存储
-            localStorage.setItem('tikmatrix_presets_loaded', 'true');
-            this.saveCommands();
+            await setItem('tikmatrix_presets_loaded', 'true');
+            await this.saveCommands();
 
             // 关闭对话框
             this.$refs.resetDialog.close();
@@ -307,8 +308,8 @@ export default {
             });
         }
     },
-    mounted() {
-        this.loadCommands();
+    async mounted() {
+        await this.loadCommands();
     }
 }
 </script>

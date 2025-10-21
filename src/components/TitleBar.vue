@@ -267,8 +267,9 @@ import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import { Command } from '@tauri-apps/api/shell'
 import AgentErrorDialog from './AgentErrorDialog.vue';
-import { getWhiteLabelConfig } from '../config/whitelabel.js';
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 import { isFeatureUnlocked } from '../utils/features.js';
+import { getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
 import LicenseLifecycle from './LicenseLifecycle.vue';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 
@@ -285,8 +286,8 @@ export default {
       version: '',
       name: '',
       sidebarVisible: true,
-      darkMode: localStorage.getItem('isDark')?.replace(/"/g, '') || 'false',
-      currentLocale: localStorage.getItem('locale')?.replace(/"/g, '') || 'en',
+      darkMode: false,
+      currentLocale: 'en',
       licenseData: {},
       remote_version: {},
       download_progress: {
@@ -299,8 +300,8 @@ export default {
       isLoadingLicense: true,
       agentProcessName: '',
       agentErrorType: 'port',
-      whitelabelConfig: getWhiteLabelConfig(),
-      isWhiteLabelUnlocked: isFeatureUnlocked('whiteLabel'),
+      whitelabelConfig: cloneDefaultWhiteLabelConfig(),
+      isWhiteLabelUnlocked: false,
       checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=1', // changeme
       pendingUiVersion: null,
     }
@@ -309,11 +310,11 @@ export default {
     sidebarVisible(val) {
       this.$emiter('sidebarChange', val);
     },
-    darkMode(val) {
-      localStorage.setItem('isDark', val);
+    async darkMode(val) {
+      await setItem('isDark', val ? 'true' : 'false');
     },
-    currentLocale(val) {
-      localStorage.setItem('locale', val);
+    async currentLocale(val) {
+      await setItem('locale', val);
       this.$i18n.locale = val;
     }
   },
@@ -336,6 +337,32 @@ export default {
       }
       return new URL('../assets/logo.png', import.meta.url).href;
     }
+  },
+  async created() {
+    const [storedDark, storedLocale, config, unlocked, pendingVersion] = await Promise.all([
+      getItem('isDark'),
+      getItem('locale'),
+      getWhiteLabelConfig(),
+      isFeatureUnlocked('whiteLabel'),
+      getItem('uiPendingReloadVersion')
+    ]);
+
+    if (storedDark !== null) {
+      this.darkMode = storedDark === 'true' || storedDark === true;
+    }
+
+    if (storedLocale) {
+      const sanitizedLocale = String(storedLocale).replace(/"/g, '').trim();
+      this.currentLocale = sanitizedLocale || 'en';
+      this.$i18n.locale = this.currentLocale;
+    }
+
+    if (config) {
+      this.whitelabelConfig = config;
+    }
+
+    this.isWhiteLabelUnlocked = Boolean(unlocked);
+    this.pendingUiVersion = this.sanitizeVersion(pendingVersion);
   },
   methods: {
     // 生成 https://asset.localhost/... 的顶层导航 URL
@@ -512,7 +539,7 @@ async buildAssetIndexUrl(version) {
       }
     },
     async check_update(force) {
-      let hasCheckedUpdate = localStorage.getItem('hasCheckedUpdate');
+      const hasCheckedUpdate = await getItem('hasCheckedUpdate');
       if (hasCheckedUpdate && !force) {
         await this.startAgent();
         return;
@@ -612,7 +639,7 @@ async buildAssetIndexUrl(version) {
         if (uiUpdated && uiUpdatedVersion) {
           await this.promptUiReload(uiUpdatedVersion);
         }
-        localStorage.setItem('hasCheckedUpdate', 'true');
+        await setItem('hasCheckedUpdate', 'true');
         this.$refs.download_dialog.close();
       } else {
         this.$refs.download_dialog.close();
@@ -624,8 +651,8 @@ async buildAssetIndexUrl(version) {
       try {
         let updated = false;
         this.check_update_dialog_title = `Checking ${lib.name} update...`;
-        let localversion = localStorage.getItem(localStorageKey) || '0';
-        localversion = localversion.replace(/"/g, '');
+        const storedVersion = await getItem(localStorageKey);
+        let localversion = this.sanitizeVersion(storedVersion) || '0';
         let url = lib.downloadUrl;
         let work_path = await appDataDir();
         let name = url.split('/').pop();
@@ -650,7 +677,7 @@ async buildAssetIndexUrl(version) {
           this.check_update_dialog_title = `${lib.name} is up to date`;
         }
 
-        localStorage.setItem(localStorageKey, lib.version);
+        await setItem(localStorageKey, lib.version);
 
         let result = updated;
         if (lib.name === 'platform-tools') {
@@ -770,7 +797,7 @@ async buildAssetIndexUrl(version) {
         await this.patchUiIndex(version);
 
         await writeTextFile(`${uiRootRelative}/current.txt`, version, { dir: BaseDirectory.AppData });
-        localStorage.setItem('ui', version);
+        await setItem('ui', version);
         return true;
       } catch (error) {
         console.error('applyUiPackage error:', error);
@@ -837,10 +864,10 @@ async buildAssetIndexUrl(version) {
         );
 
         if (shouldReload) {
-          localStorage.removeItem('uiPendingReloadVersion');
+          await removeItem('uiPendingReloadVersion');
           await this.reloadUi(sanitized);
         } else {
-          localStorage.setItem('uiPendingReloadVersion', sanitized);
+          await setItem('uiPendingReloadVersion', sanitized);
           await this.$emiter('NOTIFY', {
             type: 'info',
             message: this.$t('frontendUpdateLater', { version: sanitized }),
@@ -865,7 +892,7 @@ async buildAssetIndexUrl(version) {
     const ok = await exists(`upload/ui/${sanitized}/index.html`, { dir: BaseDirectory.AppData });
     if (!ok) {
       await this.$emiter('NOTIFY', { type: 'error', message: `UI package ${sanitized} missing`, timeout: 4000 });
-      localStorage.removeItem('uiPendingReloadVersion');
+      await removeItem('uiPendingReloadVersion');
       return;
     }
     console.log('patchUiIndex',sanitized);
@@ -874,8 +901,8 @@ async buildAssetIndexUrl(version) {
     const assetUrl = await this.buildAssetIndexUrl(sanitized);
 
     if (options.setActive !== false) {
-      localStorage.setItem('uiActiveVersion', sanitized);
-      localStorage.removeItem('uiPendingReloadVersion');
+      await setItem('uiActiveVersion', sanitized);
+      await removeItem('uiPendingReloadVersion');
     }
     sessionStorage.setItem('uiReloadingTo', sanitized);
 
@@ -899,7 +926,8 @@ async buildAssetIndexUrl(version) {
 
     async ensureUiVersionIsActive() {
       try {
-        const desiredVersion = this.sanitizeVersion(localStorage.getItem('uiActiveVersion'));
+        const storedActive = await getItem('uiActiveVersion');
+        const desiredVersion = this.sanitizeVersion(storedActive);
         if (!desiredVersion) return;
 
         const currentVersion = this.getCurrentUiVersionFromLocation();
@@ -910,8 +938,8 @@ async buildAssetIndexUrl(version) {
 
         const indexExists = await exists(`upload/ui/${desiredVersion}/index.html`, { dir: BaseDirectory.AppData });
         if (!indexExists) {
-          localStorage.removeItem('uiActiveVersion');
-          localStorage.removeItem('uiPendingReloadVersion');
+          await removeItem('uiActiveVersion');
+          await removeItem('uiPendingReloadVersion');
           return;
         }
 
@@ -929,7 +957,8 @@ async buildAssetIndexUrl(version) {
 
     async checkPendingUiReload() {
       try {
-        const pendingVersion = this.sanitizeVersion(localStorage.getItem('uiPendingReloadVersion'));
+        const storedPending = await getItem('uiPendingReloadVersion');
+        const pendingVersion = this.sanitizeVersion(storedPending);
         if (!pendingVersion) return;
 
         const guardKey = `ui:pending:${pendingVersion}`;
@@ -937,7 +966,7 @@ async buildAssetIndexUrl(version) {
 
         const existsIndex = await exists(`upload/ui/${pendingVersion}/index.html`, { dir: BaseDirectory.AppData });
         if (!existsIndex) {
-          localStorage.removeItem('uiPendingReloadVersion');
+          await removeItem('uiPendingReloadVersion');
           return;
         }
         sessionStorage.setItem(guardKey, '1');
@@ -1023,14 +1052,14 @@ async buildAssetIndexUrl(version) {
                 message: this.$t('frontendUpdateLater', { version: uiUpdatedVersion }),
                 timeout: 4000
               });
-              localStorage.setItem('uiPendingReloadVersion', uiUpdatedVersion);
+              await setItem('uiPendingReloadVersion', uiUpdatedVersion);
               this.pendingUiVersion = uiUpdatedVersion;
             }
           } else {
             console.log('静默更新完成，没有发现新的更新');
           }
 
-          localStorage.setItem('hasCheckedUpdate', 'true');
+          await setItem('hasCheckedUpdate', 'true');
         } else {
           console.log('静默更新 - 检查更新失败');
         }
@@ -1055,8 +1084,8 @@ async buildAssetIndexUrl(version) {
 
     async silentDownloadAndUpdateLib(lib, localStorageKey) {
       try {
-        let localversion = localStorage.getItem(localStorageKey) || '0';
-        localversion = localversion.replace(/"/g, '');
+        const storedVersion = await getItem(localStorageKey);
+        let localversion = this.sanitizeVersion(storedVersion) || '0';
 
         console.log(`静默检查 ${lib.name}: 本地版本 ${localversion}, 远程版本 ${lib.version}`);
 
@@ -1079,7 +1108,7 @@ async buildAssetIndexUrl(version) {
           console.log(`${lib.name} 已是最新版本，跳过下载`);
         }
 
-        localStorage.setItem(localStorageKey, lib.version);
+          await setItem(localStorageKey, lib.version);
 
         let result = updated;
         if (lib.name === 'ui') {
@@ -1148,7 +1177,6 @@ async buildAssetIndexUrl(version) {
   async mounted() {
     // 主题
     console.log('darkMode:', this.darkMode);
-    this.darkMode = this.darkMode === 'true' || this.darkMode === true;
 
     const reloadingTarget = sessionStorage.getItem('uiReloadingTo');
     if (reloadingTarget) {
@@ -1171,7 +1199,7 @@ async buildAssetIndexUrl(version) {
     console.log('currentLocale:', this.currentLocale);
 
     // 功能开关
-    this.isWhiteLabelUnlocked = isFeatureUnlocked('whiteLabel');
+    this.isWhiteLabelUnlocked = await isFeatureUnlocked('whiteLabel');
 
     // 事件监听
     await this.$listen("DOWNLOAD_PROGRESS", async (e) => {
@@ -1199,7 +1227,7 @@ async buildAssetIndexUrl(version) {
     });
 
     await this.$listen('featureUnlocked', async () => {
-      this.isWhiteLabelUnlocked = isFeatureUnlocked('whiteLabel');
+      this.isWhiteLabelUnlocked = await isFeatureUnlocked('whiteLabel');
     });
 
     await this.$listen('AUTO_UPDATE_TRIGGER', async (e) => {

@@ -93,6 +93,7 @@ import RightBars from './RightBars.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
+import { getItem, setItem } from '@/utils/persistentStorage.js';
 export default {
   name: 'Miniremote',
   components: {
@@ -117,8 +118,8 @@ export default {
   },
   data() {
     return {
-      default_width: Number(localStorage.getItem('deviceWidth')) || 150,
-      default_height: Number(localStorage.getItem('deviceHeight')) || 300,
+      default_width: 150,
+      default_height: 300,
       big: false,
       visible: true,
       rotation: 0,
@@ -131,14 +132,14 @@ export default {
       input_callback: null,
       message_index: 0,
       name: 'Loading...',
-      height: Number(localStorage.getItem('deviceHeight')) || 300,
-      width: Number(localStorage.getItem('deviceWidth')) || 150,
+      height: 300,
+      width: 150,
       real_width: 0,
       real_height: 0,
       scaled: 1,
       listeners: [],
       touch: false,
-      screenResolution: Number(localStorage.getItem('screenResolution')) || 512,
+      screenResolution: 512,
       canvasCtx: null,
       frameQueue: [],
       isRenderingFrame: false,
@@ -197,6 +198,31 @@ export default {
       return 'text-warning'
     }
   },
+  async created() {
+    const [storedWidth, storedHeight, storedResolution] = await Promise.all([
+      getItem('deviceWidth'),
+      getItem('deviceHeight'),
+      getItem('screenResolution')
+    ]);
+
+    const parseNumber = (value, fallback) => {
+      if (value === null || value === undefined) {
+        return fallback;
+      }
+      const parsed = Number(String(value).replace(/"/g, ''));
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+
+    const width = parseNumber(storedWidth, this.default_width);
+    const height = parseNumber(storedHeight, this.default_height);
+    const resolution = parseNumber(storedResolution, this.screenResolution);
+
+    this.default_width = width;
+    this.default_height = height;
+    this.width = width;
+    this.height = height;
+    this.screenResolution = resolution;
+  },
   watch: {
     scaled(newVal) {
       // console.log(`scaled: ${newVal}`)
@@ -208,12 +234,12 @@ export default {
       // console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
       this.$emit('sizeChanged', this.width)
     },
-    width(newVal) {
-      localStorage.setItem('deviceWidth', newVal)
+    async width(newVal) {
+      await setItem('deviceWidth', newVal)
       this.$emit('sizeChanged', newVal)
     },
-    height(newVal) {
-      localStorage.setItem('deviceHeight', newVal)
+    async height(newVal) {
+      await setItem('deviceHeight', newVal)
     }
   },
   methods: {
@@ -725,9 +751,9 @@ export default {
     this.i18n.ready = this.$t('ready');
     this.big = this.bigSize;
 
-    this.listeners.push(await this.$listen('closeDevice', (e) => {
+    this.listeners.push(await this.$listen('closeDevice', async (e) => {
       if (this.big) {
-        const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+        const bigScreen = await getItem('bigScreen') || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -750,9 +776,9 @@ export default {
         this.syncDisplay();
       }
     }))
-    this.listeners.push(await this.$listen('openDevice', (e) => {
+    this.listeners.push(await this.$listen('openDevice', async (e) => {
       if (e.payload.serial === this.device.serial) {
-        const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+        const bigScreen = await getItem('bigScreen') || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -765,7 +791,7 @@ export default {
         this.syncDisplay();
       }
       if (e.payload.serial !== this.device.serial && this.operating) {
-        const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+        const bigScreen = await getItem('bigScreen') || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();

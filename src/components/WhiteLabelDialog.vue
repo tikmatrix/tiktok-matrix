@@ -92,23 +92,24 @@
 </template>
 
 <script>
-import { getWhiteLabelConfig, saveWhiteLabelConfig, resetWhiteLabelConfig, validateWhiteLabelConfig } from '../config/whitelabel.js';
+import { getWhiteLabelConfig, saveWhiteLabelConfig, resetWhiteLabelConfig, validateWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 
 export default {
     name: 'WhiteLabelDialog',
     data() {
         return {
             activeTab: 'basic',
-            localConfig: getWhiteLabelConfig(),
+            localConfig: cloneDefaultWhiteLabelConfig(),
             logoPreview: '',
         };
     },
-    mounted() {
-        this.loadConfig();
+    async mounted() {
+        await this.loadConfig();
     },
     methods: {
-        loadConfig() {
-            // this.localConfig = JSON.parse(JSON.stringify(getWhiteLabelConfig()));
+        async loadConfig() {
+            const config = await getWhiteLabelConfig();
+            this.localConfig = JSON.parse(JSON.stringify(config));
             this.logoPreview = this.localConfig.logo?.main || '';
         },
 
@@ -153,7 +154,8 @@ export default {
             try {
                 validateWhiteLabelConfig(this.localConfig);
 
-                if (saveWhiteLabelConfig(this.localConfig)) {
+                const success = await saveWhiteLabelConfig(this.localConfig);
+                if (success) {
                     await this.$emiter('NOTIFY', {
                         type: 'success',
                         message: this.$t('configSaved'),
@@ -187,7 +189,7 @@ export default {
                 });
 
                 if (confirmed) {
-                    this.localConfig = JSON.parse(JSON.stringify(resetWhiteLabelConfig()));
+                    this.localConfig = JSON.parse(JSON.stringify(await resetWhiteLabelConfig()));
                     this.logoPreview = this.localConfig.logo?.main || '';
                     await this.$emiter('NOTIFY', {
                         type: 'success',

@@ -158,6 +158,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import * as XLSX from 'xlsx'
 import { open } from '@tauri-apps/api/dialog'
 import { readBinaryFile } from '@tauri-apps/api/fs';
+import { getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
 
 export default {
   name: 'app',
@@ -413,28 +414,28 @@ export default {
     },
 
     // 加载标签数据
-    loadAccountTags() {
+    async loadAccountTags() {
       try {
-        const savedTags = localStorage.getItem('accountTags')
-        if (savedTags) {
-          this.accountTags = JSON.parse(savedTags)
+        const savedTags = await getJsonItem('accountTags', {});
+        if (savedTags && typeof savedTags === 'object') {
+          this.accountTags = savedTags;
         }
       } catch (error) {
-        console.error('Error loading tags:', error)
+        console.error('Error loading tags:', error);
       }
     },
 
     // 保存标签数据
-    saveAccountTags() {
+    async saveAccountTags() {
       try {
-        localStorage.setItem('accountTags', JSON.stringify(this.accountTags))
+        await setJsonItem('accountTags', this.accountTags);
       } catch (error) {
-        console.error('Error saving tags:', error)
+        console.error('Error saving tags:', error);
       }
     },
 
     // 添加新标签
-    addTag(accountId) {
+    async addTag(accountId) {
       if (!this.newTagInput[accountId] || this.newTagInput[accountId].trim() === '') return
 
       if (!this.accountTags[accountId]) {
@@ -444,31 +445,31 @@ export default {
       const tag = this.newTagInput[accountId].trim()
       if (!this.accountTags[accountId].includes(tag)) {
         this.accountTags[accountId].push(tag)
-        this.saveAccountTags()
+        await this.saveAccountTags()
       }
 
       this.newTagInput[accountId] = ''
     },
 
     // 选择已有标签
-    selectExistingTag(accountId, tag) {
+    async selectExistingTag(accountId, tag) {
       if (!this.accountTags[accountId]) {
         this.accountTags[accountId] = []
       }
 
       if (!this.accountTags[accountId].includes(tag)) {
         this.accountTags[accountId].push(tag)
-        this.saveAccountTags()
+        await this.saveAccountTags()
       }
     },
 
     // 移除标签
-    removeTag(accountId, tag) {
+    async removeTag(accountId, tag) {
       if (this.accountTags[accountId]) {
         const index = this.accountTags[accountId].indexOf(tag)
         if (index > -1) {
           this.accountTags[accountId].splice(index, 1)
-          this.saveAccountTags()
+          await this.saveAccountTags()
         }
       }
     },
@@ -541,9 +542,9 @@ export default {
       this.get_accounts();
     },
     // 清空所有标签
-    clearAllTags() {
+    async clearAllTags() {
       this.accountTags = {}
-      this.saveAccountTags()
+      await this.saveAccountTags()
       this.$emiter('NOTIFY', {
         type: 'success',
         message: this.$t('allTagsCleared'),
@@ -553,7 +554,7 @@ export default {
     }
   },
   async mounted() {
-    this.loadAccountTags()
+    await this.loadAccountTags()
     this.get_accounts()
   }
 }

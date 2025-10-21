@@ -19,6 +19,7 @@ use std::os::windows::process::CommandExt;
 use futures_util::stream::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use tauri::{
     http::header::{ACCEPT, USER_AGENT},
     http::ResponseBuilder,
@@ -556,11 +557,7 @@ fn main() -> std::io::Result<()> {
                 Err(e) => log::warn!("⚠️  Failed to get distributor code: {}", e),
             }
 
-            let window = app.get_window("main").expect("Failed to get main window");
-            window
-                .eval("localStorage.removeItem('hasCheckedUpdate');")
-                .expect("Failed to execute JavaScript");
-            log::info!("remove hasCheckedUpdate");
+            clear_persistent_state_key(&app_data_dir, "hasCheckedUpdate");
 
             let ui_cache_dir = app_data_dir.join("upload").join("ui");
             std::fs::create_dir_all(&ui_cache_dir)?;
@@ -611,6 +608,62 @@ fn delete_logs_older_than_3_days(work_dir: &str) {
                     std::fs::remove_file(&path).unwrap();
                 }
             }
+        }
+    }
+}
+
+fn clear_persistent_state_key(app_data_dir: &Path, key: &str) {
+    let storage_path = app_data_dir.join("data").join("app_state.json");
+
+    if !storage_path.exists() {
+        return;
+    }
+
+    let Ok(contents) = std::fs::read_to_string(&storage_path) else {
+        log::warn!(
+            "Failed to read persistent storage while clearing key {}",
+            key
+        );
+        return;
+    };
+
+    if contents.trim().is_empty() {
+        return;
+    }
+
+    match serde_json::from_str::<JsonValue>(&contents) {
+        Ok(mut value) => {
+            if let Some(obj) = value.as_object_mut() {
+                if obj.remove(key).is_some() {
+                    match serde_json::to_string_pretty(&value) {
+                        Ok(updated) => {
+                            if let Err(err) = std::fs::write(&storage_path, updated) {
+                                log::warn!(
+                                    "Failed to write persistent storage while clearing key {}: {}",
+                                    key,
+                                    err
+                                );
+                            } else {
+                                log::info!("Removed legacy key '{}' from app_state.json", key);
+                            }
+                        }
+                        Err(err) => {
+                            log::warn!(
+                                "Failed to serialise persistent storage while clearing key {}: {}",
+                                key,
+                                err
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        Err(err) => {
+            log::warn!(
+                "Failed to parse persistent storage while clearing key {}: {}",
+                key,
+                err
+            );
         }
     }
 }

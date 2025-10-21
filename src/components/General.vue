@@ -161,7 +161,8 @@
 </template>
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
-
+import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getUnlockedFeatures } from '@/utils/features.js';
 import MyButton from './Button.vue'
 export default {
     name: 'General',
@@ -171,12 +172,12 @@ export default {
     },
     data() {
         return {
-            proxy_host: localStorage.getItem('proxy_host') || '127.0.0.1',
-            proxy_port: localStorage.getItem('proxy_port') || 8080,
-            resolution: Number(localStorage.getItem('screenResolution')) || 512,
+            proxy_host: '127.0.0.1',
+            proxy_port: '8080',
+            resolution: 512,
             customResolution: 512,
             uninstall_package: '',
-            unlocked: JSON.parse(localStorage.getItem('unlockedFeatures') || '[]')
+            unlocked: []
         }
     },
     computed: {
@@ -223,8 +224,8 @@ export default {
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.CAMERA'] })
         },
         async enableProxy() {
-            localStorage.setItem('proxy_host', this.proxy_host)
-            localStorage.setItem('proxy_port', this.proxy_port)
+            await setItem('proxy_host', this.proxy_host || '');
+            await setItem('proxy_port', this.proxy_port || '');
             await this.$emiter('adbEventData', { args: ['shell', 'settings', 'put', 'global', 'http_proxy', `${this.proxy_host}:${this.proxy_port}`] })
         },
         async disableProxy() {
@@ -238,14 +239,39 @@ export default {
 
         async setResolution(value) {
             this.resolution = value;
-            localStorage.setItem('screenResolution', value);
+            this.customResolution = value;
+            await setItem('screenResolution', value);
             await this.$emiter('screenResolution', { resolution: value });
         },
     },
     async mounted() {
+        const [storedHost, storedPort, storedResolution, features] = await Promise.all([
+            getItem('proxy_host'),
+            getItem('proxy_port'),
+            getItem('screenResolution'),
+            getUnlockedFeatures()
+        ]);
+
+        if (storedHost) {
+            this.proxy_host = storedHost;
+        }
+        if (storedPort) {
+            this.proxy_port = storedPort;
+        }
+        if (storedResolution) {
+            const parsed = Number(storedResolution);
+            if (!Number.isNaN(parsed)) {
+                this.resolution = parsed;
+                this.customResolution = parsed;
+            }
+        }
+        if (Array.isArray(features)) {
+            this.unlocked = features;
+        }
+
         //featureUnlocked
         await this.$listen('featureUnlocked', async (e) => {
-            this.unlocked = JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
+            this.unlocked = await getUnlockedFeatures();
         })
     },
 }

@@ -1,40 +1,60 @@
+import { getJsonItem, removeItem, setJsonItem } from './persistentStorage.js';
+
 /**
  * 功能解锁管理工具
  */
 
-/**
- * 检查功能是否已解锁
- * @param {string} featureName - 功能名称
- * @returns {boolean} - 是否已解锁
- */
-export function isFeatureUnlocked(featureName) {
-    const unlocked = JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
-    return unlocked.includes(featureName);
-}
+let unlockedCache = null;
+let loadPromise = null;
 
-/**
- * 解锁功能
- * @param {string} featureName - 功能名称
- */
-export function unlockFeature(featureName) {
-    const unlocked = JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
-    if (!unlocked.includes(featureName)) {
-        unlocked.push(featureName);
-        localStorage.setItem('unlockedFeatures', JSON.stringify(unlocked));
+async function ensureLoaded() {
+    if (Array.isArray(unlockedCache)) {
+        return unlockedCache;
     }
+
+    if (!loadPromise) {
+        loadPromise = (async () => {
+            const stored = await getJsonItem('unlockedFeatures', []);
+            unlockedCache = Array.isArray(stored) ? stored : [];
+            return unlockedCache;
+        })().catch(error => {
+            console.error('Failed to load unlocked features:', error);
+            unlockedCache = [];
+            return unlockedCache;
+        });
+    }
+
+    return loadPromise;
 }
 
-/**
- * 获取所有已解锁的功能
- * @returns {Array} - 已解锁功能列表
- */
-export function getUnlockedFeatures() {
-    return JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
+export async function getUnlockedFeatures() {
+    const features = await ensureLoaded();
+    return [...features];
 }
 
-/**
- * 重置所有解锁功能（仅用于调试）
- */
-export function resetUnlockedFeatures() {
-    localStorage.removeItem('unlockedFeatures');
+export async function isFeatureUnlocked(featureName) {
+    const features = await ensureLoaded();
+    return features.includes(featureName);
+}
+
+export function isFeatureUnlockedSync(featureName) {
+    if (!Array.isArray(unlockedCache)) {
+        return false;
+    }
+    return unlockedCache.includes(featureName);
+}
+
+export async function unlockFeature(featureName) {
+    const features = await ensureLoaded();
+    if (!features.includes(featureName)) {
+        features.push(featureName);
+        await setJsonItem('unlockedFeatures', features);
+    }
+    return [...features];
+}
+
+export async function resetUnlockedFeatures() {
+    unlockedCache = [];
+    await removeItem('unlockedFeatures');
+    return [];
 }

@@ -27,21 +27,22 @@ export const DEFAULT_WHITELABEL_CONFIG = {
 
 };
 
+import { getJsonItem, removeItem, setJsonItem } from '../utils/persistentStorage.js';
+
 /**
  * 获取白标配置
  */
-export function getWhiteLabelConfig() {
+export async function getWhiteLabelConfig() {
     try {
-        const stored = localStorage.getItem('whitelabel_config');
+        const stored = await getJsonItem('whitelabel_config', null);
         if (stored) {
-            const parsed = JSON.parse(stored);
             // 深度合并配置，确保所有必需的属性都存在
-            return deepMerge(DEFAULT_WHITELABEL_CONFIG, parsed);
+            return deepMerge(DEFAULT_WHITELABEL_CONFIG, stored);
         }
     } catch (error) {
-        console.warn('Failed to parse whitelabel config:', error);
+        console.warn('Failed to load whitelabel config:', error);
     }
-    return JSON.parse(JSON.stringify(DEFAULT_WHITELABEL_CONFIG));
+    return cloneDefaultWhiteLabelConfig();
 }
 
 /**
@@ -64,10 +65,10 @@ function deepMerge(target, source) {
 /**
  * 保存白标配置
  */
-export function saveWhiteLabelConfig(config) {
+export async function saveWhiteLabelConfig(config) {
     try {
         const mergedConfig = deepMerge(DEFAULT_WHITELABEL_CONFIG, config);
-        localStorage.setItem('whitelabel_config', JSON.stringify(mergedConfig));
+        await setJsonItem('whitelabel_config', mergedConfig);
         return true;
     } catch (error) {
         console.error('Failed to save whitelabel config:', error);
@@ -78,9 +79,9 @@ export function saveWhiteLabelConfig(config) {
 /**
  * 重置白标配置
  */
-export function resetWhiteLabelConfig() {
-    localStorage.removeItem('whitelabel_config');
-    return JSON.parse(JSON.stringify(DEFAULT_WHITELABEL_CONFIG));
+export async function resetWhiteLabelConfig() {
+    await removeItem('whitelabel_config');
+    return cloneDefaultWhiteLabelConfig();
 }
 
 /**
@@ -95,4 +96,8 @@ export function validateWhiteLabelConfig(config) {
     }
 
     return true;
+}
+
+export function cloneDefaultWhiteLabelConfig() {
+    return JSON.parse(JSON.stringify(DEFAULT_WHITELABEL_CONFIG));
 }

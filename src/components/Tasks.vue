@@ -50,7 +50,8 @@
 </template>
 <script>
 import Countup from './Countup.vue'
-import { getWhiteLabelConfig } from '../config/whitelabel.js';
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
+import { getItem, setItem } from '@/utils/persistentStorage.js';
 export default {
     name: 'Tasks',
     props: ['settings'],
@@ -59,9 +60,9 @@ export default {
     },
     data() {
         return {
-            whitelabelConfig: getWhiteLabelConfig(),
+            whitelabelConfig: cloneDefaultWhiteLabelConfig(),
             taskCounts: {},
-            autoRetry: localStorage.getItem('autoRetry') === 'true',
+            autoRetry: false,
             isCountingTasks: false
         }
     },
@@ -73,12 +74,25 @@ export default {
                     message: `${this.$t('autoRetry')}: ${val ? this.$t('enabled') : this.$t('disabled')}`,
                     timeout: 2000
                 });
-                localStorage.setItem('autoRetry', val);
+                await setItem('autoRetry', val ? 'true' : 'false');
                 if (val) {
                     this.countTasks();
                 }
             },
             immediate: true
+        }
+    },
+    async created() {
+        const [config, storedAutoRetry] = await Promise.all([
+            getWhiteLabelConfig(),
+            getItem('autoRetry')
+        ]);
+
+        if (config) {
+            this.whitelabelConfig = config;
+        }
+        if (storedAutoRetry !== null) {
+            this.autoRetry = storedAutoRetry === 'true';
         }
     },
     methods: {

@@ -340,7 +340,8 @@ import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs';
 import ContactSupport from '../pricing/ContactSupport.vue'
-import { getWhiteLabelConfig } from '../../config/whitelabel.js';
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
+import { getItem, setItem } from '@/utils/persistentStorage.js';
 
 
 export default {
@@ -366,24 +367,24 @@ export default {
   data() {
     return {
       device: null,
-      whitelabelConfig: getWhiteLabelConfig(),
-      listMode: localStorage.getItem('listMode') === 'true' || false,
+      whitelabelConfig: cloneDefaultWhiteLabelConfig(),
+      listMode: false,
       mydevices: [],
-      ip_1: localStorage.getItem('ip_1')?.replace(/"/g, '') || 192,
-      ip_2: localStorage.getItem('ip_2')?.replace(/"/g, '') || 168,
-      ip_3: localStorage.getItem('ip_3')?.replace(/"/g, '') || 1,
-      ip_4: localStorage.getItem('ip_4')?.replace(/"/g, '') || 2,
-      ip_5: localStorage.getItem('ip_5')?.replace(/"/g, '') || 254,
-      port: localStorage.getItem('scan_port')?.replace(/"/g, '') || 5555,
-      proxy_host: localStorage.getItem('proxy_host')?.replace(/"/g, '') || '127.0.0.1',
-      proxy_port: localStorage.getItem('proxy_port')?.replace(/"/g, '') || 8080,
+      ip_1: 192,
+      ip_2: 168,
+      ip_3: 1,
+      ip_4: 2,
+      ip_5: 254,
+      port: 5555,
+      proxy_host: '127.0.0.1',
+      proxy_port: 8080,
       scaning: false,
       scanResult: '',
       groups: [],
       currentDevice: null,
-      cardMinWidth: Number(localStorage.getItem('deviceWidth')) || 150,
+      cardMinWidth: 150,
       licenseData: {},
-      showKeyboardTip: localStorage.getItem('showKeyboardTip') !== 'false',
+      showKeyboardTip: true,
       // Debug Dialog
       showDebugDialog: false,
       debugDevice: null,
@@ -403,8 +404,8 @@ export default {
     }
   },
   watch: {
-    showKeyboardTip(val) {
-      localStorage.setItem('showKeyboardTip', val)
+    async showKeyboardTip(val) {
+      await setItem('showKeyboardTip', val ? 'true' : 'false')
     },
     groups: {
       handler() {
@@ -412,14 +413,82 @@ export default {
       },
       deep: true
     },
-    listMode(val) {
-      localStorage.setItem('listMode', val)
+    async listMode(val) {
+      await setItem('listMode', val ? 'true' : 'false')
     },
     devices: {
       handler() {
         this.syncDisplayedDevices()
       },
       deep: true
+    }
+  },
+  async created() {
+    const [
+      config,
+      storedListMode,
+      ip1,
+      ip2,
+      ip3,
+      ip4,
+      ip5,
+      scanPort,
+      storedProxyHost,
+      storedProxyPort,
+      storedDeviceWidth,
+      storedShowKeyboardTip
+    ] = await Promise.all([
+      getWhiteLabelConfig(),
+      getItem('listMode'),
+      getItem('ip_1'),
+      getItem('ip_2'),
+      getItem('ip_3'),
+      getItem('ip_4'),
+      getItem('ip_5'),
+      getItem('scan_port'),
+      getItem('proxy_host'),
+      getItem('proxy_port'),
+      getItem('deviceWidth'),
+      getItem('showKeyboardTip')
+    ]);
+
+    const parseNumber = (value, fallback) => {
+      if (value === null || value === undefined) {
+        return fallback;
+      }
+      const parsed = Number(String(value).replace(/"/g, ''));
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+
+    if (config) {
+      this.whitelabelConfig = config;
+    }
+
+    if (storedListMode !== null) {
+      this.listMode = storedListMode === 'true' || storedListMode === true;
+    }
+
+    this.ip_1 = parseNumber(ip1, 192);
+    this.ip_2 = parseNumber(ip2, 168);
+    this.ip_3 = parseNumber(ip3, 1);
+    this.ip_4 = parseNumber(ip4, 2);
+    this.ip_5 = parseNumber(ip5, 254);
+    this.port = parseNumber(scanPort, 5555);
+
+    if (storedProxyHost) {
+      this.proxy_host = String(storedProxyHost).replace(/"/g, '') || '127.0.0.1';
+    }
+    if (storedProxyPort !== null) {
+      this.proxy_port = parseNumber(storedProxyPort, 8080);
+    }
+
+    const widthParsed = parseNumber(storedDeviceWidth, 150);
+    if (widthParsed > 0) {
+      this.cardMinWidth = widthParsed;
+    }
+
+    if (storedShowKeyboardTip !== null) {
+      this.showKeyboardTip = storedShowKeyboardTip !== 'false';
     }
   },
   methods: {
@@ -447,10 +516,10 @@ export default {
         this.$refs.set_sort_dialog.show()
       }
     },
-    setSort() {
+    async setSort() {
       if (!this.currentDevice) return
       this.currentDevice.sort = parseInt(this.currentDevice.sort)
-      localStorage.setItem(`sort_${this.currentDevice.real_serial}`, this.currentDevice.sort)
+      await setItem(`sort_${this.currentDevice.real_serial}`, this.currentDevice.sort)
       this.mydevices.sort((a, b) => {
         // fisrt: sort
         // second: group_id
@@ -771,12 +840,14 @@ export default {
 
     async scan() {
       this.scaning = true
-      localStorage.setItem('ip_1', this.ip_1)
-      localStorage.setItem('ip_2', this.ip_2)
-      localStorage.setItem('ip_3', this.ip_3)
-      localStorage.setItem('ip_4', this.ip_4)
-      localStorage.setItem('ip_5', this.ip_5)
-      localStorage.setItem('scan_port', this.port)
+      await Promise.all([
+        setItem('ip_1', this.ip_1),
+        setItem('ip_2', this.ip_2),
+        setItem('ip_3', this.ip_3),
+        setItem('ip_4', this.ip_4),
+        setItem('ip_5', this.ip_5),
+        setItem('scan_port', this.port)
+      ])
       this.$service.scan_tcp({
         start_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_4}`,
         end_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_5}`,
@@ -839,7 +910,8 @@ export default {
     await this.loadProxyRotations()
     this.syncDisplayedDevices()
     await this.$listen('openDevice', async (e) => {
-      const bigScreen = localStorage.getItem('bigScreen') || 'standard'
+      const storedBigScreen = await getItem('bigScreen')
+      const bigScreen = storedBigScreen || 'standard'
       if (bigScreen === 'standard') {
         this.device = e.payload
         const groupNameMap = new Map(

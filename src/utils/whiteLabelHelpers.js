@@ -15,12 +15,11 @@ export function updateDocumentTitle(appName) {
 /**
  * 初始化白标配置
  */
-export function initWhiteLabel() {
-    const config = getWhiteLabelConfig();
+export async function initWhiteLabel() {
+    const config = await getWhiteLabelConfig();
 
     // 更新标题
     updateDocumentTitle(config.appName);
-
 
     return config;
 }
