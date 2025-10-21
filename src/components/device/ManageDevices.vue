@@ -88,8 +88,7 @@
               <div class="flex flex-wrap gap-3 flex-1" v-if="listMode">
                 <div
                   class="overflow-x-auto w-full rounded-2xl border border-base-300/60 bg-base-200/50 shadow-md shadow-primary/5">
-                  <table
-                    class="table table-md md:table-md table-auto w-full align-middle text-sm md:text-base">
+                  <table class="table table-md md:table-md table-auto w-full align-middle text-sm md:text-base">
                     <thead
                       class="bg-base-200/70 text-[0.7rem] md:text-xs uppercase tracking-wide text-base-content/60 sticky top-0">
                       <tr>
@@ -139,8 +138,8 @@
                         </td>
                         <td class="px-2">
                           <div class="flex flex-col gap-2 max-w-[14rem] md:max-w-[18rem]">
-                            <span v-if="device.proxyRotation?.rotation_url"
-                              class="truncate" :title="device.proxyRotation.rotation_url">{{
+                            <span v-if="device.proxyRotation?.rotation_url" class="truncate"
+                              :title="device.proxyRotation.rotation_url">{{
                                 device.proxyRotation.rotation_url }}</span>
                             <span v-else class="text-base-content/50">{{ $t('proxyRotationNotConfigured') }}</span>
                             <div class="flex flex-wrap gap-2">
@@ -311,8 +310,8 @@
         </div>
         <div class="modal-action">
           <button type="button" class="btn" @click="closeProxyRotationDialog">{{ $t('cancel') }}</button>
-          <button type="button" class="btn btn-error" v-if="canClearProxyRotation"
-            @click="clearProxyRotation">{{ $t('clearConfiguration') }}</button>
+          <button type="button" class="btn btn-error" v-if="canClearProxyRotation" @click="clearProxyRotation">{{
+            $t('clearConfiguration') }}</button>
           <button type="submit" class="btn btn-primary" :class="{ 'loading': proxyRotationSaving }">
             <span v-if="!proxyRotationSaving">{{ $t('save') }}</span>
           </button>
@@ -864,7 +863,6 @@ export default {
     },
     sizeChanged(cardWidth) {
       this.cardMinWidth = cardWidth
-      console.log("sizeChanged:", this.cardMinWidth)
     },
     async showLicenseDialog() {
       await this.$emiter('LICENSE', { show: true });
