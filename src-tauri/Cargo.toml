@@ -49,6 +49,7 @@ flexi_logger = "0.27"
 log = "0.4"
 open = "5"
 sysinfo = "0.33.1"
+url = "2.4"
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!

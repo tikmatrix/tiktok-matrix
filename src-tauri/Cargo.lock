@@ -18,6 +18,7 @@ dependencies = [
  "sysinfo",
  "tauri",
  "tauri-build",
+ "url",
  "zip 2.1.5",
 ]
 
