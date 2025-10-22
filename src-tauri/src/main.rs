@@ -464,16 +464,6 @@ fn main() -> std::io::Result<()> {
             open_adb_terminal
         ])
         .setup(|app| {
-            if let Some(w) = app.get_window("main") {
-                println!("[WIN] label = {}", w.label());
-                // 仅调试用：看看 tauri 读到的配置里有没有 remote ipc 规则
-                let cfg = app.config();
-                // 旧版没有这个字段会编译不过或总是 None
-                println!(
-                    "[CFG] remote ipc = {:?}",
-                    cfg.tauri.security.dangerous_remote_domain_ipc_access
-                );
-            }
             let app_data_dir = app.path_resolver().app_data_dir().unwrap();
             let work_dir = app_data_dir.to_str().unwrap();
             setup_env(work_dir);

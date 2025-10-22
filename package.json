@@ -10,7 +10,6 @@
     "build:whitelabel": "node scripts/build-whitelabel.js",
     "deploy:agent": "node scripts/deploy-agent.js --component=agent",
     "deploy:script": "node scripts/deploy-agent.js --component=script",
-    "deploy:ui": "node scripts/deploy-ui.js",
     "tikmatrix-agent": "npm run build:agent-debug && node scripts/run-agent.js tikmatrix",
     "igmatrix-agent": "npm run build:agent-debug && node scripts/run-agent.js igmatrix",
     "dev": "vite --mode dev",

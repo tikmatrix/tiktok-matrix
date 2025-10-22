@@ -300,7 +300,6 @@ export default {
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       isWhiteLabelUnlocked: false,
       checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=0', // changeme
-      pendingUiVersion: null,
     }
   },
   watch: {
@@ -341,7 +340,6 @@ export default {
       getItem('locale'),
       getWhiteLabelConfig(),
       isFeatureUnlocked('whiteLabel'),
-      getItem('uiPendingReloadVersion')
     ]);
 
     if (storedDark !== null) {
@@ -359,20 +357,8 @@ export default {
     }
 
     this.isWhiteLabelUnlocked = Boolean(unlocked);
-    this.pendingUiVersion = this.sanitizeVersion(pendingVersion);
   },
   methods: {
-    // 生成 https://asset.localhost/... 的顶层导航 URL
-    async buildAssetIndexUrl(version) {
-      const v = String(version).trim();
-      const base = await appDataDir(); // 例如 C:\Users\...\AppData\Roaming\com.tikmatrix\
-      const filePath = `${base}upload/ui/${v}/index.html`;
-      const url = convertFileSrc(filePath); // => https://asset.localhost/...
-      console.log('[UI Update] assetUrl =', url);
-      return url;
-    },
-
-
     isLicensed() {
       return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active == 1;
     },
@@ -604,17 +590,9 @@ export default {
           const libs = response.data.data.libs;
           let agentUpdated = false;
           let scriptUpdated = false;
-          let uiUpdated = false;
-          let uiUpdatedVersion = null;
 
           for (const lib of libs) {
-            if (lib.name === 'ui') {
-              const applied = await this.download_and_update_lib(lib, 'ui');
-              if (applied) {
-                uiUpdated = true;
-                uiUpdatedVersion = lib.version;
-              }
-            } else if (lib.name === 'platform-tools') {
+            if (lib.name === 'platform-tools') {
               await this.download_and_update_lib(lib, 'platform-tools');
             } else if (lib.name === 'PaddleOCR') {
               await this.download_and_update_lib(lib, 'PaddleOCR');
@@ -635,9 +613,7 @@ export default {
           if (!force || agentUpdated || scriptUpdated) {
             await this.startAgent();
           }
-          if (uiUpdated && uiUpdatedVersion) {
-            await this.promptUiReload(uiUpdatedVersion);
-          }
+
           // Set flag to true to avoid repetitive checks, It will be cleared when UI is restarted
           sessionStorage.setItem('skipUpdateCheck', 'true');
           this.$refs.download_dialog.close();
@@ -732,14 +708,6 @@ export default {
             await copyFile(path, path.replace('tmp', 'bin'));
             await invoke("grant_permission", { path: `bin/${lib.name}` });
           }
-        } else if (lib.name === 'ui') {
-          result = await this.applyUiPackage({
-            lib,
-            tmpPath: path,
-            workPath: work_path,
-            updated,
-            interactive: true
-          });
         }
         return result;
       } catch (e) {
@@ -759,237 +727,6 @@ export default {
         return '';
       }
       return String(version).replace(/"/g, '').trim();
-    },
-
-    getCurrentUiVersionFromLocation() {
-      try {
-        const href = decodeURIComponent(window.location.href);
-
-        // 1) 新：asset 协议（顶层导航）
-        const m1 = href.match(/asset\.localhost.*\/upload\/ui\/(v[^\/?#]+)\/index\.html/i);
-        if (m1) return m1[1];
-
-        // 2) 开发/兜底
-        const m3 = href.match(/\/upload\/ui\/(v[^/]+)\//i);
-        return m3 ? m3[1] : null;
-      } catch (err) {
-        console.error('Failed to parse current UI version from location:', err);
-        return null;
-      }
-    },
-
-    async applyUiPackage({ lib, tmpPath, workPath, updated, interactive, silent }) {
-      const version = this.sanitizeVersion(lib?.version);
-      if (!version) {
-        return false;
-      }
-      try {
-        this.pendingUiVersion = version;
-
-        const uiRootRelative = 'upload/ui';
-        const versionRelative = `${uiRootRelative}/${version}`;
-        const indexRelative = `${versionRelative}/index.html`;
-
-        const versionExists = await exists(indexRelative, { dir: BaseDirectory.AppData });
-        const shouldInstall = updated || !versionExists;
-
-        if (!shouldInstall) {
-          await createDir(uiRootRelative, { dir: BaseDirectory.AppData, recursive: true });
-          await writeTextFile(`${uiRootRelative}/current.txt`, version, { dir: BaseDirectory.AppData });
-          return false;
-        }
-
-        if (interactive) {
-          this.check_update_dialog_title = `Preparing UI ${version}...`;
-        }
-
-        await createDir(uiRootRelative, { dir: BaseDirectory.AppData, recursive: true });
-
-        if (await exists(versionRelative, { dir: BaseDirectory.AppData })) {
-          await removeDir(versionRelative, { dir: BaseDirectory.AppData, recursive: true });
-        }
-
-        await invoke("unzip_file", { zipPath: tmpPath, destDir: workPath });
-        await this.patchUiIndex(version);
-
-        await writeTextFile(`${uiRootRelative}/current.txt`, version, { dir: BaseDirectory.AppData });
-        await setItem('ui', version);
-        return true;
-      } catch (error) {
-        console.error('applyUiPackage error:', error);
-        if (!silent) {
-          await this.$emiter('NOTIFY', {
-            type: 'error',
-            message: `UI update failed: ${error.message}`,
-            timeout: 4000
-          });
-        }
-        return false;
-      }
-    },
-
-
-    async patchUiIndex(version) {
-      const baseDir = await appDataDir();                       // e.g. C:\Users\...\AppData\Roaming\com.tikmatrix\
-      const versionDir = await join(baseDir, 'upload', 'ui', version); // 目录路径（用 join 拼，避免分隔符问题）
-      const indexPath = await join(versionDir, 'index.html');  // 完整 index.html 路径
-
-      // 把“目录”转 asset URL（注意：convertFileSrc 用在目录也可以）
-      let dirAssetUrl = convertFileSrc(versionDir);
-      // 确保以 / 结尾（有些平台不会自带）
-      if (!dirAssetUrl.endsWith('/')) dirAssetUrl += '/';
-
-      // 仅用于调试
-      console.log('[UI Patch] baseDir     =', baseDir);
-      console.log('[UI Patch] versionDir  =', versionDir);
-      console.log('[UI Patch] indexPath   =', indexPath);
-      console.log('[UI Patch] dirAssetUrl =', dirAssetUrl);
-
-      let html = await readTextFile(`upload/ui/${version}/index.html`, { dir: BaseDirectory.AppData });
-
-      // 移除旧的 <base>，避免冲突
-      html = html.replace(/<base\s+[^>]*href=['"][^'"]*['"][^>]*>/i, '');
-
-      // 注入新的绝对 base
-      html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${dirAssetUrl}">`);
-
-      // 兜底：把根相对引用 /assets/... /vite.svg 改为相对
-      html = html.replace(/(\s(?:src|href)=["'])\/assets\//g, '$1./assets/');
-      html = html.replace(/url\(\s*\/assets\//g, 'url(./assets/');
-      html = html.replace(/(["'(])\/vite\.svg/g, '$1./vite.svg');
-
-      await writeTextFile(`upload/ui/${version}/index.html`, html, { dir: BaseDirectory.AppData });
-
-      return version;
-    },
-
-    async promptUiReload(version) {
-      try {
-        const sanitized = this.sanitizeVersion(version);
-        if (!sanitized) {
-          return;
-        }
-        this.pendingUiVersion = sanitized;
-        if (this.$refs.download_dialog?.open) {
-          this.$refs.download_dialog.close();
-        }
-
-        const shouldReload = await ask(
-          this.$t('frontendUpdatePrompt', { version: sanitized }),
-          this.$t('frontendUpdateTitle')
-        );
-
-        if (shouldReload) {
-          await removeItem('uiPendingReloadVersion');
-          await this.reloadUi(sanitized);
-        } else {
-          await setItem('uiPendingReloadVersion', sanitized);
-          await this.$emiter('NOTIFY', {
-            type: 'info',
-            message: this.$t('frontendUpdateLater', { version: sanitized }),
-            timeout: 4000
-          });
-        }
-      } catch (error) {
-        console.error('promptUiReload error:', error);
-      }
-    },
-
-    async reloadUi(version, options = {}) {
-      console.log('reloadUi', version);
-      const sanitized = this.sanitizeVersion(version);
-      if (!sanitized) return;
-
-      try {
-        if (this.$refs.download_dialog?.open) {
-          this.$refs.download_dialog.close();
-        }
-
-        const ok = await exists(`upload/ui/${sanitized}/index.html`, { dir: BaseDirectory.AppData });
-        if (!ok) {
-          await this.$emiter('NOTIFY', { type: 'error', message: `UI package ${sanitized} missing`, timeout: 4000 });
-          await removeItem('uiPendingReloadVersion');
-          return;
-        }
-        console.log('patchUiIndex', sanitized);
-        await this.patchUiIndex(sanitized);
-        console.log('buildAssetIndexUrl', sanitized);
-        const assetUrl = await this.buildAssetIndexUrl(sanitized);
-
-        if (options.setActive !== false) {
-          await setItem('uiActiveVersion', sanitized);
-          await removeItem('uiPendingReloadVersion');
-        }
-        await setItem('uiReloadingTo', sanitized);
-
-        await this.$emiter('NOTIFY', {
-          type: 'info',
-          message: this.$t('frontendUpdateReloading', { version: sanitized }),
-          timeout: 1500
-        });
-
-        // 顶层导航：asset 协议（WebView2 允许）
-        window.location.replace(assetUrl);
-      } catch (error) {
-        console.error('reloadUi error:', error);
-        await this.$emiter('NOTIFY', {
-          type: 'error',
-          message: `UI reload failed: ${error.message}`,
-          timeout: 4000
-        });
-      }
-    },
-
-    async ensureUiVersionIsActive() {
-      try {
-        const storedActive = await getItem('uiActiveVersion');
-        const desiredVersion = this.sanitizeVersion(storedActive);
-        if (!desiredVersion) return;
-
-        const currentVersion = this.getCurrentUiVersionFromLocation();
-        if (currentVersion === desiredVersion) return;
-
-        const guardKey = `ui:auto:${desiredVersion}`;
-        if (await getItem(guardKey)) return;
-
-        const indexExists = await exists(`upload/ui/${desiredVersion}/index.html`, { dir: BaseDirectory.AppData });
-        if (!indexExists) {
-          await removeItem('uiActiveVersion');
-          await removeItem('uiPendingReloadVersion');
-          return;
-        }
-
-        await setItem(guardKey, '1');
-        await this.$emiter('NOTIFY', {
-          type: 'info',
-          message: this.$t('frontendUpdateAuto', { version: desiredVersion }),
-          timeout: 2000
-        });
-        await this.reloadUi(desiredVersion, { setActive: false });
-      } catch (error) {
-        console.error('ensureUiVersionIsActive error:', error);
-      }
-    },
-
-    async checkPendingUiReload() {
-      try {
-        const storedPending = await getItem('uiPendingReloadVersion');
-        const pendingVersion = this.sanitizeVersion(storedPending);
-        if (!pendingVersion) return;
-
-        const guardKey = `ui:pending:${pendingVersion}`;
-        if (await getItem(guardKey)) return;
-
-        const existsIndex = await exists(`upload/ui/${pendingVersion}/index.html`, { dir: BaseDirectory.AppData });
-        if (!existsIndex) {
-          await removeItem('uiPendingReloadVersion');
-          return;
-        }
-        await setItem(guardKey, '1');
-        await this.promptUiReload(pendingVersion);
-      } catch (error) {
-        console.error('checkPendingUiReload error:', error);
-      }
     },
 
     openWhiteLabelDialog() {
@@ -1026,26 +763,11 @@ export default {
         'scrcpy': 'scrcpy',
         'script': 'script',
         'agent': 'agent',
-        'ui': 'ui'
       };
       return libKeyMap[libName] || libName;
     },
   },
   async mounted() {
-    // Check if we are reloading to a new UI version
-    const reloadingTarget = await getItem('uiReloadingTo');
-    if (reloadingTarget) {
-      const currentUiVersion = this.getCurrentUiVersionFromLocation();
-      if (currentUiVersion === reloadingTarget) {
-        await removeItem('uiReloadingTo');
-        await removeItem(`ui:auto:${reloadingTarget}`);
-        await removeItem(`ui:pending:${reloadingTarget}`);
-        console.log('UI reloaded successfully to version:', reloadingTarget);
-      }
-    }
-    await this.ensureUiVersionIsActive();
-    await this.checkPendingUiReload();
-
     // Version & Name
     this.version = await getVersion();
     this.name = await getName();
