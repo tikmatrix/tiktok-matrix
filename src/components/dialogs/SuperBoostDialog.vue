@@ -46,9 +46,9 @@
                     <label class="label">
                         <span class="label-text font-semibold">{{ $t('targetUsernamesPath') }}</span>
                     </label>
-                    <div class="join">
+                    <div class="join flex w-full">
                         <input type="text" :placeholder="$t('selectUsernameFile')"
-                            class="input input-bordered join-item flex-1" v-model="targetUsernamesPath" />
+                            class="input input-bordered join-item  flex-1 w-full" v-model="targetUsernamesPath" />
                         <button class="btn btn-info join-item" @click="selectUsernameFile">{{ $t('select') }}</button>
                     </div>
                 </div>
@@ -77,15 +77,17 @@
                 <!-- 帖子链接文件选择 -->
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text font-semibold">{{ $t('postLinksPath') }}</span>
+                        <span class="label-text font-semibold">{{
+                            $t('postLinksPath') }}
+                        </span>
                     </label>
-                    <div class="join">
+                    <div class="join flex w-full">
                         <input type="text" :placeholder="$t('selectPostFile')"
-                            class="input input-bordered join-item flex-1" v-model="postLinksPath" />
-                        <button class="btn btn-info join-item" @click="selectPostLinksFile">{{ $t('select') }}</button>
+                            class="input input-bordered join-item flex-1 w-full" v-model="postLinksPath" /> <button
+                            class="btn btn-info join-item" @click="selectPostLinksFile">{{ $t('select') }}</button>
                     </div>
-                    <span class="text-md text-gray-500 mt-2">{{ $t('postLinksPathHint') }}</span>
                 </div>
+
             </div>
         </div>
     </div>
@@ -175,11 +177,35 @@
 
             <!-- 帖子处理设置 -->
             <div class="mb-4 p-3 bg-base-50 rounded-lg border border-base-200">
-                <div class="flex items-center gap-4">
-                    <span class="text-md font-medium">{{ $t('maxPostsToProcess') }}:</span>
-                    <input type="number" class="input input-md input-bordered w-20"
-                        v-model.number="postSettings.max_posts_count" min="1" max="50" />
-                    <span class="text-md">{{ $t('posts') }}</span>
+                <div class="space-y-3 flex flex-row flex-wrap gap-4">
+                    <div class="flex items-center gap-4">
+                        <span class="text-md font-bold">{{ $t('maxPostsToProcess') }}:</span>
+                        <input type="number" class="input input-md input-bordered w-20"
+                            v-model.number="postSettings.max_posts_count" min="1" max="50" />
+                        <span class="text-md">{{ $t('posts') }}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-md font-bold min-w-[100px]">{{ $t('viewDuration') }}:</span>
+                        <input type="number" class="input input-md input-bordered w-20"
+                            v-model.number="postSettings.view_duration" min="1" max="300" />
+                        <span class="text-md">{{ $t('seconds') }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <span class="text-md font-bold min-w-[100px]">{{ $t('repeatTimes') }}:</span>
+                        <input type="number" class="input input-md input-bordered w-20"
+                            v-model.number="postSettings.repeat_times" min="1" max="20" />
+                        <span class="text-md">{{ $t('times') }}</span>
+                    </div>
+
+                    <div class="alert alert-info py-2 px-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            class="stroke-current shrink-0 w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-md">{{ $t('repeatTimesTip') }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -219,30 +245,7 @@
 
                         <div class="divider my-2"></div>
 
-                        <div class="space-y-3">
-                            <div class="flex items-center gap-3">
-                                <span class="text-md font-medium min-w-[100px]">{{ $t('viewDuration') }}:</span>
-                                <input type="number" class="input input-md input-bordered w-20"
-                                    v-model.number="postSettings.view_duration" min="1" max="300" />
-                                <span class="text-md">{{ $t('seconds') }}</span>
-                            </div>
 
-                            <div class="flex items-center gap-3">
-                                <span class="text-md font-medium min-w-[100px]">{{ $t('repeatTimes') }}:</span>
-                                <input type="number" class="input input-md input-bordered w-20"
-                                    v-model.number="postSettings.repeat_times" min="1" max="20" />
-                                <span class="text-md">{{ $t('times') }}</span>
-                            </div>
-
-                            <div class="alert alert-info py-2 px-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    class="stroke-current shrink-0 w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="text-md">{{ $t('repeatTimesTip') }}</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -341,6 +344,23 @@
                     </div>
                 </div>
             </div>
+            <!-- 添加任务间隔时间设置 -->
+            <div class="flex flex-row items-center p-2">
+                <label class="font-bold mr-4">{{ $t('taskInterval') }}:</label>
+                <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
+                    0: '0',
+                    5: '5',
+                    10: '10' + ' ' + $t('minute')
+                }" />
+            </div>
+            <div class="alert alert-info py-2 px-3 mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    class="stroke-current shrink-0 w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-md">{{ $t('taskIntervalTip') }}</span>
+            </div>
         </div>
     </div>
 </template>
@@ -348,9 +368,13 @@
 <script>
 import { open } from '@tauri-apps/api/dialog';
 import { superBoostSettings } from '@/utils/settingsManager';
+import VueSlider from "vue-3-slider-component";
 
 export default {
     name: 'SuperBoostDialog',
+    components: {
+        VueSlider
+    },
     mixins: [
         superBoostSettings.createVueMixin(
             {
@@ -392,15 +416,17 @@ export default {
                         model: 'gpt-3.5-turbo',
                         system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
                     }
-                }
+                },
+                task_interval: [0, 0]
             },
             [
                 'dataSourceType', 'targetUsernamesPath', 'postLinksPath', 'accessMethod', 'features',
                 'followSettings', 'dmSettings', 'postSettings',
-                'commentSettings'
+                'commentSettings', 'task_interval'
             ]
         )
-    ], data() {
+    ],
+    data() {
         return {
             // 数据源类型
             dataSourceType: 'usernames',
@@ -461,9 +487,12 @@ export default {
                     model: 'gpt-3.5-turbo',
                     system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
                 }
-            }
+            },
+            // 任务间隔时间
+            task_interval: [0, 0]
         }
-    }, async mounted() {
+    },
+    async mounted() {
         let needsReset = false;
 
         if (typeof this.dataSourceType === 'undefined' || !['usernames', 'post_links'].includes(this.dataSourceType)) {
@@ -692,7 +721,11 @@ export default {
             // 发送到后端执行
             await this.$emiter('run_now_by_account', {
                 name: 'super_boost_v2',
-                args: { enable_multi_account }
+                args: {
+                    enable_multi_account: enable_multi_account,
+                    min_interval: Number(this.task_interval[0]),
+                    max_interval: Number(this.task_interval[1]),
+                }
             });
         }
     }

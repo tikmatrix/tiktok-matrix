@@ -19,13 +19,10 @@ use std::os::windows::process::CommandExt;
 use futures_util::stream::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 use tauri::{
     http::header::{ACCEPT, USER_AGENT},
-    http::ResponseBuilder,
     AppHandle, Manager,
 };
-use url::Url;
 use zip::read::ZipArchive;
 mod init_log;
 
@@ -88,27 +85,6 @@ impl Progress {
     }
 }
 
-fn infer_mime_type(path: &Path) -> &'static str {
-    match path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| ext.to_ascii_lowercase())
-        .as_deref()
-    {
-        Some("html") | Some("htm") => "text/html",
-        Some("js") | Some("mjs") => "text/javascript",
-        Some("css") => "text/css",
-        Some("json") | Some("map") => "application/json",
-        Some("png") => "image/png",
-        Some("jpg") | Some("jpeg") => "image/jpeg",
-        Some("gif") => "image/gif",
-        Some("svg") => "image/svg+xml",
-        Some("ico") => "image/x-icon",
-        Some("webp") => "image/webp",
-        Some("wasm") => "application/wasm",
-        _ => "application/octet-stream",
-    }
-}
 fn setup_env(working_dir: &str) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
     std::env::set_var("MATRIX_APP_NAME", "TikMatrix");
@@ -468,49 +444,6 @@ fn open_adb_terminal(dir: String) {
 
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
-        .register_uri_scheme_protocol("app", move |app, request| {
-            println!("[TAURI] handler: {}", request.uri());
-
-            // 根目录：%APPDATA%/com.tikmatrix/upload/ui
-            let app_data_dir = app.path_resolver().app_data_dir().ok_or_else(|| {
-                std::io::Error::new(std::io::ErrorKind::Other, "failed to resolve app data dir")
-            })?;
-            let scheme_root = app_data_dir.join("upload").join("ui");
-            let canonical_root = std::fs::canonicalize(&scheme_root).unwrap_or(scheme_root.clone());
-
-            // 解析 URL（兼容有/无 host）
-            let parsed = Url::parse(request.uri()).map_err(tauri::api::Error::from)?;
-            let _host = parsed.host_str().unwrap_or(""); // 允许 "" 或 "local"
-            let mut rel = parsed.path().trim_start_matches('/'); // e.g. "v1.0.4/index.html"
-            if rel.is_empty() {
-                rel = "index.html";
-            }
-
-            // 目标文件与越界校验
-            let candidate = scheme_root.join(rel);
-            if !candidate.exists() {
-                return ResponseBuilder::new()
-                    .status(404)
-                    .body(Vec::new())
-                    .map_err(|e| e.into());
-            }
-            let canonical_req = std::fs::canonicalize(&candidate).map_err(tauri::api::Error::Io)?;
-            if !canonical_req.starts_with(&canonical_root) {
-                return ResponseBuilder::new()
-                    .status(403)
-                    .body(Vec::new())
-                    .map_err(|e| e.into());
-            }
-
-            // 读文件 & 返回
-            let bytes = std::fs::read(&canonical_req).map_err(tauri::api::Error::Io)?;
-            let mime = infer_mime_type(&canonical_req);
-            ResponseBuilder::new()
-                .mimetype(mime)
-                .status(200)
-                .body(bytes)
-                .map_err(|e| e.into())
-        })
         .invoke_handler(tauri::generate_handler![
             get_distributor_code,
             grant_permission,
@@ -556,8 +489,6 @@ fn main() -> std::io::Result<()> {
                 }
                 Err(e) => log::warn!("⚠️  Failed to get distributor code: {}", e),
             }
-
-            clear_persistent_state_key(&app_data_dir, "hasCheckedUpdate");
 
             let ui_cache_dir = app_data_dir.join("upload").join("ui");
             std::fs::create_dir_all(&ui_cache_dir)?;
@@ -608,62 +539,6 @@ fn delete_logs_older_than_3_days(work_dir: &str) {
                     std::fs::remove_file(&path).unwrap();
                 }
             }
-        }
-    }
-}
-
-fn clear_persistent_state_key(app_data_dir: &Path, key: &str) {
-    let storage_path = app_data_dir.join("data").join("app_state.json");
-
-    if !storage_path.exists() {
-        return;
-    }
-
-    let Ok(contents) = std::fs::read_to_string(&storage_path) else {
-        log::warn!(
-            "Failed to read persistent storage while clearing key {}",
-            key
-        );
-        return;
-    };
-
-    if contents.trim().is_empty() {
-        return;
-    }
-
-    match serde_json::from_str::<JsonValue>(&contents) {
-        Ok(mut value) => {
-            if let Some(obj) = value.as_object_mut() {
-                if obj.remove(key).is_some() {
-                    match serde_json::to_string_pretty(&value) {
-                        Ok(updated) => {
-                            if let Err(err) = std::fs::write(&storage_path, updated) {
-                                log::warn!(
-                                    "Failed to write persistent storage while clearing key {}: {}",
-                                    key,
-                                    err
-                                );
-                            } else {
-                                log::info!("Removed legacy key '{}' from app_state.json", key);
-                            }
-                        }
-                        Err(err) => {
-                            log::warn!(
-                                "Failed to serialise persistent storage while clearing key {}: {}",
-                                key,
-                                err
-                            );
-                        }
-                    }
-                }
-            }
-        }
-        Err(err) => {
-            log::warn!(
-                "Failed to parse persistent storage while clearing key {}: {}",
-                key,
-                err
-            );
         }
     }
 }
