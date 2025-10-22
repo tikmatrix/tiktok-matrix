@@ -4,9 +4,10 @@
     <div class="mb-8">
       <h3 class="text-lg font-semibold text-base-content mb-4 border-l-4 border-primary pl-3">{{ $t('appConfiguration')
       }}</h3>
-      <div class="space-y-4" v-if="whitelabelConfig.targetApp === 'tiktok'">
+      <div class="space-y-4">
         <!-- TikTok包名选择 -->
-        <div class="flex items-center justify-between py-3 border-b border-base-200">
+        <div class="flex items-center justify-between py-3 border-b border-base-200"
+          v-if="whitelabelConfig.targetApp === 'tiktok'">
           <div class="flex-1">
             <label class="text-md font-medium text-base-content">{{ $t('tiktokPackagename') }}</label>
           </div>

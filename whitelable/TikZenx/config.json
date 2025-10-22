@@ -8,5 +8,6 @@
     "whatsappSupport": "https://wa.me/+6588387587",
     "iconFile": "app-icon.png",
     "enablePay": false,
+    "showAppNameInTitle": true,
     "targetApp": "tiktok"
 }

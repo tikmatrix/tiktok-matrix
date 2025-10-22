@@ -4,7 +4,8 @@
     <!-- 左侧:应用图标、名称、版本和检查更新 -->
     <div class="flex items-center space-x-2">
       <img ref="logo" :src="currentLogoSrc" class="h-10 w-auto logo" alt="TikMatrix Logo" />
-      <span class="text-2xl text-base-content font-bold">{{ whitelabelConfig.appName }}</span>
+      <span class="text-2xl text-base-content font-bold" v-if="whitelabelConfig.showAppNameInTitle">{{
+        whitelabelConfig.appName }}</span>
       <!-- 检查更新按钮 -->
       <button @click="check_update(true)"
         class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">

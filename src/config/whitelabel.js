@@ -6,11 +6,12 @@
 
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
-    appName: '',
+    appName: 'TikMatrix', // 应用名称
     officialWebsite: 'https://tikmatrix.com', // 官网域名
     apiDomain: 'https://api.tikmatrix.com', // API域名
     enablePay: true, // 是否启用支付功能
     targetApp: 'tiktok', // 目标应用，tiktok 或 instagram
+    showAppNameInTitle: false, // 是否在窗口标题显示应用名称
 
     // Logo配置
     logo: {
