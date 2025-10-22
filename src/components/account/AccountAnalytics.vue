@@ -197,6 +197,7 @@ import DataSyncButton from '../analytics/DataSyncButton.vue'
 import * as XLSX from 'xlsx'
 import { writeBinaryFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { invoke } from "@tauri-apps/api/tauri"
+import { getJsonItem, setJsonItem, getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
 
 export default {
     name: 'AccountAnalytics',
@@ -302,12 +303,12 @@ export default {
                         const tiktokData = JSON.parse(res.data);
                         const { profile, stats } = tiktokData;
 
-                        const tiktokCache = JSON.parse(localStorage.getItem('tiktokDataCache') || '{}');
+                        const tiktokCache = await getJsonItem('tiktokDataCache', {});
                         tiktokCache[account.username] = {
                             data: tiktokData,
                             timestamp: new Date().getTime()
                         };
-                        localStorage.setItem('tiktokDataCache', JSON.stringify(tiktokCache));
+                        await setJsonItem('tiktokDataCache', tiktokCache);
 
                         this.tikTokData[account.id] = {
                             nickname: profile?.Nickname || '-',
@@ -441,7 +442,7 @@ export default {
             // 在同步开始时就记录时间（取消也算数，防止频繁取消绕过限制）
             const now = new Date().toISOString();
             this.lastBatchSyncDate = now;
-            localStorage.setItem('lastBatchSyncDate', now);
+            await setItem('lastBatchSyncDate', now);
             console.log('📅 Batch sync date recorded at start:', now);
 
             this.syncQueue = [...this.filteredAccounts];
@@ -492,13 +493,13 @@ export default {
             this.$refs.clear_data_confirm_dialog.showModal();
         },
 
-        confirmClearAllData() {
+        async confirmClearAllData() {
             // 关闭确认对话框
             this.$refs.clear_data_confirm_dialog.close();
 
             // 执行清空操作
             this.tikTokData = {};
-            localStorage.removeItem('tiktokDataCache');
+            await removeItem('tiktokDataCache');
             this.$forceUpdate();
             this.$emiter('NOTIFY', {
                 type: 'success',
@@ -507,9 +508,10 @@ export default {
             });
         },
 
-        loadTikTokCache() {
+        async loadTikTokCache() {
             try {
-                const tiktokCache = JSON.parse(localStorage.getItem('tiktokDataCache') || '{}');
+                const cache = await getJsonItem('tiktokDataCache', {});
+                const tiktokCache = cache && typeof cache === 'object' ? cache : {};
 
                 // 清空现有数据，避免累积
                 this.tikTokData = {};
@@ -589,10 +591,10 @@ export default {
         }
     },
 
-    mounted() {
+    async mounted() {
 
         // 加载上次批量同步的日期
-        const lastSyncDate = localStorage.getItem('lastBatchSyncDate');
+        const lastSyncDate = await getItem('lastBatchSyncDate');
         if (lastSyncDate) {
             this.lastBatchSyncDate = lastSyncDate;
             console.log('📅 Last batch sync date loaded:', lastSyncDate);
@@ -601,16 +603,16 @@ export default {
 
         // 初次加载缓存数据
         if (this.accounts && this.accounts.length > 0) {
-            this.loadTikTokCache();
+            await this.loadTikTokCache();
         }
     },
     watch: {
         accounts: {
-            handler(newVal, oldVal) {
+            async handler(newVal, oldVal) {
                 console.log('AccountAnalytics accounts changed:', newVal);
                 // 只在组件已挂载且账号数据变化时重新加载
                 if (this.$el && newVal && newVal.length > 0 && newVal !== oldVal) {
-                    this.loadTikTokCache();
+                    await this.loadTikTokCache();
                 }
             },
             deep: true

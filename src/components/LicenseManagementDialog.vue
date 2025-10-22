@@ -64,7 +64,8 @@ import LicenseMigrationDialog from './LicenseMigrationDialog.vue'
 import paymentMixin from '../mixins/paymentMixin'
 import licenseMixin from '../mixins/licenseMixin'
 import orderMixin from '../mixins/orderMixin'
-import { getWhiteLabelConfig } from '../config/whitelabel.js';
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
+import { getItem, setItem } from '@/utils/persistentStorage.js';
 
 export default {
     name: 'LicenseManagementDialog',
@@ -90,15 +91,15 @@ export default {
             order: null,
             interval: null,
             refreshTime: 10,
-            agreePolicy: localStorage.getItem('agreePolicy') === 'true',
-            currentLocale: localStorage.getItem('locale')?.replace(/"/g, '') || 'en',
+            agreePolicy: false,
+            currentLocale: 'en',
             priceTableInfo: null,
-            whitelabelConfig: getWhiteLabelConfig(),
+            whitelabelConfig: cloneDefaultWhiteLabelConfig(),
         };
     },
     watch: {
-        agreePolicy(newVal) {
-            localStorage.setItem('agreePolicy', newVal);
+        async agreePolicy(newVal) {
+            await setItem('agreePolicy', newVal ? 'true' : 'false');
         }
     },
     computed: {
@@ -108,13 +109,31 @@ export default {
             return `${minutes}:${seconds}`;
         }
     },
+    async created() {
+        const [storedAgree, storedLocale, config] = await Promise.all([
+            getItem('agreePolicy'),
+            getItem('locale'),
+            getWhiteLabelConfig()
+        ]);
+
+        if (storedAgree !== null) {
+            this.agreePolicy = storedAgree === 'true';
+        }
+        if (storedLocale) {
+            this.currentLocale = storedLocale.replace(/"/g, '');
+        }
+        if (config) {
+            this.whitelabelConfig = config;
+        }
+    },
     async mounted() {
         await this.setupEventListeners();
     },
     methods: {
         async show() {
             await this.$emiter('LICENSE', { reload: true });
-            this.currentLocale = localStorage.getItem('locale')?.replace(/"/g, '') || 'en';
+            const storedLocale = await getItem('locale');
+            this.currentLocale = storedLocale ? storedLocale.replace(/"/g, '') : 'en';
             await this.getStripePriceTableInfo();
             this.$refs.license_management_dialog.showModal();
             await this.getOrder();

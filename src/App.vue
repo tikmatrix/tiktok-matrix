@@ -21,6 +21,7 @@ import AppDialog from './AppDialog.vue'
 import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs'
+import { getItem } from './utils/persistentStorage.js';
 
 export default {
   name: 'app',
@@ -146,8 +147,9 @@ export default {
       }
     },
     async getDevices() {
-      this.$service.get_devices().then(res => {
-        const newDevices = res.data;
+      try {
+        const res = await this.$service.get_devices();
+        const newDevices = Array.isArray(res.data) ? res.data : [];
         const currentDevices = this.devices;
 
         // 找出需要删除的设备
@@ -172,23 +174,23 @@ export default {
         });
 
         // 添加或更新设备
-        devicesToAddOrUpdate.forEach(newDevice => {
+        for (const newDevice of devicesToAddOrUpdate) {
           const existingIndex = currentDevices.findIndex(d => d.real_serial === newDevice.real_serial);
           if (existingIndex === -1) {
-            // 新设备
-            newDevice.sort = Number(localStorage.getItem(`sort_${newDevice.real_serial}`) || '0');
+            const storedSort = await getItem(`sort_${newDevice.real_serial}`);
+            newDevice.sort = Number(storedSort ?? '0');
             currentDevices.push(newDevice);
           } else {
             // 更新现有设备
             Object.assign(currentDevices[existingIndex], newDevice);
           }
-        });
-        console.log(currentDevices)
+        }
+
         // 创建新的排序后的数组
         const sortedDevices = [...currentDevices].sort((a, b) => {
           return a.sort - b.sort || a.group_id - b.group_id || a.serial.localeCompare(b.serial);
         });
-        console.log(sortedDevices)
+
         // 使用Vue的响应式方法更新数组
         this.devices.splice(0, this.devices.length, ...sortedDevices);
 
@@ -199,7 +201,9 @@ export default {
 
         // 保存设备信息到文件
         this.saveDevicesInfo();
-      });
+      } catch (error) {
+        console.error('获取设备列表失败:', error);
+      }
     },
 
     async saveDevicesInfo() {
@@ -269,7 +273,7 @@ export default {
       console.log('执行自动更新检查...');
       try {
         // 通过事件通知 TitleBar 执行静默更新
-        await this.$emiter('AUTO_UPDATE_TRIGGER', { silent: true });
+        await this.$emiter('AUTO_UPDATE_TRIGGER');
       } catch (error) {
         console.error('自动更新失败:', error);
       }

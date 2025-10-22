@@ -84,6 +84,7 @@ impl Progress {
         handle.emit_all("DOWNLOAD_FINISHED", &self).ok();
     }
 }
+
 fn setup_env(working_dir: &str) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
     std::env::set_var("MATRIX_APP_NAME", "IgMatrix");
@@ -463,8 +464,8 @@ fn main() -> std::io::Result<()> {
             open_adb_terminal
         ])
         .setup(|app| {
-            let work_dir = app.path_resolver().app_data_dir().unwrap();
-            let work_dir = work_dir.to_str().unwrap();
+            let app_data_dir = app.path_resolver().app_data_dir().unwrap();
+            let work_dir = app_data_dir.to_str().unwrap();
             setup_env(work_dir);
             init_log::init(work_dir);
             log::info!("work_dir: {}", work_dir);
@@ -479,11 +480,12 @@ fn main() -> std::io::Result<()> {
                 Err(e) => log::warn!("⚠️  Failed to get distributor code: {}", e),
             }
 
-            let window = app.get_window("main").expect("Failed to get main window");
-            window
-                .eval("localStorage.removeItem('hasCheckedUpdate');")
-                .expect("Failed to execute JavaScript");
-            log::info!("remove hasCheckedUpdate");
+            let ui_cache_dir = app_data_dir.join("upload").join("ui");
+            std::fs::create_dir_all(&ui_cache_dir)?;
+            app.fs_scope()
+                .allow_directory(&ui_cache_dir, true)
+                .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err.to_string()))?;
+
             std::fs::create_dir_all(format!("{}/{}", work_dir, "bin"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "logs"))?;
             std::fs::create_dir_all(format!("{}/{}", work_dir, "tmp"))?;
@@ -500,6 +502,9 @@ fn main() -> std::io::Result<()> {
             std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wssport.txt", work_dir), "0")?;
             Ok(())
+        })
+        .on_page_load(|_window, _payload| {
+            println!("[TikMatrix] page load triggered");
         })
         //listen to the tauri update event
         .run(tauri::generate_context!())

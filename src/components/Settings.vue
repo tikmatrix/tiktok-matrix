@@ -135,6 +135,8 @@
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
 import { appDataDir } from '@tauri-apps/api/path';
+import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getUnlockedFeatures, unlockFeature as unlockFeatureFlag } from '@/utils/features.js';
 export default {
   name: 'Settings',
   props: {
@@ -152,16 +154,16 @@ export default {
       deep: true
     },
     bigScreen: {
-      handler(newVal) {
-        localStorage.setItem('bigScreen', newVal)
+      async handler(newVal) {
+        await setItem('bigScreen', newVal)
       },
-      deep: true
+      deep: false
     }
   },
   data() {
     return {
       packagename: '',
-      bigScreen: localStorage.getItem('bigScreen') || 'standard',
+      bigScreen: 'standard',
       work_path: '',
       featureCode: '',
     }
@@ -190,11 +192,10 @@ export default {
         // 未来可添加更多激活码
       };
       const code = this.featureCode.trim();
-      const unlocked = JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
+      const unlocked = await getUnlockedFeatures();
       if (featureMap[code]) {
         if (!unlocked.includes(featureMap[code])) {
-          unlocked.push(featureMap[code]);
-          localStorage.setItem('unlockedFeatures', JSON.stringify(unlocked));
+          await unlockFeatureFlag(featureMap[code]);
           await this.$emiter('NOTIFY', {
             type: 'success',
             message: this.$t('featureUnlocked'),
@@ -220,6 +221,10 @@ export default {
   async mounted() {
     this.packagename = this.settings.packagename
     this.work_path = await appDataDir();
+    const storedBigScreen = await getItem('bigScreen');
+    if (storedBigScreen) {
+      this.bigScreen = storedBigScreen;
+    }
     // 设置默认值
     if (this.settings.auto_update_enabled === undefined) {
       this.settings.auto_update_enabled = true; // 默认开启

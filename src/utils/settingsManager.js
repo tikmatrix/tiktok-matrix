@@ -1,5 +1,6 @@
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from '@tauri-apps/api/tauri';
 import { exists } from '@tauri-apps/api/fs';
+import { getItem, removeItem } from './persistentStorage.js';
 
 /**
  * 通用设置管理工具
@@ -33,7 +34,7 @@ export class SettingsManager {
                     console.log(`设置已保存到 ${this.filename}`);
 
                     // 迁移成功后清理localStorage中的相关数据
-                    this.cleanupMigratedLocalStorageData(defaultSettings);
+                    await this.cleanupMigratedLocalStorageData(defaultSettings);
 
                     return migratedSettings;
                 } catch (saveError) {
@@ -111,9 +112,13 @@ export class SettingsManager {
 
         // 检查localStorage中是否有相关数据
         const defaultKeys = Object.keys(defaultSettings);
-        const hasLegacyData = defaultKeys.some(key => localStorage.getItem(key) !== null);
-
-        return hasLegacyData;
+        for (const key of defaultKeys) {
+            const legacyValue = await getItem(key);
+            if (legacyValue !== null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -130,20 +135,20 @@ export class SettingsManager {
         console.log('检查的默认设置键列表:', defaultKeys);
 
         // 详细记录localStorage状态
-        console.log('localStorage状态:');
-        const localStorageData = {};
-        defaultKeys.forEach(key => {
-            const value = localStorage.getItem(key);
-            localStorageData[key] = value;
+        console.log('遗留存储状态:');
+        const legacyData = {};
+        for (const key of defaultKeys) {
+            const value = await getItem(key);
+            legacyData[key] = value;
             console.log(`  ${key}: ${value === null ? 'null' : value} (type: ${typeof value})`);
-        });
+        }
 
-        const hasLegacyData = defaultKeys.some(key => localStorage.getItem(key) !== null);
+        const hasLegacyData = Object.values(legacyData).some(value => value !== null);
         console.log('是否发现历史数据:', hasLegacyData);
 
         if (hasLegacyData) {
             console.log('>>> 开始执行自动迁移');
-            const migratedSettings = this.migrateFromLocalStorage(defaultSettings);
+            const migratedSettings = await this.migrateFromLegacyStorage(defaultSettings);
             console.log('>>> 迁移完成');
             return migratedSettings;
         } else {
@@ -157,34 +162,34 @@ export class SettingsManager {
      * @param {Object} defaultSettings - 默认设置对象
      * @returns {Object} 迁移的设置对象
      */
-    migrateFromLocalStorage(defaultSettings) {
+    async migrateFromLegacyStorage(defaultSettings) {
         const migratedSettings = { ...defaultSettings };
         let migrationCount = 0;
 
         console.log(`--- 执行迁移逻辑 [${this.filename}] ---`);
 
         // 直接检查每个默认设置的键
-        Object.keys(defaultSettings).forEach(key => {
-            const localValue = localStorage.getItem(key);
+        for (const key of Object.keys(defaultSettings)) {
+            const legacyValue = await getItem(key);
             const oldValue = migratedSettings[key];
 
-            if (localValue !== null) {
+            if (legacyValue !== null) {
                 try {
                     // 尝试解析JSON，如果失败则使用原始字符串
-                    const parsedValue = JSON.parse(localValue);
+                    const parsedValue = JSON.parse(legacyValue);
                     migratedSettings[key] = parsedValue;
-                    console.log(`  ✓ ${key}: "${localValue}" (parsed) | 旧值: "${oldValue}" -> 新值: "${parsedValue}"`);
+                    console.log(`  ✓ ${key}: "${legacyValue}" (parsed) | 旧值: "${oldValue}" -> 新值: "${parsedValue}"`);
                     migrationCount++;
                 } catch {
                     // 如果不是JSON，直接使用字符串值
-                    migratedSettings[key] = localValue;
-                    console.log(`  ✓ ${key}: "${localValue}" (string) | 旧值: "${oldValue}" -> 新值: "${localValue}"`);
+                    migratedSettings[key] = legacyValue;
+                    console.log(`  ✓ ${key}: "${legacyValue}" (string) | 旧值: "${oldValue}" -> 新值: "${legacyValue}"`);
                     migrationCount++;
                 }
             } else {
                 console.log(`  - ${key}: 无数据，保持默认值 "${oldValue}"`);
             }
-        });
+        }
 
         console.log(`迁移汇总: 共处理 ${Object.keys(defaultSettings).length} 个属性，成功迁移 ${migrationCount} 个`);
         return migratedSettings;
@@ -194,24 +199,27 @@ export class SettingsManager {
      * 清理已迁移的localStorage数据
      * @param {Object} defaultSettings - 默认设置对象
      */
-    cleanupMigratedLocalStorageData(defaultSettings) {
-        console.log(`--- 清理localStorage数据 [${this.filename}] ---`);
+    async cleanupMigratedLocalStorageData(defaultSettings) {
+        console.log(`--- 清理遗留存储数据 [${this.filename}] ---`);
 
         let cleanedCount = 0;
-        Object.keys(defaultSettings).forEach(key => {
-            if (localStorage.getItem(key) !== null) {
-                localStorage.removeItem(key);
+        for (const key of Object.keys(defaultSettings)) {
+            const legacyValue = await getItem(key);
+            if (legacyValue !== null) {
+                await removeItem(key);
                 cleanedCount++;
                 console.log(`  ✓ 已清理: ${key}`);
             }
-        });
+        }
 
         if (cleanedCount > 0) {
-            console.log(`清理完成: 共清理了 ${cleanedCount} 个localStorage条目`);
+            console.log(`清理完成: 共清理了 ${cleanedCount} 个遗留条目`);
         } else {
-            console.log('无需清理localStorage数据');
+            console.log('无需清理遗留数据');
         }
-    }    /**
+    }
+
+    /**
      * 保存设置到文件
      * @param {Object} settings - 要保存的设置对象
      * @returns {Promise<void>}

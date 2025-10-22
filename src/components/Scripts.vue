@@ -94,28 +94,26 @@
     </button>
 </template>
 <script>
+import { getUnlockedFeatures } from '@/utils/features.js';
 
 export default {
     name: 'Scripts',
     props: ['settings'],
     data() {
         return {
-            unlocked: JSON.parse(localStorage.getItem('unlockedFeatures') || '[]')
+            unlocked: []
         }
     },
     methods: {
         isFeatureUnlocked(key) {
-            try {
-                return this.unlocked.includes(key);
-            } catch (e) {
-                return false;
-            }
+            return Array.isArray(this.unlocked) && this.unlocked.includes(key);
         }
     },
     async mounted() {
-        await this.$listen('featureUnlocked', async (e) => {
-            this.unlocked = JSON.parse(localStorage.getItem('unlockedFeatures') || '[]');
-        })
+        this.unlocked = await getUnlockedFeatures();
+        await this.$listen('featureUnlocked', async () => {
+            this.unlocked = await getUnlockedFeatures();
+        });
     },
 }
 </script>
