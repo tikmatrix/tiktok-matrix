@@ -268,7 +268,6 @@ import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whi
 import { isFeatureUnlocked } from '../utils/features.js';
 import { getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
 import LicenseLifecycle from './LicenseLifecycle.vue';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 export default {
   name: 'TitleBar',

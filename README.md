@@ -43,9 +43,6 @@ Note: The TikTok app on the phone must be in English for all features to work pr
 🔧Common troubleshooting and solutions
 <https://tikmatrix.com/docs/category/troubleshooting>
 
-DM <https://t.me/tikmatrixcom>
-Chat Group <https://t.me/tikmatrix_agent_bot>
-
 ## Quick start
 
 [Official website](https://www.tikmatrix.com)

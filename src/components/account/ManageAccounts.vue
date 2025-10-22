@@ -6,7 +6,8 @@
         <MyButton @click="add_account" label="add" icon="fa fa-add" />
         <MyButton @click="import_accounts" label="import" icon="fa fa-download" />
         <MyButton @click="export_accounts" label="export" icon="fa fa-upload" />
-        <MyButton @click="openAnalytics" label="dataAnalytics" icon="fa fa-chart-line" class="ml-2" />
+        <MyButton @click="openAnalytics" label="dataAnalytics" icon="fa fa-chart-line" class="ml-2"
+          v-if="whitelabelConfig.targetApp === 'tiktok'" />
 
         <!-- 标签筛选下拉列表 -->
         <select class="select ml-2 w-32" v-model="selectedTag">
@@ -46,7 +47,12 @@
               <tr v-for="(account, index) in slotProps.items">
                 <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
                 <td>
-                  <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank">
+                  <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank"
+                    v-if="whitelabelConfig.targetApp === 'tiktok'">
+                    {{ account.username }}
+                  </a>
+                  <a class="link link-primary" :href="`https://www.instagram.com/${account.username}`" target="_blank"
+                    v-if="whitelabelConfig.targetApp === 'instagram'">
                     {{ account.username }}
                   </a>
                 </td>
@@ -159,6 +165,7 @@ import * as XLSX from 'xlsx'
 import { open } from '@tauri-apps/api/dialog'
 import { readBinaryFile } from '@tauri-apps/api/fs';
 import { getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 
 export default {
   name: 'app',
@@ -181,7 +188,8 @@ export default {
       accountTags: {},
       newTagInput: {},
       selectedTag: '',
-      batchAction: ''
+      batchAction: '',
+      whitelabelConfig: cloneDefaultWhiteLabelConfig(),
     }
   },
   watch: {

@@ -103,7 +103,7 @@
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
-                            <label class="flex items-center gap-2">
+                            <label class="flex items-center gap-2" v-if="whitelabelConfig.targetApp === 'tiktok'">
                                 <input type="radio" id="customSound" value="custom" v-model="localFormData.add_sound"
                                     class="form-radio text-primary">
                                 <span>{{ $t('customSound') }}</span>
@@ -194,7 +194,8 @@
                 <h3 class="card-title text-lg font-semibold">{{ $t('productAndCaptionSettings') }}</h3>
                 <div class="space-y-4">
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
-                        <div class="flex items-center gap-1 md:justify-end md:pt-1">
+                        <div class="flex items-center gap-1 md:justify-end md:pt-1"
+                            v-if="whitelabelConfig.targetApp === 'tiktok'">
                             <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('addProductLink') }}</span>
                             <div class="tooltip tooltip-right" :data-tip="$t('addProductLinkTips')">
@@ -205,7 +206,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="flex flex-wrap gap-4">
+                        <div class="flex flex-wrap gap-4" v-if="whitelabelConfig.targetApp === 'tiktok'">
                             <label class="flex items-center gap-2">
                                 <input type="radio" id="disable" value="0" v-model="localFormData.add_product_link"
                                     class="form-radio text-primary">
@@ -326,6 +327,7 @@
 <script>
 import VueSlider from "vue-3-slider-component";
 import { open } from '@tauri-apps/api/dialog';
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 
 export default {
     name: 'PostFormFields',
@@ -345,6 +347,7 @@ export default {
             },
             tags: [],
             showTagsDialog: false,
+            whitelabelConfig: cloneDefaultWhiteLabelConfig(),
         }
     },
     computed: {
