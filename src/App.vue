@@ -273,7 +273,7 @@ export default {
       console.log('执行自动更新检查...');
       try {
         // 通过事件通知 TitleBar 执行静默更新
-        await this.$emiter('AUTO_UPDATE_TRIGGER', { silent: true });
+        await this.$emiter('AUTO_UPDATE_TRIGGER');
       } catch (error) {
         console.error('自动更新失败:', error);
       }

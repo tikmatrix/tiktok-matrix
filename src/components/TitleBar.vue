@@ -299,7 +299,7 @@ export default {
       agentErrorType: 'port',
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       isWhiteLabelUnlocked: false,
-      checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=1', // changeme
+      checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=0', // changeme
       pendingUiVersion: null,
     }
   },
@@ -540,29 +540,27 @@ export default {
         this.isLoadingLicense = false;
       }
     },
-    async check_update(force) {
-      const skipUpdateCheck = await getItem('skipUpdateCheck');
+    async check_update(force = false, silent = false) {
+      const skipUpdateCheck = sessionStorage.getItem('skipUpdateCheck');
       if (skipUpdateCheck && !force) {
         await this.startAgent();
         return;
       }
-      this.check_update_dialog_title = 'Checking update...';
-      this.$refs.download_dialog.showModal();
-      const osType = await os.type();
-      const arch = await os.arch();
-      console.log('osType:', osType, 'arch:', arch);
-
-      let platform = 'windows';
-      if (osType === 'Darwin') {
-        if (arch === 'aarch64') {
-          platform = 'mac-arm';
-        } else {
-          platform = 'mac-intel';
-        }
+      if (silent) {
+        this.$emiter('NOTIFY', {
+          type: 'info',
+          message: this.$t('checkingForUpdates'),
+          timeout: 2000
+        });
+      } else {
+        this.check_update_dialog_title = 'Checking update...';
+        this.$refs.download_dialog.showModal();
       }
-      console.log('platform:', platform);
 
-      if (platform === 'windows') {
+      let platform = await this.getPlatform();
+
+      if (platform === 'windows' && !silent) {
+        // Only check Tauri update on Windows in non-silent mode
         try {
           const { shouldUpdate, manifest } = await checkUpdate();
           if (shouldUpdate) {
@@ -581,15 +579,19 @@ export default {
             console.log('No update available');
           }
         } catch (e) {
-          await message(e, { title: 'Start Error', type: 'error' });
+          console.error('Update check failed:', e);
+          this.$emiter('NOTIFY', {
+            type: 'error',
+            message: this.$t('updateCheckFailed'),
+            timeout: 4000
+          });
           this.$refs.download_dialog.close();
           return;
         }
       }
 
-      let response = null;
       try {
-        response = await fetch(`${this.checkLibsUrl}&time=${new Date().getTime()}`, {
+        let response = await fetch(`${this.checkLibsUrl}&time=${new Date().getTime()}`, {
           method: 'GET',
           timeout: 10,
           responseType: ResponseType.JSON,
@@ -598,55 +600,67 @@ export default {
             'X-App-Id': this.name
           }
         });
-        console.log('response:', response);
-      } catch (e) {
-        await message(e, { title: 'Check Libs Error', type: 'error' });
-      }
+        if (response?.ok && response?.data?.code === 20000) {
+          const libs = response.data.data.libs;
+          let agentUpdated = false;
+          let scriptUpdated = false;
+          let uiUpdated = false;
+          let uiUpdatedVersion = null;
 
-      if (response?.ok && response?.data?.code === 20000) {
-        const libs = response.data.data.libs;
-        let agentUpdated = false;
-        let scriptUpdated = false;
-        let uiUpdated = false;
-        let uiUpdatedVersion = null;
-
-        for (const lib of libs) {
-          if (lib.name === 'ui') {
-            const applied = await this.download_and_update_lib(lib, 'ui');
-            if (applied) {
-              uiUpdated = true;
-              uiUpdatedVersion = lib.version;
+          for (const lib of libs) {
+            if (lib.name === 'ui') {
+              const applied = await this.download_and_update_lib(lib, 'ui');
+              if (applied) {
+                uiUpdated = true;
+                uiUpdatedVersion = lib.version;
+              }
+            } else if (lib.name === 'platform-tools') {
+              await this.download_and_update_lib(lib, 'platform-tools');
+            } else if (lib.name === 'PaddleOCR') {
+              await this.download_and_update_lib(lib, 'PaddleOCR');
+            } else if (lib.name === 'apk') {
+              await this.download_and_update_lib(lib, 'apk');
+            } else if (lib.name === 'test-apk') {
+              await this.download_and_update_lib(lib, 'test-apk');
+            } else if (lib.name === 'scrcpy') {
+              await this.download_and_update_lib(lib, 'scrcpy');
+            } else if (lib.name === 'script') {
+              const updated = await this.download_and_update_lib(lib, 'script');
+              if (updated) scriptUpdated = true;
+            } else if (lib.name === 'agent') {
+              const updated = await this.download_and_update_lib(lib, 'agent');
+              if (updated) agentUpdated = true;
             }
-          } else if (lib.name === 'platform-tools') {
-            await this.download_and_update_lib(lib, 'platform-tools');
-          } else if (lib.name === 'PaddleOCR') {
-            await this.download_and_update_lib(lib, 'PaddleOCR');
-          } else if (lib.name === 'apk') {
-            await this.download_and_update_lib(lib, 'apk');
-          } else if (lib.name === 'test-apk') {
-            await this.download_and_update_lib(lib, 'test-apk');
-          } else if (lib.name === 'scrcpy') {
-            await this.download_and_update_lib(lib, 'scrcpy');
-          } else if (lib.name === 'script') {
-            const updated = await this.download_and_update_lib(lib, 'script');
-            if (updated) scriptUpdated = true;
-          } else if (lib.name === 'agent') {
-            const updated = await this.download_and_update_lib(lib, 'agent');
-            if (updated) agentUpdated = true;
           }
+          if (!force || agentUpdated || scriptUpdated) {
+            await this.startAgent();
+          }
+          if (uiUpdated && uiUpdatedVersion) {
+            await this.promptUiReload(uiUpdatedVersion);
+          }
+          // Set flag to true to avoid repetitive checks, It will be cleared when UI is restarted
+          sessionStorage.setItem('skipUpdateCheck', 'true');
+          this.$refs.download_dialog.close();
+        } else {
+          console.error('Fetch libs update failed:', response);
+          this.$emiter('NOTIFY', {
+            type: 'error',
+            message: this.$t('updateCheckFailed'),
+            timeout: 4000
+          });
+          this.$refs.download_dialog.close();
         }
-        if (!force || agentUpdated || scriptUpdated) {
-          await this.startAgent();
-        }
-        if (uiUpdated && uiUpdatedVersion) {
-          await this.promptUiReload(uiUpdatedVersion);
-        }
-        await setItem('skipUpdateCheck', 'true');
+      } catch (e) {
+        console.error('Fetch libs update failed:', e);
+        this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('updateCheckFailed'),
+          timeout: 4000
+        });
         this.$refs.download_dialog.close();
-      } else {
-        this.$refs.download_dialog.close();
-        await message('Failed to check for updates', { title: 'Error', type: 'error' });
       }
+
+
     },
 
     async download_and_update_lib(lib, localStorageKey) {
@@ -987,88 +1001,21 @@ export default {
       document.title = config.appName || 'TikMatrix';
       this.$emit('whitelabel-updated', config);
     },
-
-    async performSilentUpdate() {
-      console.log('开始执行静默更新...');
-      try {
-        const osType = await os.type();
-        const arch = await os.arch();
-        console.log('osType:', osType, 'arch:', arch);
-
-        let platform = 'windows';
-        if (osType === 'Darwin') {
-          if (arch === 'aarch64') platform = 'mac-arm';
-          else platform = 'mac-intel';
-        }
-
-        let response = null;
-        try {
-          response = await fetch(`${this.checkLibsUrl}&time=${new Date().getTime()}`, {
-            method: 'GET',
-            timeout: 10,
-            responseType: ResponseType.JSON,
-            headers: {
-              'User-Agent': platform,
-              'X-App-Id': this.name
-            }
-          });
-          console.log('静默更新 - 库检查响应:', response);
-        } catch (e) {
-          console.log('静默更新 - 检查库失败:', e);
-          return;
-        }
-
-        if (response?.ok && response?.data?.code === 20000) {
-          const libs = response.data.data.libs;
-          let hasUpdates = false;
-          let agentUpdated = false;
-          let scriptUpdated = false;
-          let uiUpdated = false;
-          let uiUpdatedVersion = null;
-
-          for (const lib of libs) {
-            const updated = await this.silentDownloadAndUpdateLib(lib, this.getLibStorageKey(lib.name));
-            if (updated) {
-              hasUpdates = true;
-              if (lib.name === 'agent') agentUpdated = true;
-              else if (lib.name === 'script') scriptUpdated = true;
-              else if (lib.name === 'ui') {
-                uiUpdated = true;
-                uiUpdatedVersion = lib.version;
-              }
-            }
-          }
-
-          if (hasUpdates) {
-            await this.$emiter('NOTIFY', {
-              type: 'success',
-              message: '后台自动更新已完成',
-              timeout: 3000
-            });
-            if (agentUpdated || scriptUpdated) {
-              await this.startAgent(true);
-            }
-            if (uiUpdated && uiUpdatedVersion) {
-              await this.$emiter('NOTIFY', {
-                type: 'info',
-                message: this.$t('frontendUpdateLater', { version: uiUpdatedVersion }),
-                timeout: 4000
-              });
-              await setItem('uiPendingReloadVersion', uiUpdatedVersion);
-              this.pendingUiVersion = uiUpdatedVersion;
-            }
-          } else {
-            console.log('静默更新完成，没有发现新的更新');
-          }
-
-          await setItem('skipUpdateCheck', 'true');
+    async getPlatform() {
+      const osType = await os.type();
+      const arch = await os.arch();
+      let platform = 'windows';
+      if (osType === 'Darwin') {
+        if (arch === 'aarch64') {
+          platform = 'mac-arm';
         } else {
-          console.log('静默更新 - 检查更新失败');
+          platform = 'mac-intel';
         }
-      } catch (error) {
-        console.error('静默更新失败:', error);
       }
+      return platform;
     },
+
+
 
     getLibStorageKey(libName) {
       const libKeyMap = {
@@ -1083,103 +1030,9 @@ export default {
       };
       return libKeyMap[libName] || libName;
     },
-
-    async silentDownloadAndUpdateLib(lib, localStorageKey) {
-      try {
-        const storedVersion = await getItem(localStorageKey);
-        let localversion = this.sanitizeVersion(storedVersion) || '0';
-
-        console.log(`静默检查 ${lib.name}: 本地版本 ${localversion}, 远程版本 ${lib.version}`);
-
-        let url = lib.downloadUrl;
-        let work_path = await appDataDir();
-        let name = url.split('/').pop();
-        let path = work_path + 'tmp/' + name;
-        let updated = false;
-
-        const downloaded = await exists(`tmp/${name}`, { dir: BaseDirectory.AppData });
-        if (!downloaded || localversion !== lib.version) {
-          console.log(`静默下载 ${lib.name} 从 ${url}`);
-          await invoke('download_file_with_version', {
-            url,
-            path,
-            version: lib.version
-          });
-          updated = true;
-        } else {
-          console.log(`${lib.name} 已是最新版本，跳过下载`);
-        }
-
-        await setItem(localStorageKey, lib.version);
-
-        let result = updated;
-        if (lib.name === 'ui') {
-          result = await this.applyUiPackage({
-            lib,
-            tmpPath: path,
-            workPath: work_path,
-            updated,
-            interactive: false,
-            silent: true
-          });
-        } else {
-          await this.silentUpdateLib(lib, path, work_path, name, updated);
-        }
-
-        if (result) {
-          console.log(`静默更新 ${lib.name} 完成`);
-        } else {
-          console.log(`静默校验 ${lib.name} 完成，未检测到新版本`);
-        }
-        return result;
-      } catch (e) {
-        console.error(`静默更新 ${lib.name} 失败:`, e);
-        return false;
-      }
-    },
-
-    async silentUpdateLib(lib, path, work_path, name, updated) {
-      if (lib.name === 'platform-tools') {
-        const osType = await os.type();
-        const adbFileName = osType === 'Darwin' ? 'adb' : 'adb.exe';
-        let adb_exists = await exists(`platform-tools/${adbFileName}`, { dir: BaseDirectory.AppData });
-        if (updated || !adb_exists) {
-          await invoke("kill_process", { name: "adb" });
-          await new Promise(r => setTimeout(r, 3000));
-          await invoke("unzip_file", { zipPath: path, destDir: work_path });
-          await invoke("grant_permission", { path: "platform-tools/adb" });
-        }
-      } else if (lib.name === 'PaddleOCR') {
-        const osType = await os.type();
-        const paddleFileName = osType === 'Darwin' ? 'PaddleOCR-json' : 'PaddleOCR-json.exe';
-        let paddle_exists = await exists(`PaddleOCR-json/${paddleFileName}`, { dir: BaseDirectory.AppData });
-        if (updated || !paddle_exists) {
-          await invoke("kill_process", { name: "PaddleOCR-json" });
-          await invoke("unzip_file", { zipPath: path, destDir: work_path });
-        }
-      } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
-        const destRelative = `bin/${name}`;
-        if (updated || !(await exists(destRelative, { dir: BaseDirectory.AppData }))) {
-          await copyFile(path, path.replace('tmp', 'bin'));
-          if (lib.name === 'apk' || lib.name === 'test-apk') {
-            await invoke("set_env", { key: "agent_version", value: lib.version });
-          }
-        }
-      } else if (lib.name === 'script' || lib.name === 'agent') {
-        const destRelative = `bin/${name}`;
-        if (updated || !(await exists(destRelative, { dir: BaseDirectory.AppData }))) {
-          await invoke("kill_process", { name: lib.name });
-          await new Promise(r => setTimeout(r, 3000));
-          await copyFile(path, path.replace('tmp', 'bin'));
-          await invoke("grant_permission", { path: `bin/${lib.name}` });
-        }
-      }
-    },
   },
   async mounted() {
-    // 主题
-    console.log('darkMode:', this.darkMode);
-
+    // Check if we are reloading to a new UI version
     const reloadingTarget = await getItem('uiReloadingTo');
     if (reloadingTarget) {
       const currentUiVersion = this.getCurrentUiVersionFromLocation();
@@ -1193,18 +1046,17 @@ export default {
     await this.ensureUiVersionIsActive();
     await this.checkPendingUiReload();
 
-    // 版本&名称
+    // Version & Name
     this.version = await getVersion();
     this.name = await getName();
 
-    // 语言
+    // Language
     this.$i18n.locale = this.currentLocale;
     console.log('currentLocale:', this.currentLocale);
 
-    // 功能开关
+    // Check whitelabel feature
     this.isWhiteLabelUnlocked = await isFeatureUnlocked('whiteLabel');
 
-    // 事件监听
     await this.$listen("DOWNLOAD_PROGRESS", async (e) => {
       this.download_progress = e.payload;
     });
@@ -1234,12 +1086,7 @@ export default {
     });
 
     await this.$listen('AUTO_UPDATE_TRIGGER', async (e) => {
-      const { silent } = e.payload || {};
-      if (silent) {
-        await this.performSilentUpdate();
-      } else {
-        await this.check_update(true);
-      }
+      await this.check_update(true, true);
     });
 
     this.check_update();
