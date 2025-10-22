@@ -191,9 +191,10 @@ function updateMainRs() {
     }
 
     // 在 debug_assertions 的 if 块之后、setup_env 函数结束之前插入 MOSS_URL
+    const MATRIX_APP_NAME = targetApp === 'tiktok' ? 'TikMatrix' : 'IgMatrix';
     content = content.replace(
         debugBlockRegex,
-        `$1\n    std::env::set_var("MOSS_URL", "${escapeRust(mossUrl)}");$2`
+        `$1\n    std::env::set_var("MOSS_URL", "${escapeRust(mossUrl)}");\n    std::env::set_var("MATRIX_APP_NAME", "${escapeRust(MATRIX_APP_NAME)}");$2`
     );
 
     fs.writeFileSync(mainRsPath, content, 'utf-8');
