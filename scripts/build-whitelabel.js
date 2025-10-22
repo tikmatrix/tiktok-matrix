@@ -47,7 +47,7 @@ if (!fs.existsSync(configPath)) {
 }
 
 const rawConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
+const targetApp = mustHave(rawConfig.targetApp, 'targetApp');
 const appName = mustHave(rawConfig.appName, 'appName');
 const officialWebsite = mustHave(rawConfig.officialWebsite, 'officialWebsite');
 const apiDomain = normalizeDomain(mustHave(rawConfig.apiDomain, 'apiDomain'));
@@ -171,6 +171,7 @@ function updateWhitelabelConfig() {
     content = replaceConfigString(content, 'officialWebsite', officialWebsite);
     content = replaceConfigString(content, 'apiDomain', apiDomain);
     content = replaceConfigBoolean(content, 'enablePay', enablePay);
+    content = replaceConfigString(content, 'targetApp', targetApp);
     content = replaceConfigString(content, 'emailSupport', emailSupport);
     content = replaceConfigString(content, 'telegramSupport', telegramSupport);
     content = replaceConfigString(content, 'whatsappSupport', whatsappSupport);

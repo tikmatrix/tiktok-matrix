@@ -1,22 +1,45 @@
 <template>
-    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('openTikTok', {})">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('openTikTok', {})"
+        v-if="whitelabelConfig.targetApp === 'tiktok'">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-primary-content" />
         {{ $t('openTiktok') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('stopTiktok', {})">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'instagram'"
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'start', '-n', settings.packagename + '/com.instagram.android.activity.MainTabActivity'] })">
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-primary-content" />
+        {{ $t('openInstagram') }}
+    </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('stopTiktok', {})"
+        v-if="whitelabelConfig.targetApp === 'tiktok'">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-yellow-500" />
         {{ $t('stopTiktok') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$refs.clear_cache_dialog.showModal()">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'instagram'"
+        @click="$emiter('adbEventData', { args: ['shell', 'am', 'force-stop', settings.packagename] })">
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-yellow-500" />
+        {{ $t('stopInstagram') }}
+    </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$refs.clear_cache_dialog.showModal()"
+        v-if="whitelabelConfig.targetApp === 'tiktok'">
         <font-awesome-icon icon="fa-brands fa-tiktok" class="h-3 w-3 text-pink-500" />
         {{ $t('clearData') }}
     </button>
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$refs.clear_cache_dialog.showModal()"
+        v-if="whitelabelConfig.targetApp === 'instagram'">
+        <font-awesome-icon icon="fa-brands fa-instagram" class="h-3 w-3 text-pink-500" />
+        {{ $t('clearData') }}
+    </button>
 
-    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="grantTikTok">
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="grantPermissions"
+        v-if="whitelabelConfig.targetApp === 'tiktok'">
         <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />
         {{ $t('grantTikTok') }}
     </button>
-
+    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="grantPermissions"
+        v-if="whitelabelConfig.targetApp === 'instagram'">
+        <font-awesome-icon icon="fa fa-hand-holding-usd" class="h-3 w-3 text-success" />
+        {{ $t('grantInstagram') }}
+    </button>
 
     <button class="btn btn-md btn-primary  ml-1 mb-1" @click="app_install">
         <font-awesome-icon icon="fa fa-download" class="h-3 w-3 text-primary-content" />
@@ -164,6 +187,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { getItem, setItem } from '@/utils/persistentStorage.js';
 import { getUnlockedFeatures } from '@/utils/features.js';
 import MyButton from './Button.vue'
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 export default {
     name: 'General',
     props: ['settings'],
@@ -177,7 +201,8 @@ export default {
             resolution: 512,
             customResolution: 512,
             uninstall_package: '',
-            unlocked: []
+            unlocked: [],
+            whitelabelConfig: cloneDefaultWhiteLabelConfig(),
         }
     },
     computed: {
@@ -217,7 +242,7 @@ export default {
         },
 
 
-        async grantTikTok() {
+        async grantPermissions() {
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.READ_EXTERNAL_STORAGE'] })
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.WRITE_EXTERNAL_STORAGE'] })
             await this.$emiter('adbEventData', { args: ['shell', 'pm', 'grant', this.settings.packagename, 'android.permission.RECORD_AUDIO'] })

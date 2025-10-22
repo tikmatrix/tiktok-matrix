@@ -1,4 +1,6 @@
-<template> <button v-if="isFeatureUnlocked('registerScript')" class="btn btn-md btn-primary ml-1 mb-1"
+<template>
+    <button v-if="isFeatureUnlocked('registerScript') && whitelabelConfig.targetApp === 'tiktok'"
+        class="btn btn-md btn-primary ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'register' } })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3" />
         {{ $t('register') }}
@@ -33,13 +35,13 @@
         <font-awesome-icon icon="paper-plane" class="h-3 w-3 text-success" />
         {{ $t('post') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'deletePost' } })">
         <font-awesome-icon icon="fa-solid fa-trash" class="h-3 w-3 text-error" />
         {{ $t('deletePost') }}
     </button>
 
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostUsers' } })">
         <font-awesome-icon icon="fa fa-user-plus" class="h-3 w-3 text-success" />
         {{ $t('boostUsers') }}
@@ -49,17 +51,17 @@
         <font-awesome-icon icon="fa-solid fa-thumbs-up" class="h-3 w-3 text-success" />
         {{ $t('boostPosts') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostComments' } })">
         <font-awesome-icon icon="fa-solid fa-comment-dots" class="h-3 w-3 text-success" />
         {{ $t('boostComments') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'boostLives' } })">
         <font-awesome-icon icon="fa-solid fa-video" class="h-3 w-3 text-success" />
         {{ $t('boostLives') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'massDM' } })">
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />
         {{ $t('massDM') }}
@@ -69,17 +71,17 @@
         <font-awesome-icon icon="fa-solid fa-comment" class="h-3 w-3" />
         {{ $t('massComment') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'scrapeUsers' } })">
         <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />
         {{ $t('scrapeUsers') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'followBack' } })">
         <font-awesome-icon icon="fa-solid fa-user-plus" class="h-3 w-3 mr-1" />
         {{ $t('followBack') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'unFollowAll' } })">
         <font-awesome-icon icon="fa-solid fa-user-minus" class="h-3 w-3 mr-1" />
         {{ $t('unFollowAll') }}
@@ -94,13 +96,14 @@
 </template>
 <script>
 import { getUnlockedFeatures } from '@/utils/features.js';
-
+import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 export default {
     name: 'Scripts',
     props: ['settings'],
     data() {
         return {
-            unlocked: []
+            unlocked: [],
+            whitelabelConfig: cloneDefaultWhiteLabelConfig(),
         }
     },
     methods: {

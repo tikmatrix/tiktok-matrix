@@ -130,7 +130,6 @@
 import General from './General.vue'
 import Scripts from './Scripts.vue'
 import Tasks from './Tasks.vue'
-import QuickActions from './QuickActions.vue';
 import CustomCommands from './CustomCommands.vue';
 import { open, ask, message } from '@tauri-apps/api/dialog';
 import { readText, writeText } from '@tauri-apps/api/clipboard';
@@ -156,7 +155,6 @@ export default {
     General,
     Tasks,
     Scripts,
-    QuickActions,
     CustomCommands
   },
   computed: {
@@ -444,27 +442,7 @@ export default {
           });
         })
     },
-    async selectTab(tab) {
-      this.selectedTab = tab
-      switch (tab) {
-        case 'general':
-          this.$refs.general.classList.add('tab-active')
-          this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.scripts.classList.remove('tab-active')
-          break
-        case 'scripts':
-          this.$refs.general.classList.remove('tab-active')
-          this.$refs.quickActions.classList.remove('tab-active')
-          this.$refs.scripts.classList.add('tab-active')
-          break
-        case 'quickActions':
-          this.$refs.general.classList.remove('tab-active')
-          this.$refs.scripts.classList.remove('tab-active')
-          this.$refs.quickActions.classList.add('tab-active')
-          break
 
-      }
-    },
     isSelectAll(id) {
       const devices = this.groupDevices[id] || []
       const selected = this.selections[id] || []
