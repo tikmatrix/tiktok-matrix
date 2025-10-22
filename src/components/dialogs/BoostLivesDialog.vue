@@ -120,11 +120,20 @@
     </div>
 
   </div>
-  <!-- 添加任务间隔时间设置 -->
-  <div class="flex flex-row items-center">
+  <div class="flex flex-row items-center p-2">
     <label class="font-bold mr-4">{{ $t('taskInterval') }}:</label>
-    <VueSlider v-model="task_interval" :width="500" :min="0" :max="10"
-      :marks="{ 0: '0' + $t('minute'), 5: '5' + $t('minute'), 10: '10' + $t('minute') }" />
+    <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
+      0: '0',
+      5: '5',
+      10: '10' + ' ' + $t('minute')
+    }" />
+  </div>
+  <div class="alert alert-info py-2 px-3 mt-4">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <span class="text-md">{{ $t('taskIntervalTip') }}</span>
   </div>
 
 </template>
