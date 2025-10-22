@@ -16,8 +16,7 @@
         "all": false,
         "asset": true,
         "assetScope": [
-          "$APPDATA/upload/**",
-          "$APPDATA/upload/**/*"
+          "$APPDATA/upload/**"
         ]
       },
       "window": {
@@ -132,23 +131,7 @@
       ]
     },
     "security": {
-      "dangerousRemoteDomainIpcAccess": [
-        {
-          "domain": "https://asset.localhost",
-          "windows": [
-            "main"
-          ],
-          "enableTauriAPI": true
-        },
-        {
-          "domain": "asset.localhost",
-          "windows": [
-            "main"
-          ],
-          "enableTauriAPI": true
-        }
-      ],
-      "csp": "default-src 'self' asset: https://asset.localhost; script-src 'self' asset: https://asset.localhost; style-src 'self' 'unsafe-inline' asset: https://asset.localhost; img-src 'self' asset: https://asset.localhost data:"
+      "csp": null
     },
     "windows": [
       {
