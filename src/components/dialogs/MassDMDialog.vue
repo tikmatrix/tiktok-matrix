@@ -79,7 +79,7 @@ export default {
 
 
 
-    async runScript(enable_multi_account) {
+    async runScript(enable_multi_account = false, rotate_proxy = false) {
       this.send_profile_card = this.send_profile_card.trim()
       //append @ to the start of send_profile_card if send_profile_card is not empty
       if (this.send_profile_card.length > 0 && this.send_profile_card.charAt(0) !== '@') {
@@ -87,7 +87,8 @@ export default {
       }
       await this.$emiter('massDM', {
         target_username_path: this.target_username_path,
-        enable_multi_account: enable_multi_account
+        enable_multi_account: enable_multi_account,
+        rotate_proxy: rotate_proxy,
       })
     },
 

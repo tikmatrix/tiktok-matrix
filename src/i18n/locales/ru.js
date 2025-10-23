@@ -644,7 +644,7 @@
   testProxyRotation: 'Тестировать ротацию',
   proxyRotationTestSuccess: 'Ротация прокси выполнена успешно',
   proxyRotationTestFailed: 'Ошибка ротации прокси',
-  rotateProxyBeforeSwitch: 'Ротировать прокси перед сменой аккаунта',
+  rotateProxy: 'Ротировать прокси',
   configure: 'Настроить',
   requestMethod: 'Метод запроса',
   requestTimeout: 'Тайм-аут запроса (мс)',

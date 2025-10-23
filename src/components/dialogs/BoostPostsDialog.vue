@@ -113,7 +113,7 @@ export default {
       this.target_post_urls = lines.join('\n')
       return true;
     },
-    async runScript(enable_multi_account) {
+    async runScript(enable_multi_account = false, rotate_proxy = false) {
       if (!this.filterTargetPostUrl()) {
         return;
       }
@@ -122,7 +122,8 @@ export default {
         args: {
           min_interval: Number(this.boost_post_interval[0]),
           max_interval: Number(this.boost_post_interval[1]),
-          enable_multi_account: enable_multi_account
+          enable_multi_account: enable_multi_account,
+          rotate_proxy: rotate_proxy
         }
       })
     },

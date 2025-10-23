@@ -101,7 +101,7 @@ export default {
       }
       return true;
     },
-    async runScript() {
+    async runScript(enable_multi_account = false, rotate_proxy = false) {
       if (!this.filterTargetUsername()) {
         return;
       }
@@ -112,6 +112,8 @@ export default {
         mode: this.scrape_mode,
         target_username: this.target_username,
         search_keyword: this.search_keyword,
+        enable_multi_account: enable_multi_account,
+        rotate_proxy: rotate_proxy
       })
     },
   },

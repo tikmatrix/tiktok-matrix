@@ -653,7 +653,7 @@
   requestBodyPlaceholder: 'JSON payload to send when using POST',
   clearConfiguration: 'Clear configuration',
   invalidJsonFormat: 'Invalid JSON format',
-  rotateProxyBeforeSwitch: 'Rotate proxy before switching account',
+  rotateProxy: 'Rotate proxy',
   quickActions: 'Shortcut',
   quickConfigurationTip: 'Please select a username file and enable at least one feature',
   quickOperation: 'Quick Operation',

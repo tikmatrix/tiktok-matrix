@@ -139,7 +139,7 @@ export default {
       return true;
     },
 
-    async runScript(enable_multi_account) {
+    async runScript(enable_multi_account = false, rotate_proxy = false) {
       if (!this.filterTargetPostUrl()) {
         return;
       }
@@ -148,7 +148,8 @@ export default {
         await this.$emiter('massComment', {
           min_interval: Number(this.comment_interval[0]),
           max_interval: Number(this.comment_interval[1]),
-          enable_multi_account: enable_multi_account
+          enable_multi_account: enable_multi_account,
+          rotate_proxy: rotate_proxy,
         })
       } else {
         await this.$emiter('run_now_by_account', {
@@ -156,7 +157,8 @@ export default {
             target_post_urls: this.target_post_urls,
             min_interval: Number(this.comment_interval[0]),
             max_interval: Number(this.comment_interval[1]),
-            enable_multi_account: enable_multi_account
+            enable_multi_account: enable_multi_account,
+            rotate_proxy: rotate_proxy,
           }
         })
       }
