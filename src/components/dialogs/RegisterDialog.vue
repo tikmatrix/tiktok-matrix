@@ -38,7 +38,7 @@ export default {
   },
   methods: {
 
-    async runScript() {
+    async runScript(enable_multi_account = false, rotate_proxy = false) {
       await this.$service.update_settings(this.settings)
       //reload settings
       await this.$emiter('reload_settings', {})

@@ -88,10 +88,11 @@ export default {
     },
 
 
-    async runScript(enable_multi_account) {
+    async runScript(enable_multi_account = false, rotate_proxy = false) {
       await this.$emiter('run_now_by_account', {
         name: 'profile', args: {
-          enable_multi_account: enable_multi_account
+          enable_multi_account: enable_multi_account,
+          rotate_proxy: rotate_proxy
         }
       })
     },

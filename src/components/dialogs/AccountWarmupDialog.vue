@@ -145,13 +145,14 @@ export default {
       });
     },
 
-    async runScript(enable_multi_account) {
+    async runScript(enable_multi_account = false, rotate_proxy = false) {
       await this.$emiter('run_now_by_account', {
         name: 'account_warmup', args: {
           start_time: this.startOption === 'scheduled' ? this.scheduledTime : '',
           min_duration: Number(this.min_duration),
           max_duration: Number(this.max_duration),
-          enable_multi_account: enable_multi_account
+          enable_multi_account: enable_multi_account,
+          rotate_proxy: rotate_proxy,
         }
       })
     },

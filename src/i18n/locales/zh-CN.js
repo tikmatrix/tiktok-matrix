@@ -644,7 +644,7 @@
   testProxyRotation: '测试轮换',
   proxyRotationTestSuccess: '代理轮换成功',
   proxyRotationTestFailed: '代理轮换失败',
-  rotateProxyBeforeSwitch: '切换账号前轮换代理 IP',
+  rotateProxy: '轮换代理 IP',
   configure: '配置',
   requestMethod: '请求方式',
   requestTimeout: '请求超时时间 (毫秒)',

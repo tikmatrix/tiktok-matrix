@@ -184,12 +184,7 @@
                             v-model.number="postSettings.max_posts_count" min="1" max="50" />
                         <span class="text-md">{{ $t('posts') }}</span>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-md font-bold min-w-[100px]">{{ $t('viewDuration') }}:</span>
-                        <input type="number" class="input input-md input-bordered w-20"
-                            v-model.number="postSettings.view_duration" min="1" max="300" />
-                        <span class="text-md">{{ $t('seconds') }}</span>
-                    </div>
+
 
                     <div class="flex items-center gap-3">
                         <span class="text-md font-bold min-w-[100px]">{{ $t('repeatTimes') }}:</span>
@@ -207,8 +202,24 @@
                         <span class="text-md">{{ $t('repeatTimesTip') }}</span>
                     </div>
                 </div>
-            </div>
+                <!-- 观看时长 -->
+                <div class="flex w-full items-center gap-2 mt-8 mb-8">
+                    <label class="font-bold mr-4">{{ $t('viewDuration') }}:</label>
+                    <VueSlider v-model="postSettings.view_durations" :width="500" :min="0" :max="300"
+                        :marks="{ 0: '0', 60: '60', 120: '120', 180: '180', 240: '240', 300: '300' + ' ' + $t('second') }" />
 
+
+                </div>
+                <div class="alert alert-info py-2 px-3 mt-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        class="stroke-current shrink-0 w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-md">{{ $t('viewDurationTips') }}</span>
+                </div>
+            </div>
+            <div class="divider my-2"></div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                 <!-- 帖子互动操作 -->
@@ -243,7 +254,7 @@
                             </label>
                         </div>
 
-                        <div class="divider my-2"></div>
+
 
 
                     </div>
@@ -343,9 +354,11 @@
                         </div>
                     </div>
                 </div>
+
             </div>
+            <div class="divider my-2"></div>
             <!-- 添加任务间隔时间设置 -->
-            <div class="flex flex-row items-center p-2">
+            <div class="flex flex-row items-center mt-8 mb-8">
                 <label class="font-bold mr-4">{{ $t('taskInterval') }}:</label>
                 <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
                     0: '0',
@@ -353,7 +366,7 @@
                     10: '10' + ' ' + $t('minute')
                 }" />
             </div>
-            <div class="alert alert-info py-2 px-3 mt-4">
+            <div class="alert alert-info py-2 px-3">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     class="stroke-current shrink-0 w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -403,7 +416,7 @@ export default {
                     enable_repost: false,
                     enable_share: false,
                     repeat_times: 1,
-                    view_duration: 10
+                    view_durations: [5, 30]
                 },
                 commentSettings: {
                     comment_content: '',
@@ -472,7 +485,7 @@ export default {
                 enable_repost: false,
                 enable_share: false,
                 repeat_times: 1, // 默认值为 1
-                view_duration: 10
+                view_durations: [5, 30] // 观看时长范围，单位秒
             },
 
             // 评论设置
@@ -597,7 +610,7 @@ export default {
                         enable_repost: false,
                         enable_share: false,
                         repeat_times: 1,
-                        view_duration: 10
+                        view_durations: [5, 30]
                     },
                     commentSettings: {
                         comment_content: '',
@@ -710,7 +723,7 @@ export default {
         },
 
         // 执行超级脚本
-        async runScript(enable_multi_account) {
+        async runScript(enable_multi_account = false, rotate_proxy = false) {
             const errors = this.validateSettings();
             if (errors.length > 0) {
                 alert(errors.join('\n'));
@@ -723,6 +736,7 @@ export default {
                 name: 'super_boost_v2',
                 args: {
                     enable_multi_account: enable_multi_account,
+                    rotate_proxy: rotate_proxy,
                     min_interval: Number(this.task_interval[0]),
                     max_interval: Number(this.task_interval[1]),
                 }
