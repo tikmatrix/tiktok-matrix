@@ -606,7 +606,7 @@
   postUrlRequired: '请输入目标帖子链接',
   postWarning: '发布帖子脚本允许您控制农场账号发布帖子。您可以设置内容类型、图片数量、声音和标题来定制发布行为。',
   postWay: '发布方式',
-  post_bot: 'Post Bot',
+  placement: '位置',
   posts: '个帖子',
   power: '电源',
   preparing: '准备中',

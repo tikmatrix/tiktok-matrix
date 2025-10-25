@@ -87,7 +87,10 @@ impl Progress {
 
 fn setup_env(working_dir: &str) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
-    std::env::set_var("MATRIX_APP_NAME", "TikMatrix");
+    std::env::set_var(
+        "MATRIX_APP_NAME",
+        std::env::var("VITE_APP_NAME").unwrap_or("TikMatrix".into()),
+    );
 
     if cfg!(debug_assertions) {
         std::env::set_var("MOSS_URL", "http://127.0.0.1:8787/moss");
@@ -504,7 +507,9 @@ fn main() -> std::io::Result<()> {
             Ok(())
         })
         .on_page_load(|_window, _payload| {
-            println!("[TikMatrix] page load triggered");
+            log::info!("[TikMatrix] page load triggered");
+            log::info!("VITE_APP_NAME: {:?}", std::env::var("VITE_APP_NAME"));
+            log::info!("VITE_TARGET_APP: {:?}", std::env::var("VITE_TARGET_APP"));
         })
         //listen to the tauri update event
         .run(tauri::generate_context!())

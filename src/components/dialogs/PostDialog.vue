@@ -58,6 +58,7 @@ const postMixin = postSettings.createVueMixin(
     startOption: 'now',
     scheduledTime: '09:00',
     post_way: 'share',
+    placement: 'reel',
     videos_folder: '',
     captions_folder: '',
     schedule_type: 'interval',
@@ -106,7 +107,7 @@ const postMixin = postSettings.createVueMixin(
     'own_post_comment', 'own_post_comment_emoji', 'generate_by_chatgpt',
     'chatgpt_settings', 'sound_name', 'content_type', 'image_count',
     'custom_sound_keyword', 'add_sound', 'sound_wait_time', 'upload_wait_time', 'origin_sound_volume', 'add_sound_volume',
-    'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path'
+    'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path', 'placement'
   ]
 );
 
@@ -126,6 +127,7 @@ export default {
     formDataForFields() {
       return {
         post_way: this.post_way,
+        placement: this.placement || 'reel',
         sound_name: this.sound_name,
         custom_sound_keyword: this.custom_sound_keyword,
         content_type: this.content_type,

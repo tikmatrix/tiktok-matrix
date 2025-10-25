@@ -607,7 +607,7 @@
   postUrlRequired: 'Post Url Required',
   postWarning: 'The post script allows you to control farm accounts to publish posts. You can set the content type, image count, sound, and captions to customize the post behavior.',
   postWay: 'Post Way',
-  post_bot: 'Post Bot',
+  placement: 'Placement',
   posts: 'posts',
   power: 'Power',
   preparing: 'Preparing',
