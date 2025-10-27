@@ -10,25 +10,16 @@
       <div class="form-row">
         <label class="form-label">{{ $t('supportSubject') }}</label>
         <div class="input-wrapper">
-          <input
-            v-model="form.subject"
-            type="text"
-            class="input input-bordered w-full"
-            :placeholder="$t('supportSubjectPlaceholder')"
-            maxlength="120"
-          />
+          <input v-model="form.subject" type="text" class="input input-bordered w-full"
+            :placeholder="$t('supportSubjectPlaceholder')" maxlength="120" />
         </div>
       </div>
 
       <div class="form-row">
         <label class="form-label">{{ $t('supportDescriptionLabel') }}</label>
         <div class="input-wrapper">
-          <textarea
-            v-model="form.description"
-            rows="6"
-            class="textarea textarea-bordered w-full"
-            :placeholder="$t('supportDescriptionPlaceholder')"
-          ></textarea>
+          <textarea v-model="form.description" rows="6" class="textarea textarea-bordered w-full"
+            :placeholder="$t('supportDescriptionPlaceholder')"></textarea>
         </div>
       </div>
 
@@ -46,38 +37,11 @@
       <div class="form-row">
         <label class="form-label">{{ $t('supportContactEmail') }}</label>
         <div class="input-wrapper">
-          <input
-            v-model="form.email"
-            type="email"
-            class="input input-bordered w-full"
-            :placeholder="$t('supportContactEmailPlaceholder')"
-          />
+          <input v-model="form.email" type="email" class="input input-bordered w-full"
+            :placeholder="$t('supportContactEmailPlaceholder')" />
         </div>
       </div>
 
-      <div class="form-row">
-        <label class="form-label">{{ $t('supportContactTelegram') }}</label>
-        <div class="input-wrapper">
-          <input
-            v-model="form.telegram"
-            type="text"
-            class="input input-bordered w-full"
-            :placeholder="$t('supportContactTelegramPlaceholder')"
-          />
-        </div>
-      </div>
-
-      <div class="form-row">
-        <label class="form-label">{{ $t('supportContactName') }}</label>
-        <div class="input-wrapper">
-          <input
-            v-model="form.name"
-            type="text"
-            class="input input-bordered w-full"
-            :placeholder="$t('supportContactNamePlaceholder')"
-          />
-        </div>
-      </div>
     </form>
 
     <div class="devices-section">
@@ -85,7 +49,8 @@
         <div>
           <h3 class="m-0">{{ $t('supportDeviceSelection') }}</h3>
           <div class="selected-summary">
-            <span class="summary-text">{{ $t('selectedDevices') }}: {{ selectedSerials.length }} {{ $t('units') }}</span>
+            <span class="summary-text">{{ $t('selectedDevices') }}: {{ selectedSerials.length }} {{ $t('units')
+            }}</span>
             <div class="summary-badges">
               <span v-for="serial in selectedSerials" :key="serial" class="badge badge-outline">
                 {{ getDeviceNo(serial) }}
@@ -102,17 +67,10 @@
       </div>
 
       <div class="device-list">
-        <div
-          v-for="device in deviceRows"
-          :key="device.real_serial"
-          class="device-item"
-          :class="{ 'is-selected': deviceSelected(device.real_serial) }"
-          role="button"
-          tabindex="0"
-          @click="toggleDevice(device.real_serial)"
-          @keydown.enter.prevent="toggleDevice(device.real_serial)"
-          @keydown.space.prevent="toggleDevice(device.real_serial)"
-        >
+        <div v-for="device in deviceRows" :key="device.real_serial" class="device-item"
+          :class="{ 'is-selected': deviceSelected(device.real_serial) }" role="button" tabindex="0"
+          @click="toggleDevice(device.real_serial)" @keydown.enter.prevent="toggleDevice(device.real_serial)"
+          @keydown.space.prevent="toggleDevice(device.real_serial)">
           <div class="device-content">
             <span class="device-no">{{ getDeviceNo(device.real_serial) }}</span>
           </div>
@@ -121,12 +79,8 @@
     </div>
 
     <div class="actions-bar">
-      <button
-        type="button"
-        class="btn btn-primary"
-        :disabled="submitting || collecting || uploading"
-        @click="submitSupport"
-      >
+      <button type="button" class="btn btn-primary" :disabled="submitting || collecting || uploading"
+        @click="submitSupport">
         <span v-if="submitting || collecting || uploading" class="loading loading-spinner loading-sm"></span>
         <span>{{ $t('supportSubmitButton') }}</span>
       </button>
@@ -137,10 +91,8 @@
   <div class="support-success" v-else>
     <div class="success-card">
       <svg class="success-icon" viewBox="0 0 24 24" role="img" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm4.707 8.293-5.334 5.334a1 1 0 0 1-1.414 0l-2.666-2.667a1 1 0 1 1 1.414-1.414l1.959 1.96 4.627-4.627a1 1 0 0 1 1.414 1.414Z"
-        />
+        <path fill="currentColor"
+          d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm4.707 8.293-5.334 5.334a1 1 0 0 1-1.414 0l-2.666-2.667a1 1 0 1 1 1.414-1.414l1.959 1.96 4.627-4.627a1 1 0 0 1 1.414 1.414Z" />
       </svg>
       <h3 class="success-title">{{ $t('supportSuccessTitle') }}</h3>
       <p class="success-subtitle">
@@ -178,9 +130,7 @@ export default {
         subject: '',
         description: '',
         priority: 'p3',
-        email: '',
-        telegram: '',
-        name: ''
+        email: ''
       },
       selectedSerials: [...this.selecedDevices],
       logPackage: null,
@@ -206,7 +156,6 @@ export default {
         app_name: info.app_name || info.appName || info.name || 'TikMatrix',
         client_version: info.client_version || info.clientVersion || info.version || '',
         app_version: info.app_version || info.appVersion || info.clientVersion || '',
-        ui_version: info.ui_version || info.uiVersion || info.clientVersion || '',
         webview2_installed: info.webview2_installed ?? info.webview2Installed ?? null
       }
     }
@@ -250,9 +199,7 @@ export default {
         subject: '',
         description: '',
         priority: 'p3',
-        email: '',
-        telegram: '',
-        name: ''
+        email: ''
       }
       this.resetSubject()
       this.selectedSerials = [...this.selecedDevices]
@@ -368,7 +315,7 @@ export default {
 
         const responseCode = Number(
           getField(body, ['code', 'status', 'statusCode', 'status_code', 'errorCode']) ??
-            getField(uploadInfo, ['code', 'status', 'statusCode', 'status_code', 'errorCode'])
+          getField(uploadInfo, ['code', 'status', 'statusCode', 'status_code', 'errorCode'])
         )
         if (Number.isFinite(responseCode) && ![0, 200, 201, 20000].includes(responseCode)) {
           const responseMessage =
@@ -397,7 +344,7 @@ export default {
           'application/zip'
         const sizeValue = Number(
           getField(uploadInfo, ['size', 'fileSize', 'file_size']) ||
-            getField(body, ['size', 'fileSize', 'file_size'])
+          getField(body, ['size', 'fileSize', 'file_size'])
         )
         const checksum = getField(uploadInfo, ['checksum']) || getField(body, ['checksum']) || ''
         const etag = getField(uploadInfo, ['etag']) || getField(body, ['etag'])
@@ -504,17 +451,18 @@ export default {
           priority: this.form.priority,
           locale: this.$i18n.locale || 'en',
           contact_email: this.form.email,
-          contact_telegram: this.form.telegram,
-          contact_name: this.form.name,
           serials: this.buildSerialPayload(),
           attachments: attachment ? [attachment] : [],
           client: this.clientInfoNormalized,
           app: this.clientInfoNormalized.app_name
         }
         const response = await this.$service.support_create_ticket(payload)
-        this.submittedTicket = response?.data || response
+        const createdTicket = response?.data || response
         await this.notify('success', this.$t('supportSubmitSuccess'))
-        this.$emit('submitted', this.submittedTicket)
+        this.$emit('submitted', createdTicket)
+        this.submittedTicket = null
+        this.resetForm()
+        this.emitSelection()
       } catch (error) {
         console.error('submitSupport error', error)
         await this.notify('error', this.$t('supportSubmitFailed'))
@@ -567,6 +515,7 @@ export default {
   color: #606266;
   margin: 0;
 }
+
 .intro .note {
   margin-top: 6px;
   font-size: 14px;

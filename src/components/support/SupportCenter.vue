@@ -34,8 +34,9 @@
                 {{ $t('supportEmptyState') }}
               </td>
             </tr>
-            <tr v-for="ticket in tickets" :key="ticket.id" class="ticket-row" role="button" tabindex="0"
-              @click="openDetail(ticket)" @keydown.enter.prevent="openDetail(ticket)"
+            <tr v-for="ticket in tickets" :key="ticket.id || ticket.ticket_no" :class="['ticket-row', {
+              'ticket-row--highlight': highlightTicketNo && highlightTicketNo === (ticket.ticket_no || ticket.ticketNo)
+            }]" role="button" tabindex="0" @click="openDetail(ticket)" @keydown.enter.prevent="openDetail(ticket)"
               @keydown.space.prevent="openDetail(ticket)">
               <td>#{{ ticket.ticket_no }}</td>
               <td class="subject-cell">{{ ticket.subject }}</td>
@@ -67,8 +68,13 @@
     <div v-else-if="viewMode === 'detail'" class="support-detail-wrapper">
       <div class="detail-header">
         <div class="detail-header-left">
-          <button class="btn btn-ghost btn-sm" @click="backToList">
-            {{ $t('supportBackToList') }}
+          <button class="btn btn-outline btn-sm back-button" @click="backToList">
+            <svg class="back-button-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path
+                d="M9.78 3.22a.75.75 0 0 1 0 1.06L6.56 7.5H13a.75.75 0 0 1 0 1.5H6.56l3.22 3.22a.75.75 0 0 1-1.06 1.06l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 0 1 1.06 0z"
+                fill="currentColor" />
+            </svg>
+            <span>{{ $t('supportBackToList') }}</span>
           </button>
           <span class="detail-header-title">{{ currentTicket?.subject || '-' }}</span>
         </div>
@@ -76,6 +82,10 @@
           <button class="btn btn-outline btn-sm" :disabled="detailLoading" @click="refreshDetail">
             <span v-if="detailLoading" class="loading loading-spinner loading-xs mr-1"></span>
             {{ $t('supportDetailRefresh') }}
+          </button>
+          <button class="btn btn-error btn-sm" :disabled="closingTicket || isTicketClosed" @click="confirmCloseTicket">
+            <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
+            {{ $t('supportDetailCloseTicket') }}
           </button>
           <button class="btn btn-primary btn-sm" @click="openForm">
             {{ $t('supportCreateTicketButton') }}
@@ -114,88 +124,14 @@
           </div>
         </section>
 
-        <div class="detail-grid">
-          <section class="detail-card">
-            <h4>{{ $t('supportDetailContact') }}</h4>
-            <ul class="info-list">
-              <li>
-                <span>{{ $t('supportContactName') }}</span>
-                <span>{{ currentTicket.contact_name || '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportContactEmail') }}</span>
-                <span>{{ currentTicket.contact_email || '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportContactTelegram') }}</span>
-                <span>{{ currentTicket.contact_telegram || currentTicket.contact_tele || currentTicket.telegram_username
-                  || '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportDetailTicketStatus') }}</span>
-                <span>{{ formatStatus(currentTicket.status) }}</span>
-              </li>
-            </ul>
-          </section>
-          <section class="detail-card">
-            <h4>{{ $t('supportDetailEnvironment') }}</h4>
-            <ul class="info-list">
-              <li>
-                <span>{{ $t('supportDetailAppName') }}</span>
-                <span>{{ environmentClient.appName || currentTicket.client_app || '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportDetailClientVersion') }}</span>
-                <span>{{ currentTicket.client_version || environmentClient.clientVersion || '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportDetailUiVersion') }}</span>
-                <span>{{ environmentClient.uiVersion || '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportDetailWebview2') }}</span>
-                <span>{{ formatBoolean(environmentClient.webview2Installed) }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportDetailHostOs') }}</span>
-                <span>{{ environmentHost.hostOS || '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportDetailCpu') }}</span>
-                <span>{{ environmentHost.cpuModel ? `${environmentHost.cpuModel} · ${environmentHost.cpuCores || '-'}`
-                  : '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportDetailMemory') }}</span>
-                <span>{{ environmentHost.memoryTotalMB ? `${environmentHost.memoryTotalMB} MB` : '-' }}</span>
-              </li>
-              <li>
-                <span>{{ $t('supportDetailLanIps') }}</span>
-                <span>{{ formatList(environmentNetwork.lanIPs) }}</span>
-              </li>
-            </ul>
-          </section>
-        </div>
-
         <section class="detail-card">
           <h4>{{ $t('supportDetailDevices') }}</h4>
           <div v-if="!detailDevices.length" class="empty-cell compact">{{ $t('supportDetailNoDevices') }}</div>
-          <div v-else class="device-grid">
-            <div class="device-card" v-for="device in detailDevices" :key="device.id || device.real_serial">
-              <div class="device-card-header">
-                <span class="device-name">{{ device.display_name || getDeviceNo(device.real_serial) }}</span>
-                <span class="device-serial">#{{ device.real_serial }}</span>
-              </div>
-              <div class="device-meta-row">
-                <span>{{ $t('supportDetailConnection') }}: {{ formatConnection(device.metadata?.connectionType)
-                }}</span>
-                <span>{{ $t('supportDetailLastActive') }}: {{ formatDate(device.last_active_at) }}</span>
-              </div>
-              <div class="device-meta-row">
-                <span>{{ $t('supportDetailAndroid') }}: {{ device.metadata?.androidVersion || '-' }}</span>
-                <span>{{ $t('supportDetailLocale') }}: {{ device.metadata?.appLocale || '-' }}</span>
-              </div>
-            </div>
+          <div v-else class="device-number-list">
+            <span v-for="device in detailDevices" :key="device.id || device.real_serial || device.realSerial"
+              class="badge badge-outline device-number-badge" :title="device.real_serial || device.realSerial || ''">
+              {{ formatDeviceBadge(device) }}
+            </span>
           </div>
         </section>
 
@@ -207,7 +143,7 @@
               <header class="conversation-header">
                 <span class="message-role" :class="`role-${message.role}`">{{ formatRole(message.role) }}</span>
                 <span class="message-author">{{ message.author_name || message.author_id || '-' }}</span>
-                <span class="message-time">{{ formatDate(message.created_at) }}</span>
+                <span class="message-time">{{ message.created_at_display }}</span>
               </header>
               <div class="conversation-body">{{ message.body }}</div>
               <pre v-if="message.message_tail" class="conversation-tail">{{ message.message_tail }}</pre>
@@ -261,8 +197,13 @@
 
     <div v-else class="support-form-wrapper">
       <div class="form-header">
-        <button class="btn btn-ghost" @click="backToList">
-          {{ $t('supportBackToList') }}
+        <button class="btn btn-outline btn-sm back-button" @click="backToList">
+          <svg class="back-button-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path
+              d="M9.78 3.22a.75.75 0 0 1 0 1.06L6.56 7.5H13a.75.75 0 0 1 0 1.5H6.56l3.22 3.22a.75.75 0 0 1-1.06 1.06l-4.5-4.5a.75.75 0 0 1 0-1.06l4.5-4.5a.75.75 0 0 1 1.06 0z"
+              fill="currentColor" />
+          </svg>
+          <span>{{ $t('supportBackToList') }}</span>
         </button>
         <span>{{ $t('supportCreateTicketButton') }}</span>
       </div>
@@ -306,7 +247,7 @@ export default {
       metadata: {},
       reply: {
         body: '',
-        includeLogs: true,
+        includeLogs: false,
         logsPackage: null,
         messageTail: '',
         uploadedAttachment: null,
@@ -315,7 +256,11 @@ export default {
       },
       attachmentLoading: {},
       detailPollingTimer: null,
-      detailPollingIntervalMs: 15000
+      detailPollingIntervalMs: 15000,
+      detailRetryHandle: null,
+      highlightTicketNo: null,
+      highlightTimerHandle: null,
+      closingTicket: false
     }
   },
   computed: {
@@ -329,7 +274,6 @@ export default {
         app_name: info.app_name || info.appName || info.name || 'TikMatrix',
         client_version: info.client_version || info.clientVersion || info.version || '',
         app_version: info.app_version || info.appVersion || info.clientVersion || '',
-        ui_version: info.ui_version || info.uiVersion || info.clientVersion || '',
         webview2_installed: info.webview2_installed ?? info.webview2Installed ?? null
       }
     },
@@ -344,6 +288,11 @@ export default {
     },
     detailDevices() {
       return Array.isArray(this.devicesDetail) ? this.devicesDetail : []
+    },
+    isTicketClosed() {
+      const status = this.currentTicket?.status || this.currentTicket?.statusDb
+      if (!status) return false
+      return String(status).toLowerCase() === 'closed'
     }
   },
   watch: {
@@ -375,8 +324,7 @@ export default {
         this.clientInfo = {
           app_name: appName,
           client_version: appVersion,
-          app_version: appVersion,
-          ui_version: appVersion
+          app_version: appVersion
         }
       } catch (error) {
         console.warn('Failed to load client info', error)
@@ -520,10 +468,216 @@ export default {
       }
       return `${numeric} B`
     },
+    parseMaybeJson(value) {
+      if (!value) return null
+      if (typeof value === 'object') return value
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value)
+        } catch (error) {
+          return null
+        }
+      }
+      return null
+    },
+    toArray(value) {
+      if (!value) return []
+      if (Array.isArray(value)) {
+        return value.filter(item => item !== undefined && item !== null)
+      }
+      if (typeof value === 'object') {
+        return Object.keys(value)
+          .map(key => value[key])
+          .filter(item => item !== undefined && item !== null)
+      }
+      return []
+    },
+    normalizeDetailDevices(detail) {
+      const ticketData = detail?.ticket || this.currentTicket || {}
+      const ticketMeta = this.parseMaybeJson(ticketData.metadata) || ticketData.metadata || {}
+      const detailMeta = this.parseMaybeJson(detail?.metadata) || detail?.metadata || {}
+      const primary = this.toArray(detail?.devices)
+        .map(device => this.decorateDeviceEntry(device, ticketData))
+        .filter(Boolean)
+      if (primary.length) {
+        return primary
+      }
+      const candidateSources = [
+        ticketData?.devices,
+        ticketMeta?.devices,
+        detailMeta?.devices
+      ]
+      for (const source of candidateSources) {
+        const list = this.toArray(source)
+          .map(device => this.decorateMetadataDevice(device, ticketData))
+          .filter(Boolean)
+        if (list.length) {
+          return list
+        }
+      }
+      return []
+    },
+    decorateDeviceEntry(device, ticketData = {}) {
+      if (!device || typeof device !== 'object') {
+        return null
+      }
+      const realSerial =
+        device.real_serial ||
+        device.realSerial ||
+        device.serial ||
+        device.id ||
+        null
+      if (!realSerial) {
+        return null
+      }
+      const metadata =
+        this.parseMaybeJson(device.metadata) ||
+        this.parseMaybeJson(device.meta) ||
+        {}
+      return {
+        id: device.id || device.device_id || realSerial,
+        ticket_id: device.ticket_id || device.ticketId || ticketData.id || ticketData.ticket_id || null,
+        real_serial: String(realSerial),
+        display_name:
+          device.display_name ||
+          device.displayName ||
+          device.name ||
+          metadata.deviceModel ||
+          '',
+        last_active_at: device.last_active_at || device.lastActiveAt || '',
+        metadata
+      }
+    },
+    decorateMetadataDevice(device, ticketData = {}) {
+      if (!device || typeof device !== 'object') {
+        return null
+      }
+      const realSerial =
+        device.real_serial ||
+        device.realSerial ||
+        device.serial ||
+        device.id
+      if (!realSerial) {
+        return null
+      }
+      const baseMetadata =
+        this.parseMaybeJson(device.metadata) ||
+        this.parseMaybeJson(device.meta) || {
+          deviceModel:
+            device.deviceModel ||
+            device.device_model ||
+            device.model ||
+            device.name ||
+            '',
+          connectionType:
+            device.connectionType ||
+            device.connection_type ||
+            '',
+          androidVersion:
+            device.androidVersion ||
+            device.android_version ||
+            '',
+          appLocale: device.appLocale || device.app_locale || '',
+          timezone: device.timezone || '',
+          lastScript: device.lastScript || device.last_script || '',
+          lastScriptArgs:
+            Object.prototype.hasOwnProperty.call(device, 'lastScriptArgs')
+              ? device.lastScriptArgs
+              : Object.prototype.hasOwnProperty.call(device, 'last_script_args')
+                ? device.last_script_args
+                : null
+        }
+      if (!Object.prototype.hasOwnProperty.call(baseMetadata, 'lastScriptArgs')) {
+        baseMetadata.lastScriptArgs = null
+      }
+      return {
+        id: device.id || `meta-${realSerial}`,
+        ticket_id: ticketData.id || ticketData.ticket_id || null,
+        real_serial: String(realSerial),
+        display_name:
+          device.display_name ||
+          device.displayName ||
+          device.deviceModel ||
+          baseMetadata.deviceModel ||
+          '',
+        last_active_at: device.last_active_at || device.lastActiveAt || '',
+        metadata: baseMetadata
+      }
+    },
+    normalizeDetailMessages(detail) {
+      const candidateSources = [
+        detail?.messages,
+        detail?.conversation,
+        detail?.ticket?.messages
+      ]
+      for (const source of candidateSources) {
+        const list = this.toArray(source)
+          .map(message => this.decorateMessageEntry(message))
+          .filter(Boolean)
+        if (list.length) {
+          return list
+        }
+      }
+      return []
+    },
+    decorateMessageEntry(message) {
+      if (!message || typeof message !== 'object') {
+        return null
+      }
+      const body = message.body || message.content || message.message || ''
+      const createdValue =
+        message.created_at ||
+        message.createdAt ||
+        message.timestamp ||
+        message.created_at_display
+      const numeric = Number(createdValue)
+      let createdAt = createdValue
+      if (Number.isFinite(numeric) && numeric > 0) {
+        createdAt = numeric
+      }
+      const createdDisplay = this.formatDate(createdAt)
+      const attachments = this.toArray(
+        message.attachments ||
+        message.attachment_list ||
+        message.files
+      )
+        .map(item => (item && typeof item === 'object' ? item : null))
+        .filter(Boolean)
+      return {
+        ...message,
+        body,
+        content: body,
+        created_at: createdAt,
+        created_at_display: createdDisplay,
+        attachments
+      }
+    },
     getDeviceNo(serial) {
       if (!serial) return '-'
-      const index = this.detailDevices.findIndex(item => item.real_serial === serial)
-      return index !== -1 ? index + 1 : serial
+      const normalized = String(serial)
+      const fromDetailIndex = this.detailDevices.findIndex(item => {
+        const value = item?.real_serial || item?.realSerial
+        return value != null && String(value) === normalized
+      })
+      if (fromDetailIndex !== -1) {
+        return fromDetailIndex + 1
+      }
+      const fromSource = (this.devices || []).findIndex(device => {
+        const value = device?.real_serial || device?.serial || device?.id
+        return value != null && String(value) === normalized
+      })
+      if (fromSource !== -1) {
+        return fromSource + 1
+      }
+      return normalized
+    },
+    formatDeviceBadge(device) {
+      if (!device || typeof device !== 'object') {
+        return '-'
+      }
+      const serial = device.real_serial || device.realSerial || device.serial || ''
+      const label = this.getDeviceNo(serial)
+      return label != null && label !== '' ? label : serial || '-'
     },
     changePage(page) {
       if (page < 1 || page > this.totalPages) return
@@ -628,13 +782,20 @@ export default {
         const ticketData = detail.ticket || ticket
         this.currentTicket = ticketData
         this.ticketDetail = detail
-        this.metadata = ticketData?.metadata || detail.metadata || {}
-        this.devicesDetail = Array.isArray(detail.devices) ? detail.devices : []
-        this.messages = Array.isArray(detail.messages) ? detail.messages : []
+        const parsedTicketMetadata = this.parseMaybeJson(ticketData?.metadata)
+        const parsedDetailMetadata = this.parseMaybeJson(detail.metadata)
+        this.metadata = parsedTicketMetadata || parsedDetailMetadata || {}
+        this.devicesDetail = this.normalizeDetailDevices(detail)
+        this.messages = this.normalizeDetailMessages(detail)
         this.attachmentLoading = {}
-        const serials = this.detailDevices.map(device => device.real_serial).filter(Boolean)
+        let serials = this.detailDevices.map(device => device.real_serial).filter(Boolean)
+        if (!serials.length) {
+          serials = this.toArray(this.metadata?.devices)
+            .map(device => device?.real_serial || device?.realSerial)
+            .filter(Boolean)
+        }
         if (serials.length && typeof this.$emiter === 'function') {
-          this.$emiter('selecedDevices', [...serials])
+          this.$emiter('selecedDevices', [...new Set(serials.map(value => String(value)))])
         }
       } catch (error) {
         console.error('support loadTicketDetail error', error)
@@ -661,10 +822,68 @@ export default {
         clearInterval(this.detailPollingTimer)
         this.detailPollingTimer = null
       }
+      if (this.detailRetryHandle) {
+        clearTimeout(this.detailRetryHandle)
+        this.detailRetryHandle = null
+      }
     },
     async refreshDetail() {
       if (!this.currentTicket) return
       await this.loadTicketDetail(this.currentTicket)
+    },
+    async confirmCloseTicket() {
+      if (!this.currentTicket || this.isTicketClosed || this.closingTicket) {
+        return
+      }
+      let proceed = true
+      const confirmMessage = this.$t('supportDetailCloseConfirm')
+      if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
+        proceed = window.confirm(confirmMessage)
+      }
+      if (!proceed) {
+        return
+      }
+      await this.closeTicket()
+    },
+    async closeTicket() {
+      if (!this.currentTicket || this.closingTicket) {
+        return
+      }
+      const ticketId =
+        this.currentTicket.id ||
+        this.currentTicket.ticket_id ||
+        this.currentTicket.ticketId ||
+        this.currentTicket.ticketID
+      const ticketNo =
+        this.currentTicket.ticket_no ||
+        this.currentTicket.ticketNo ||
+        this.currentTicket.ticketNO ||
+        this.currentTicket.ticket_number
+      if (!ticketId && !ticketNo) {
+        await this.notify('error', this.$t('supportDetailMissingIdentifier'))
+        return
+      }
+      this.closingTicket = true
+      try {
+        const payload = {
+          status: 'closed'
+        }
+        if (ticketId) {
+          payload.ticketId = String(ticketId)
+        }
+        if (ticketNo) {
+          payload.ticketNo = String(ticketNo)
+        }
+        await this.$service.support_update_status(payload)
+        await this.notify('success', this.$t('supportDetailCloseSuccess'))
+        await this.loadTicketDetail({ ...this.currentTicket })
+        await this.fetchTickets()
+      } catch (error) {
+        console.error('support closeTicket error', error)
+        await this.notify('error', this.$t('supportDetailCloseFailed'))
+      } finally {
+        this.closingTicket = false
+      }
     },
     clearDetailState() {
       this.stopDetailPolling()
@@ -674,6 +893,11 @@ export default {
       this.devicesDetail = []
       this.messages = []
       this.attachmentLoading = {}
+      if (this.highlightTimerHandle) {
+        clearTimeout(this.highlightTimerHandle)
+        this.highlightTimerHandle = null
+      }
+      this.highlightTicketNo = null
       this.resetReply()
     },
     backToList() {
@@ -683,23 +907,56 @@ export default {
     },
     handleFormSubmitted(ticket) {
       const resolved = this.resolveTicketReference(ticket)
+      this.viewMode = 'list'
+      this.clearDetailState()
       if (resolved) {
-        this.stopDetailPolling()
-        this.currentTicket = resolved
-        this.viewMode = 'detail'
-        this.resetReply()
-        this.loadTicketDetail(resolved)
-        this.startDetailPolling()
-        const ticketNo = resolved.ticket_no || resolved.ticketNo
-        if (
-          ticketNo &&
-          !this.tickets.some(item => (item.ticket_no || item.ticketNo) === ticketNo)
-        ) {
-          this.tickets = [resolved, ...this.tickets]
-        }
-      } else {
-        this.viewMode = 'list'
-        this.fetchTickets()
+        this.insertTicketToList(resolved)
+      }
+      this.page = 1
+      this.fetchTickets()
+    },
+    insertTicketToList(ticket) {
+      const resolved = this.resolveTicketReference(ticket)
+      if (!resolved) {
+        return
+      }
+      const ticketNo = resolved.ticket_no || resolved.ticketNo || resolved.ticket_number
+      const identifier =
+        ticketNo || resolved.id || resolved.ticket_id || resolved.ticketId || resolved.ticketID
+      if (!identifier) {
+        return
+      }
+
+      const normalized = { ...resolved }
+      if (!normalized.ticket_no && ticketNo) {
+        normalized.ticket_no = ticketNo
+      }
+      if (!normalized.ticketNo && ticketNo) {
+        normalized.ticketNo = ticketNo
+      }
+      if (!normalized.id && normalized.ticket_id) {
+        normalized.id = normalized.ticket_id
+      }
+      if (!normalized.ticket_id && normalized.id) {
+        normalized.ticket_id = normalized.id
+      }
+
+      const filtered = this.tickets.filter(item => {
+        const value = item.ticket_no || item.ticketNo || item.id || item.ticket_id || item.ticketId
+        return value !== identifier
+      })
+
+      this.tickets = [normalized, ...filtered]
+      this.highlightTicketNo = normalized.ticket_no || normalized.ticketNo || null
+
+      if (this.highlightTimerHandle) {
+        clearTimeout(this.highlightTimerHandle)
+      }
+      if (this.highlightTicketNo) {
+        this.highlightTimerHandle = setTimeout(() => {
+          this.highlightTicketNo = null
+          this.highlightTimerHandle = null
+        }, 5000)
       }
     },
     updateSelection(serials) {
@@ -709,7 +966,7 @@ export default {
     },
     resetReply() {
       this.reply.body = ''
-      this.reply.includeLogs = true
+      this.reply.includeLogs = false
       this.reply.logsPackage = null
       this.reply.messageTail = ''
       this.reply.uploadedAttachment = null
@@ -752,14 +1009,20 @@ export default {
       }
     },
     buildReplySerialPayload() {
-      if (!Array.isArray(this.devicesDetail)) return []
-      return this.devicesDetail
+      const sourceDevices = Array.isArray(this.devicesDetail) && this.devicesDetail.length
+        ? this.devicesDetail
+        : this.normalizeDetailDevices({
+          ticket: this.currentTicket,
+          metadata: this.metadata
+        })
+      if (!Array.isArray(sourceDevices)) return []
+      return sourceDevices
         .map(device => {
           const realSerial = device.real_serial || device.realSerial
           if (!realSerial) return null
           const metadata =
-            (device.metadata && typeof device.metadata === 'object' && device.metadata) ||
-            (device.meta && typeof device.meta === 'object' && device.meta) ||
+            this.parseMaybeJson(device.metadata) ||
+            this.parseMaybeJson(device.meta) ||
             {}
           return {
             realSerial,
@@ -1005,7 +1268,10 @@ export default {
     },
     setAttachmentLoading(key, value) {
       if (!key) return
-      this.$set(this.attachmentLoading, key, value)
+      this.attachmentLoading = {
+        ...this.attachmentLoading,
+        [key]: value
+      }
     },
     async copyAttachmentLink(attachment) {
       const key = this.getAttachmentKey(attachment)
@@ -1105,6 +1371,15 @@ export default {
   transition: background-color 0.15s ease;
 }
 
+.ticket-row--highlight {
+  background-color: #ecfdf5;
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+.ticket-row--highlight:hover {
+  background-color: #d1fae5;
+}
+
 .ticket-row:hover {
   background-color: #f3f4f6;
 }
@@ -1184,6 +1459,18 @@ export default {
   align-items: center;
   gap: 12px;
   font-weight: 600;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.back-button-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .support-detail-wrapper {
