@@ -13,6 +13,8 @@
       <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
       <BeforeRunScriptDialog :selecedDevices="selecedDevices" :devices="devices" :script="selectedItem.script"
         :settings="settings" v-if="selectedItem.name === 'beforeRunScriptDialog' && $refs.page_dialog.open" />
+      <SupportCenter :devices="devices" :seleced-devices="selecedDevices"
+        v-if="selectedItem.name === 'support' && $refs.page_dialog.open" />
 
     </div>
     <form method="dialog" class="modal-backdrop">
@@ -33,6 +35,7 @@ import ManageMaterials from './components/material/ManageMaterials.vue'
 import ManageTasks from './components/tasks/ManageTasks.vue'
 import BeforeRunScriptDialog from './components/dialogs/BeforeRunScriptDialog.vue'
 import AccountWarmupSettings from './components/groups/AccountWarmupSettings.vue'
+import SupportCenter from './components/support/SupportCenter.vue'
 export default {
   name: 'appDialog',
   props: {
@@ -58,7 +61,8 @@ export default {
     ManageTasks,
     BeforeRunScriptDialog,
     AccountWarmupSettings,
-    PostSettings
+    PostSettings,
+    SupportCenter
   },
   data() {
     return {

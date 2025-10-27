@@ -167,6 +167,12 @@
         :title="$t('whitelabelSettings')">
         <font-awesome-icon icon="fa-solid fa-palette" class="h-6 w-6 text-base-content" />
       </button>
+      <!-- 支持工单入口 -->
+      <button @click="openSupportDialog"
+        class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
+        :title="$t('supportEntryTitle')">
+        <font-awesome-icon icon="fa-solid fa-headset" class="h-6 w-6 text-base-content" />
+      </button>
       <!-- 全局设置 -->
       <button @click="$emiter('showDialog', { name: 'tiktokSettings' })"
         class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
@@ -731,6 +737,10 @@ export default {
 
     openWhiteLabelDialog() {
       this.$refs.whitelabelDialog.showDialog();
+    },
+
+    openSupportDialog() {
+      this.$emiter('showDialog', { name: 'support' })
     },
 
     onWhiteLabelConfigUpdated(config) {

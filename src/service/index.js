@@ -741,3 +741,51 @@ export function detectCurrentPackage(serial) {
     data: { serial }
   })
 }
+
+export function support_generate_logs(data) {
+  return request({
+    method: 'post',
+    url: api.support_logs,
+    data
+  })
+}
+
+export function support_upload(data) {
+  return request({
+    method: 'post',
+    url: api.support_upload,
+    data
+  })
+}
+
+export function support_create_ticket(data) {
+  return request({
+    method: 'post',
+    url: api.support_ticket,
+    data
+  })
+}
+
+export function support_fetch_summary(params) {
+  return request({
+    method: 'get',
+    url: api.support_summary,
+    params
+  })
+}
+
+export function support_fetch_tickets(params) {
+  return request({
+    method: 'get',
+    url: api.support_tickets_list,
+    params
+  })
+}
+
+export function support_ticket_detail(params) {
+  return request({
+    method: 'get',
+    url: api.support_ticket_detail,
+    params
+  })
+}
