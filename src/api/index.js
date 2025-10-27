@@ -78,5 +78,8 @@ const api = {
   support_tickets_list: '/agent/api/support/tickets',
   support_summary: '/agent/api/support/summary',
   support_ticket_detail: '/agent/api/support/detail',
+  support_append_message: '/agent/api/support/append-message',
+  support_update_status: '/agent/api/support/update-status',
+  support_presign_attachment: '/agent/api/support/attachments/presign-download',
 }
 export default api

@@ -742,6 +742,120 @@ export function detectCurrentPackage(serial) {
   })
 }
 
+const SUPPORT_RESPONSE_KEYS = ['data', 'result', 'payload'];
+
+function unwrapSupportResponse(response) {
+  if (!response || typeof response !== 'object') {
+    return response;
+  }
+  let current = response;
+  const visited = new Set();
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (!current || typeof current !== 'object') {
+      return current;
+    }
+    const key = SUPPORT_RESPONSE_KEYS.find(candidate =>
+      Object.prototype.hasOwnProperty.call(current, candidate)
+    );
+    if (!key) {
+      return current;
+    }
+    const next = current[key];
+    if (visited.has(next)) {
+      return current;
+    }
+    visited.add(next);
+    if (next === undefined) {
+      return current;
+    }
+    current = next;
+  }
+  return current;
+}
+
+function normalizeSupportResponse(response) {
+  const data = unwrapSupportResponse(response);
+  const code = typeof response?.code === 'number' ? response.code : undefined;
+  const status = typeof response?.status === 'number' ? response.status : undefined;
+  return { data, raw: response, code, status };
+}
+
+function toArray(value) {
+  if (!value) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+}
+
+function toSupportFilePart(file, index) {
+  if (!file) {
+    return null;
+  }
+  const path = file.path || file.filePath || file.file_path;
+  if (!path) {
+    return null;
+  }
+  const field = file.field || `attachment${index}`;
+  const fileName = file.fileName || file.file_name || file.name || `attachment-${index + 1}.bin`;
+  const mimeType = file.mimeType || file.contentType || file.content_type || 'application/octet-stream';
+  const metadata = file.metadata || file.meta || null;
+  const metaEntry = {
+    field,
+    fileName,
+    filename: fileName,
+    metadata,
+    checksum: file.checksum,
+    contentType: mimeType
+  };
+  return {
+    field,
+    formPart: {
+      file: path,
+      fileName,
+      mime: mimeType,
+      mimeType
+    },
+    metaEntry
+  };
+}
+
+function buildSupportFormParts(payload, attachmentParts, options = {}) {
+  const { attachmentsMeta = [], extraFields } = options;
+  const form = {
+    payload: JSON.stringify(payload || {})
+  };
+
+  if (extraFields && typeof extraFields === 'object') {
+    Object.keys(extraFields).forEach(key => {
+      const value = extraFields[key];
+      if (value !== undefined && value !== null) {
+        form[key] = value;
+      }
+    });
+  }
+
+  const metaList = Array.isArray(attachmentsMeta) ? [...attachmentsMeta] : [];
+  toArray(attachmentParts).forEach(info => {
+    if (!info) {
+      return;
+    }
+    const { field, formPart, metaEntry } = info;
+    if (!field || !formPart) {
+      return;
+    }
+    form[field] = formPart;
+    if (metaEntry && !metaList.some(item => item && item.field === field)) {
+      metaList.push(metaEntry);
+    }
+  });
+
+  if (metaList.length) {
+    form.attachments_meta = JSON.stringify(metaList);
+  }
+
+  return form;
+}
+
 export function support_generate_logs(data) {
   return request({
     method: 'post',
@@ -758,34 +872,127 @@ export function support_upload(data) {
   })
 }
 
-export function support_create_ticket(data) {
-  return request({
+export async function support_create_ticket(input, options = {}) {
+  const payload = input?.payload ? input.payload : input;
+  const attachmentsInput = options.attachments ?? input?.attachmentsFiles ?? input?.attachments;
+  const attachments = toArray(attachmentsInput);
+  const attachmentParts = attachments
+    .map((file, index) => toSupportFilePart(file, index))
+    .filter(info => Boolean(info));
+  const attachmentsMeta = options.attachmentsMeta ?? input?.attachmentsMeta;
+  const extraFields = options.extraForm ?? input?.extraForm;
+  const headers = options.headers ?? input?.headers;
+  const forceForm = options.forceForm ?? input?.forceForm;
+
+  const shouldUseForm =
+    forceForm ||
+    attachmentParts.length > 0 ||
+    (Array.isArray(attachmentsMeta) && attachmentsMeta.length > 0);
+
+  if (shouldUseForm) {
+    const form = buildSupportFormParts(payload, attachmentParts, {
+      attachmentsMeta,
+      extraFields
+    });
+    const response = await request({
+      method: 'post',
+      url: api.support_ticket,
+      form,
+      headers
+    });
+    return normalizeSupportResponse(response);
+  }
+
+  const response = await request({
     method: 'post',
     url: api.support_ticket,
-    data
-  })
+    data: payload,
+    headers
+  });
+  return normalizeSupportResponse(response);
 }
 
-export function support_fetch_summary(params) {
-  return request({
+export async function support_fetch_summary(params) {
+  const response = await request({
     method: 'get',
     url: api.support_summary,
     params
-  })
+  });
+  return normalizeSupportResponse(response);
 }
 
-export function support_fetch_tickets(params) {
-  return request({
+export async function support_fetch_tickets(params) {
+  const response = await request({
     method: 'get',
     url: api.support_tickets_list,
     params
-  })
+  });
+  return normalizeSupportResponse(response);
 }
 
-export function support_ticket_detail(params) {
-  return request({
+export async function support_ticket_detail(params) {
+  const response = await request({
     method: 'get',
     url: api.support_ticket_detail,
     params
-  })
+  });
+  return normalizeSupportResponse(response);
+}
+
+export async function support_append_message(input, options = {}) {
+  const payload = input?.payload ? input.payload : input;
+  const attachmentsInput = options.attachments ?? input?.attachmentsFiles ?? input?.attachments;
+  const attachments = toArray(attachmentsInput);
+  const attachmentParts = attachments
+    .map((file, index) => toSupportFilePart(file, index))
+    .filter(info => Boolean(info));
+  const attachmentsMeta = options.attachmentsMeta ?? input?.attachmentsMeta;
+  const extraFields = options.extraForm ?? input?.extraForm;
+  const headers = options.headers ?? input?.headers;
+  const forceForm = options.forceForm ?? input?.forceForm;
+
+  const shouldUseForm =
+    forceForm ||
+    attachmentParts.length > 0 ||
+    (Array.isArray(attachmentsMeta) && attachmentsMeta.length > 0);
+
+  if (shouldUseForm) {
+    const form = buildSupportFormParts(payload, attachmentParts, {
+      attachmentsMeta,
+      extraFields
+    });
+    const response = await request({
+      method: 'post',
+      url: api.support_append_message,
+      form,
+      headers
+    });
+    return normalizeSupportResponse(response);
+  }
+
+  const response = await request({
+    method: 'post',
+    url: api.support_append_message,
+    data: payload,
+    headers
+  });
+  return normalizeSupportResponse(response);
+}
+
+export async function support_update_status(data) {
+  const response = await request({
+    method: 'post',
+    url: api.support_update_status,
+    data
+  });
+  return normalizeSupportResponse(response);
+}
+
+export async function support_presign_attachment(params) {
+  const response = await request({
+    method: 'get',
+    url: api.support_presign_attachment,
+    params
+  });
+  return normalizeSupportResponse(response);
 }
