@@ -83,7 +83,7 @@
             <span v-if="detailLoading" class="loading loading-spinner loading-xs mr-1"></span>
             {{ $t('supportDetailRefresh') }}
           </button>
-          <button class="btn btn-error btn-sm" :disabled="closingTicket || isTicketClosed" @click="confirmCloseTicket">
+          <button class="btn btn-error btn-sm" :disabled="closingTicket || isTicketClosed" @click="closeTicket">
             <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
             {{ $t('supportDetailCloseTicket') }}
           </button>
@@ -147,19 +147,6 @@
               </header>
               <div class="conversation-body">{{ message.body }}</div>
               <pre v-if="message.message_tail" class="conversation-tail">{{ message.message_tail }}</pre>
-              <div v-if="message.attachments && message.attachments.length" class="conversation-attachments">
-                <div v-for="attachment in message.attachments" :key="attachment.id || attachment.storage_key"
-                  class="attachment-item">
-                  <span class="attachment-name">{{ attachment.file_name || attachment.filename }}</span>
-                  <span class="attachment-size">{{ formatSize(attachment.file_size || attachment.size) }}</span>
-                  <button type="button" class="btn btn-link btn-xs" :disabled="isAttachmentLoading(attachment)"
-                    @click="copyAttachmentLink(attachment)">
-                    <span v-if="isAttachmentLoading(attachment)"
-                      class="loading loading-spinner loading-2xs mr-1"></span>
-                    {{ $t('supportDetailCopyLink') }}
-                  </button>
-                </div>
-              </div>
             </article>
           </div>
         </section>
@@ -254,7 +241,6 @@ export default {
         preparing: false,
         sending: false
       },
-      attachmentLoading: {},
       detailPollingTimer: null,
       detailPollingIntervalMs: 15000,
       detailRetryHandle: null,
@@ -787,7 +773,6 @@ export default {
         this.metadata = parsedTicketMetadata || parsedDetailMetadata || {}
         this.devicesDetail = this.normalizeDetailDevices(detail)
         this.messages = this.normalizeDetailMessages(detail)
-        this.attachmentLoading = {}
         let serials = this.detailDevices.map(device => device.real_serial).filter(Boolean)
         if (!serials.length) {
           serials = this.toArray(this.metadata?.devices)
@@ -831,20 +816,6 @@ export default {
       if (!this.currentTicket) return
       await this.loadTicketDetail(this.currentTicket)
     },
-    async confirmCloseTicket() {
-      if (!this.currentTicket || this.isTicketClosed || this.closingTicket) {
-        return
-      }
-      let proceed = true
-      const confirmMessage = this.$t('supportDetailCloseConfirm')
-      if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
-        proceed = window.confirm(confirmMessage)
-      }
-      if (!proceed) {
-        return
-      }
-      await this.closeTicket()
-    },
     async closeTicket() {
       if (!this.currentTicket || this.closingTicket) {
         return
@@ -868,11 +839,10 @@ export default {
         const payload = {
           status: 'closed'
         }
-        if (ticketId) {
-          payload.ticketId = String(ticketId)
-        }
         if (ticketNo) {
           payload.ticketNo = String(ticketNo)
+        } else if (ticketId) {
+          payload.ticketId = String(ticketId)
         }
         await this.$service.support_update_status(payload)
         await this.notify('success', this.$t('supportDetailCloseSuccess'))
@@ -892,7 +862,6 @@ export default {
       this.metadata = {}
       this.devicesDetail = []
       this.messages = []
-      this.attachmentLoading = {}
       if (this.highlightTimerHandle) {
         clearTimeout(this.highlightTimerHandle)
         this.highlightTimerHandle = null
@@ -1250,59 +1219,6 @@ export default {
         await this.notify('error', this.$t('supportDetailReplyFailed'))
       } finally {
         this.reply.sending = false
-      }
-    },
-    getAttachmentKey(attachment) {
-      return (
-        attachment?.id ||
-        attachment?.storage_key ||
-        attachment?.r2_key ||
-        attachment?.file_name ||
-        attachment?.filename ||
-        Math.random().toString(36).slice(2)
-      )
-    },
-    isAttachmentLoading(attachment) {
-      const key = this.getAttachmentKey(attachment)
-      return Boolean(this.attachmentLoading[key])
-    },
-    setAttachmentLoading(key, value) {
-      if (!key) return
-      this.attachmentLoading = {
-        ...this.attachmentLoading,
-        [key]: value
-      }
-    },
-    async copyAttachmentLink(attachment) {
-      const key = this.getAttachmentKey(attachment)
-      this.setAttachmentLoading(key, true)
-      try {
-        const params = {}
-        if (attachment?.id) {
-          params.attachment_id = attachment.id
-        } else if (attachment?.storage_key || attachment?.r2_key) {
-          params.storage_key = attachment.storage_key || attachment.r2_key
-        } else if (this.currentTicket?.ticket_no) {
-          params.ticket_no = this.currentTicket.ticket_no
-          params.file_name = attachment?.file_name || attachment?.filename
-        }
-        const response = await this.$service.support_presign_attachment(params)
-        const data = response?.data || response || {}
-        const url = data.url || data.downloadUrl || data.link
-        if (!url) {
-          throw new Error('missing_url')
-        }
-        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(url)
-          await this.notify('success', this.$t('supportDetailCopySuccess'))
-        } else {
-          await this.notify('success', url)
-        }
-      } catch (error) {
-        console.error('copyAttachmentLink error', error)
-        await this.notify('error', this.$t('supportDetailCopyFailed'))
-      } finally {
-        this.setAttachmentLoading(key, false)
       }
     }
   }
