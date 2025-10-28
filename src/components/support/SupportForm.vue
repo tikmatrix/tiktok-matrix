@@ -386,24 +386,74 @@ export default {
     buildSerialPayload() {
       return this.selectedSerials.map(serial => {
         const device = this.deviceRows.find(item => item.real_serial === serial) || {}
-        console.log('buildSerialPayload device', JSON.stringify(device))
-        const rawMeta = device.metadata || {}
-        const connection = this.resolveConnectionType(
-          rawMeta.connectionType || device.connection_type || device.connect_type
+        const rawMeta = (device.metadata && typeof device.metadata === 'object' ? device.metadata : {}) || {}
+
+        const metadata = {}
+        const name = this.normalizeMetadataField(rawMeta.name, rawMeta.displayName, rawMeta.display_name, device.name)
+        if (name) metadata.name = name
+
+        const product = this.normalizeMetadataField(rawMeta.product, device.product)
+        if (product) metadata.product = product
+
+        const model = this.normalizeMetadataField(rawMeta.model, rawMeta.mode, device.mode, device.model)
+        if (model) metadata.model = model
+
+        const status = this.normalizeMetadataField(rawMeta.status, device.status)
+        if (status) metadata.status = status
+
+        const group = this.normalizeMetadataField(rawMeta.group, device.group, device.group_id)
+        if (group) metadata.group = group
+
+        const forwardPort = this.normalizeMetadataField(rawMeta.forwardPort, device.forward_port)
+        if (forwardPort) metadata.forwardPort = forwardPort
+
+        const transport = this.normalizeMetadataField(rawMeta.transport, device.transport_id)
+        if (transport) metadata.transport = transport
+
+        const lastSeen = this.normalizeMetadataField(
+          rawMeta.lastSeen,
+          rawMeta.last_seen,
+          rawMeta.lastActiveAt,
+          device.last_seen,
+          device.last_active_at
         )
-        const metadata = {
-          deviceModel: rawMeta.deviceModel || device.device_model || device.product || device.name || '',
-          connectionType: connection,
-          androidVersion: rawMeta.androidVersion || device.android_version || '',
-          appLocale: rawMeta.appLocale || device.locale || '',
-          timezone: rawMeta.timezone || device.timezone || '',
-          lastScript: rawMeta.lastScript || device.last_script || '',
-          lastScriptArgs: rawMeta.lastScriptArgs || device.last_script_args || null
-        }
+        if (lastSeen) metadata.lastSeen = lastSeen
+
+        const taskStatus = this.normalizeMetadataField(rawMeta.taskStatus, device.task_status)
+        if (taskStatus) metadata.taskStatus = taskStatus
+
+        const connection = this.resolveConnectionType(
+          this.normalizeMetadataField(
+            rawMeta.connection,
+            rawMeta.connectionType,
+            rawMeta.connection_type,
+            rawMeta.connectType,
+            rawMeta.connect_type,
+            device.connection_type,
+            device.connect_type
+          )
+        )
+        if (connection) metadata.connection = connection
+
+        const proxyRotation = this.sanitizeProxyRotation(
+          rawMeta.proxyRotation || rawMeta.proxy_rotation || device.proxyRotation || device.proxy_rotation
+        )
+        if (proxyRotation) metadata.proxyRotation = proxyRotation
+
         return {
           realSerial: serial,
-          displayName: device.name || '',
-          lastActiveAt: device.last_seen || '',
+          displayName: this.normalizeMetadataField(
+            device.display_name,
+            device.displayName,
+            device.name,
+            rawMeta.name
+          ),
+          lastActiveAt: this.normalizeMetadataField(
+            device.last_active_at,
+            device.lastActiveAt,
+            device.last_seen,
+            rawMeta.lastSeen
+          ),
           metadata
         }
       })
@@ -412,18 +462,80 @@ export default {
       if (value === null || value === undefined) {
         return ''
       }
-      if (typeof value === 'string' && value.trim() !== '') {
+      if (typeof value === 'string') {
         const normalized = value.trim().toLowerCase()
-        if (normalized === 'usb' || normalized === 'tcp') {
-          return normalized.toUpperCase()
+        if (!normalized) {
+          return ''
         }
+        if (normalized === 'usb') {
+          return 'USB'
+        }
+        if (normalized === 'tcp') {
+          return 'TCP'
+        }
+        if (!Number.isNaN(Number(normalized))) {
+          return this.resolveConnectionType(Number(normalized))
+        }
+        if (normalized === 'unknown') {
+          return 'Unknown'
+        }
+        return value.trim().toUpperCase()
       }
       const numeric = Number(value)
       if (!Number.isNaN(numeric)) {
-        if (numeric === 1) return 'USB'
-        if (numeric === 2) return 'TCP'
+        if (numeric === 0) return 'USB'
+        if (numeric === 1) return 'TCP'
+        return String(numeric)
       }
-      return value || ''
+      return String(value)
+    },
+    sanitizeProxyRotation(raw) {
+      if (!raw || typeof raw !== 'object') {
+        return null
+      }
+      const cleaned = {}
+      const endpoint = this.normalizeMetadataField(raw.rotation_url, raw.url, raw.endpoint)
+      if (endpoint) cleaned.endpoint = endpoint
+      const method = this.normalizeMetadataField(raw.method)
+      if (method) cleaned.method = method
+      const lastStatus = this.normalizeMetadataField(raw.last_status, raw.status)
+      if (lastStatus) cleaned.lastStatus = lastStatus
+      const lastMessage = this.normalizeMetadataField(raw.last_message, raw.message)
+      if (lastMessage) cleaned.lastMessage = lastMessage
+      const lastRotatedAt = this.normalizeMetadataField(raw.last_rotated_at, raw.lastRotatedAt)
+      if (lastRotatedAt) cleaned.lastRotatedAt = lastRotatedAt
+      const timeoutMs = this.normalizeMetadataField(raw.timeout_ms, raw.timeout)
+      if (timeoutMs) cleaned.timeoutMs = timeoutMs
+      return Object.keys(cleaned).length ? cleaned : null
+    },
+    normalizeMetadataField(...candidates) {
+      for (const candidate of candidates) {
+        if (candidate === null || candidate === undefined) {
+          continue
+        }
+        if (typeof candidate === 'string') {
+          const text = candidate.trim()
+          if (text !== '') {
+            return text
+          }
+          continue
+        }
+        if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+          return String(candidate)
+        }
+        if (typeof candidate === 'boolean') {
+          return candidate ? 'true' : 'false'
+        }
+        try {
+          const text = String(candidate).trim()
+          if (text) {
+            return text
+          }
+        } catch (error) {
+          continue
+        }
+      }
+      return ''
     },
     async submitSupport() {
       this.emitSelection()

@@ -502,6 +502,68 @@ export default {
       }
       return []
     },
+    buildDeviceMetadata(device) {
+      if (!device || typeof device !== 'object') {
+        return {}
+      }
+      const metaSource =
+        this.parseMaybeJson(device.metadata) ||
+        this.parseMaybeJson(device.meta) ||
+        (device.metadata && typeof device.metadata === 'object' ? device.metadata : {}) ||
+        {}
+      const metadata = {}
+      const pick = (...keys) => this.normalizeMetadataField(
+        ...keys.map(key => metaSource[key]),
+        ...keys.map(key => device[key])
+      )
+
+      const name = pick('name', 'displayName', 'display_name')
+      if (name) metadata.name = name
+
+      const product = pick('product')
+      if (product) metadata.product = product
+
+      const model = pick('model', 'mode')
+      if (model) metadata.model = model
+
+      const status = pick('status')
+      if (status) metadata.status = status
+
+      const group = pick('group', 'group_id', 'groupId')
+      if (group) metadata.group = group
+
+      const forwardPort = pick('forwardPort', 'forward_port')
+      if (forwardPort) metadata.forwardPort = forwardPort
+
+      const transport = pick('transport', 'transport_id', 'transportId')
+      if (transport) metadata.transport = transport
+
+      const lastSeen = pick('lastSeen', 'last_seen', 'lastActiveAt', 'last_active_at')
+      if (lastSeen) metadata.lastSeen = lastSeen
+
+      const taskStatus = pick('taskStatus', 'task_status')
+      if (taskStatus) metadata.taskStatus = taskStatus
+
+      const connectionCandidate = this.normalizeMetadataField(
+        metaSource.connection,
+        metaSource.connectionType,
+        metaSource.connection_type,
+        metaSource.connectType,
+        metaSource.connect_type,
+        device.connection,
+        device.connection_type,
+        device.connect_type
+      )
+      const connection = this.resolveConnectionType(connectionCandidate)
+      if (connection) metadata.connection = connection
+
+      const proxyRotation = this.sanitizeProxyRotation(
+        metaSource.proxyRotation || metaSource.proxy_rotation || device.proxyRotation || device.proxy_rotation
+      )
+      if (proxyRotation) metadata.proxyRotation = proxyRotation
+
+      return metadata
+    },
     decorateDeviceEntry(device, ticketData = {}) {
       if (!device || typeof device !== 'object') {
         return null
@@ -515,21 +577,24 @@ export default {
       if (!realSerial) {
         return null
       }
-      const metadata =
-        this.parseMaybeJson(device.metadata) ||
-        this.parseMaybeJson(device.meta) ||
-        {}
+      const metadata = this.buildDeviceMetadata(device)
       return {
         id: device.id || device.device_id || realSerial,
         ticket_id: device.ticket_id || device.ticketId || ticketData.id || ticketData.ticket_id || null,
         real_serial: String(realSerial),
         display_name:
-          device.display_name ||
-          device.displayName ||
-          device.name ||
-          metadata.deviceModel ||
-          '',
-        last_active_at: device.last_active_at || device.lastActiveAt || '',
+          this.normalizeMetadataField(
+            device.display_name,
+            device.displayName,
+            device.name,
+            metadata.name
+          ),
+        last_active_at: this.normalizeMetadataField(
+          device.last_active_at,
+          device.lastActiveAt,
+          device.last_seen,
+          metadata.lastSeen
+        ),
         metadata
       }
     },
@@ -545,47 +610,24 @@ export default {
       if (!realSerial) {
         return null
       }
-      const baseMetadata =
-        this.parseMaybeJson(device.metadata) ||
-        this.parseMaybeJson(device.meta) || {
-          deviceModel:
-            device.deviceModel ||
-            device.device_model ||
-            device.model ||
-            device.name ||
-            '',
-          connectionType:
-            device.connectionType ||
-            device.connection_type ||
-            '',
-          androidVersion:
-            device.androidVersion ||
-            device.android_version ||
-            '',
-          appLocale: device.appLocale || device.app_locale || '',
-          timezone: device.timezone || '',
-          lastScript: device.lastScript || device.last_script || '',
-          lastScriptArgs:
-            Object.prototype.hasOwnProperty.call(device, 'lastScriptArgs')
-              ? device.lastScriptArgs
-              : Object.prototype.hasOwnProperty.call(device, 'last_script_args')
-                ? device.last_script_args
-                : null
-        }
-      if (!Object.prototype.hasOwnProperty.call(baseMetadata, 'lastScriptArgs')) {
-        baseMetadata.lastScriptArgs = null
-      }
+      const baseMetadata = this.buildDeviceMetadata(device)
       return {
         id: device.id || `meta-${realSerial}`,
         ticket_id: ticketData.id || ticketData.ticket_id || null,
         real_serial: String(realSerial),
         display_name:
-          device.display_name ||
-          device.displayName ||
-          device.deviceModel ||
-          baseMetadata.deviceModel ||
-          '',
-        last_active_at: device.last_active_at || device.lastActiveAt || '',
+          this.normalizeMetadataField(
+            device.display_name,
+            device.displayName,
+            baseMetadata.name,
+            device.name
+          ),
+        last_active_at: this.normalizeMetadataField(
+          device.last_active_at,
+          device.lastActiveAt,
+          device.last_seen,
+          baseMetadata.lastSeen
+        ),
         metadata: baseMetadata
       }
     },
@@ -668,6 +710,85 @@ export default {
       if (page < 1 || page > this.totalPages) return
       this.page = page
       this.fetchTickets()
+    },
+    sanitizeProxyRotation(raw) {
+      if (!raw || typeof raw !== 'object') {
+        return null
+      }
+      const cleaned = {}
+      const endpoint = this.normalizeMetadataField(raw.rotation_url, raw.url, raw.endpoint)
+      if (endpoint) cleaned.endpoint = endpoint
+      const method = this.normalizeMetadataField(raw.method)
+      if (method) cleaned.method = method
+      const lastStatus = this.normalizeMetadataField(raw.last_status, raw.status)
+      if (lastStatus) cleaned.lastStatus = lastStatus
+      const lastMessage = this.normalizeMetadataField(raw.last_message, raw.message)
+      if (lastMessage) cleaned.lastMessage = lastMessage
+      const lastRotatedAt = this.normalizeMetadataField(raw.last_rotated_at, raw.lastRotatedAt)
+      if (lastRotatedAt) cleaned.lastRotatedAt = lastRotatedAt
+      const timeoutMs = this.normalizeMetadataField(raw.timeout_ms, raw.timeout)
+      if (timeoutMs) cleaned.timeoutMs = timeoutMs
+      return Object.keys(cleaned).length ? cleaned : null
+    },
+    resolveConnectionType(value) {
+      if (value === null || value === undefined) {
+        return ''
+      }
+      if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase()
+        if (!normalized) {
+          return ''
+        }
+        if (normalized === 'usb') {
+          return 'USB'
+        }
+        if (normalized === 'tcp') {
+          return 'TCP'
+        }
+        if (!Number.isNaN(Number(normalized))) {
+          return this.resolveConnectionType(Number(normalized))
+        }
+        if (normalized === 'unknown') {
+          return 'Unknown'
+        }
+        return value.trim().toUpperCase()
+      }
+      const numeric = Number(value)
+      if (!Number.isNaN(numeric)) {
+        if (numeric === 0) return 'USB'
+        if (numeric === 1) return 'TCP'
+        return String(numeric)
+      }
+      return String(value)
+    },
+    normalizeMetadataField(...candidates) {
+      for (const candidate of candidates) {
+        if (candidate === null || candidate === undefined) {
+          continue
+        }
+        if (typeof candidate === 'string') {
+          const text = candidate.trim()
+          if (text !== '') {
+            return text
+          }
+          continue
+        }
+        if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+          return String(candidate)
+        }
+        if (typeof candidate === 'boolean') {
+          return candidate ? 'true' : 'false'
+        }
+        try {
+          const text = String(candidate).trim()
+          if (text) {
+            return text
+          }
+        } catch (error) {
+          continue
+        }
+      }
+      return ''
     },
     openForm() {
       this.stopDetailPolling()
@@ -988,14 +1109,21 @@ export default {
         .map(device => {
           const realSerial = device.real_serial || device.realSerial
           if (!realSerial) return null
-          const metadata =
-            this.parseMaybeJson(device.metadata) ||
-            this.parseMaybeJson(device.meta) ||
-            {}
+          const metadata = this.buildDeviceMetadata(device)
           return {
             realSerial,
-            displayName: device.display_name || device.displayName || device.name || '',
-            lastActiveAt: device.last_active_at || device.lastActiveAt || '',
+            displayName: this.normalizeMetadataField(
+              device.display_name,
+              device.displayName,
+              device.name,
+              metadata.name
+            ),
+            lastActiveAt: this.normalizeMetadataField(
+              device.last_active_at,
+              device.lastActiveAt,
+              device.last_seen,
+              metadata.lastSeen
+            ),
             metadata
           }
         })
