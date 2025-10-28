@@ -156,7 +156,6 @@ export default {
         app_name: info.app_name || info.appName || info.name || 'TikMatrix',
         client_version: info.client_version || info.clientVersion || info.version || '',
         app_version: info.app_version || info.appVersion || info.clientVersion || '',
-        webview2_installed: info.webview2_installed ?? info.webview2Installed ?? null
       }
     }
   },
@@ -387,6 +386,7 @@ export default {
     buildSerialPayload() {
       return this.selectedSerials.map(serial => {
         const device = this.deviceRows.find(item => item.real_serial === serial) || {}
+        console.log('buildSerialPayload device', JSON.stringify(device))
         const rawMeta = device.metadata || {}
         const connection = this.resolveConnectionType(
           rawMeta.connectionType || device.connection_type || device.connect_type
