@@ -1,6 +1,6 @@
 <template>
   <dialog ref="page_dialog" class="modal">
-    <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
+    <div class="modal-box max-w-[80%] w-auto max-h-[90vh] overflow-y-auto">
       <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
       <AccountAnalytics :accounts="accounts"
         v-if="selectedItem.name === 'accountAnalytics' && $refs.page_dialog.open" />

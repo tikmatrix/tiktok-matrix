@@ -35,11 +35,16 @@
               </td>
             </tr>
             <tr v-for="ticket in tickets" :key="ticket.id || ticket.ticket_no" :class="['ticket-row', {
-              'ticket-row--highlight': highlightTicketNo && highlightTicketNo === (ticket.ticket_no || ticket.ticketNo)
+              'ticket-row--highlight': highlightTicketNo && highlightTicketNo === (ticket.ticket_no || ticket.ticketNo),
+              'ticket-row--unread': isTicketUnread(ticket)
             }]" role="button" tabindex="0" @click="openDetail(ticket)" @keydown.enter.prevent="openDetail(ticket)"
               @keydown.space.prevent="openDetail(ticket)">
               <td>#{{ ticket.ticket_no }}</td>
-              <td class="subject-cell">{{ ticket.subject }}</td>
+              <td class="subject-cell">
+                <span v-if="isTicketUnread(ticket)"
+                  class="mr-2 inline-block h-2 w-2 rounded-full bg-error align-middle"></span>
+                <span :class="isTicketUnread(ticket) ? 'font-semibold' : ''">{{ ticket.subject }}</span>
+              </td>
               <td>
                 <span class="tag" :class="`status-${ticket.status}`">{{ formatStatus(ticket.status) }}</span>
               </td>
@@ -202,6 +207,7 @@
 <script>
 import SupportForm from './SupportForm.vue'
 import { getName, getVersion } from '@tauri-apps/api/app'
+import { getSupportUnreadState, extractTicketKey } from '../../utils/supportNotifications.js'
 
 export default {
   name: 'SupportCenter',
@@ -245,7 +251,9 @@ export default {
       detailRetryHandle: null,
       highlightTicketNo: null,
       highlightTimerHandle: null,
-      closingTicket: false
+      closingTicket: false,
+      listeners: [],
+      unreadTicketMap: {}
     }
   },
   computed: {
@@ -288,16 +296,111 @@ export default {
       }
     }
   },
-  created() {
-    this.initialize()
+  async created() {
+    await this.initialize()
+    await this.setupUnreadState()
+    await this.registerSupportListeners()
   },
   beforeUnmount() {
     this.stopDetailPolling()
+    this.destroyListeners()
   },
   beforeDestroy() {
     this.stopDetailPolling()
+    this.destroyListeners()
   },
   methods: {
+    async setupUnreadState() {
+      try {
+        const state = await getSupportUnreadState()
+        this.unreadTicketMap = { ...state.map }
+        this.applyUnreadFlags()
+      } catch (error) {
+        console.error('support setupUnreadState error', error)
+        this.unreadTicketMap = {}
+      }
+    },
+    async registerSupportListeners() {
+      if (typeof this.$listen !== 'function') {
+        return
+      }
+      const unsubscribe = await this.$listen('supportUnreadChanged', async (event) => {
+        const payload = event?.payload || {}
+        if (payload.unreadMap && typeof payload.unreadMap === 'object') {
+          this.unreadTicketMap = { ...payload.unreadMap }
+          this.applyUnreadFlags()
+        }
+        if (Array.isArray(payload.updates) && payload.updates.length) {
+          const ticketNo = payload.highlightTicketNo || extractTicketKey(payload.updates[0])
+          if (ticketNo) {
+            this.highlightTicket(ticketNo)
+          }
+        } else if (Array.isArray(payload.ticketNos) && payload.ticketNos.length) {
+          this.applyUnreadFlags()
+        }
+      })
+      this.listeners.push(unsubscribe)
+    },
+    destroyListeners() {
+      if (!Array.isArray(this.listeners)) {
+        this.listeners = []
+        return
+      }
+      this.listeners.forEach(unsubscribe => {
+        if (typeof unsubscribe === 'function') {
+          unsubscribe()
+        }
+      })
+      this.listeners = []
+    },
+    applyUnreadFlags() {
+      if (!Array.isArray(this.tickets)) {
+        return
+      }
+      const unread = this.unreadTicketMap || {}
+      this.tickets = this.tickets.map(ticket => {
+        const key = extractTicketKey(ticket)
+        if (!key) {
+          return { ...ticket, __unread: false }
+        }
+        const isUnread = Boolean(unread[key])
+        if (ticket.__unread === isUnread) {
+          return ticket
+        }
+        return { ...ticket, __unread: isUnread }
+      })
+    },
+    isTicketUnread(ticket) {
+      if (!ticket) return false
+      if (typeof ticket.__unread === 'boolean') {
+        return ticket.__unread
+      }
+      const key = extractTicketKey(ticket)
+      return Boolean(key && this.unreadTicketMap[key])
+    },
+    async markTicketAsRead(ticket) {
+      if (typeof this.$emiter !== 'function') {
+        return
+      }
+      const key = extractTicketKey(ticket)
+      if (!key) {
+        return
+      }
+      await this.$emiter('supportMarkRead', { ticketNos: [key] })
+    },
+    highlightTicket(ticketNo) {
+      if (!ticketNo) {
+        return
+      }
+      this.highlightTicketNo = ticketNo
+      if (this.highlightTimerHandle) {
+        clearTimeout(this.highlightTimerHandle)
+      }
+      this.highlightTimerHandle = setTimeout(() => {
+        this.highlightTicketNo = null
+        this.highlightTimerHandle = null
+      }, 5000)
+    },
     async initialize() {
       await this.loadClientInfo()
       await this.fetchTickets()
@@ -331,6 +434,7 @@ export default {
         this.tickets = []
         this.total = 0
       } finally {
+        this.applyUnreadFlags()
         this.loading = false
       }
     },
@@ -794,7 +898,7 @@ export default {
       this.viewMode = 'form'
       this.resetReply()
     },
-    openDetail(ticket) {
+    async openDetail(ticket) {
       const resolved = this.resolveTicketReference(ticket)
       if (!resolved) {
         this.notify('error', this.$t('supportDetailMissingIdentifier'))
@@ -802,6 +906,7 @@ export default {
       }
       this.stopDetailPolling()
       this.currentTicket = resolved
+      await this.markTicketAsRead(resolved)
       this.viewMode = 'detail'
       this.resetReply()
       this.loadTicketDetail(resolved)
@@ -1035,17 +1140,8 @@ export default {
       })
 
       this.tickets = [normalized, ...filtered]
-      this.highlightTicketNo = normalized.ticket_no || normalized.ticketNo || null
-
-      if (this.highlightTimerHandle) {
-        clearTimeout(this.highlightTimerHandle)
-      }
-      if (this.highlightTicketNo) {
-        this.highlightTimerHandle = setTimeout(() => {
-          this.highlightTicketNo = null
-          this.highlightTimerHandle = null
-        }, 5000)
-      }
+      this.applyUnreadFlags()
+      this.highlightTicket(normalized.ticket_no || normalized.ticketNo || null)
     },
     updateSelection(serials) {
       if (typeof this.$emiter === 'function') {
@@ -1411,6 +1507,14 @@ export default {
 .ticket-row {
   cursor: pointer;
   transition: background-color 0.15s ease;
+}
+
+.ticket-row--unread {
+  background-color: #fef2f2;
+}
+
+.ticket-row--unread:hover {
+  background-color: #fee2e2;
 }
 
 .ticket-row--highlight {

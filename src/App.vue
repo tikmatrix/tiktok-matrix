@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen w-screen bg-base-200 text-base-content overflow-hidden">
-    <TitleBar />
+    <TitleBar :supportUnreadCount="supportUnreadCount" />
     <div class="flex flex-row items-stretch gap-3 mt-12 h-[calc(100vh-3rem)] w-full px-3 overflow-hidden">
       <Sidebar :devices="devices" :settings="settings" :groups="groups" :selecedDevices="selecedDevices"
         v-if="showSidebar" />
@@ -22,6 +22,13 @@ import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs'
 import { getItem } from './utils/persistentStorage.js';
+import {
+  getSupportUnreadState,
+  mergeSupportUpdates,
+  markSupportTicketsRead,
+  markAllSupportTicketsRead,
+  extractTicketKey
+} from './utils/supportNotifications.js';
 
 export default {
   name: 'app',
@@ -42,6 +49,8 @@ export default {
       running_devices: [],
       selecedDevices: [],
       listeners: [],
+      supportUnreadMap: {},
+      supportUnreadCount: 0,
       // 自动更新相关
       lastUserActivity: Date.now(),
       autoUpdateTimer: null,
@@ -50,6 +59,87 @@ export default {
   },
 
   methods: {
+    async initializeSupportUnread() {
+      try {
+        const state = await getSupportUnreadState();
+        this.supportUnreadMap = { ...state.map };
+        this.supportUnreadCount = state.count;
+        await this.emitSupportUnreadChanged({ source: 'init' });
+      } catch (error) {
+        console.error('initializeSupportUnread error', error);
+        this.supportUnreadMap = {};
+        this.supportUnreadCount = 0;
+        await this.emitSupportUnreadChanged({ source: 'init', error: error?.message });
+      }
+    },
+
+    async emitSupportUnreadChanged(extra = {}) {
+      if (typeof this.$emiter !== 'function') {
+        return;
+      }
+      const payload = {
+        unreadCount: this.supportUnreadCount,
+        unreadMap: { ...this.supportUnreadMap },
+        ...extra
+      };
+      await this.$emiter('supportUnreadChanged', payload);
+    },
+
+    async handleSupportUpdates(updates = []) {
+      try {
+        const result = await mergeSupportUpdates(updates);
+        this.supportUnreadMap = { ...result.map };
+        this.supportUnreadCount = result.count;
+        const highlightTicketNo = updates.length ? extractTicketKey(updates[0]) : null;
+        await this.emitSupportUnreadChanged({
+          source: 'update',
+          updates,
+          highlightTicketNo,
+          changed: result.changed
+        });
+      } catch (error) {
+        console.error('handleSupportUpdates error', error);
+      }
+    },
+
+    async handleSupportMarkRead(ticketNos = []) {
+      if (!Array.isArray(ticketNos) || ticketNos.length === 0) {
+        return;
+      }
+      try {
+        const normalizedKeys = ticketNos
+          .map(key => String(key || '').trim())
+          .filter(Boolean);
+        if (!normalizedKeys.length) {
+          return;
+        }
+        const result = await markSupportTicketsRead(normalizedKeys);
+        this.supportUnreadMap = { ...result.map };
+        this.supportUnreadCount = result.count;
+        if (result.changed) {
+          await this.emitSupportUnreadChanged({
+            source: 'read',
+            ticketNos: normalizedKeys
+          });
+        }
+      } catch (error) {
+        console.error('handleSupportMarkRead error', error);
+      }
+    },
+
+    async handleSupportMarkAllRead() {
+      try {
+        const result = await markAllSupportTicketsRead();
+        this.supportUnreadMap = { ...result.map };
+        this.supportUnreadCount = result.count;
+        if (result.changed) {
+          await this.emitSupportUnreadChanged({ source: 'read-all' });
+        }
+      } catch (error) {
+        console.error('handleSupportMarkAllRead error', error);
+      }
+    },
+
     async get_settings() {
       const res = await this.$service.get_settings();
       this.settings = res.data
@@ -135,6 +225,9 @@ export default {
               }
             }
           })
+        } else if (json.action === 'support_ticket_updates') {
+          const updates = Array.isArray(json.tickets) ? json.tickets : []
+          await this.handleSupportUpdates(updates)
         } else if (json.action === 'heartbeat') {
           await this.$emiter('heartbeat', {})
         }
@@ -373,6 +466,8 @@ export default {
     // 禁止右键菜单
     this.disableMenu();
 
+    await this.initializeSupportUnread();
+
 
 
     // 监听代理启动事件
@@ -419,6 +514,18 @@ export default {
       await this.get_settings()
       // 重新启动自动更新定时器（设置可能已更改）
       this.startAutoUpdateTimer();
+    }))
+
+    this.listeners.push(await this.$listen('supportMarkRead', async (e) => {
+      const payload = e?.payload || {}
+      const keys = Array.isArray(payload.ticketNos)
+        ? payload.ticketNos
+        : [payload.ticketNo]
+      await this.handleSupportMarkRead(keys)
+    }))
+
+    this.listeners.push(await this.$listen('supportMarkAllRead', async () => {
+      await this.handleSupportMarkAllRead()
     }))
 
     // 设置用户活动监听

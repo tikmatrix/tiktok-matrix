@@ -168,10 +168,16 @@
         <font-awesome-icon icon="fa-solid fa-palette" class="h-6 w-6 text-base-content" />
       </button>
       <!-- 支持工单入口 -->
-      <button @click="openSupportDialog"
-        class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
-        :title="$t('supportEntryTitle')">
-        <font-awesome-icon icon="fa-solid fa-headset" class="h-6 w-6 text-base-content" />
+      <button @click="openSupportDialog" :class="[
+        'relative p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary',
+        hasSupportUnread ? 'text-error' : 'text-base-content'
+      ]" :title="$t('supportEntryTitle')">
+        <font-awesome-icon icon="fa-solid fa-headset"
+          :class="['h-6 w-6 transition-colors', hasSupportUnread ? 'text-error' : 'text-base-content']" />
+        <span v-if="hasSupportUnread"
+          class="absolute -top-1.5 -right-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-error px-1 text-xs font-semibold text-error-content shadow-lg">
+          {{ supportBadgeText }}
+        </span>
       </button>
       <!-- 全局设置 -->
       <button @click="$emiter('showDialog', { name: 'tiktokSettings' })"
@@ -284,6 +290,12 @@ export default {
     AgentErrorDialog,
     LicenseLifecycle
   },
+  props: {
+    supportUnreadCount: {
+      type: Number,
+      default: 0
+    }
+  },
   data() {
     return {
       version: '',
@@ -338,6 +350,16 @@ export default {
         return new URL('../assets/logo_dark.png', import.meta.url).href;
       }
       return new URL('../assets/logo.png', import.meta.url).href;
+    },
+    hasSupportUnread() {
+      return Number(this.supportUnreadCount) > 0;
+    },
+    supportBadgeText() {
+      const count = Number(this.supportUnreadCount) || 0;
+      if (count > 99) {
+        return '99+';
+      }
+      return String(count);
     }
   },
   async created() {
