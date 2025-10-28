@@ -142,7 +142,6 @@
             <article v-for="message in messages" :key="message.id" class="conversation-item">
               <header class="conversation-header">
                 <span class="message-role" :class="`role-${message.role}`">{{ formatRole(message.role) }}</span>
-                <span class="message-author">{{ message.author_name || message.author_id || '-' }}</span>
                 <span class="message-time">{{ message.created_at_display }}</span>
               </header>
               <div class="conversation-body">{{ message.body }}</div>
