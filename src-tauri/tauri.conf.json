@@ -110,7 +110,7 @@
         "all": true,
         "request": true,
         "scope": [
-          "http://127.0.0.1:50809/*/*",
+          "http://localhost:50809/*/*",
           "https://api.tikmatrix.com/*/*"
         ]
       }

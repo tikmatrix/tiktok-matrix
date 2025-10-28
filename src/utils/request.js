@@ -75,7 +75,7 @@ const request = async function request(config) {
   }
 
   const querySuffix = buildQuery(config.params);
-  const queryUrl = `http://127.0.0.1:${port}${url}${querySuffix}`;
+  const queryUrl = `http://localhost:${port}${url}${querySuffix}`;
 
   const headers = { ...(config.headers || {}) };
   if (shouldSetJsonContentType(config)) {

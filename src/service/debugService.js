@@ -5,7 +5,7 @@ import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 // 获取设备截图 URL
 export async function getDeviceScreenshot(serial) {
     const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData })
-    const url = `http://127.0.0.1:${port}/api/device/screenshot?serial=${serial}&_=${Date.now()}`
+    const url = `http://localhost:${port}/api/device/screenshot?serial=${serial}&_=${Date.now()}`
     // 直接返回图片 URL,不需要下载
     return { code: 0, data: url }
 }
@@ -13,7 +13,7 @@ export async function getDeviceScreenshot(serial) {
 // Dump 设备 UI 层次结构 (返回 XML 文本)
 export async function dumpDeviceHierarchy(serial) {
     const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData })
-    const url = `http://127.0.0.1:${port}/api/device/hierarchy?serial=${serial}&_=${Date.now()}`
+    const url = `http://localhost:${port}/api/device/hierarchy?serial=${serial}&_=${Date.now()}`
     const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -28,7 +28,7 @@ export async function dumpDeviceHierarchy(serial) {
 // 获取当前 Activity
 export async function getDeviceActivity(serial) {
     const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData })
-    const url = `http://127.0.0.1:${port}/api/device/activity?serial=${serial}&_=${Date.now()}`
+    const url = `http://localhost:${port}/api/device/activity?serial=${serial}&_=${Date.now()}`
     const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -43,7 +43,7 @@ export async function getDeviceActivity(serial) {
 // 在设备上执行 tap 操作
 export async function tapDevice(serial, x, y) {
     const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData })
-    const url = `http://127.0.0.1:${port}/api/device/tap`
+    const url = `http://localhost:${port}/api/device/tap`
     const response = await fetch(url, {
         method: 'POST',
         body: Body.json({ serial, x, y }),

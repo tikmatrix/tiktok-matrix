@@ -375,7 +375,7 @@ export default {
       ip_4: 2,
       ip_5: 254,
       port: 5555,
-      proxy_host: '127.0.0.1',
+      proxy_host: 'localhost',
       proxy_port: 8080,
       scaning: false,
       scanResult: '',
@@ -475,7 +475,7 @@ export default {
     this.port = parseNumber(scanPort, 5555);
 
     if (storedProxyHost) {
-      this.proxy_host = String(storedProxyHost).replace(/"/g, '') || '127.0.0.1';
+      this.proxy_host = String(storedProxyHost).replace(/"/g, '') || 'localhost';
     }
     if (storedProxyPort !== null) {
       this.proxy_port = parseNumber(storedProxyPort, 8080);

@@ -174,7 +174,7 @@ export default {
       if (wsPort === '0') {
         return;
       }
-      const wsUrl = `ws://127.0.0.1:${wsPort}`
+      const wsUrl = `ws://localhost:${wsPort}`
       console.log(wsUrl)
       this.ws = new WebSocket(wsUrl)
       this.ws.onopen = async () => {
