@@ -246,8 +246,6 @@ export default {
         preparing: false,
         sending: false
       },
-      detailPollingTimer: null,
-      detailPollingIntervalMs: 15000,
       detailRetryHandle: null,
       highlightTicketNo: null,
       highlightTimerHandle: null,
@@ -302,11 +300,9 @@ export default {
     await this.registerSupportListeners()
   },
   beforeUnmount() {
-    this.stopDetailPolling()
     this.destroyListeners()
   },
   beforeDestroy() {
-    this.stopDetailPolling()
     this.destroyListeners()
   },
   methods: {
@@ -894,7 +890,6 @@ export default {
       return ''
     },
     openForm() {
-      this.stopDetailPolling()
       this.viewMode = 'form'
       this.resetReply()
     },
@@ -904,13 +899,11 @@ export default {
         this.notify('error', this.$t('supportDetailMissingIdentifier'))
         return
       }
-      this.stopDetailPolling()
       this.currentTicket = resolved
       await this.markTicketAsRead(resolved)
       this.viewMode = 'detail'
       this.resetReply()
       this.loadTicketDetail(resolved)
-      this.startDetailPolling()
     },
     resolveTicketReference(ticket) {
       if (!ticket || typeof ticket !== 'object') return null
@@ -1013,29 +1006,8 @@ export default {
         this.detailLoading = false
       }
     },
-    startDetailPolling() {
-      this.stopDetailPolling()
-      const interval = Number(this.detailPollingIntervalMs)
-      if (!interval || interval <= 0) {
-        return
-      }
-      this.detailPollingTimer = setInterval(() => {
-        if (this.viewMode !== 'detail' || this.detailLoading || !this.currentTicket) {
-          return
-        }
-        this.loadTicketDetail(this.currentTicket)
-      }, interval)
-    },
-    stopDetailPolling() {
-      if (this.detailPollingTimer) {
-        clearInterval(this.detailPollingTimer)
-        this.detailPollingTimer = null
-      }
-      if (this.detailRetryHandle) {
-        clearTimeout(this.detailRetryHandle)
-        this.detailRetryHandle = null
-      }
-    },
+
+
     async refreshDetail() {
       if (!this.currentTicket) return
       await this.loadTicketDetail(this.currentTicket)
@@ -1080,7 +1052,6 @@ export default {
       }
     },
     clearDetailState() {
-      this.stopDetailPolling()
       this.currentTicket = null
       this.ticketDetail = null
       this.metadata = {}
