@@ -59,10 +59,21 @@
         </div>
     </div>
 
-    <div class="flex flex-row items-center">
-        <label class="font-bold mr-4">{{ $t('boostCommentInterval') }}:</label>
-        <VueSlider v-model="boost_comment_interval" :width="200" :min="0" :max="10"
-            :marks="{ 0: '0' + $t('minute'), 5: '5' + $t('minute'), 10: '10' + $t('minute') }" />
+    <!-- 添加任务间隔时间设置 -->
+    <div class="flex flex-row items-center mt-8 mb-8">
+        <label class="font-bold mr-4">{{ $t('taskInterval') }}:</label>
+        <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
+            0: '0',
+            5: '5',
+            10: '10' + ' ' + $t('minute')
+        }" />
+    </div>
+    <div class="alert alert-info py-2 px-3">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="text-md">{{ $t('taskIntervalTip') }}</span>
     </div>
 </template>
 
@@ -84,9 +95,9 @@ export default {
                 reply_contents: 'Great point!\nI agree!\nThanks for sharing!',
                 insert_emoji: false,
                 reply_order: 'random',
-                boost_comment_interval: [0, 0]
+                task_interval: [0, 0]
             }, // 默认设置
-            ['target_comment_urls', 'enable_like_comment', 'enable_reply_comment', 'reply_contents', 'insert_emoji', 'reply_order', 'boost_comment_interval'] // 需要监听的属性
+            ['target_comment_urls', 'enable_like_comment', 'enable_reply_comment', 'reply_contents', 'insert_emoji', 'reply_order', 'task_interval'] // 需要监听的属性
         )
     ],
     data() {
@@ -97,7 +108,7 @@ export default {
             reply_contents: 'Great point!\nI agree!\nThanks for sharing!',
             insert_emoji: false,
             reply_order: 'random',
-            boost_comment_interval: [0, 0]
+            task_interval: [0, 0]
         }
     },
     methods: {
@@ -151,8 +162,8 @@ export default {
             await this.$emiter('run_now_by_account', {
                 name: 'boost_comment',
                 args: {
-                    min_interval: Number(this.boost_comment_interval[0]),
-                    max_interval: Number(this.boost_comment_interval[1]),
+                    min_interval: Number(this.task_interval[0]),
+                    max_interval: Number(this.task_interval[1]),
                     enable_multi_account: enable_multi_account,
                     rotate_proxy: rotate_proxy,
                 }

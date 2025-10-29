@@ -34,14 +34,32 @@
     <input type="radio" id="direct" v-model="open_user_method" value="direct" />
     <label for="direct">{{ $t('directOpenProfile') }}</label>
   </div>
-
+  <!-- 添加任务间隔时间设置 -->
+  <div class="flex flex-row items-center mt-8 mb-8">
+    <label class="font-bold mr-4">{{ $t('taskInterval') }}:</label>
+    <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
+      0: '0',
+      5: '5',
+      10: '10' + ' ' + $t('minute')
+    }" />
+  </div>
+  <div class="alert alert-info py-2 px-3">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <span class="text-md">{{ $t('taskIntervalTip') }}</span>
+  </div>
 </template>
 <script>
 import { open } from '@tauri-apps/api/dialog';
 import { massDMSettings } from '@/utils/settingsManager';
-
+import VueSlider from "vue-3-slider-component";
 export default {
   name: 'MassDM',
+  components: {
+    VueSlider
+  },
   mixins: [
     massDMSettings.createVueMixin(
       {
@@ -50,8 +68,9 @@ export default {
         target_username_path: '',
         send_profile_card: '',
         open_user_method: 'direct',
+        task_interval: [0, 0]
       }, // 默认设置
-      ['message_contents', 'insert_emoji', 'target_username_path', 'send_profile_card', 'open_user_method'] // 需要监听的属性
+      ['message_contents', 'insert_emoji', 'target_username_path', 'send_profile_card', 'open_user_method', 'task_interval'] // 需要监听的属性
     )
   ],
   data() {
@@ -89,6 +108,8 @@ export default {
         target_username_path: this.target_username_path,
         enable_multi_account: enable_multi_account,
         rotate_proxy: rotate_proxy,
+        min_interval: Number(this.task_interval[0]),
+        max_interval: Number(this.task_interval[1]),
       })
     },
 
