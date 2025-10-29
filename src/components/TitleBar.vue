@@ -168,7 +168,7 @@
         <font-awesome-icon icon="fa-solid fa-palette" class="h-6 w-6 text-base-content" />
       </button>
       <!-- 支持工单入口 -->
-      <button @click="openSupportDialog" :class="[
+      <button v-if="showSupportEntry" @click="openSupportDialog" :class="[
         'relative p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary',
         hasSupportUnread ? 'text-error' : 'text-base-content'
       ]" :title="$t('supportEntryTitle')">
@@ -360,6 +360,13 @@ export default {
         return '99+';
       }
       return String(count);
+    },
+    showSupportEntry() {
+      const flag = this.whitelabelConfig?.enableSupportEntry;
+      if (typeof flag === 'boolean') {
+        return flag;
+      }
+      return true;
     }
   },
   async created() {

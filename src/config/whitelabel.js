@@ -9,6 +9,7 @@ export const DEFAULT_WHITELABEL_CONFIG = {
     officialWebsite: 'https://tikmatrix.com', // 官网域名
     apiDomain: 'https://api.tikmatrix.com', // API域名
     enablePay: true, // 是否启用支付功能
+    enableSupportEntry: true, // 是否显示工单支持入口
     targetApp: import.meta.env.VITE_TARGET_APP || 'tiktok', // 目标应用，tiktok 或 instagram
     showAppNameInTitle: false, // 是否在窗口标题显示应用名称
 

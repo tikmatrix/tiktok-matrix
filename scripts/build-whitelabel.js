@@ -52,6 +52,7 @@ const appName = mustHave(rawConfig.appName, 'appName');
 const officialWebsite = mustHave(rawConfig.officialWebsite, 'officialWebsite');
 const apiDomain = normalizeDomain(mustHave(rawConfig.apiDomain, 'apiDomain'));
 const enablePay = rawConfig.enablePay !== false; // 默认为 true
+const enableSupportEntry = rawConfig.enableSupportEntry !== false; // 默认为 true
 if (!enablePay) {
     console.warn('⚠️ 警告: 支付功能被禁用 (enablePay=false)');
 }
@@ -82,6 +83,7 @@ if (verbose) {
     console.log(`   • API: ${apiDomain}`);
     console.log(`   • 更新地址: ${updaterEndpoint}`);
     console.log(`   • MOSS: ${mossUrl}`);
+    console.log(`   • 支持入口: ${enableSupportEntry ? '启用' : '禁用'}`);
 }
 
 const backups = new Map();
@@ -171,6 +173,7 @@ function updateWhitelabelConfig() {
     content = replaceConfigString(content, 'officialWebsite', officialWebsite);
     content = replaceConfigString(content, 'apiDomain', apiDomain);
     content = replaceConfigBoolean(content, 'enablePay', enablePay);
+    content = replaceConfigBoolean(content, 'enableSupportEntry', enableSupportEntry);
     content = replaceConfigString(content, 'targetApp', targetApp);
     content = replaceConfigString(content, 'emailSupport', emailSupport);
     content = replaceConfigString(content, 'telegramSupport', telegramSupport);
