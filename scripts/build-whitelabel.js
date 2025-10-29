@@ -340,18 +340,43 @@ function backupTextFile(filePath) {
 }
 
 function replaceConfigString(content, key, value) {
-    const regex = new RegExp(`(${key}\\s*:\\s*)['\"]([^'\"]*)['\"]`);
-    if (!regex.test(content)) {
-        throw new Error(`无法在 whitelabel.js 中找到字段 ${key}`);
+    // 支持多种写法：
+    // appName: 'x', "appName": "x", `appName`: `x`, 'appName': x, appName: import.meta.env... || 'x'
+    const patterns = [
+        // key (unquoted) with quoted value: appName: 'value' / "value" / `value`
+        new RegExp(`(\\b${key}\\b\\s*:\\s*)(['"\`])([\\s\\S]*?)\\2`),
+        // key quoted with quoted value: 'appName': 'value'
+        new RegExp(`(['"\`]${key}['"\`]\\s*:\\s*)(['"\`])([\\s\\S]*?)\\2`),
+        // key (unquoted) with unquoted expression/value until comma, newline or closing brace
+        new RegExp(`(\\b${key}\\b\\s*:\\s*)([^,\\n\\}]+)`)
+    ];
+
+    for (const regex of patterns) {
+        const m = content.match(regex);
+        if (m) {
+            const prefix = m[1];
+            return content.replace(regex, `${prefix}'${escapeJs(value)}'`);
+        }
     }
-    return content.replace(regex, (_, prefix) => `${prefix}'${escapeJs(value)}'`);
+
+    throw new Error(`无法在 whitelabel.js 中找到字段 ${key}`);
 }
 function replaceConfigBoolean(content, key, value) {
-    const regex = new RegExp(`(${key}\\s*:\\s*)(true|false)`);
-    if (!regex.test(content)) {
-        throw new Error(`无法在 whitelabel.js 中找到字段 ${key}`);
+    // 支持 key 被引号包裹或不被引号包裹的情况，匹配 true/false 或表达式后仍替换为布尔字面量
+    const patterns = [
+        new RegExp(`(\\b${key}\\b\\s*:\\s*)(true|false|[^,\\n\\}]+)`),
+        new RegExp(`(['"\`]${key}['"\`]\\s*:\\s*)(true|false|[^,\\n\\}]+)`)
+    ];
+
+    for (const regex of patterns) {
+        const m = content.match(regex);
+        if (m) {
+            const prefix = m[1];
+            return content.replace(regex, `${prefix}${value ? 'true' : 'false'}`);
+        }
     }
-    return content.replace(regex, (_, prefix) => `${prefix}${value ? 'true' : 'false'}`);
+
+    throw new Error(`无法在 whitelabel.js 中找到字段 ${key}`);
 }
 
 function runCommand(command, quiet = false) {
