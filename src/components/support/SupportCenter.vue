@@ -115,7 +115,7 @@
             <div class="summary-tags">
               <span class="tag" :class="['tag', statusClass(currentTicket.status)]">{{
                 formatStatus(currentTicket.status)
-                }}</span>
+              }}</span>
               <span class="tag priority" :class="`priority-${currentTicket.priority}`">{{
                 formatPriority(currentTicket.priority) }}</span>
             </div>
@@ -941,6 +941,14 @@ export default {
       return ''
     },
     openForm() {
+      // 清空上次可能遗留的已选设备，防止新建工单时显示历史工单的设备缓存
+      try {
+        // 使用已有的方法通知全局选中设备为空
+        this.updateSelection([])
+      } catch (err) {
+        // 即使失败也继续打开表单，避免阻塞用户操作
+        console.error('openForm clear selection failed', err)
+      }
       this.viewMode = 'form'
       this.resetReply()
     },
