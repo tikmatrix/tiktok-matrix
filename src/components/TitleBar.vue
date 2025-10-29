@@ -550,7 +550,6 @@ export default {
             timeout: 2000
           });
         }
-        console.log(`license: ${JSON.stringify(this.licenseData)}`);
       } catch (error) {
         await this.$emiter('NOTIFY', {
           type: 'error',

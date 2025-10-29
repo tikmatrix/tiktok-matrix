@@ -47,8 +47,6 @@
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
-import { open } from '@tauri-apps/api/dialog';
-import { invoke } from "@tauri-apps/api/tauri";
 import { postSettings } from '@/utils/settingsManager';
 import PostFormFields from '@/components/common/PostFormFields.vue';
 
@@ -89,9 +87,9 @@ const postMixin = postSettings.createVueMixin(
     image_count: 1,
     add_sound: '-1',
     sound_wait_time: 10,
-    upload_wait_time: 10,
-    origin_sound_volume: 100,
-    add_sound_volume: 100,
+    upload_wait_time: 30,
+    origin_sound_volume: 50,
+    add_sound_volume: 50,
     add_product_link: 0,
     captions: '',
     materials_tags: '',

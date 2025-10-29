@@ -28,7 +28,7 @@
                             class="text-md font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
                                 $t('postWay') }}</span>
                         <div class="flex flex-wrap gap-4">
-                            <label class="flex items-center gap-2" v-if="localFormData.placement === 'reel'">
+                            <label class="flex items-center gap-2" v-if="localFormData.placement !== 'story'">
                                 <input type="radio" id="share" value="share" v-model="localFormData.post_way"
                                     class="form-radio text-primary">
                                 <span>{{ $t('share') }}</span>
@@ -39,7 +39,7 @@
                                     class="form-radio text-primary">
                                 <span>{{ $t('addButton') }}</span>
                             </label>
-                            <label class="flex items-center gap-2" v-if="localFormData.placement === 'reel'">
+                            <label class="flex items-center gap-2" v-if="localFormData.placement !== 'story'">
                                 <input type="radio" id="useSound" value="useSound" v-model="localFormData.post_way"
                                     class="form-radio text-primary">
                                 <span>{{ $t('useSound') }}</span>

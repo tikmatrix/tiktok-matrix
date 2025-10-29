@@ -83,9 +83,7 @@ export default {
       }
     },
     async menu_selected(item) {
-      console.log('menu_selected', item)
       this.selectedItem = item
-
       // 如果打开账号分析页面，重新加载账号数据
       if (item.name === 'accountAnalytics') {
         await this.loadAccounts();
