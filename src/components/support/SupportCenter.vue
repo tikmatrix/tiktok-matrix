@@ -34,10 +34,8 @@
                 {{ $t('supportEmptyState') }}
               </td>
             </tr>
-            <tr v-for="ticket in tickets" :key="ticket.id || ticket.ticket_no" :class="['ticket-row', {
-              'ticket-row--highlight': highlightTicketNo && highlightTicketNo === (ticket.ticket_no || ticket.ticketNo),
-              'ticket-row--unread': isTicketUnread(ticket)
-            }]" role="button" tabindex="0" @click="openDetail(ticket)" @keydown.enter.prevent="openDetail(ticket)"
+            <tr v-for="ticket in tickets" :key="ticket.id || ticket.ticket_no" :class="ticketRowClass(ticket)"
+              role="button" tabindex="0" @click="openDetail(ticket)" @keydown.enter.prevent="openDetail(ticket)"
               @keydown.space.prevent="openDetail(ticket)">
               <td>#{{ ticket.ticket_no }}</td>
               <td class="subject-cell">
@@ -46,10 +44,10 @@
                 <span :class="isTicketUnread(ticket) ? 'font-semibold' : ''">{{ ticket.subject }}</span>
               </td>
               <td>
-                <span class="tag" :class="`status-${ticket.status}`">{{ formatStatus(ticket.status) }}</span>
+                <span class="tag" :class="['tag', statusClass(ticket.status)]">{{ formatStatus(ticket.status) }}</span>
               </td>
               <td>
-                <span class="tag priority" :class="`priority-${ticket.priority}`">
+                <span class="tag priority" :class="['tag', priorityClass(ticket.priority)]">
                   {{ formatPriority(ticket.priority) }}
                 </span>
               </td>
@@ -115,8 +113,9 @@
               </p>
             </div>
             <div class="summary-tags">
-              <span class="tag" :class="`status-${currentTicket.status}`">{{ formatStatus(currentTicket.status)
-              }}</span>
+              <span class="tag" :class="['tag', statusClass(currentTicket.status)]">{{
+                formatStatus(currentTicket.status)
+                }}</span>
               <span class="tag priority" :class="`priority-${currentTicket.priority}`">{{
                 formatPriority(currentTicket.priority) }}</span>
             </div>
@@ -146,7 +145,7 @@
           <div v-else class="conversation-list">
             <article v-for="message in messages" :key="message.id" class="conversation-item">
               <header class="conversation-header">
-                <span class="message-role" :class="`role-${message.role}`">{{ formatRole(message.role) }}</span>
+                <span class="message-role" :class="roleClass(message.role)">{{ formatRole(message.role) }}</span>
                 <span class="message-time">{{ message.created_at_display }}</span>
               </header>
               <div class="conversation-body">{{ message.body }}</div>
@@ -472,6 +471,58 @@ export default {
         default:
           return value || '-'
       }
+    },
+    statusClass(status) {
+      const s = (status || '').toString().toLowerCase()
+      switch (s) {
+        case 'open':
+          return 'bg-primary/10 text-primary'
+        case 'pending':
+          return 'bg-success/10 text-success'
+        case 'closed':
+          return 'bg-neutral/10 text-neutral'
+        default:
+          return 'bg-base-200 text-base-content'
+      }
+    },
+    priorityClass(priority) {
+      const p = (priority || '').toString().toLowerCase()
+      switch (p) {
+        case 'p1':
+        case 'urgent':
+          return 'bg-error/10 text-error'
+        case 'p2':
+        case 'high':
+          return 'bg-warning/10 text-warning'
+        case 'p3':
+        case 'normal':
+          return 'bg-primary/10 text-primary'
+        default:
+          return 'bg-base-200 text-base-content'
+      }
+    },
+    roleClass(role) {
+      const r = (role || '').toString().toLowerCase()
+      switch (r) {
+        case 'agent':
+        case 'support':
+          return 'bg-primary/10 text-primary'
+        case 'customer':
+        case 'user':
+          return 'bg-success/10 text-success'
+        default:
+          return 'bg-neutral/10 text-neutral'
+      }
+    },
+    ticketRowClass(ticket) {
+      const classes = ['ticket-row']
+      if (this.highlightTicketNo && this.highlightTicketNo === (ticket.ticket_no || ticket.ticketNo)) {
+        classes.push('bg-success/10')
+      }
+      if (this.isTicketUnread(ticket)) {
+        classes.push('bg-error/10')
+      }
+      return classes
     },
     formatDate(value) {
       if (value === null || value === undefined || value === '') return '-'
@@ -1450,22 +1501,22 @@ export default {
 }
 
 .subtitle {
-  color: #6b7280;
+  color: var(--color-base-content);
   margin: 0;
 }
 
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-base-300);
   border-radius: 10px;
-  background: #fff;
+  background: var(--color-base-100);
 }
 
 .table thead th {
-  background: #f9fafb;
+  background: var(--color-base-200);
   font-weight: 600;
-  color: #374151;
+  color: var(--color-base-content);
 }
 
 .subject-cell {
@@ -1480,29 +1531,12 @@ export default {
   transition: background-color 0.15s ease;
 }
 
-.ticket-row--unread {
-  background-color: #fef2f2;
-}
-
-.ticket-row--unread:hover {
-  background-color: #fee2e2;
-}
-
-.ticket-row--highlight {
-  background-color: #ecfdf5;
-  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
-}
-
-.ticket-row--highlight:hover {
-  background-color: #d1fae5;
-}
-
 .ticket-row:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-base-200);
 }
 
 .ticket-row:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--color-primary);
   outline-offset: -2px;
 }
 
@@ -1516,40 +1550,20 @@ export default {
   text-transform: capitalize;
 }
 
-.status-open {
-  background: rgba(59, 130, 246, 0.1);
-  color: #1d4ed8;
-}
-
-.status-pending {
-  background: rgba(16, 185, 129, 0.12);
-  color: #047857;
-}
-
-.status-closed {
-  background: rgba(156, 163, 175, 0.12);
-  color: #4b5563;
-}
-
-.priority-p1 {
-  background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
-}
-
-.priority-p2 {
-  background: rgba(249, 115, 22, 0.12);
-  color: #c2410c;
-}
-
-.priority-p3 {
-  background: rgba(59, 130, 246, 0.1);
-  color: #1d4ed8;
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 .loading-cell,
 .empty-cell {
   text-align: center;
-  color: #6b7280;
+  color: var(--color-base-content);
   padding: 24px 12px;
 }
 
@@ -1562,7 +1576,7 @@ export default {
 
 .page-indicator {
   font-size: 14px;
-  color: #4b5563;
+  color: var(--color-base-content);
 }
 
 .support-form-wrapper {
@@ -1627,8 +1641,8 @@ export default {
   gap: 8px;
   padding: 16px;
   border-radius: 10px;
-  background: #f9fafb;
-  color: #4b5563;
+  background: var(--color-base-200);
+  color: var(--color-base-content);
 }
 
 .detail-content {
@@ -1638,8 +1652,8 @@ export default {
 }
 
 .detail-card {
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--color-base-100);
+  border: 1px solid var(--color-base-300);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -1662,12 +1676,12 @@ export default {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-base-content);
 }
 
 .summary-meta {
   margin: 4px 0 0;
-  color: #6b7280;
+  color: var(--color-base-content);
   font-size: 14px;
 }
 
@@ -1682,7 +1696,7 @@ export default {
   justify-content: space-between;
   gap: 12px;
   font-size: 14px;
-  color: #4b5563;
+  color: var(--color-base-content);
   flex-wrap: wrap;
 }
 
@@ -1705,7 +1719,7 @@ export default {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
-  color: #374151;
+  color: var(--color-base-content);
   gap: 12px;
 }
 
@@ -1719,17 +1733,17 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--color-base-300);
   border-radius: 10px;
   padding: 12px;
-  background: #f9fafb;
+  background: var(--color-base-200);
 }
 
 .device-card-header {
   display: flex;
   justify-content: space-between;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-base-content);
 }
 
 .device-meta-row {
@@ -1737,7 +1751,7 @@ export default {
   justify-content: space-between;
   gap: 8px;
   font-size: 13px;
-  color: #4b5563;
+  color: var(--color-base-content);
 }
 
 .conversation-card {
@@ -1751,7 +1765,7 @@ export default {
 }
 
 .conversation-item {
-  border: 1px solid rgba(59, 130, 246, 0.12);
+  border: 1px solid var(--color-base-300);
   border-radius: 10px;
   padding: 12px;
   display: flex;
@@ -1776,43 +1790,28 @@ export default {
   text-transform: uppercase;
 }
 
-.role-agent {
-  background: rgba(59, 130, 246, 0.12);
-  color: #1d4ed8;
-}
-
-.role-customer {
-  background: rgba(16, 185, 129, 0.12);
-  color: #047857;
-}
-
-.role-unknown {
-  background: rgba(156, 163, 175, 0.12);
-  color: #4b5563;
-}
-
 .message-author {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-base-content);
 }
 
 .message-time {
-  color: #6b7280;
+  color: var(--color-base-content);
   font-size: 13px;
 }
 
 .conversation-body {
   white-space: pre-wrap;
   font-size: 14px;
-  color: #111827;
+  color: var(--color-base-content);
 }
 
 .conversation-tail {
-  background: #f3f4f6;
+  background: var(--color-base-200);
   border-radius: 8px;
   padding: 10px;
   font-size: 12px;
-  color: #374151;
+  color: var(--color-base-content);
   max-height: 160px;
   overflow-y: auto;
 }
@@ -1828,7 +1827,7 @@ export default {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #1f2937;
+  color: var(--color-base-content);
 }
 
 .attachment-name {
@@ -1836,7 +1835,7 @@ export default {
 }
 
 .attachment-size {
-  color: #6b7280;
+  color: var(--color-base-content);
   font-size: 12px;
 }
 
@@ -1853,14 +1852,14 @@ export default {
 
 .reply-attachment-meta {
   font-size: 12px;
-  color: #4b5563;
+  color: var(--color-base-content);
 }
 
 .reply-preparing {
   display: inline-flex;
   align-items: center;
   font-size: 12px;
-  color: #2563eb;
+  color: var(--color-primary);
 }
 
 .reply-actions {

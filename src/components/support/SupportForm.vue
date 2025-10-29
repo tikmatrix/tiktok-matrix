@@ -611,9 +611,9 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #ffffff;
+  background: var(--color-base-100);
   border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--color-base-300);
   padding: 20px;
 }
 
@@ -624,21 +624,21 @@ export default {
 }
 
 .intro .description {
-  color: #606266;
+  color: var(--color-base-content);
   margin: 0;
 }
 
 .intro .note {
   margin-top: 6px;
   font-size: 14px;
-  color: #4b5563;
+  color: var(--color-base-content);
 }
 
 .devices-section {
-  background: #f9fafc;
+  background: var(--color-base-200);
   padding: 16px;
   border-radius: 8px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--color-base-300);
 }
 
 .section-header {
@@ -676,7 +676,7 @@ export default {
 .form-label {
   width: 140px;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-base-content);
   padding-top: 10px;
 }
 
@@ -689,8 +689,8 @@ export default {
 .input-wrapper .select {
   width: 100%;
   border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
+  border: 1px solid var(--color-base-300);
+  background: var(--color-base-100);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -698,8 +698,8 @@ export default {
 .input-wrapper .textarea:focus,
 .input-wrapper .select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
 }
 
 .device-list {
@@ -716,8 +716,8 @@ export default {
   align-items: center;
   padding: 8px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--color-base-100);
   cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   user-select: none;
@@ -725,14 +725,14 @@ export default {
 }
 
 .device-item.is-selected {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
-  background: rgba(59, 130, 246, 0.08);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.12);
+  background: var(--color-base-200);
 }
 
 .device-item:focus-visible {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.28);
 }
 
 .device-content {
@@ -745,7 +745,7 @@ export default {
 .device-no {
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-base-content);
 }
 
 .section-header h3 {
@@ -767,23 +767,23 @@ export default {
 
 .success-card {
   text-align: center;
-  background: #ffffff;
+  background: var(--color-base-100);
   border-radius: 16px;
   padding: 32px 40px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--color-base-300);
   max-width: 420px;
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.06);
 }
 
 .success-icon {
   width: 48px;
   height: 48px;
   margin: 0 auto;
-  color: #22c55e;
+  color: var(--color-success);
 }
 
 .success-title {
@@ -794,7 +794,7 @@ export default {
 
 .success-subtitle {
   margin: 0;
-  color: #4b5563;
+  color: var(--color-base-content);
 }
 
 .success-actions {
