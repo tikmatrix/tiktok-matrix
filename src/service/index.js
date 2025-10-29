@@ -987,12 +987,3 @@ export async function support_update_status(data) {
   });
   return normalizeSupportResponse(response);
 }
-
-export async function support_presign_attachment(params) {
-  const response = await request({
-    method: 'get',
-    url: api.support_presign_attachment,
-    params
-  });
-  return normalizeSupportResponse(response);
-}
