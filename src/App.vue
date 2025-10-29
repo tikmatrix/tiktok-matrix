@@ -143,21 +143,13 @@ export default {
     async get_settings() {
       const res = await this.$service.get_settings();
       this.settings = res.data
-      await this.$emiter('NOTIFY', {
-        type: 'success',
-        message: this.$t('settingsUpdated'),
-        timeout: 2000
-      });
+
     },
 
     async get_groups() {
       this.$service.get_groups().then(async res => {
         this.groups = res.data
-        await this.$emiter('NOTIFY', {
-          type: 'success',
-          message: this.$t('groupsUpdated'),
-          timeout: 2000
-        });
+
       })
     },
     async getRunningTasks() {
