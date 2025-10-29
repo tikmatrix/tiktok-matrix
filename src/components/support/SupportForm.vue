@@ -410,14 +410,7 @@ export default {
         const transport = this.normalizeMetadataField(rawMeta.transport, device.transport_id)
         if (transport) metadata.transport = transport
 
-        const lastSeen = this.normalizeMetadataField(
-          rawMeta.lastSeen,
-          rawMeta.last_seen,
-          rawMeta.lastActiveAt,
-          device.last_seen,
-          device.last_active_at
-        )
-        if (lastSeen) metadata.lastSeen = lastSeen
+
 
         const taskStatus = this.normalizeMetadataField(rawMeta.taskStatus, device.task_status)
         if (taskStatus) metadata.taskStatus = taskStatus
@@ -448,12 +441,7 @@ export default {
             device.name,
             rawMeta.name
           ),
-          lastActiveAt: this.normalizeMetadataField(
-            device.last_active_at,
-            device.lastActiveAt,
-            device.last_seen,
-            rawMeta.lastSeen
-          ),
+
           metadata
         }
       })

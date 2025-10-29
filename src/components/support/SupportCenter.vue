@@ -688,8 +688,6 @@ export default {
       const transport = pick('transport', 'transport_id', 'transportId')
       if (transport) metadata.transport = transport
 
-      const lastSeen = pick('lastSeen', 'last_seen', 'lastActiveAt', 'last_active_at')
-      if (lastSeen) metadata.lastSeen = lastSeen
 
       const taskStatus = pick('taskStatus', 'task_status')
       if (taskStatus) metadata.taskStatus = taskStatus
@@ -739,12 +737,7 @@ export default {
             device.name,
             metadata.name
           ),
-        last_active_at: this.normalizeMetadataField(
-          device.last_active_at,
-          device.lastActiveAt,
-          device.last_seen,
-          metadata.lastSeen
-        ),
+
         metadata
       }
     },
@@ -772,12 +765,7 @@ export default {
             baseMetadata.name,
             device.name
           ),
-        last_active_at: this.normalizeMetadataField(
-          device.last_active_at,
-          device.lastActiveAt,
-          device.last_seen,
-          baseMetadata.lastSeen
-        ),
+
         metadata: baseMetadata
       }
     },
@@ -1243,12 +1231,7 @@ export default {
               device.name,
               metadata.name
             ),
-            lastActiveAt: this.normalizeMetadataField(
-              device.last_active_at,
-              device.lastActiveAt,
-              device.last_seen,
-              metadata.lastSeen
-            ),
+
             metadata
           }
         })
