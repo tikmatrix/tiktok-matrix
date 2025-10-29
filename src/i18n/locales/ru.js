@@ -1002,7 +1002,7 @@
   yearlyPlans: 'Годовые планы',
   supportEntryTitle: 'Создать тикет поддержки',
   supportFormTitle: 'Нужна помощь с TikMatrix?',
-  supportFormDescription: 'Соберите логи с затронутых устройств и опишите проблему — мы ответим по email или в Telegram.',
+  supportFormDescription: 'Соберите логи затронутых устройств и опишите проблему — мы ответим в течение 12 часов.',
   supportTicketsTitle: 'Список обращений',
   supportTicketsSubtitle: 'Просматривайте существующие заявки или создайте новую.',
   supportCreateTicketButton: 'Создать заявку',

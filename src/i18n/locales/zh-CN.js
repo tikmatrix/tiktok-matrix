@@ -1002,7 +1002,7 @@
   yearlyPlans: '年度套餐',
   supportEntryTitle: '提交支持工单',
   supportFormTitle: '需要 TikMatrix 协助？',
-  supportFormDescription: '收集受影响设备的日志并描述问题，我们会通过邮箱或 Telegram 回复。',
+  supportFormDescription: '收集受影响设备的日志并描述问题，我们会在 12 小时内回复。',
   supportTicketsTitle: '工单列表',
   supportTicketsSubtitle: '查看历史工单或创建新的支持请求。',
   supportCreateTicketButton: '创建工单',

@@ -1002,7 +1002,7 @@
   yearlyPlans: 'Yearly Plans',
   supportEntryTitle: 'Create Support Ticket',
   supportFormTitle: 'Need help with TikMatrix?',
-  supportFormDescription: 'Collect logs from impacted devices, describe the issue, and the support team will respond by email or Telegram.',
+  supportFormDescription: 'Collect logs from impacted devices, describe the issue, and the support team will respond in 12 hours.',
   supportTicketsTitle: 'Support Tickets',
   supportTicketsSubtitle: 'Review existing tickets or create a new request.',
   supportCreateTicketButton: 'Create Ticket',
