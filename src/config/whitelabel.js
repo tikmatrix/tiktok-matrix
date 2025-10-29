@@ -3,14 +3,14 @@
  * 支持动态修改应用名称、logo、主题色等
  */
 
-
 export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
-    appName: 'TikMatrix', // 应用名称
+    appName: import.meta.env.VITE_APP_NAME || 'TikMatrix', // 应用名称
     officialWebsite: 'https://tikmatrix.com', // 官网域名
     apiDomain: 'https://api.tikmatrix.com', // API域名
     enablePay: true, // 是否启用支付功能
-    targetApp: 'tiktok', // 目标应用，tiktok 或 instagram
+    enableSupportEntry: true, // 是否显示工单支持入口
+    targetApp: import.meta.env.VITE_TARGET_APP || 'tiktok', // 目标应用，tiktok 或 instagram
     showAppNameInTitle: false, // 是否在窗口标题显示应用名称
 
     // Logo配置
@@ -101,5 +101,6 @@ export function validateWhiteLabelConfig(config) {
 }
 
 export function cloneDefaultWhiteLabelConfig() {
+    console.log('Cloning default whitelabel config:', JSON.stringify(DEFAULT_WHITELABEL_CONFIG));
     return JSON.parse(JSON.stringify(DEFAULT_WHITELABEL_CONFIG));
 }

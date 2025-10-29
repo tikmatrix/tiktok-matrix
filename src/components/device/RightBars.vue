@@ -293,9 +293,9 @@ export default {
     },
     async loadLogs() {
       try {
-        const logs = await readTextFile(`logs/${this.real_serial}.log`, { dir: BaseDirectory.AppData });
-        //show tail 200 lines
-        this.logs = logs.split('\n').slice(-200).join('\n')
+        const logs = await readTextFile(`logs/${this.real_serial}_rCURRENT.log`, { dir: BaseDirectory.AppData });
+        //show tail 1000 lines
+        this.logs = logs.split('\n').slice(-1000).join('\n')
         this.$nextTick(() => {
           this.$refs.log_dialog_body.scrollTop = this.$refs.log_dialog_body.scrollHeight
         })

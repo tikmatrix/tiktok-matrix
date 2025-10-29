@@ -1,6 +1,6 @@
 <template>
   <dialog ref="page_dialog" class="modal">
-    <div class="modal-box max-w-full w-auto max-h-[90vh] overflow-y-auto">
+    <div class="modal-box max-w-[80%] w-auto max-h-[90vh] overflow-y-auto">
       <ManageAccounts :devices="devices" v-if="selectedItem.name === 'accounts' && $refs.page_dialog.open" />
       <AccountAnalytics :accounts="accounts"
         v-if="selectedItem.name === 'accountAnalytics' && $refs.page_dialog.open" />
@@ -13,6 +13,8 @@
       <ManageTasks :devices="devices" v-if="selectedItem.name === 'tasks' && $refs.page_dialog.open" />
       <BeforeRunScriptDialog :selecedDevices="selecedDevices" :devices="devices" :script="selectedItem.script"
         :settings="settings" v-if="selectedItem.name === 'beforeRunScriptDialog' && $refs.page_dialog.open" />
+      <SupportCenter :devices="devices" :seleced-devices="selecedDevices"
+        v-if="selectedItem.name === 'support' && $refs.page_dialog.open" />
 
     </div>
     <form method="dialog" class="modal-backdrop">
@@ -33,6 +35,7 @@ import ManageMaterials from './components/material/ManageMaterials.vue'
 import ManageTasks from './components/tasks/ManageTasks.vue'
 import BeforeRunScriptDialog from './components/dialogs/BeforeRunScriptDialog.vue'
 import AccountWarmupSettings from './components/groups/AccountWarmupSettings.vue'
+import SupportCenter from './components/support/SupportCenter.vue'
 export default {
   name: 'appDialog',
   props: {
@@ -58,7 +61,8 @@ export default {
     ManageTasks,
     BeforeRunScriptDialog,
     AccountWarmupSettings,
-    PostSettings
+    PostSettings,
+    SupportCenter
   },
   data() {
     return {
@@ -79,9 +83,7 @@ export default {
       }
     },
     async menu_selected(item) {
-      console.log('menu_selected', item)
       this.selectedItem = item
-
       // 如果打开账号分析页面，重新加载账号数据
       if (item.name === 'accountAnalytics') {
         await this.loadAccounts();

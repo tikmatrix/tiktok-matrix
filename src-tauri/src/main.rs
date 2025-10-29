@@ -85,12 +85,16 @@ impl Progress {
     }
 }
 
-fn setup_env(working_dir: &str) {
+fn setup_env(working_dir: &str, version: String) {
     std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
-    std::env::set_var("MATRIX_APP_NAME", "TikMatrix");
+    std::env::set_var(
+        "MATRIX_APP_NAME",
+        std::env::var("VITE_APP_NAME").unwrap_or("TikMatrix".into()),
+    );
+    std::env::set_var("MATRIX_APP_VERSION", version.clone());
 
     if cfg!(debug_assertions) {
-        std::env::set_var("MOSS_URL", "http://127.0.0.1:8787/moss");
+        std::env::set_var("MOSS_URL", "http://localhost:8787/moss");
         std::env::set_var("RUST_BACKTRACE", "1");
         std::env::set_var("LOG_LEVEL", "info");
     }
@@ -466,7 +470,9 @@ fn main() -> std::io::Result<()> {
         .setup(|app| {
             let app_data_dir = app.path_resolver().app_data_dir().unwrap();
             let work_dir = app_data_dir.to_str().unwrap();
-            setup_env(work_dir);
+            let version = app.package_info().version.clone();
+            let version_str = version.to_string();
+            setup_env(work_dir, version_str);
             init_log::init(work_dir);
             log::info!("work_dir: {}", work_dir);
 
@@ -504,7 +510,9 @@ fn main() -> std::io::Result<()> {
             Ok(())
         })
         .on_page_load(|_window, _payload| {
-            println!("[TikMatrix] page load triggered");
+            log::info!("[TikMatrix] page load triggered");
+            log::info!("VITE_APP_NAME: {:?}", std::env::var("VITE_APP_NAME"));
+            log::info!("VITE_TARGET_APP: {:?}", std::env::var("VITE_TARGET_APP"));
         })
         //listen to the tauri update event
         .run(tauri::generate_context!())

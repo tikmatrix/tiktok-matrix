@@ -1,29 +1,100 @@
 import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
-import { emit, listen } from '@tauri-apps/api/event';
+import { emit } from '@tauri-apps/api/event';
+
+function buildQuery(params) {
+  if (!params || typeof params !== 'object') {
+    return '';
+  }
+  const searchParams = new URLSearchParams();
+  Object.keys(params).forEach(key => {
+    const value = params[key];
+    if (value === undefined || value === null) {
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(item => {
+        if (item !== undefined && item !== null) {
+          searchParams.append(key, String(item));
+        }
+      });
+      return;
+    }
+    searchParams.append(key, String(value));
+  });
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : '';
+}
+
+function buildBody(config) {
+  if (config?.body) {
+    return config.body;
+  }
+  if (config?.form) {
+    return Body.form(config.form);
+  }
+  if (config?.data !== undefined) {
+    return Body.json(config.data);
+  }
+  return undefined;
+}
+
+function shouldSetJsonContentType(config) {
+  if (config?.headers && Object.keys(config.headers).some(key => key.toLowerCase() === 'content-type')) {
+    return false;
+  }
+  if (config?.body) {
+    return false;
+  }
+  if (config?.form) {
+    return false;
+  }
+  return config?.data !== undefined;
+}
 
 const request = async function request(config) {
-  const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-  if (port === "0") {
-    console.log("port is 0, wait for agent to start")
-    let res = { code: 0, data: [] }
-    return res;
+  let port = '50809';
+  try {
+    const portFile = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
+    if (portFile && portFile.trim()) {
+      port = portFile.trim();
+    }
+  } catch (error) {
+    console.warn('Failed to read agent port, fallback to default 50809', error);
   }
-  const { method, url } = config
-  const mockMethod = method || 'get'
+
+  if (port === '0') {
+    console.log('port is 0, wait for agent to start');
+    return { code: 0, data: [] };
+  }
+
+  const { method, url } = config;
+  const mockMethod = method || 'get';
   if (import.meta.env.VITE_APP_MOCK === 'true') {
-    return Promise.resolve(mock(url, mockMethod.toLowerCase()))
+    return Promise.resolve(mock(url, mockMethod.toLowerCase()));
   }
-  const queryUrl = `http://127.0.0.1:50809${url}?${new URLSearchParams(config.params).toString()}`
-  let options = {
-    method: config.method || 'GET',
-    headers: config.headers,
-    body: config.data ? Body.json(config.data) : undefined,
-    responseType: ResponseType.JSON,
-    contentType: 'application/json'
+
+  const querySuffix = buildQuery(config.params);
+  const queryUrl = `http://localhost:${port}${url}${querySuffix}`;
+
+  const headers = { ...(config.headers || {}) };
+  if (shouldSetJsonContentType(config)) {
+    headers['Content-Type'] = 'application/json';
   }
-  console.log(`request: ${queryUrl} options: ${JSON.stringify(options)}`)
-  const response = await fetch(`${queryUrl}`, options,);
+
+  const options = {
+    method: method || 'GET',
+    headers,
+    body: buildBody(config),
+    responseType: config.responseType || ResponseType.JSON,
+  };
+
+  if (config.timeout) {
+    options.timeout = config.timeout;
+  }
+
+  console.log(`request: ${queryUrl} options: ${JSON.stringify({ ...options, body: options.body ? '[Body]' : undefined })}`)
+  const response = await fetch(`${queryUrl}`, options);
   console.log(`response status: ${response.status}`)
   if (response.status >= 400) {
     await emit('NOTIFY', {

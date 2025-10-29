@@ -4,22 +4,42 @@
             <div class="card-body space-y-6">
                 <h3 class="card-title text-lg font-semibold">{{ $t('postBasicSettings') }}</h3>
                 <div class="space-y-4">
+                    <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start"
+                        v-if="whitelabelConfig.targetApp === 'instagram'">
+                        <span
+                            class="text-md font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
+                                $t('placement') }}</span>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" id="reel" value="reel" v-model="localFormData.placement"
+                                    class="form-radio text-primary">
+                                <span>Reel</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" id="story" value="story" v-model="localFormData.placement"
+                                    class="form-radio text-primary">
+                                <span>Story</span>
+                            </label>
+
+                        </div>
+                    </div>
                     <div class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <span
                             class="text-md font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
                                 $t('postWay') }}</span>
                         <div class="flex flex-wrap gap-4">
-                            <label class="flex items-center gap-2">
+                            <label class="flex items-center gap-2" v-if="localFormData.placement !== 'story'">
                                 <input type="radio" id="share" value="share" v-model="localFormData.post_way"
                                     class="form-radio text-primary">
                                 <span>{{ $t('share') }}</span>
                             </label>
                             <label class="flex items-center gap-2">
                                 <input type="radio" id="addButton" value="addButton" v-model="localFormData.post_way"
+                                    :checked="localFormData.placement === 'story' ? true : false"
                                     class="form-radio text-primary">
                                 <span>{{ $t('addButton') }}</span>
                             </label>
-                            <label class="flex items-center gap-2">
+                            <label class="flex items-center gap-2" v-if="localFormData.placement !== 'story'">
                                 <input type="radio" id="useSound" value="useSound" v-model="localFormData.post_way"
                                     class="form-radio text-primary">
                                 <span>{{ $t('useSound') }}</span>
@@ -73,12 +93,11 @@
             <div class="card-body space-y-6">
                 <h3 class="card-title text-lg font-semibold">{{ $t('soundSettings') }}</h3>
                 <div class="space-y-4">
-                    <div v-if="localFormData.post_way !== 'useSound'"
+                    <div v-if="localFormData.post_way !== 'useSound' && whitelabelConfig.targetApp === 'tiktok'"
                         class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
                             <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
                                 $t('addSound') }}</span>
-
                         </div>
                         <div class="flex flex-wrap gap-4">
                             <label class="flex items-center gap-2">
@@ -103,7 +122,7 @@
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
-                            <label class="flex items-center gap-2" v-if="whitelabelConfig.targetApp === 'tiktok'">
+                            <label class="flex items-center gap-2">
                                 <input type="radio" id="customSound" value="custom" v-model="localFormData.add_sound"
                                     class="form-radio text-primary">
                                 <span>{{ $t('customSound') }}</span>

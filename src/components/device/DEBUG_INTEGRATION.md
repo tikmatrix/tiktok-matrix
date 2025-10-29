@@ -73,7 +73,7 @@ Debug 功能通过 WebSocket 与后端通信：
 
 ```javascript
 // 连接
-const wsUrl = `ws://127.0.0.1:9008`
+const wsUrl = `ws://localhost:9008`
 
 // 消息格式
 {

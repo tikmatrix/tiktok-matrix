@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "tauri dev",
+    "start-ig": "cross-env VITE_TARGET_APP=instagram VITE_APP_NAME=IgMatrix tauri dev",
     "build:agent": "node scripts/build-agent.js",
     "build:agent-debug": "node scripts/build-agent.js --debug",
     "build:whitelabel": "node scripts/build-whitelabel.js",
@@ -48,6 +49,7 @@
     "@tailwindcss/postcss": "^4.0.17",
     "@tauri-apps/cli": "^1.5.9",
     "@vitejs/plugin-vue": "^4.2.3",
+    "cross-env": "^10.1.0",
     "daisyui": "^5.0.9",
     "postcss": "^8.4.38",
     "shx": "^0.3.4",

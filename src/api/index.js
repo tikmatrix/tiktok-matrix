@@ -72,5 +72,13 @@ const api = {
   validate_license_migration: '/api/validate_license_migration',
   migrate_license: '/api/migrate_license',
   report_distributor_install: '/api/report_distributor_install',
+  support_logs: '/agent/api/support/logs',
+  support_upload: '/agent/api/support/upload',
+  support_ticket: '/agent/api/support/ticket',
+  support_tickets_list: '/agent/api/support/tickets',
+  support_summary: '/agent/api/support/summary',
+  support_ticket_detail: '/agent/api/support/detail',
+  support_append_message: '/agent/api/support/append-message',
+  support_update_status: '/agent/api/support/update-status',
 }
 export default api

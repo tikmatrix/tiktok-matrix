@@ -47,8 +47,6 @@
 </template>
 <script>
 import VueSlider from "vue-3-slider-component";
-import { open } from '@tauri-apps/api/dialog';
-import { invoke } from "@tauri-apps/api/tauri";
 import { postSettings } from '@/utils/settingsManager';
 import PostFormFields from '@/components/common/PostFormFields.vue';
 
@@ -58,6 +56,7 @@ const postMixin = postSettings.createVueMixin(
     startOption: 'now',
     scheduledTime: '09:00',
     post_way: 'share',
+    placement: 'reel',
     videos_folder: '',
     captions_folder: '',
     schedule_type: 'interval',
@@ -88,9 +87,9 @@ const postMixin = postSettings.createVueMixin(
     image_count: 1,
     add_sound: '-1',
     sound_wait_time: 10,
-    upload_wait_time: 10,
-    origin_sound_volume: 100,
-    add_sound_volume: 100,
+    upload_wait_time: 30,
+    origin_sound_volume: 50,
+    add_sound_volume: 50,
     add_product_link: 0,
     captions: '',
     materials_tags: '',
@@ -106,7 +105,7 @@ const postMixin = postSettings.createVueMixin(
     'own_post_comment', 'own_post_comment_emoji', 'generate_by_chatgpt',
     'chatgpt_settings', 'sound_name', 'content_type', 'image_count',
     'custom_sound_keyword', 'add_sound', 'sound_wait_time', 'upload_wait_time', 'origin_sound_volume', 'add_sound_volume',
-    'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path'
+    'add_product_link', 'captions', 'materials_tags', 'material_source', 'material_path', 'placement'
   ]
 );
 
@@ -126,6 +125,7 @@ export default {
     formDataForFields() {
       return {
         post_way: this.post_way,
+        placement: this.placement || 'reel',
         sound_name: this.sound_name,
         custom_sound_keyword: this.custom_sound_keyword,
         content_type: this.content_type,

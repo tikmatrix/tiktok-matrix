@@ -167,6 +167,18 @@
         :title="$t('whitelabelSettings')">
         <font-awesome-icon icon="fa-solid fa-palette" class="h-6 w-6 text-base-content" />
       </button>
+      <!-- 支持工单入口 -->
+      <button v-if="showSupportEntry" @click="openSupportDialog" :class="[
+        'relative p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary',
+        hasSupportUnread ? 'text-error' : 'text-base-content'
+      ]" :title="$t('supportEntryTitle')">
+        <font-awesome-icon icon="fa-solid fa-headset"
+          :class="['h-6 w-6 transition-colors', hasSupportUnread ? 'text-error' : 'text-base-content']" />
+        <span v-if="hasSupportUnread"
+          class="absolute -top-1.5 -right-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-error px-1 text-xs font-semibold text-error-content shadow-lg">
+          {{ supportBadgeText }}
+        </span>
+      </button>
       <!-- 全局设置 -->
       <button @click="$emiter('showDialog', { name: 'tiktokSettings' })"
         class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
@@ -278,6 +290,12 @@ export default {
     AgentErrorDialog,
     LicenseLifecycle
   },
+  props: {
+    supportUnreadCount: {
+      type: Number,
+      default: 0
+    }
+  },
   data() {
     return {
       version: '',
@@ -332,6 +350,23 @@ export default {
         return new URL('../assets/logo_dark.png', import.meta.url).href;
       }
       return new URL('../assets/logo.png', import.meta.url).href;
+    },
+    hasSupportUnread() {
+      return Number(this.supportUnreadCount) > 0;
+    },
+    supportBadgeText() {
+      const count = Number(this.supportUnreadCount) || 0;
+      if (count > 99) {
+        return '99+';
+      }
+      return String(count);
+    },
+    showSupportEntry() {
+      const flag = this.whitelabelConfig?.enableSupportEntry;
+      if (typeof flag === 'boolean') {
+        return flag;
+      }
+      return true;
     }
   },
   async created() {
@@ -515,7 +550,6 @@ export default {
             timeout: 2000
           });
         }
-        console.log(`license: ${JSON.stringify(this.licenseData)}`);
       } catch (error) {
         await this.$emiter('NOTIFY', {
           type: 'error',
@@ -532,13 +566,7 @@ export default {
         await this.startAgent();
         return;
       }
-      if (silent) {
-        this.$emiter('NOTIFY', {
-          type: 'info',
-          message: this.$t('checkingForUpdates'),
-          timeout: 2000
-        });
-      } else {
+      if (!silent) {
         this.check_update_dialog_title = 'Checking update...';
         this.$refs.download_dialog.showModal();
       }
@@ -731,6 +759,10 @@ export default {
 
     openWhiteLabelDialog() {
       this.$refs.whitelabelDialog.showDialog();
+    },
+
+    openSupportDialog() {
+      this.$emiter('showDialog', { name: 'support' })
     },
 
     onWhiteLabelConfigUpdated(config) {

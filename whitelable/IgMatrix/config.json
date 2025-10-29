@@ -8,6 +8,7 @@
     "whatsappSupport": "",
     "iconFile": "app-icon.png",
     "enablePay": true,
+    "enableSupportEntry": true,
     "showAppNameInTitle": false,
     "targetApp": "instagram"
 }

@@ -50,6 +50,38 @@
 <script>
 import VueSlider from "vue-3-slider-component";
 import AccountWarmupFormFields from '@/components/common/AccountWarmupFormFields.vue';
+import { SettingsManager } from '@/utils/settingsManager';
+
+const createDefaultWarmupSettings = () => ({
+  auto_train: 0,
+  train_start_time: '',
+  min_duration: 10,
+  max_duration: 90,
+  train_duration: 300,
+  topic: '',
+  comment: '',
+  generate_by_chatgpt: false,
+  chatgpt_settings: {
+    url: 'https://api.openai.com/v1/chat/completions',
+    api_key: '',
+    model: 'gpt-3.5-turbo',
+    system_prompt: 'You are a TikTok comment generation assistant. Please generate a real user comment based on the TikTok post caption content provided by the user. The comment format includes text and emojis; the comment length should not exceed 100 characters; the comment content should include two parts: First Praise the post based on the post caption; Then Promote TikMatrix: TikMatrix is a phone farm automation software that automates the management of hundreds of TikTok accounts from one computer. If you are interested, please Google search: TikMatrix'
+  },
+  insert_emoji: false,
+  comment_order: 'random',
+  floow_probable: 50,
+  like_probable: 50,
+  collect_probable: 50,
+  comment_probable: 50
+});
+
+const DEFAULT_WARMUP_SETTINGS_TEMPLATE = createDefaultWarmupSettings();
+
+const WARMUP_SETTING_KEYS = [
+  'auto_train', 'train_start_time', 'min_duration', 'max_duration', 'train_duration',
+  'topic', 'comment', 'generate_by_chatgpt', 'chatgpt_settings', 'insert_emoji',
+  'comment_order', 'floow_probable', 'like_probable', 'collect_probable', 'comment_probable'
+];
 
 export default {
   components: {
@@ -65,50 +97,270 @@ export default {
   computed: {
     // 为 AccountWarmupFormFields 组件准备数据
     formDataForFields() {
-      const minDuration = this.mygroup.min_duration ?? 10;
-      const maxDuration = this.mygroup.max_duration ?? 90;
-      const trainDuration = this.mygroup.train_duration || 300;
+      const minDuration = this.min_duration ?? 10;
+      const maxDuration = this.max_duration ?? 90;
+      const trainDuration = this.train_duration || 300;
 
       return {
         view_duration: [minDuration, maxDuration],
         taskDurationInMinutes: trainDuration / 60,
-        topic: this.mygroup.topic || '',
-        comment: this.mygroup.comment || '',
-        generate_by_chatgpt: this.mygroup.generate_by_chatgpt,
+        topic: this.topic || '',
+        comment: this.comment || '',
+        generate_by_chatgpt: this.generate_by_chatgpt,
         chatgpt_settings: this.chatgpt_settings,
-        insert_emoji: this.mygroup.insert_emoji,
-        comment_order: this.mygroup.comment_order || 'random',
-        floow_probable: this.mygroup.floow_probable ?? 50,
-        like_probable: this.mygroup.like_probable ?? 50,
-        collect_probable: this.mygroup.collect_probable ?? 50,
-        comment_probable: this.mygroup.comment_probable ?? 50,
+        insert_emoji: this.insert_emoji,
+        comment_order: this.comment_order || 'random',
+        floow_probable: this.floow_probable ?? 50,
+        like_probable: this.like_probable ?? 50,
+        collect_probable: this.collect_probable ?? 50,
+        comment_probable: this.comment_probable ?? 50,
       };
     }
   },
   data() {
+    const defaults = createDefaultWarmupSettings();
     return {
-      mygroup: {},
+      ...defaults,
+      mygroup: {
+        auto_train: '0',
+        train_start_time: '',
+        min_duration: defaults.min_duration,
+        max_duration: defaults.max_duration,
+        train_duration: defaults.train_duration,
+        topic: '',
+        comment: '',
+        generate_by_chatgpt: defaults.generate_by_chatgpt,
+        insert_emoji: defaults.insert_emoji,
+        comment_order: defaults.comment_order,
+        floow_probable: defaults.floow_probable,
+        like_probable: defaults.like_probable,
+        collect_probable: defaults.collect_probable,
+        comment_probable: defaults.comment_probable
+      },
       trainTimes: [],
-      chatgpt_settings: {},
+      warmupSettingsManager: null,
+      warmupSettingsUnwatchFns: []
     }
   },
   watch: {
-    'mygroup.auto_train': function (val) {
-      this.mygroup.auto_train = Number(val)
+    'mygroup.auto_train'(val) {
+      const numeric = Number(val);
+      this.auto_train = Number.isNaN(numeric) ? 0 : numeric;
     },
+    auto_train(val) {
+      const normalized = Number.isNaN(Number(val)) ? '0' : String(Number(val));
+      if (this.mygroup.auto_train !== normalized) {
+        this.mygroup.auto_train = normalized;
+      }
+    },
+    'mygroup.train_start_time'(val) {
+      const normalized = typeof val === 'string' ? val : '';
+      if (this.train_start_time !== normalized) {
+        this.train_start_time = normalized;
+      }
+      this.trainTimes = normalized
+        ? normalized.split(',').map(time => time.trim()).filter(Boolean)
+        : [];
+    },
+    train_start_time(val) {
+      const normalized = typeof val === 'string' ? val : '';
+      if (this.mygroup.train_start_time !== normalized) {
+        this.mygroup.train_start_time = normalized;
+      }
+      this.trainTimes = normalized
+        ? normalized.split(',').map(time => time.trim()).filter(Boolean)
+        : [];
+    },
+    trainTimes: {
+      handler(newTimes) {
+        const normalized = Array.isArray(newTimes)
+          ? newTimes.map(time => (typeof time === 'string' ? time.trim() : '')).filter(Boolean).join(',')
+          : '';
+        if (this.train_start_time !== normalized) {
+          this.train_start_time = normalized;
+        }
+      },
+      deep: true
+    }
   },
   methods: {
+    async initializeWarmupSettings() {
+      this.warmupSettingsManager = new SettingsManager(`group_${this.group.id}_account_warmup_settings.json`);
+      await this.loadLocalWarmupSettings();
+      this.applyGroupOverrides();
+      this.setupWarmupWatchers();
+    },
+
+    async loadLocalWarmupSettings() {
+      if (!this.warmupSettingsManager) {
+        return;
+      }
+
+      const defaults = createDefaultWarmupSettings();
+      try {
+        const settings = await this.warmupSettingsManager.loadSettings(defaults);
+        Object.keys(defaults).forEach(key => {
+          if (!(key in this.$data)) {
+            return;
+          }
+
+          const defaultValue = defaults[key];
+          const loadedValue = settings[key];
+          this[key] = this.cloneSettingValue(defaultValue, loadedValue);
+        });
+      } catch (error) {
+        console.error('Failed to load local warmup settings:', error);
+      }
+    },
+
+    cloneSettingValue(defaultValue, loadedValue) {
+      if (Array.isArray(defaultValue)) {
+        if (Array.isArray(loadedValue)) {
+          return [...loadedValue];
+        }
+        return [...defaultValue];
+      }
+
+      if (typeof defaultValue === 'number') {
+        const numeric = Number(loadedValue);
+        return Number.isFinite(numeric) ? numeric : defaultValue;
+      }
+
+      if (typeof defaultValue === 'boolean') {
+        if (typeof loadedValue === 'string') {
+          const lower = loadedValue.toLowerCase();
+          if (lower === 'true' || lower === '1') {
+            return true;
+          }
+          if (lower === 'false' || lower === '0') {
+            return false;
+          }
+        }
+        if (typeof loadedValue === 'number') {
+          return loadedValue === 1;
+        }
+        if (typeof loadedValue === 'boolean') {
+          return loadedValue;
+        }
+        return defaultValue;
+      }
+
+      if (defaultValue !== null && typeof defaultValue === 'object') {
+        const source = loadedValue && typeof loadedValue === 'object'
+          ? loadedValue
+          : defaultValue;
+        return JSON.parse(JSON.stringify(source));
+      }
+
+      return loadedValue !== undefined ? loadedValue : defaultValue;
+    },
+
+    applyGroupOverrides() {
+      const overrideKeys = [
+        'auto_train', 'train_start_time', 'min_duration', 'max_duration', 'train_duration',
+        'topic', 'comment', 'generate_by_chatgpt', 'chatgpt_settings', 'insert_emoji',
+        'comment_order', 'floow_probable', 'like_probable', 'collect_probable', 'comment_probable'
+      ];
+
+      overrideKeys.forEach(key => {
+        const value = this.mygroup[key];
+        if (value === undefined || value === null) {
+          return;
+        }
+
+        if (key === 'auto_train') {
+          const numeric = Number(value);
+          this.auto_train = Number.isNaN(numeric) ? 0 : numeric;
+        } else if (key === 'train_start_time') {
+          const normalized = typeof value === 'string' ? value : '';
+          this.train_start_time = normalized;
+        } else if (key === 'chatgpt_settings') {
+          if (typeof value === 'string') {
+            try {
+              this.chatgpt_settings = JSON.parse(value);
+            } catch (error) {
+              console.warn('Failed to parse group chatgpt_settings, using default:', error);
+              this.chatgpt_settings = JSON.parse(JSON.stringify(DEFAULT_WARMUP_SETTINGS_TEMPLATE.chatgpt_settings));
+            }
+          } else {
+            this.chatgpt_settings = this.cloneSettingValue(DEFAULT_WARMUP_SETTINGS_TEMPLATE.chatgpt_settings, value);
+          }
+        } else {
+          this[key] = Array.isArray(value) || (value !== null && typeof value === 'object')
+            ? this.cloneSettingValue(DEFAULT_WARMUP_SETTINGS_TEMPLATE[key] ?? value, value)
+            : value;
+        }
+      });
+
+      if (this.train_start_time && !this.trainTimes.length) {
+        this.trainTimes = this.train_start_time.split(',').map(time => time.trim()).filter(Boolean);
+      }
+    },
+
+    setupWarmupWatchers() {
+      this.teardownWarmupWatchers();
+      if (!this.warmupSettingsManager) {
+        return;
+      }
+
+      WARMUP_SETTING_KEYS.forEach(key => {
+        const defaultValue = DEFAULT_WARMUP_SETTINGS_TEMPLATE[key];
+        const needsDeepWatch = Array.isArray(defaultValue) || (defaultValue !== null && typeof defaultValue === 'object');
+        const unwatch = this.$watch(key, () => {
+          this.saveLocalWarmupSettings();
+        }, { deep: needsDeepWatch });
+        this.warmupSettingsUnwatchFns.push(unwatch);
+      });
+    },
+
+    teardownWarmupWatchers() {
+      if (!this.warmupSettingsUnwatchFns.length) {
+        return;
+      }
+      this.warmupSettingsUnwatchFns.forEach(unwatch => {
+        if (typeof unwatch === 'function') {
+          unwatch();
+        }
+      });
+      this.warmupSettingsUnwatchFns = [];
+    },
+
+    async saveLocalWarmupSettings() {
+      if (!this.warmupSettingsManager) {
+        return false;
+      }
+
+      const payload = {};
+      WARMUP_SETTING_KEYS.forEach(key => {
+        const value = this[key];
+        if (Array.isArray(value)) {
+          payload[key] = [...value];
+        } else if (value !== null && typeof value === 'object') {
+          payload[key] = JSON.parse(JSON.stringify(value));
+        } else {
+          payload[key] = value;
+        }
+      });
+
+      try {
+        await this.warmupSettingsManager.saveSettings(payload);
+        return true;
+      } catch (error) {
+        console.error('Failed to save local warmup settings:', error);
+        return false;
+      }
+    },
     // 更新表单数据
     updateFormData(newData) {
       // 处理 view_duration
       if (newData.view_duration) {
-        this.mygroup.min_duration = newData.view_duration[0];
-        this.mygroup.max_duration = newData.view_duration[1];
+        this.min_duration = newData.view_duration[0];
+        this.max_duration = newData.view_duration[1];
       }
 
       // 处理 taskDurationInMinutes
       if (newData.taskDurationInMinutes !== undefined) {
-        this.mygroup.train_duration = newData.taskDurationInMinutes * 60;
+        this.train_duration = newData.taskDurationInMinutes * 60;
       }
 
       // 处理 chatgpt_settings
@@ -125,7 +377,7 @@ export default {
 
       fieldsToUpdate.forEach(key => {
         if (newData[key] !== undefined) {
-          this.mygroup[key] = newData[key];
+          this[key] = newData[key];
         }
       });
     },
@@ -137,12 +389,14 @@ export default {
       this.trainTimes.splice(index, 1)
     },
     async update() {
-      console.log("trainTimes:", this.trainTimes);
-      this.mygroup.train_start_time = this.trainTimes
-        .filter(Boolean)
-        .join(',')
-      console.log("train_start_time:", this.mygroup.train_start_time);
-      if (this.mygroup.auto_train == 1 && !this.mygroup.train_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
+      const normalizedTimes = this.trainTimes
+        .map(time => (typeof time === 'string' ? time.trim() : ''))
+        .filter(Boolean);
+      this.trainTimes = normalizedTimes;
+      this.train_start_time = normalizedTimes.join(',');
+      this.auto_train = Number(this.auto_train ?? this.mygroup.auto_train ?? 0);
+
+      if (this.auto_train === 1 && !this.train_start_time.match(/^(\d{2}:\d{2},)*\d{2}:\d{2}$/)) {
         await this.$emiter('NOTIFY', {
           type: 'error',
           message: this.$t('trainStartTimeFormatError'),
@@ -150,164 +404,59 @@ export default {
         });
         return
       }
-      this.mygroup.chatgpt_settings = JSON.stringify(this.chatgpt_settings)
 
-      // 直接保存到配置文件而不是更新数据库
-      await this.saveGroupConfigFile()
-
-      // 保存成功后关闭对话框
-      await this.$emiter('closeDialog', {})
-      await this.$emiter('reload_group', {})
-    },
-
-    // 保存当前设置到group配置文件
-    async saveGroupConfigFile() {
-      try {
-        console.log('Saving group config file for group:', this.mygroup.id);
-
-        // 构建要保存的配置
-        const config = {
-          auto_train: this.mygroup.auto_train,
-          train_start_time: this.mygroup.train_start_time,
-          task_duration: this.mygroup.train_duration,
-          floow_probable: this.mygroup.floow_probable,
-          like_probable: this.mygroup.like_probable,
-          collect_probable: this.mygroup.collect_probable,
-          comment_probable: this.mygroup.comment_probable,
-          topic: this.mygroup.topic || '',
-          comment: this.mygroup.comment || '',
-          min_duration: this.mygroup.min_duration,
-          max_duration: this.mygroup.max_duration,
-          insert_emoji: this.mygroup.insert_emoji,
-          comment_order: this.mygroup.comment_order || 'random',
-          generate_by_chatgpt: this.mygroup.generate_by_chatgpt,
-          chatgpt_settings: JSON.stringify(this.chatgpt_settings),
-          settings: 'group_file'
-        };
-
-        const response = await this.$service.save_group_config_file({
-          group_id: this.mygroup.id,
-          script_name: 'account_warmup',
-          settings: config
-        });
-
-        if (response.code === 0) {
-          await this.$emiter('NOTIFY', {
-            type: 'success',
-            message: this.$t('configFileSaved') || 'Configuration saved successfully',
-            timeout: 2000
-          });
-        } else {
-          await this.$emiter('NOTIFY', {
-            type: 'error',
-            message: this.$t('saveConfigError') || 'Failed to save configuration file',
-            timeout: 2000
-          });
-        }
-      } catch (error) {
-        console.error('Error saving group config file:', error);
+      const saved = await this.saveLocalWarmupSettings();
+      if (!saved) {
         await this.$emiter('NOTIFY', {
           type: 'error',
           message: this.$t('saveConfigError') || 'Failed to save configuration file',
           timeout: 2000
         });
+        return;
       }
+
+      await this.$emiter('NOTIFY', {
+        type: 'success',
+        message: this.$t('configFileSaved') || 'Configuration saved successfully',
+        timeout: 2000
+      });
+      await this.$emiter('closeDialog', {})
+      await this.$emiter('reload_group', {})
     },
   },
-  async mounted() {
-    this.mygroup = { ...this.group }
-
-    // 尝试从配置文件加载设置，如果存在则使用配置文件的设置
-    try {
-      const response = await this.$service.get_group_config_file({
-        group_id: this.mygroup.id,
-        script_name: 'account_warmup'
-      });
-
-      if (response.code === 0 && response.data) {
-        // 如果存在配置文件，则使用配置文件的设置覆盖数据库设置
-        const config = response.data;
-
-        // 更新账号预热相关配置
-        if (config.auto_train !== undefined) {
-          this.mygroup.auto_train = config.auto_train;
-        }
-        if (config.train_start_time !== undefined) {
-          this.mygroup.train_start_time = config.train_start_time;
-        }
-        if (config.task_duration !== undefined) {
-          this.mygroup.train_duration = config.task_duration;
-        }
-        if (config.floow_probable !== undefined) {
-          this.mygroup.floow_probable = config.floow_probable;
-        }
-        if (config.like_probable !== undefined) {
-          this.mygroup.like_probable = config.like_probable;
-        }
-        if (config.collect_probable !== undefined) {
-          this.mygroup.collect_probable = config.collect_probable;
-        }
-        if (config.comment_probable !== undefined) {
-          this.mygroup.comment_probable = config.comment_probable;
-        }
-        if (config.topic !== undefined) {
-          this.mygroup.topic = config.topic;
-        }
-        if (config.comment !== undefined) {
-          this.mygroup.comment = config.comment;
-        }
-        if (config.min_duration !== undefined) {
-          this.mygroup.min_duration = config.min_duration;
-        }
-        if (config.max_duration !== undefined) {
-          this.mygroup.max_duration = config.max_duration;
-        }
-        if (config.insert_emoji !== undefined) {
-          this.mygroup.insert_emoji = config.insert_emoji;
-        }
-        if (config.comment_order !== undefined) {
-          this.mygroup.comment_order = config.comment_order;
-        }
-        if (config.generate_by_chatgpt !== undefined) {
-          this.mygroup.generate_by_chatgpt = config.generate_by_chatgpt;
-        }
-        if (config.chatgpt_settings !== undefined) {
-          this.mygroup.chatgpt_settings = config.chatgpt_settings;
-        }
-
-        console.log('Loaded settings from config file for account warmup');
-      } else {
-        console.log('No config file found, using database settings for account warmup');
-      }
-    } catch (error) {
-      console.log('Failed to load config file, using database settings for account warmup:', error);
+  async created() {
+    this.mygroup = { ...this.group };
+    if (this.mygroup.auto_train === undefined || this.mygroup.auto_train === null) {
+      this.mygroup.auto_train = '0';
     }
-
-    if (!this.mygroup.chatgpt_settings) {
-      this.chatgpt_settings = {
-        url: 'https://api.openai.com/v1/chat/completions',
-        api_key: '',
-        model: 'gpt-3.5-turbo',
-        system_prompt: 'You are a TikTok comment generation assistant. Please generate a real user comment based on the TikTok post caption content provided by the user. The comment format includes text and emojis; the comment length should not exceed 100 characters; the comment content should include two parts: First Praise the post based on the post caption; Then Promote TikMatrix: TikMatrix is a phone farm automation software that automates the management of hundreds of TikTok accounts from one computer. If you are interested, please Google search: TikMatrix'
+    if (this.mygroup.train_start_time === undefined || this.mygroup.train_start_time === null) {
+      this.mygroup.train_start_time = '';
+    }
+    if (this.mygroup.comment_order === undefined || this.mygroup.comment_order === null) {
+      this.mygroup.comment_order = 'random';
+    }
+    if (this.mygroup.chatgpt_settings && typeof this.mygroup.chatgpt_settings === 'string') {
+      try {
+        this.chatgpt_settings = JSON.parse(this.mygroup.chatgpt_settings);
+      } catch (error) {
+        console.warn('Failed to parse chatgpt_settings from group, using default:', error);
+        this.chatgpt_settings = JSON.parse(JSON.stringify(DEFAULT_WARMUP_SETTINGS_TEMPLATE.chatgpt_settings));
       }
+    } else if (this.mygroup.chatgpt_settings && typeof this.mygroup.chatgpt_settings === 'object') {
+      this.chatgpt_settings = JSON.parse(JSON.stringify(this.mygroup.chatgpt_settings));
     } else {
-      this.chatgpt_settings = JSON.parse(this.mygroup.chatgpt_settings)
+      this.chatgpt_settings = JSON.parse(JSON.stringify(DEFAULT_WARMUP_SETTINGS_TEMPLATE.chatgpt_settings));
     }
 
-    if (this.mygroup.train_start_time) {
-      this.trainTimes = this.mygroup.train_start_time.split(',')
-    }
-    if (!this.mygroup.comment_order) {
-      this.mygroup.comment_order = 'random'
-    }
-
-    // 确保 min_duration 和 max_duration 有默认值
-    if (this.mygroup.min_duration === undefined || this.mygroup.min_duration === null) {
-      this.mygroup.min_duration = 10
-    }
-    if (this.mygroup.max_duration === undefined || this.mygroup.max_duration === null) {
-      this.mygroup.max_duration = 90
+    await this.initializeWarmupSettings();
+  },
+  async mounted() {
+    if (this.train_start_time) {
+      this.trainTimes = this.train_start_time.split(',').map(time => time.trim()).filter(Boolean);
     }
   },
+  beforeUnmount() {
+    this.teardownWarmupWatchers();
+  }
 }
 </script>

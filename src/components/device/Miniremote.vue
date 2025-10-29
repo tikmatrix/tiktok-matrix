@@ -608,7 +608,7 @@ export default {
 
     async connect() {
       const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
-      const wsUrl = `ws://127.0.0.1:${wsPort}`
+      const wsUrl = `ws://localhost:${wsPort}`
       this.scrcpy = new WebSocket(wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {

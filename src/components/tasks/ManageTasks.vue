@@ -20,7 +20,6 @@
               <tr>
                 <th>{{ $t('id') }}</th>
                 <th>{{ $t('scriptName') }}</th>
-                <th>{{ $t('scriptArgs') }}</th>
                 <th>{{ $t('startTime') }}</th>
                 <th>{{ $t('status') }}</th>
                 <th>{{ $t('retryCount') }}</th>
@@ -33,9 +32,6 @@
               <tr v-for="(task, index) in slotProps.items" :key="index">
                 <td>{{ task.id }}</td>
                 <td><span class="badge badge-ghost badge-md">{{ task.script_name }}</span></td>
-                <td>
-                  <span class="badge badge-ghost badge-md">{{ truncateScriptArgs(task.script_args) }}</span>
-                </td>
                 <td>
                   <span class="badge badge-ghost badge-md">{{ task.start_time }}</span>
                 </td>
@@ -142,12 +138,7 @@ export default {
         return '';
       }
     },
-    truncateScriptArgs(scriptArgs) {
-      if (scriptArgs.length > 30) {
-        return `${scriptArgs.slice(0, 10)}...${scriptArgs.slice(-10)}`;
-      }
-      return scriptArgs;
-    },
+
     async clearAll() {
       // 显示确认对话框
       this.$refs.clear_all_confirm_dialog.showModal()

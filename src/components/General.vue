@@ -196,7 +196,7 @@ export default {
     },
     data() {
         return {
-            proxy_host: '127.0.0.1',
+            proxy_host: 'localhost',
             proxy_port: '8080',
             resolution: 512,
             customResolution: 512,

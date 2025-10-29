@@ -7,33 +7,6 @@
     </div>
   </div>
 
-  <!-- 添加模式选择 -->
-  <div class="flex flex-row gap-4 mb-4">
-    <span class="font-bold">{{ $t('commentMode') }}: </span>
-    <div class="flex gap-2">
-      <label class="cursor-pointer flex items-center gap-2">
-        <input type="radio" name="comment-mode" class="radio radio-accent" value="multi-to-single"
-          v-model="comment_mode" />
-        <span>{{ $t('multiAccountToSinglePost') }}</span>
-      </label>
-      <label class="cursor-pointer flex items-center gap-2">
-        <input type="radio" name="comment-mode" class="radio radio-accent" value="single-to-single"
-          v-model="comment_mode" />
-        <span>{{ $t('singleAccountToSinglePost') }}</span>
-      </label>
-    </div>
-  </div>
-  <!-- 单账号模式下显示的附加说明 -->
-  <div v-if="comment_mode === 'single-to-single'" class="mt-2 text-md text-gray-500">
-    <font-awesome-icon icon="fa-solid fa-info-circle" class="mr-1" />
-    <span>{{ $t('singleAccountModeTip') }}</span>
-  </div>
-
-  <!-- 多账号模式下显示的附加说明 -->
-  <div v-if="comment_mode === 'multi-to-single'" class="mt-2 text-md text-gray-500">
-    <font-awesome-icon icon="fa-solid fa-info-circle" class="mr-1" />
-    <span>{{ $t('multiAccountModeTip') }}</span>
-  </div>
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('comments') }}: </span>
     <textarea class="textarea textarea-success w-lg h-32 leading-tight" :placeholder="$t('commentContentTips')"
@@ -64,12 +37,7 @@
         </div>
       </div>
 
-      <!-- 添加评论间隔时间设置 -->
-      <div class="flex flex-row items-center">
-        <label class="font-bold mr-4">{{ $t('commentInterval') }}:</label>
-        <VueSlider v-model="comment_interval" :width="200" :min="0" :max="10"
-          :marks="{ 0: '0' + $t('minute'), 5: '5' + $t('minute'), 10: '10' + $t('minute') }" />
-      </div>
+
     </div>
   </div>
 
@@ -79,7 +47,22 @@
       autocomplete="off" v-model="target_post_urls"> </textarea>
   </div>
 
-
+  <!-- 添加任务间隔时间设置 -->
+  <div class="flex flex-row items-center mt-8 mb-8">
+    <label class="font-bold mr-4">{{ $t('taskInterval') }}:</label>
+    <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
+      0: '0',
+      5: '5',
+      10: '10' + ' ' + $t('minute')
+    }" />
+  </div>
+  <div class="alert alert-info py-2 px-3">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <span class="text-md">{{ $t('taskIntervalTip') }}</span>
+  </div>
 
 </template>
 <script>
@@ -98,14 +81,13 @@ const massCommentMixin = massCommentSettings.createVueMixin(
     insert_emoji: false,
     insert_device_number: false,
     comment_order: 'random',
-    comment_mode: 'multi-to-single',
-    comment_interval: [0, 0]
+    task_interval: [0, 0]
   },
   [
     'settings', 'startOption', 'scheduledTime', 'target_post_urls',
     'comment_contents', 'comment_delay_min', 'comment_delay_max',
     'insert_emoji', 'insert_device_number', 'comment_order',
-    'comment_mode', 'comment_interval'
+    'task_interval'
   ]
 );
 
@@ -114,7 +96,8 @@ export default {
   name: 'MassCommentDialog',
   components: {
     VueSlider
-  }, data() {
+  },
+  data() {
     return {
     }
   },
@@ -144,24 +127,12 @@ export default {
         return;
       }
 
-      if (this.comment_mode === 'single-to-single') {
-        await this.$emiter('massComment', {
-          min_interval: Number(this.comment_interval[0]),
-          max_interval: Number(this.comment_interval[1]),
-          enable_multi_account: enable_multi_account,
-          rotate_proxy: rotate_proxy,
-        })
-      } else {
-        await this.$emiter('run_now_by_account', {
-          name: 'comment', args: {
-            target_post_urls: this.target_post_urls,
-            min_interval: Number(this.comment_interval[0]),
-            max_interval: Number(this.comment_interval[1]),
-            enable_multi_account: enable_multi_account,
-            rotate_proxy: rotate_proxy,
-          }
-        })
-      }
+      await this.$emiter('massComment', {
+        min_interval: Number(this.task_interval[0]),
+        max_interval: Number(this.task_interval[1]),
+        enable_multi_account: enable_multi_account,
+        rotate_proxy: rotate_proxy,
+      })
     },
   },
 }
