@@ -163,13 +163,6 @@
               <input type="checkbox" class="checkbox checkbox-sm" v-model="reply.includeLogs" />
               <span class="label-text ml-2">{{ $t('supportDetailAttachLogs') }}</span>
             </label>
-            <span v-if="reply.logsPackage" class="reply-attachment-meta">
-              {{ reply.logsPackage.zip_name }} · {{ formatSize(reply.logsPackage.zip_size) }}
-            </span>
-            <span v-if="reply.preparing" class="reply-preparing">
-              <span class="loading loading-spinner loading-2xs mr-1"></span>
-              {{ $t('supportDetailPreparingLogs') }}
-            </span>
           </div>
           <div class="reply-actions">
             <button type="button" class="btn btn-primary btn-sm" :disabled="reply.sending || !reply.body.trim()"
@@ -239,10 +232,12 @@ export default {
       reply: {
         body: '',
         includeLogs: false,
-        logsPackage: null,
         messageTail: '',
-        uploadedAttachment: null,
-        preparing: false,
+        attachment: null,
+        preparedSerials: [],
+        preparationTask: null,
+        preparationToken: 0,
+        preparationError: null,
         sending: false
       },
       detailRetryHandle: null,
@@ -287,10 +282,11 @@ export default {
   watch: {
     'reply.includeLogs'(newVal) {
       if (!newVal) {
-        this.reply.logsPackage = null
-        this.reply.uploadedAttachment = null
-        this.reply.messageTail = ''
+        this.clearReplyPreparation()
+        return
       }
+      this.clearReplyPreparation()
+      this.scheduleReplyLogPreparation()
     }
   },
   async created() {
@@ -588,20 +584,6 @@ export default {
       if (normalized === 'USB') return 'USB'
       if (normalized === 'TCP') return 'TCP'
       return value
-    },
-    formatSize(size) {
-      const numeric = Number(size)
-      if (!Number.isFinite(numeric) || numeric <= 0) return '0 B'
-      if (numeric >= 1024 * 1024 * 1024) {
-        return `${(numeric / (1024 * 1024 * 1024)).toFixed(2)} GB`
-      }
-      if (numeric >= 1024 * 1024) {
-        return `${(numeric / (1024 * 1024)).toFixed(2)} MB`
-      }
-      if (numeric >= 1024) {
-        return `${(numeric / 1024).toFixed(2)} KB`
-      }
-      return `${numeric} B`
     },
     parseMaybeJson(value) {
       if (!value) return null
@@ -1037,6 +1019,10 @@ export default {
         this.metadata = parsedTicketMetadata || parsedDetailMetadata || {}
         this.devicesDetail = this.normalizeDetailDevices(detail)
         this.messages = this.normalizeDetailMessages(detail)
+        if (this.reply.includeLogs) {
+          this.clearReplyPreparation()
+          this.scheduleReplyLogPreparation()
+        }
         let serials = this.detailDevices.map(device => device.real_serial).filter(Boolean)
         if (!serials.length) {
           serials = this.toArray(this.metadata?.devices)
@@ -1169,46 +1155,149 @@ export default {
     resetReply() {
       this.reply.body = ''
       this.reply.includeLogs = false
-      this.reply.logsPackage = null
-      this.reply.messageTail = ''
-      this.reply.uploadedAttachment = null
-      this.reply.preparing = false
+      this.clearReplyPreparation()
       this.reply.sending = false
     },
-    async prepareReplyAttachments() {
+    clearReplyPreparation() {
+      this.reply.preparationToken += 1
+      this.reply.preparationTask = null
+      this.reply.attachment = null
+      this.reply.preparedSerials = []
+      this.reply.preparationError = null
+      this.reply.messageTail = ''
+    },
+    scheduleReplyLogPreparation() {
       if (!this.reply.includeLogs) {
-        this.reply.logsPackage = null
-        this.reply.messageTail = ''
-        this.reply.uploadedAttachment = null
+        return
+      }
+      const serials = this.normalizeSerialList(
+        this.buildReplySerialPayload().map(device => device.realSerial)
+      )
+      if (!serials.length) {
+        return
+      }
+      this.startReplyLogPreparation(serials)
+    },
+    normalizeSerialList(list) {
+      if (!Array.isArray(list)) {
+        return []
+      }
+      const unique = new Set()
+      const normalized = []
+      list.forEach(value => {
+        if (value === null || value === undefined) {
+          return
+        }
+        const text = String(value).trim()
+        if (!text || unique.has(text)) {
+          return
+        }
+        unique.add(text)
+        normalized.push(text)
+      })
+      normalized.sort()
+      return normalized
+    },
+    areSameSerialSet(listA, listB) {
+      if (!Array.isArray(listA) || !Array.isArray(listB)) {
+        return false
+      }
+      if (listA.length !== listB.length) {
+        return false
+      }
+      for (let i = 0; i < listA.length; i += 1) {
+        if (listA[i] !== listB[i]) {
+          return false
+        }
+      }
+      return true
+    },
+    startReplyLogPreparation(serials) {
+      const normalizedSerials = this.normalizeSerialList(serials)
+      if (!normalizedSerials.length) {
+        return null
+      }
+      this.reply.preparationToken += 1
+      const currentToken = this.reply.preparationToken
+      const task = (async () => {
+        try {
+          const response = await this.$service.support_generate_logs({ serials: normalizedSerials })
+          if (!this.reply.includeLogs || this.reply.preparationToken !== currentToken) {
+            return null
+          }
+          const attachment = await this.uploadReplyLogs(response, normalizedSerials)
+          if (!this.reply.includeLogs || this.reply.preparationToken !== currentToken) {
+            return null
+          }
+          this.reply.messageTail = response?.message_tail || ''
+          this.reply.attachment = attachment
+          this.reply.preparedSerials = normalizedSerials
+          this.reply.preparationError = null
+          return attachment
+        } catch (error) {
+          if (this.reply.preparationToken === currentToken) {
+            this.reply.preparationError = error
+            this.reply.attachment = null
+            this.reply.messageTail = ''
+            this.reply.preparedSerials = []
+          }
+          throw error
+        } finally {
+          if (this.reply.preparationToken === currentToken && this.reply.preparationTask === task) {
+            this.reply.preparationTask = null
+          }
+        }
+      })()
+      this.reply.preparationTask = task
+      task.catch(err => {
+        console.error('support startReplyLogPreparation error', err)
+      })
+      return task
+    },
+    async prepareReplyAttachments(serialsOverride) {
+      if (!this.reply.includeLogs) {
+        this.clearReplyPreparation()
         return []
       }
       const serialPayload = this.buildReplySerialPayload()
-      const serials = serialPayload.map(device => device.realSerial).filter(Boolean)
+      const serialSource = Array.isArray(serialsOverride) && serialsOverride.length
+        ? serialsOverride
+        : serialPayload.map(device => device.realSerial)
+      const serials = this.normalizeSerialList(serialSource)
       if (!serials.length) {
         await this.notify('warning', this.$t('supportDetailNoDeviceForLogs'))
+        this.clearReplyPreparation()
         return []
       }
-      if (this.reply.uploadedAttachment) {
-        return [this.reply.uploadedAttachment]
+      if (!this.areSameSerialSet(serials, this.reply.preparedSerials)) {
+        this.clearReplyPreparation()
+      }
+      if (this.reply.attachment && this.areSameSerialSet(serials, this.reply.preparedSerials)) {
+        return [this.reply.attachment]
+      }
+      if (this.reply.preparationTask) {
+        try {
+          await this.reply.preparationTask
+        } catch (error) {
+          console.error('prepareReplyAttachments awaiting task failed', error)
+        }
+        if (this.reply.attachment && this.areSameSerialSet(serials, this.reply.preparedSerials)) {
+          return [this.reply.attachment]
+        }
+      }
+      const task = this.startReplyLogPreparation(serials)
+      if (!task) {
+        return []
       }
       try {
-        this.reply.preparing = true
-        const response = await this.$service.support_generate_logs({ serials })
-        this.reply.logsPackage = response
-        this.reply.messageTail = response?.message_tail || ''
-        const attachment = await this.uploadReplyLogs(serials)
-        if (attachment) {
-          this.reply.uploadedAttachment = attachment
-          return [attachment]
-        }
-        return []
+        await task
       } catch (error) {
-        console.error('prepareReplyAttachments error', error)
-        await this.notify('error', this.$t('supportDetailPreparingFailed'))
-        throw error
-      } finally {
-        this.reply.preparing = false
+        console.error('prepareReplyAttachments start task failed', error)
+        return []
       }
+      return this.reply.attachment && this.areSameSerialSet(serials, this.reply.preparedSerials)
+        ? [this.reply.attachment]
+        : []
     },
     buildReplySerialPayload() {
       const sourceDevices = Array.isArray(this.devicesDetail) && this.devicesDetail.length
@@ -1370,33 +1459,30 @@ export default {
 
       return attachment
     },
-    async uploadReplyLogs(serials) {
-      if (!this.reply.logsPackage || !this.reply.logsPackage.zip_path) {
+    async uploadReplyLogs(logPackage, serials) {
+      if (!logPackage || !logPackage.zip_path) {
         throw new Error('LOG_PACKAGE_MISSING')
       }
       try {
         const uploadResponse = await this.$service.support_upload({
-          file_path: this.reply.logsPackage.zip_path,
-          file_name: this.reply.logsPackage.zip_name,
-          file_size: this.reply.logsPackage.zip_size,
+          file_path: logPackage.zip_path,
+          file_name: logPackage.zip_name,
+          file_size: logPackage.zip_size,
           content_type: 'application/zip',
           serials,
           client_app: this.clientInfoNormalized.app_name,
           client_version: this.clientInfoNormalized.client_version
         })
         const attachment = this.parseUploadResponse(uploadResponse, {
-          fileName: this.reply.logsPackage.zip_name,
-          fileSize: this.reply.logsPackage.zip_size,
-          checksum: this.reply.logsPackage.checksum,
+          fileName: logPackage.zip_name,
+          fileSize: logPackage.zip_size,
+          checksum: logPackage.checksum,
           serials,
           type: 'logs'
         })
-        await this.notify('success', this.$t('supportUploadSuccess'))
         return attachment
       } catch (error) {
         console.error('uploadReplyLogs error', error)
-        const hint = error?.message ? `: ${error.message}` : ''
-        await this.notify('error', `${this.$t('supportUploadFailed')}${hint}`)
         throw error
       }
     },
@@ -1412,16 +1498,15 @@ export default {
       }
       this.reply.sending = true
       try {
-        let attachments = []
-        if (this.reply.includeLogs) {
-          try {
-            attachments = await this.prepareReplyAttachments()
-          } catch (error) {
-            this.reply.sending = false
-            return
-          }
-        }
         const serialPayload = this.buildReplySerialPayload()
+        const serials = this.normalizeSerialList(serialPayload.map(device => device.realSerial))
+        let attachments = []
+        if (this.reply.includeLogs && serials.length) {
+          attachments = await this.prepareReplyAttachments(serials)
+        } else if (this.reply.includeLogs && !serials.length) {
+          this.reply.includeLogs = false
+          this.clearReplyPreparation()
+        }
         const ticketId =
           this.currentTicket.id ||
           this.currentTicket.ticket_id ||
@@ -1436,7 +1521,7 @@ export default {
           ticketId: ticketId ? String(ticketId) : undefined,
           ticketNo: ticketNo ? String(ticketNo) : undefined,
           message,
-          message_tail: this.reply.messageTail || '',
+          message_tail: attachments.length ? this.reply.messageTail || '' : '',
           source: 'app',
           role: 'customer',
           serials: serialPayload,
@@ -1445,9 +1530,10 @@ export default {
         await this.$service.support_append_message(payload)
         await this.notify('success', this.$t('supportDetailReplySuccess'))
         this.reply.body = ''
-        this.reply.logsPackage = null
-        this.reply.messageTail = ''
-        this.reply.uploadedAttachment = null
+        this.clearReplyPreparation()
+        if (this.reply.includeLogs) {
+          this.scheduleReplyLogPreparation()
+        }
         await this.loadTicketDetail(this.currentTicket)
       } catch (error) {
         console.error('support submitReply error', error)
@@ -1839,18 +1925,6 @@ export default {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.reply-attachment-meta {
-  font-size: 12px;
-  color: var(--color-base-content);
-}
-
-.reply-preparing {
-  display: inline-flex;
-  align-items: center;
-  font-size: 12px;
-  color: var(--color-primary);
 }
 
 .reply-actions {

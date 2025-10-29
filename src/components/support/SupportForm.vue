@@ -79,9 +79,8 @@
     </div>
 
     <div class="actions-bar">
-      <button type="button" class="btn btn-primary" :disabled="submitting || collecting || uploading"
-        @click="submitSupport">
-        <span v-if="submitting || collecting || uploading" class="loading loading-spinner loading-sm"></span>
+      <button type="button" class="btn btn-primary" :disabled="submitting" @click="submitSupport">
+        <span v-if="submitting" class="loading loading-spinner loading-sm"></span>
         <span>{{ $t('supportSubmitButton') }}</span>
       </button>
       <button type="button" class="btn btn-outline" @click="closeDialog">{{ $t('supportCancelButton') }}</button>
@@ -133,13 +132,14 @@ export default {
         email: ''
       },
       selectedSerials: [...this.selecedDevices],
-      logPackage: null,
-      uploadedAttachment: null,
       messageTail: '',
-      collecting: false,
-      uploading: false,
       submitting: false,
-      submittedTicket: null
+      submittedTicket: null,
+      preparedAttachment: null,
+      logPreparationTask: null,
+      logPreparationToken: 0,
+      logPreparationError: null,
+      lastPreparedSerials: []
     }
   },
   computed: {
@@ -161,6 +161,9 @@ export default {
   },
   mounted() {
     this.resetSubject()
+    if (this.selectedSerials.length) {
+      this.scheduleLogPreparation()
+    }
   },
   watch: {
     selecedDevices: {
@@ -168,15 +171,12 @@ export default {
       handler(newVal) {
         this.selectedSerials = Array.isArray(newVal) ? [...newVal] : []
       }
+    },
+    selectedSerials(newVal) {
+      this.handleSelectedSerialsChanged(newVal)
     }
   },
   methods: {
-    formatSize(size) {
-      if (!size) return '0 B'
-      if (size > 1024 * 1024) return `${(size / 1024 / 1024).toFixed(2)} MB`
-      if (size > 1024) return `${(size / 1024).toFixed(2)} KB`
-      return `${size} B`
-    },
     async notify(type, message) {
       if (typeof this.$emiter === 'function') {
         await this.$emiter('NOTIFY', {
@@ -201,10 +201,8 @@ export default {
         email: ''
       }
       this.resetSubject()
+      this.clearLogPreparation()
       this.selectedSerials = [...this.selecedDevices]
-      this.logPackage = null
-      this.uploadedAttachment = null
-      this.messageTail = ''
     },
     selectAllDevices() {
       this.selectedSerials = this.deviceRows.map(device => device.real_serial)
@@ -227,161 +225,301 @@ export default {
       const fallbackIndex = this.deviceRows.findIndex(item => item.real_serial === serial)
       return fallbackIndex !== -1 ? fallbackIndex + 1 : serial
     },
-    async prepareLogs() {
-      this.emitSelection()
-      if (!this.selectedSerials.length) {
-        await this.notify('warning', this.$t('supportNeedDeviceWarning'))
-        throw new Error('NO_SELECTED_DEVICES')
+    handleSelectedSerialsChanged(newSerials) {
+      const normalized = this.normalizeSerialList(newSerials)
+      if (!normalized.length) {
+        this.clearLogPreparation()
+        return
       }
-      this.collecting = true
-      try {
-        const response = await this.$service.support_generate_logs({ serials: this.selectedSerials })
-        this.logPackage = response
-        this.messageTail = response.message_tail || ''
-        this.uploadedAttachment = null
-        await this.notify('success', this.$t('supportCollectSuccess'))
-        return this.logPackage
-      } catch (error) {
-        console.error('prepareLogs error', error)
-        await this.notify('error', this.$t('supportCollectFailed'))
-        throw error
-      } finally {
-        this.collecting = false
+      if (!this.areSameSerialSet(normalized, this.lastPreparedSerials)) {
+        this.clearLogPreparation()
       }
+      this.scheduleLogPreparation(normalized)
     },
-    async uploadLogs() {
-      if (!this.logPackage) {
-        await this.prepareLogs()
+    clearLogPreparation() {
+      this.logPreparationToken += 1
+      this.logPreparationTask = null
+      this.preparedAttachment = null
+      this.logPreparationError = null
+      this.lastPreparedSerials = []
+      this.messageTail = ''
+    },
+    normalizeSerialList(list) {
+      if (!Array.isArray(list)) {
+        return []
       }
-      if (!this.logPackage) {
+      const unique = new Set()
+      const normalized = []
+      list.forEach(value => {
+        if (value === null || value === undefined) {
+          return
+        }
+        const text = String(value).trim()
+        if (!text || unique.has(text)) {
+          return
+        }
+        unique.add(text)
+        normalized.push(text)
+      })
+      normalized.sort()
+      return normalized
+    },
+    areSameSerialSet(listA, listB) {
+      if (!Array.isArray(listA) || !Array.isArray(listB)) {
+        return false
+      }
+      if (listA.length !== listB.length) {
+        return false
+      }
+      for (let i = 0; i < listA.length; i += 1) {
+        if (listA[i] !== listB[i]) {
+          return false
+        }
+      }
+      return true
+    },
+    scheduleLogPreparation(serialsOverride) {
+      const serials = this.normalizeSerialList(
+        Array.isArray(serialsOverride) && serialsOverride.length
+          ? serialsOverride
+          : this.selectedSerials
+      )
+      if (!serials.length) {
+        return
+      }
+      if (this.preparedAttachment && this.areSameSerialSet(serials, this.lastPreparedSerials)) {
+        return
+      }
+      if (this.logPreparationTask) {
+        return
+      }
+      this.startLogPreparation(serials)
+    },
+    startLogPreparation(serials) {
+      const normalizedSerials = this.normalizeSerialList(serials)
+      if (!normalizedSerials.length) {
+        return null
+      }
+      this.logPreparationToken += 1
+      const currentToken = this.logPreparationToken
+      const task = (async () => {
+        try {
+          const response = await this.$service.support_generate_logs({ serials: normalizedSerials })
+          if (this.logPreparationToken !== currentToken) {
+            return null
+          }
+          const attachment = await this.uploadLogsPackage(response, normalizedSerials)
+          if (this.logPreparationToken !== currentToken) {
+            return null
+          }
+          this.messageTail = response?.message_tail || ''
+          this.preparedAttachment = attachment
+          this.lastPreparedSerials = normalizedSerials
+          this.logPreparationError = null
+          return attachment
+        } catch (error) {
+          if (this.logPreparationToken === currentToken) {
+            this.logPreparationError = error
+            this.preparedAttachment = null
+            this.messageTail = ''
+            this.lastPreparedSerials = []
+          }
+          throw error
+        } finally {
+          if (this.logPreparationToken === currentToken && this.logPreparationTask === task) {
+            this.logPreparationTask = null
+          }
+        }
+      })()
+      this.logPreparationTask = task
+      task.catch(err => {
+        console.error('support startLogPreparation error', err)
+      })
+      return task
+    },
+    parseUploadResponse(uploadResponse, context = {}) {
+      const getField = (source, names) => {
+        if (!source || typeof source !== 'object') return undefined
+        const keys = Object.keys(source)
+        for (const name of names) {
+          if (Object.prototype.hasOwnProperty.call(source, name)) {
+            return source[name]
+          }
+          const lower = name.toLowerCase()
+          const matchKey = keys.find(key => key.toLowerCase() === lower)
+          if (matchKey) {
+            return source[matchKey]
+          }
+        }
+        return undefined
+      }
+      const parseMaybeJson = value => {
+        if (!value) return null
+        if (typeof value === 'object') return value
+        if (typeof value === 'string') {
+          try {
+            return JSON.parse(value)
+          } catch (error) {
+            return null
+          }
+        }
+        return null
+      }
+
+      const unwrapKeys = ['data', 'result', 'payload']
+      let body = uploadResponse ?? {}
+      for (let depth = 0; depth < 4; depth += 1) {
+        if (body && typeof body === 'object') {
+          const key = unwrapKeys.find(candidate => Object.prototype.hasOwnProperty.call(body, candidate))
+          if (key && body[key] != null) {
+            body = body[key]
+            continue
+          }
+        }
+        break
+      }
+      body = body ?? {}
+
+      let uploadInfo =
+        getField(body, ['upload', 'uploadInfo', 'upload_info', 'result', 'payload', 'data']) || body
+      if (Array.isArray(uploadInfo)) {
+        uploadInfo = uploadInfo[0] || {}
+      }
+
+      const responseCode = Number(
+        getField(body, ['code', 'status', 'statusCode', 'status_code', 'errorCode']) ??
+        getField(uploadInfo, ['code', 'status', 'statusCode', 'status_code', 'errorCode'])
+      )
+      if (Number.isFinite(responseCode) && ![0, 200, 201, 20000].includes(responseCode)) {
+        const responseMessage =
+          getField(body, ['message', 'error', 'msg', 'errorMessage']) ||
+          getField(uploadInfo, ['message', 'error', 'msg', 'errorMessage']) ||
+          'Unknown error'
+        throw new Error(responseMessage)
+      }
+
+      const storageKey =
+        getField(uploadInfo, ['key', 'storageKey', 'storage_key']) ||
+        getField(body, ['storageKey', 'storage_key', 'key']) ||
+        ''
+      if (!storageKey) {
+        throw new Error('MISSING_STORAGE_KEY')
+      }
+
+      const bucket = getField(uploadInfo, ['bucket']) || getField(body, ['bucket']) || ''
+      const returnedFileName =
+        getField(uploadInfo, ['fileName', 'file_name']) ||
+        getField(body, ['fileName', 'file_name']) ||
+        context.fileName || ''
+      const contentType =
+        getField(uploadInfo, ['contentType', 'content_type']) ||
+        getField(body, ['contentType', 'content_type']) ||
+        context.contentType || 'application/zip'
+      const sizeValue = Number(
+        getField(uploadInfo, ['size', 'fileSize', 'file_size']) ||
+        getField(body, ['size', 'fileSize', 'file_size']) ||
+        context.fileSize
+      )
+      const checksum =
+        getField(uploadInfo, ['checksum']) ||
+        getField(body, ['checksum']) ||
+        context.checksum || ''
+      const etag = getField(uploadInfo, ['etag']) || getField(body, ['etag'])
+
+      const normalizedSize = Number.isFinite(sizeValue)
+        ? sizeValue
+        : Number(context.fileSize || 0) || 0
+
+      const attachmentMeta = {}
+      const responseMeta =
+        parseMaybeJson(uploadInfo.metadata) ||
+        parseMaybeJson(uploadInfo.meta) ||
+        parseMaybeJson(getField(body, ['metadata', 'meta']))
+      if (responseMeta && typeof responseMeta === 'object') {
+        Object.assign(attachmentMeta, responseMeta)
+      }
+      if (Array.isArray(context.serials) && context.serials.length) {
+        attachmentMeta.serials = context.serials.join(',')
+      }
+      if (context.type) {
+        attachmentMeta.type = context.type
+      }
+      if (etag) {
+        attachmentMeta.etag = etag
+      }
+
+      const attachment = {
+        storageKey,
+        bucket,
+        file_name: returnedFileName,
+        fileName: returnedFileName,
+        file_size: normalizedSize,
+        fileSize: normalizedSize,
+        content_type: contentType,
+        contentType,
+        checksum
+      }
+      if (Object.keys(attachmentMeta).length) {
+        attachment.metadata = attachmentMeta
+      }
+
+      return attachment
+    },
+    async uploadLogsPackage(logPackage, serials) {
+      if (!logPackage || !logPackage.zip_path) {
         throw new Error('LOG_PACKAGE_MISSING')
       }
-      if (this.uploadedAttachment) {
-        return this.uploadedAttachment
-      }
-      this.uploading = true
-      try {
-        const getField = (source, names) => {
-          if (!source || typeof source !== 'object') return undefined
-          const entries = Object.keys(source)
-          for (const name of names) {
-            if (Object.prototype.hasOwnProperty.call(source, name)) {
-              return source[name]
-            }
-            const lower = name.toLowerCase()
-            const matchKey = entries.find(key => key.toLowerCase() === lower)
-            if (matchKey) {
-              return source[matchKey]
-            }
-          }
-          return undefined
-        }
-
-        const uploadResponse = await this.$service.support_upload({
-          file_path: this.logPackage.zip_path,
-          file_name: this.logPackage.zip_name,
-          file_size: this.logPackage.zip_size,
-          content_type: 'application/zip',
-          serials: this.selectedSerials,
-          client_app: this.clientInfoNormalized.app_name,
-          client_version: this.clientInfoNormalized.client_version
-        })
-
-        console.debug('support_upload response raw', uploadResponse)
-
-        const unwrapKeys = ['data', 'result', 'payload']
-        let body = uploadResponse ?? {}
-        for (let depth = 0; depth < 4; depth += 1) {
-          if (body && typeof body === 'object') {
-            const key = unwrapKeys.find(candidate => Object.prototype.hasOwnProperty.call(body, candidate))
-            if (key && body[key] != null) {
-              body = body[key]
-              continue
-            }
-          }
-          break
-        }
-        body = body ?? {}
-
-        let uploadInfo =
-          getField(body, ['upload', 'uploadInfo', 'upload_info', 'result', 'payload', 'data']) || body
-        if (Array.isArray(uploadInfo)) {
-          uploadInfo = uploadInfo[0] || {}
-        }
-
-        console.debug('support_upload normalized body', body)
-        console.debug('support_upload info', uploadInfo)
-
-        const responseCode = Number(
-          getField(body, ['code', 'status', 'statusCode', 'status_code', 'errorCode']) ??
-          getField(uploadInfo, ['code', 'status', 'statusCode', 'status_code', 'errorCode'])
-        )
-        if (Number.isFinite(responseCode) && ![0, 200, 201, 20000].includes(responseCode)) {
-          const responseMessage =
-            getField(body, ['message', 'error', 'msg', 'errorMessage']) ||
-            getField(uploadInfo, ['message', 'error', 'msg', 'errorMessage']) ||
-            'Unknown error'
-          throw new Error(responseMessage)
-        }
-
-        const storageKey =
-          getField(uploadInfo, ['key', 'storageKey', 'storage_key']) ||
-          getField(body, ['storageKey', 'storage_key', 'key']) ||
-          ''
-        if (!storageKey) {
-          throw new Error('MISSING_STORAGE_KEY')
-        }
-
-        const bucket = getField(uploadInfo, ['bucket']) || getField(body, ['bucket']) || ''
-        const returnedFileName =
-          getField(uploadInfo, ['fileName', 'file_name']) ||
-          getField(body, ['fileName', 'file_name']) ||
-          this.logPackage.zip_name
-        const contentType =
-          getField(uploadInfo, ['contentType', 'content_type']) ||
-          getField(body, ['contentType', 'content_type']) ||
-          'application/zip'
-        const sizeValue = Number(
-          getField(uploadInfo, ['size', 'fileSize', 'file_size']) ||
-          getField(body, ['size', 'fileSize', 'file_size'])
-        )
-        const checksum = getField(uploadInfo, ['checksum']) || getField(body, ['checksum']) || ''
-        const etag = getField(uploadInfo, ['etag']) || getField(body, ['etag'])
-
-        const normalizedSize = Number.isFinite(sizeValue) ? sizeValue : this.logPackage.zip_size
-        const attachmentMeta = {}
-        if (etag) {
-          attachmentMeta.etag = etag
-        }
-
-        const payload = {
-          storageKey,
-          bucket,
-          file_name: returnedFileName,
-          file_size: normalizedSize,
-          content_type: contentType,
-          checksum
-        }
-        if (Object.keys(attachmentMeta).length) {
-          payload.metadata = attachmentMeta
-        }
-        this.uploadedAttachment = payload
-        await this.notify('success', this.$t('supportUploadSuccess'))
-        return this.uploadedAttachment
-      } catch (error) {
-        console.error('uploadLogs error', error)
-        const hint = error?.message ? `: ${error.message}` : ''
-        await this.notify('error', `${this.$t('supportUploadFailed')}${hint}`)
-        throw error
-      } finally {
-        this.uploading = false
-      }
+      const uploadResponse = await this.$service.support_upload({
+        file_path: logPackage.zip_path,
+        file_name: logPackage.zip_name,
+        file_size: logPackage.zip_size,
+        content_type: 'application/zip',
+        serials,
+        client_app: this.clientInfoNormalized.app_name,
+        client_version: this.clientInfoNormalized.client_version
+      })
+      return this.parseUploadResponse(uploadResponse, {
+        fileName: logPackage.zip_name,
+        fileSize: logPackage.zip_size,
+        checksum: logPackage.checksum,
+        serials,
+        type: 'logs'
+      })
     },
-    async ensureAttachment() {
-      if (!this.logPackage) {
-        await this.prepareLogs()
+    async ensureLogsAttachment(serialsOverride) {
+      const serials = this.normalizeSerialList(serialsOverride || this.selectedSerials)
+      if (!serials.length) {
+        return null
       }
-      return this.uploadLogs()
+      if (!this.areSameSerialSet(serials, this.lastPreparedSerials)) {
+        this.clearLogPreparation()
+      }
+      if (this.preparedAttachment && this.areSameSerialSet(serials, this.lastPreparedSerials)) {
+        return this.preparedAttachment
+      }
+      if (this.logPreparationTask) {
+        try {
+          await this.logPreparationTask
+        } catch (error) {
+          console.error('ensureLogsAttachment pending task error', error)
+        }
+        if (this.preparedAttachment && this.areSameSerialSet(serials, this.lastPreparedSerials)) {
+          return this.preparedAttachment
+        }
+      }
+      const task = this.startLogPreparation(serials)
+      if (!task) {
+        return null
+      }
+      try {
+        await task
+      } catch (error) {
+        console.error('ensureLogsAttachment task error', error)
+        return null
+      }
+      return this.preparedAttachment && this.areSameSerialSet(serials, this.lastPreparedSerials)
+        ? this.preparedAttachment
+        : null
     },
     buildSerialPayload() {
       return this.selectedSerials.map(serial => {
@@ -537,21 +675,25 @@ export default {
       }
       this.submitting = true
       try {
-        let attachment
-        try {
-          attachment = await this.ensureAttachment()
-        } catch (error) {
-          return
+        const serialPayload = this.buildSerialPayload()
+        const normalizedSerials = this.normalizeSerialList(this.selectedSerials)
+        let attachment = null
+        if (normalizedSerials.length) {
+          try {
+            attachment = await this.ensureLogsAttachment(normalizedSerials)
+          } catch (error) {
+            console.error('submitSupport ensureLogsAttachment error', error)
+          }
         }
         const messageBody = `${this.form.description}\n\n${this.$t('supportLogNote')}`
         const payload = {
           subject: this.form.subject,
           message: messageBody,
-          message_tail: this.messageTail || '',
+          message_tail: attachment ? this.messageTail || '' : '',
           priority: this.form.priority,
           locale: this.$i18n.locale || 'en',
           contact_email: this.form.email,
-          serials: this.buildSerialPayload(),
+          serials: serialPayload,
           attachments: attachment ? [attachment] : [],
           client: this.clientInfoNormalized,
           app: this.clientInfoNormalized.app_name
@@ -562,6 +704,9 @@ export default {
         this.$emit('submitted', createdTicket)
         this.submittedTicket = null
         this.resetForm()
+        if (this.selectedSerials.length) {
+          this.scheduleLogPreparation()
+        }
         this.emitSelection()
       } catch (error) {
         console.error('submitSupport error', error)

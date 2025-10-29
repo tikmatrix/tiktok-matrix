@@ -567,13 +567,7 @@ export default {
         await this.startAgent();
         return;
       }
-      if (silent) {
-        this.$emiter('NOTIFY', {
-          type: 'info',
-          message: this.$t('checkingForUpdates'),
-          timeout: 2000
-        });
-      } else {
+      if (!silent) {
         this.check_update_dialog_title = 'Checking update...';
         this.$refs.download_dialog.showModal();
       }
