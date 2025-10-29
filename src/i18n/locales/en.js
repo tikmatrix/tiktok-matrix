@@ -1044,7 +1044,7 @@
   supportValidationMessage: 'Subject and details are required.',
   supportSubmitSuccess: 'Ticket submitted successfully.',
   supportSubmitFailed: 'Failed to submit ticket.',
-  supportLogNote: 'Support package contains the most recent 1000 lines per log file (preview above).',
+  supportLogNote: 'Support package contains the most recent 200 lines per log file (preview above).',
   supportSummaryOpen: 'Open',
   supportSummaryToday: 'Today',
   supportSummaryTotal: 'Total',

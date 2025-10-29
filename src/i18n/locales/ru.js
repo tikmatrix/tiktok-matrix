@@ -1044,7 +1044,7 @@
   supportValidationMessage: 'Укажите тему и описание проблемы.',
   supportSubmitSuccess: 'Тикет успешно отправлен.',
   supportSubmitFailed: 'Не удалось отправить тикет.',
-  supportLogNote: 'Архив содержит только последние 1000 строк каждого лога (превью см. выше).',
+  supportLogNote: 'Архив содержит только последние 200 строк каждого лога (превью см. выше).',
   supportSummaryOpen: 'Открыто',
   supportSummaryToday: 'Сегодня',
   supportSummaryTotal: 'Всего',
