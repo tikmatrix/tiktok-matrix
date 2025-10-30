@@ -135,6 +135,7 @@ export default {
       messageTail: '',
       submitting: false,
       submittedTicket: null,
+      preparedPackage: null,
       preparedAttachment: null,
       logPreparationTask: null,
       logPreparationToken: 0,
@@ -239,6 +240,7 @@ export default {
     clearLogPreparation() {
       this.logPreparationToken += 1
       this.logPreparationTask = null
+      this.preparedPackage = null
       this.preparedAttachment = null
       this.logPreparationError = null
       this.lastPreparedSerials = []
@@ -287,7 +289,11 @@ export default {
       if (!serials.length) {
         return
       }
-      if (this.preparedAttachment && this.areSameSerialSet(serials, this.lastPreparedSerials)) {
+      const hasPreparedForSerials = this.areSameSerialSet(serials, this.lastPreparedSerials)
+      if (
+        (this.preparedAttachment && hasPreparedForSerials) ||
+        (this.preparedPackage && hasPreparedForSerials)
+      ) {
         return
       }
       if (this.logPreparationTask) {
@@ -308,18 +314,19 @@ export default {
           if (this.logPreparationToken !== currentToken) {
             return null
           }
-          const attachment = await this.uploadLogsPackage(response, normalizedSerials)
-          if (this.logPreparationToken !== currentToken) {
-            return null
+          if (!response || !response.zip_path) {
+            throw new Error('LOG_PACKAGE_MISSING')
           }
           this.messageTail = response?.message_tail || ''
-          this.preparedAttachment = attachment
+          this.preparedPackage = response
+          this.preparedAttachment = null
           this.lastPreparedSerials = normalizedSerials
           this.logPreparationError = null
-          return attachment
+          return response
         } catch (error) {
           if (this.logPreparationToken === currentToken) {
             this.logPreparationError = error
+            this.preparedPackage = null
             this.preparedAttachment = null
             this.messageTail = ''
             this.lastPreparedSerials = []
@@ -491,22 +498,64 @@ export default {
       if (!serials.length) {
         return null
       }
-      if (!this.areSameSerialSet(serials, this.lastPreparedSerials)) {
+      const isPreparedForSerials = () => this.areSameSerialSet(serials, this.lastPreparedSerials)
+
+      if (!isPreparedForSerials()) {
         this.clearLogPreparation()
       }
-      if (this.preparedAttachment && this.areSameSerialSet(serials, this.lastPreparedSerials)) {
+
+      if (this.preparedAttachment && isPreparedForSerials()) {
         return this.preparedAttachment
       }
+
+      const attemptUpload = async () => {
+        if (!isPreparedForSerials()) {
+          return null
+        }
+        if (this.preparedAttachment && isPreparedForSerials()) {
+          return this.preparedAttachment
+        }
+        const packageInfo = this.preparedPackage
+        if (!packageInfo || !packageInfo.zip_path) {
+          return null
+        }
+        try {
+          const attachment = await this.uploadLogsPackage(packageInfo, serials)
+          if (isPreparedForSerials()) {
+            this.preparedAttachment = attachment
+          }
+          return this.preparedAttachment && isPreparedForSerials()
+            ? this.preparedAttachment
+            : attachment
+        } catch (error) {
+          console.error('ensureLogsAttachment upload failed', error)
+          this.logPreparationError = error
+          return null
+        }
+      }
+
+      if (this.preparedPackage && isPreparedForSerials()) {
+        const uploaded = await attemptUpload()
+        if (uploaded) {
+          return uploaded
+        }
+      }
+
       if (this.logPreparationTask) {
         try {
           await this.logPreparationTask
         } catch (error) {
           console.error('ensureLogsAttachment pending task error', error)
         }
-        if (this.preparedAttachment && this.areSameSerialSet(serials, this.lastPreparedSerials)) {
+        if (this.preparedAttachment && isPreparedForSerials()) {
           return this.preparedAttachment
         }
+        const uploaded = await attemptUpload()
+        if (uploaded) {
+          return uploaded
+        }
       }
+
       const task = this.startLogPreparation(serials)
       if (!task) {
         return null
@@ -517,9 +566,7 @@ export default {
         console.error('ensureLogsAttachment task error', error)
         return null
       }
-      return this.preparedAttachment && this.areSameSerialSet(serials, this.lastPreparedSerials)
-        ? this.preparedAttachment
-        : null
+      return attemptUpload()
     },
     buildSerialPayload() {
       return this.selectedSerials.map(serial => {
