@@ -17,7 +17,8 @@
 
                     <!-- 用户信息卡片 -->
                     <UserInfoCard :license="license" @manage-subscription="manageStripeSubscription"
-                        @show-license-migration="showLicenseMigration" @activate="activate" @copy-text="copyText" />
+                        @show-license-migration="showLicenseMigration" @activate="activate" @copy-text="copyText"
+                        @update-license-code="$emit('update-license-code', $event)" />
 
                     <!-- 订单显示区域 -->
                     <OrderDisplay v-if="whitelabelConfig.enablePay && order && order.status == 0" :order="order"
@@ -25,10 +26,11 @@
                         @copy-text="copyText" />
 
                     <!-- 定价表 -->
-                    <PricingTable v-else-if="priceTableInfo && priceTableInfo.plans.length > 0"
+                    <PricingTable
+                        v-else-if="whitelabelConfig.enablePay && priceTableInfo && priceTableInfo.plans.length > 0"
                         :plans="priceTableInfo.plans" :license="license"
                         @create-stripe-checkout="createStripeCheckoutUrl" @create-order="createOrder"
-                        @manage-subscription="manageStripeSubscription" v-if="whitelabelConfig.enablePay" />
+                        @manage-subscription="manageStripeSubscription" />
 
                     <!-- 隐私协议 -->
                     <PrivacyAgreement v-model="agreePolicy" v-if="whitelabelConfig.enablePay" />
@@ -69,6 +71,7 @@ import { getItem, setItem } from '@/utils/persistentStorage.js';
 
 export default {
     name: 'LicenseManagementDialog',
+    emits: ['update-license-code'],
     components: {
         DialogHeader,
         UserInfoCard,

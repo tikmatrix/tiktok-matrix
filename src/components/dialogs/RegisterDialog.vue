@@ -10,12 +10,12 @@
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('emails') }}: </span>
     <textarea class="textarea textarea-success grow  h-32 leading-tight" :placeholder="$t('emailsTips')"
-      autocomplete="off" v-model="settings.emails"> </textarea>
+      autocomplete="off" v-model="localSettings.emails"></textarea>
   </div>
   <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
     <span class="font-bold">{{ $t('password') }}: </span>
-    <input class="input input-bordered w-full max-w-md" :placeholder="$t('passwordTips')" v-model="settings.password">
-    </input>
+    <input class="input input-bordered w-full max-w-md" :placeholder="$t('passwordTips')"
+      v-model="localSettings.password" />
   </div>
 
 
@@ -26,6 +26,7 @@ export default {
   name: 'RegisterDialog',
   components: {
   },
+  emits: ['update:settings'],
   props: {
     settings: {
       type: Object,
@@ -34,15 +35,43 @@ export default {
   },
   data() {
     return {
+      localSettings: {
+        emails: '',
+        password: '',
+      }
+    }
+  },
+  watch: {
+    settings: {
+      immediate: true,
+      deep: true,
+      handler(value) {
+        this.localSettings = {
+          emails: value?.emails || '',
+          password: value?.password || ''
+        }
+      }
     }
   },
   methods: {
 
     async runScript(enable_multi_account = false, rotate_proxy = false) {
-      await this.$service.update_settings(this.settings)
+      const updatedSettings = {
+        ...this.settings,
+        ...this.localSettings
+      }
+      await this.$service.update_settings(updatedSettings)
+      this.$emit('update:settings', updatedSettings)
       //reload settings
       await this.$emiter('reload_settings', {})
-      await this.$emiter('run_now_by_account', { name: 'register', args: { count: 1 } })
+      await this.$emiter('run_now_by_account', {
+        name: 'register',
+        args: {
+          count: 1,
+          enable_multi_account,
+          rotate_proxy
+        }
+      })
     },
 
   },

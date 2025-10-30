@@ -186,14 +186,10 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { getItem, setItem } from '@/utils/persistentStorage.js';
 import { getUnlockedFeatures } from '@/utils/features.js';
-import MyButton from './Button.vue'
-import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
+import { cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 export default {
     name: 'General',
     props: ['settings'],
-    components: {
-        MyButton
-    },
     data() {
         return {
             proxy_host: 'localhost',
@@ -295,7 +291,7 @@ export default {
         }
 
         //featureUnlocked
-        await this.$listen('featureUnlocked', async (e) => {
+        await this.$listen('featureUnlocked', async () => {
             this.unlocked = await getUnlockedFeatures();
         })
     },

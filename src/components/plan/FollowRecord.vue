@@ -20,7 +20,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in slotProps.items">
+                <tr v-for="(item, index) in slotProps.items"
+                  :key="item.id || `${item.follower}-${item.followee}-${index}`">
                   <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
                   <td>
                     <span class="badge badge-ghost badge-md">{{ item.follower }}</span>

@@ -16,6 +16,8 @@
     "dev": "vite --mode dev",
     "build": "vite build --mode prod",
     "preview": "vite preview --mode test",
+    "lint": "eslint \"{src,scripts}/**/*.{js,ts,vue}\"",
+    "lint:fix": "npm run lint -- --fix",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -54,6 +56,8 @@
     "postcss": "^8.4.38",
     "shx": "^0.3.4",
     "tailwindcss": "^4.0.17",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-vue": "^9.27.0"
   }
 }

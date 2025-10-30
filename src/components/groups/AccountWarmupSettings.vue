@@ -48,7 +48,6 @@
 </template>
 
 <script>
-import VueSlider from "vue-3-slider-component";
 import AccountWarmupFormFields from '@/components/common/AccountWarmupFormFields.vue';
 import { SettingsManager } from '@/utils/settingsManager';
 
@@ -85,7 +84,6 @@ const WARMUP_SETTING_KEYS = [
 
 export default {
   components: {
-    VueSlider,
     AccountWarmupFormFields
   },
   props: {

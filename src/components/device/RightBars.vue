@@ -196,7 +196,6 @@
   </dialog>
 </template>
 <script>
-import { WebviewWindow } from '@tauri-apps/api/window'
 import { readTextFile, writeTextFile, BaseDirectory, exists, createDir } from '@tauri-apps/api/fs'
 import MyButton from '../Button.vue'
 export default {

@@ -1,10 +1,6 @@
 import { spawn } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname, resolve, join } from 'path';
+import { join } from 'path';
 import { platform, homedir } from 'os';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const isWindows = platform() === 'win32';
 const isMac = platform() === 'darwin';

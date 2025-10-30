@@ -93,14 +93,12 @@
   </div>
 </template>
 <script>
-import Modal from '../Modal.vue'
 import MyButton from '../Button.vue'
 import Pagination from '../Pagination.vue'
 
 export default {
   name: 'app',
   components: {
-    Modal,
     MyButton,
     Pagination
   },

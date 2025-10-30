@@ -224,7 +224,8 @@
   <WhiteLabelDialog ref="whitelabelDialog" @config-updated="onWhiteLabelConfigUpdated" />
 
   <!-- 许可证管理弹窗 -->
-  <LicenseManagementDialog ref="licenseManagementDialog" :license="licenseData" />
+  <LicenseManagementDialog ref="licenseManagementDialog" :license="licenseData"
+    @update-license-code="updateLicenseCode" />
 
 
   <!-- 下载进度弹窗 -->
@@ -265,13 +266,13 @@ import { appWindow } from '@tauri-apps/api/window';
 import { getAll } from '@tauri-apps/api/window';
 import { ask, message } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
-import { readTextFile, writeTextFile, exists, copyFile, createDir, removeDir } from '@tauri-apps/api/fs';
+import { readTextFile, writeTextFile, exists, copyFile } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
 import { getVersion, getName } from '@tauri-apps/api/app';
 import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
 import { fetch, ResponseType } from '@tauri-apps/api/http';
-import { appDataDir, join } from '@tauri-apps/api/path';
+import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
 import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
@@ -279,7 +280,7 @@ import { Command } from '@tauri-apps/api/shell'
 import AgentErrorDialog from './AgentErrorDialog.vue';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 import { isFeatureUnlocked } from '../utils/features.js';
-import { getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
+import { getItem, setItem } from '@/utils/persistentStorage.js';
 import LicenseLifecycle from './LicenseLifecycle.vue';
 
 export default {
@@ -370,7 +371,7 @@ export default {
     }
   },
   async created() {
-    const [storedDark, storedLocale, config, unlocked, pendingVersion] = await Promise.all([
+    const [storedDark, storedLocale, config, unlocked] = await Promise.all([
       getItem('isDark'),
       getItem('locale'),
       getWhiteLabelConfig(),
@@ -394,6 +395,12 @@ export default {
     this.isWhiteLabelUnlocked = Boolean(unlocked);
   },
   methods: {
+    updateLicenseCode(value) {
+      this.licenseData = {
+        ...this.licenseData,
+        license_code: value
+      }
+    },
     isLicensed() {
       return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active == 1;
     },
@@ -465,12 +472,12 @@ export default {
         }
       } catch (e) {
         closeDialog();
-        let error = e.toString();
+        const errorMessage = e instanceof Error ? e.message : String(e);
         if (showDialog) {
           this.agentErrorType = 'start';
           this.$refs.agentErrorDialog.show();
         } else {
-          console.error('Silent agent start error:', e);
+          console.error('Silent agent start error:', errorMessage);
           await this.$emiter('NOTIFY', {
             type: 'error',
             message: this.$t('agentStartTimeout'),
@@ -815,7 +822,7 @@ export default {
       this.download_progress = e.payload;
     });
 
-    await this.$listen("DOWNLOAD_FINISHED", async (e) => {
+    await this.$listen("DOWNLOAD_FINISHED", async () => {
       console.log("download finished");
       this.download_progress = {
         filesize: 0,
@@ -839,7 +846,7 @@ export default {
       this.isWhiteLabelUnlocked = await isFeatureUnlocked('whiteLabel');
     });
 
-    await this.$listen('AUTO_UPDATE_TRIGGER', async (e) => {
+    await this.$listen('AUTO_UPDATE_TRIGGER', async () => {
       await this.check_update(true, true);
     });
 

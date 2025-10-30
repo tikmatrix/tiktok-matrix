@@ -15,9 +15,8 @@
 </template>
 
 <script>
-import { invoke } from "@tauri-apps/api/tauri";
 import { getAll } from '@tauri-apps/api/window';
-import { writeTextFile, removeDir } from '@tauri-apps/api/fs';
+import { removeDir } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
 import { message } from '@tauri-apps/api/dialog';
 

@@ -440,7 +440,8 @@ export default {
         const result = await this.$service.report_distributor_install({
           distributor_code: distributorCode,
           app_version: appVersion,
-          os_version: osFullVersion
+          os_version: osFullVersion,
+          machine_id: machineId
         });
 
         console.log('Distributor report result:', result);
@@ -463,7 +464,7 @@ export default {
 
 
     // 监听代理启动事件
-    this.listeners.push(await this.$listen('agent_started', async (e) => {
+    this.listeners.push(await this.$listen('agent_started', async () => {
       await this.$emiter('NOTIFY', {
         type: 'success',
         message: this.$t('agentStarted'),
@@ -481,11 +482,11 @@ export default {
       // 启动自动更新定时器
       this.startAutoUpdateTimer();
     }));
-    this.listeners.push(await this.$listen('reload_devices', async (e) => {
+    this.listeners.push(await this.$listen('reload_devices', async () => {
       await this.getDevices();
     }));
     // 监听重新加载运行任务事件
-    this.listeners.push(await this.$listen('reload_running_tasks', async (e) => {
+    this.listeners.push(await this.$listen('reload_running_tasks', async () => {
       await this.getRunningTasks();
     }));
 
@@ -498,11 +499,11 @@ export default {
     this.listeners.push(await this.$listen('selecedDevices', (e) => {
       this.selecedDevices = e.payload;
     }))
-    this.listeners.push(await this.$listen('reload_group', async (e) => {
+    this.listeners.push(await this.$listen('reload_group', async () => {
       await this.get_groups()
     }))
     //reload_settings
-    this.listeners.push(await this.$listen('reload_settings', async (e) => {
+    this.listeners.push(await this.$listen('reload_settings', async () => {
       await this.get_settings()
       // 重新启动自动更新定时器（设置可能已更改）
       this.startAutoUpdateTimer();

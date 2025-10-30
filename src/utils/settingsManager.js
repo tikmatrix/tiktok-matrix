@@ -1,6 +1,4 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import { exists } from '@tauri-apps/api/fs';
-import { getItem, removeItem } from './persistentStorage.js';
 
 /**
  * 通用设置管理工具

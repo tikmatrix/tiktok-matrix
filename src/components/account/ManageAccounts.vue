@@ -44,7 +44,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(account, index) in slotProps.items">
+              <tr v-for="(account, index) in slotProps.items" :key="account.id || account.username || index">
                 <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
                 <td>
                   <a class="link link-primary" :href="`https://www.tiktok.com/${account.username}`" target="_blank"
@@ -162,7 +162,7 @@ import Pagination from '../Pagination.vue'
 import { writeBinaryFile, BaseDirectory } from '@tauri-apps/api/fs';
 import { invoke } from "@tauri-apps/api/tauri";
 import * as XLSX from 'xlsx'
-import { open } from '@tauri-apps/api/dialog'
+import { open, message } from '@tauri-apps/api/dialog'
 import { readBinaryFile } from '@tauri-apps/api/fs';
 import { getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
@@ -234,7 +234,7 @@ export default {
       });
 
       // 计算每个标签的出现次数
-      Object.entries(this.accountTags).forEach(([accountId, tags]) => {
+      Object.values(this.accountTags).forEach(tags => {
         tags.forEach(tag => {
           if (counts[tag] !== undefined) {
             counts[tag]++;
@@ -563,6 +563,10 @@ export default {
   },
   async mounted() {
     await this.loadAccountTags()
+    const config = await getWhiteLabelConfig();
+    if (config) {
+      this.whitelabelConfig = config;
+    }
     this.get_accounts()
   }
 }

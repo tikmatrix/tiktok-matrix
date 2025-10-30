@@ -77,7 +77,7 @@
 
         <div class="space-y-3 mt-3">
           <div class="bg-base-200/70 rounded-2xl shadow-md border border-base-300/60 scroll-mt-6"
-            v-for="(item, index) in sortedGroups" :key="item.id">
+            v-for="item in sortedGroups" :key="item.id">
             <div class="flex flex-wrap items-center gap-2 p-2 border-b border-base-300/50">
               <label class="flex items-center gap-1.5 cursor-pointer select-none text-primary text-md font-medium">
                 <input type="checkbox" class="checkbox checkbox-md ring-1" @change="selectAll(item.id)"
@@ -131,8 +131,8 @@ import General from './General.vue'
 import Scripts from './Scripts.vue'
 import Tasks from './Tasks.vue'
 import CustomCommands from './CustomCommands.vue';
-import { open, ask, message } from '@tauri-apps/api/dialog';
-import { readText, writeText } from '@tauri-apps/api/clipboard';
+import { open, ask } from '@tauri-apps/api/dialog';
+import { readText } from '@tauri-apps/api/clipboard';
 
 export default {
   name: 'Sidebar',
@@ -195,13 +195,13 @@ export default {
       this.refreshSelections()
     },
     groups: {
-      handler: function (val) {
+      handler: function () {
         this.refreshSelections()
       },
       deep: true
     },
     devices: {
-      handler: function (val) {
+      handler: function () {
         this.refreshSelections()
       },
       deep: true
@@ -308,7 +308,7 @@ export default {
         });
         return
       }
-      this.$service.move_to_group({ serials: serials, dst_id: dst_id }).then(async res => {
+      this.$service.move_to_group({ serials: serials, dst_id: dst_id }).then(async () => {
         this.devices.map(device => {
           if (serials.includes(device.real_serial)) {
             device.group_id = dst_id
@@ -540,7 +540,7 @@ export default {
         });
         this.$service.init({
           serials: [this.selection[i]],
-        }).then(async res => {
+        }).then(async () => {
           await this.$emiter('NOTIFY', {
             type: 'success',
             message: `${this.$t('initSuccess')}`,
@@ -573,7 +573,6 @@ export default {
             message: `${res.data} ${this.$t('taskCreated')}`,
             timeout: 2000
           });
-
         })
     },
     async massComment(args) {
@@ -639,7 +638,7 @@ export default {
         .stop_task({
           serials: this.selection,
         })
-        .then(async (res) => {
+        .then(async () => {
           await this.$emiter('NOTIFY', {
             type: 'success',
             message: this.$t('commandSendSuccess'),
@@ -702,7 +701,7 @@ export default {
         .clear_gallery({
           serials: this.selection,
         })
-        .then(async (res) => {
+        .then(async () => {
           await this.$emiter('NOTIFY', {
             type: 'success',
             message: this.$t('clearGallerySuccess'),
@@ -771,7 +770,7 @@ export default {
           serials: this.selection,
           args: []
         })
-        .then(async (res) => {
+        .then(async () => {
           await this.$emiter('NOTIFY', {
             type: 'success',
             message: this.$t('commandSendSuccess'),
@@ -794,7 +793,7 @@ export default {
           serials: this.selection,
           args: []
         })
-        .then(async (res) => {
+        .then(async () => {
           await this.$emiter('NOTIFY', {
             type: 'success',
             message: this.$t('commandSendSuccess'),
@@ -826,13 +825,13 @@ export default {
       console.log("receive run_now_by_account: ", e.payload)
       this.run_now_by_account(e.payload.name, e.payload.args)
     }))
-    this.listeners.push(await this.$listen('uploadFiles', (e) => {
+    this.listeners.push(await this.$listen('uploadFiles', () => {
       this.uploadFiles()
     }))
-    this.listeners.push(await this.$listen('installApks', (e) => {
+    this.listeners.push(await this.$listen('installApks', () => {
       this.selectApkFile()
     }))
-    this.listeners.push(await this.$listen('initDevice', (e) => {
+    this.listeners.push(await this.$listen('initDevice', () => {
       this.initDevice()
     }))
     this.listeners.push(await this.$listen('setText', (e) => {
@@ -854,11 +853,11 @@ export default {
     this.listeners.push(await this.$listen('massComment', (e) => {
       this.massComment(e.payload);
     }))
-    this.listeners.push(await this.$listen('massFO', (e) => {
+    this.listeners.push(await this.$listen('massFO', () => {
       this.massFO();
     }))
 
-    this.listeners.push(await this.$listen('stop_task', (e) => {
+    this.listeners.push(await this.$listen('stop_task', () => {
       this.stop_task();
     }))
     this.listeners.push(await this.$listen('send_keycode', (e) => {

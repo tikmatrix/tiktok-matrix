@@ -194,7 +194,7 @@ export default {
             this.$refs.licenseMigrationDialog.close();
         },
 
-        async copyText(text, event) {
+        async copyText(text) {
             try {
                 await writeText(text);
                 await this.$emiter('NOTIFY', {

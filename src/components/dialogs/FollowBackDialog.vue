@@ -32,14 +32,10 @@
   </div>
 </template>
 <script>
-import VueSlider from "vue-3-slider-component";
 import { followBackSettings } from '@/utils/settingsManager';
 
 export default {
   name: 'FollowBack',
-  components: {
-    VueSlider
-  },
   mixins: [
     followBackSettings.createVueMixin(
       {

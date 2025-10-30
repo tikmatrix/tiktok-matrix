@@ -32,9 +32,8 @@
         <transition name="expand">
             <div v-if="isExpanded" class="node-children">
                 <!-- 显示子节点 -->
-                <TreeNode v-for="(child, index) in node.children" :key="child.id" :node="child"
-                    :selected-id="selectedId" :search-results="searchResults" @select="$emit('select', $event)"
-                    @hover="$emit('hover', $event)" />
+                <TreeNode v-for="child in node.children" :key="child.id" :node="child" :selected-id="selectedId"
+                    :search-results="searchResults" @select="$emit('select', $event)" @hover="$emit('hover', $event)" />
 
                 <!-- 如果没有子节点，显示节点属性 -->
                 <div v-if="!hasChildren" class="node-properties">

@@ -102,7 +102,7 @@ export default {
     await this.loadAccounts();
 
     // 监听关闭页面对话框事件
-    await this.$listen('closeDialog', (e) => {
+    await this.$listen('closeDialog', () => {
       this.$refs.page_dialog.close();
     });
 

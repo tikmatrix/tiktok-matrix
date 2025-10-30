@@ -46,7 +46,6 @@
   </div>
 </template>
 <script>
-import VueSlider from "vue-3-slider-component";
 import { postSettings } from '@/utils/settingsManager';
 import PostFormFields from '@/components/common/PostFormFields.vue';
 
@@ -112,7 +111,6 @@ const postMixin = postSettings.createVueMixin(
 export default {
   mixins: [postMixin],
   components: {
-    VueSlider,
     PostFormFields
   },
   name: 'PostDialog',
