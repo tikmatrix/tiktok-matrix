@@ -50,8 +50,6 @@
 
 </template>
 <script>
-import VueSlider from "vue-3-slider-component";
-import { invoke } from "@tauri-apps/api/tauri";
 import { accountWarmupSettings } from '@/utils/settingsManager';
 import AccountWarmupFormFields from '@/components/common/AccountWarmupFormFields.vue';
 
@@ -91,7 +89,6 @@ export default {
   mixins: [accountWarmupMixin],
   name: 'AccountWarmupDialog',
   components: {
-    VueSlider,
     AccountWarmupFormFields
   },
   data() {

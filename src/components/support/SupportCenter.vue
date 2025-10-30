@@ -297,9 +297,6 @@ export default {
   beforeUnmount() {
     this.destroyListeners()
   },
-  beforeDestroy() {
-    this.destroyListeners()
-  },
   methods: {
     async setupUnreadState() {
       try {

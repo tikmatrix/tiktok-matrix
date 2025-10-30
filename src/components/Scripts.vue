@@ -96,7 +96,7 @@
 </template>
 <script>
 import { getUnlockedFeatures } from '@/utils/features.js';
-import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
+import { cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 export default {
     name: 'Scripts',
     props: ['settings'],

@@ -3,7 +3,7 @@
     <!-- 应用配置 -->
     <div class="mb-8">
       <h3 class="text-lg font-semibold text-base-content mb-4 border-l-4 border-primary pl-3">{{ $t('appConfiguration')
-      }}</h3>
+        }}</h3>
       <div class="space-y-4">
         <!-- TikTok包名选择 -->
         <div class="flex items-center justify-between py-3 border-b border-base-200"
@@ -30,7 +30,7 @@
           <div class="flex-1">
             <label class="text-md font-medium text-base-content">{{ $t('autoWakeUp') }}</label>
           </div>
-          <input type="checkbox" class="toggle toggle-primary toggle-md" v-model="settings.uiautomator_status"
+          <input type="checkbox" class="toggle toggle-primary toggle-md" v-model="localSettings.uiautomator_status"
             true-value="1" false-value="0" @change="update_settings" />
         </div>
 
@@ -40,7 +40,7 @@
             <label class="text-md font-medium text-base-content">{{ $t('randomOrder') }}</label>
             <p class="text-md text-base-content/60 mt-1">{{ $t('randomOrderTips') }}</p>
           </div>
-          <input type="checkbox" class="toggle toggle-primary toggle-md mt-1" v-model="settings.random_order"
+          <input type="checkbox" class="toggle toggle-primary toggle-md mt-1" v-model="localSettings.random_order"
             :true-value="true" :false-value="false" @change="update_settings" />
         </div>
 
@@ -65,11 +65,13 @@
         <div class="flex items-start justify-between py-3 border-b border-base-200">
           <div class="flex-1">
             <label class="text-md font-medium text-base-content">{{ $t('autoUpdateEnabled') }}</label>
-            <p class="text-md text-base-content/60 mt-1" v-if="settings.auto_update_enabled">{{ $t('autoUpdateTips') }}
+            <p class="text-md text-base-content/60 mt-1" v-if="localSettings.auto_update_enabled">{{
+              $t('autoUpdateTips') }}
             </p>
           </div>
-          <input type="checkbox" class="toggle toggle-primary toggle-md mt-1" v-model="settings.auto_update_enabled"
-            :true-value="true" :false-value="false" @change="update_settings" />
+          <input type="checkbox" class="toggle toggle-primary toggle-md mt-1"
+            v-model="localSettings.auto_update_enabled" :true-value="true" :false-value="false"
+            @change="update_settings" />
         </div>
       </div>
     </div>
@@ -149,12 +151,29 @@ export default {
     }
   },
   watch: {
-    packagename: {
+    settings: {
+      deep: true,
+      immediate: true,
       handler(newVal) {
-        this.settings.packagename = newVal
-        this.update_settings()
-      },
-      deep: true
+        const cloned = JSON.parse(JSON.stringify(newVal || {}));
+        this.localSettings = cloned;
+        const nextPackagename = cloned.packagename || '';
+        if (nextPackagename !== this.packagename) {
+          this.packagename = nextPackagename;
+        }
+        if (!this.hasLoadedSettings) {
+          this.hasLoadedSettings = true;
+        }
+      }
+    },
+    packagename(newVal, oldVal) {
+      if (!this.hasLoadedSettings || newVal === oldVal) {
+        return;
+      }
+      if (this.localSettings.packagename !== newVal) {
+        this.localSettings = { ...this.localSettings, packagename: newVal };
+      }
+      this.update_settings();
     },
     bigScreen: {
       async handler(newVal) {
@@ -165,6 +184,8 @@ export default {
   },
   data() {
     return {
+      localSettings: {},
+      hasLoadedSettings: false,
       packagename: '',
       bigScreen: 'standard',
       work_path: '',
@@ -183,7 +204,10 @@ export default {
       invoke('open_adb_terminal', { dir });
     },
     async update_settings() {
-      await this.$service.update_settings(this.settings)
+      if (!this.hasLoadedSettings) {
+        return;
+      }
+      await this.$service.update_settings(this.localSettings)
       //reload settings
       await this.$emiter('reload_settings', {})
 
@@ -223,15 +247,22 @@ export default {
     }
   },
   async mounted() {
-    this.packagename = this.settings.packagename
+    const config = await getWhiteLabelConfig();
+    if (config) {
+      this.whitelabelConfig = config;
+    }
+    if (this.localSettings.packagename) {
+      this.packagename = this.localSettings.packagename;
+    }
     this.work_path = await appDataDir();
     const storedBigScreen = await getItem('bigScreen');
     if (storedBigScreen) {
       this.bigScreen = storedBigScreen;
     }
     // 设置默认值
-    if (this.settings.auto_update_enabled === undefined) {
-      this.settings.auto_update_enabled = true; // 默认开启
+    if (this.localSettings.auto_update_enabled === undefined) {
+      this.localSettings = { ...this.localSettings, auto_update_enabled: true };
+      await this.update_settings();
     }
   }
 }

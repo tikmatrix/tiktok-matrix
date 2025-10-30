@@ -20,7 +20,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(plan, index) in slotProps.items">
+              <tr v-for="(plan, index) in slotProps.items" :key="plan.id || `${plan.username}-${index}`">
                 <td>{{ ((slotProps.currentPage - 1) * slotProps.pageSize) + index + 1 }}</td>
                 <td>
                   <span class="badge badge-ghost badge-md">{{ plan.username }}</span>

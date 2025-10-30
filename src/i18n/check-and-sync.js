@@ -40,16 +40,6 @@ function checkCoverage(translations, name) {
   return missing;
 }
 
-// 合并翻译，使用英语作为后备
-function mergeTranslations(translations, missing) {
-  const result = { ...translations };
-
-  for (const key of missing) {
-    result[key] = en[key] || key;
-  }
-
-  return result;
-}
 
 // 生成排序后的翻译对象
 function generateSortedTranslations(translations) {
@@ -93,9 +83,9 @@ console.log('====== 检查翻译完整性 ======');
 console.log(`总键数: ${sortedKeys.length}`);
 
 // 检查覆盖情况
-const enMissing = checkCoverage(en, '英语');
-const zhMissing = checkCoverage(zhCN, '中文');
-const ruMissing = checkCoverage(ru, '俄语');
+checkCoverage(en, '英语');
+checkCoverage(zhCN, '中文');
+checkCoverage(ru, '俄语');
 
 console.log('\n====== 生成更新文件 ======');
 

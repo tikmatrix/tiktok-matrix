@@ -69,9 +69,9 @@ const request = async function request(config) {
   }
 
   const { method, url } = config;
-  const mockMethod = method || 'get';
   if (import.meta.env.VITE_APP_MOCK === 'true') {
-    return Promise.resolve(mock(url, mockMethod.toLowerCase()));
+    console.warn('Mock mode enabled but no mock handler is defined. Returning empty response.');
+    return Promise.resolve({ code: 0, data: [] });
   }
 
   const querySuffix = buildQuery(config.params);

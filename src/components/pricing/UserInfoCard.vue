@@ -30,7 +30,8 @@
 
             <!-- 许可证激活区域 -->
             <LicenseActivation v-else :license="license" @activate="$emit('activate', $event)"
-                @show-license-migration="$emit('show-license-migration')" @copy-text="copyText" />
+                @show-license-migration="$emit('show-license-migration')" @copy-text="copyText"
+                @update-license-code="$emit('update-license-code', $event)" />
         </div>
     </div>
 </template>
@@ -53,7 +54,7 @@ export default {
             required: true
         }
     },
-    emits: ['manage-subscription', 'show-license-migration', 'activate', 'copy-text'],
+    emits: ['manage-subscription', 'show-license-migration', 'activate', 'copy-text', 'update-license-code'],
     methods: {
         async copyText(text) {
             this.$emit('copy-text', text);

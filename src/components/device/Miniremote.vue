@@ -89,6 +89,7 @@
 }
 </style>
 <script>
+/* global VideoDecoder, EncodedVideoChunk */
 import RightBars from './RightBars.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
@@ -560,8 +561,6 @@ export default {
             profileIndex,
             constraintSet,
             levelIndex,
-            croppedWidth,
-            croppedHeight,
           } = h264ParseConfiguration(h264Data);
           //todo: resize
           const codec =
@@ -639,25 +638,31 @@ export default {
         this.loading = false
         if (this.message_index < 2) {
           switch (this.message_index) {
-            case 0:
-              this.name = message.data.replace(/[\x00]+$/g, '');
+            case 0: {
+              this.name = message.data;
+              while (this.name.endsWith('\u0000')) {
+                this.name = this.name.slice(0, -1);
+              }
               // limit max length 5, other with ...
               const max_length = this.big ? 10 : 6
               if (this.name.length > max_length) {
-                this.name = this.name.substring(0, max_length) + '...'
+                this.name = `${this.name.substring(0, max_length)}...`
               }
               break
-            case 1:
+            }
+            case 1: {
               if (this.big || this.width != this.default_width) {
                 this.message_index += 1
                 return;
               }
-              this.real_width = message.data.split('x')[0]
-              this.real_height = message.data.split('x')[1]
+              const [widthStr, heightStr] = message.data.split('x')
+              this.real_width = widthStr
+              this.real_height = heightStr
               this.scaled = this.height / this.real_height
               // console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
 
               break
+            }
           }
           this.message_index += 1
           return

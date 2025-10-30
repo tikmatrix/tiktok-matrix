@@ -172,7 +172,7 @@
               </div>
               <div :style="gridStyle" v-else class="grid auto-rows-fr gap-4">
                 <Miniremote :device="device" :key="device.real_serial" :no="device.key"
-                  v-for="(device, index) in slotProps.items" @sizeChanged="sizeChanged" />
+                  v-for="device in slotProps.items" @sizeChanged="sizeChanged" />
               </div>
             </div>
           </template>
@@ -186,26 +186,16 @@
             <svg class="fill-current text-info h-32 w-32" xmlns="http://www.w3.org/2000/svg"
               xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 471.117 471.117" xml:space="preserve">
               <g>
-                <path d="M447.564,129.817h-68.192c-8.213,0-14.871,6.675-14.871,14.872v129.155
-		c0,8.213,6.658,14.873,14.871,14.873h68.192c8.197,0,14.856-6.66,14.856-14.873V144.689
-		C462.42,136.492,455.761,129.817,447.564,129.817z M446.81,144.689v115.13h-66.776l-0.662-114.377L446.81,144.689z
-		 M406.025,273.461c0-4.076,3.321-7.429,7.428-7.429c4.122,0,7.443,3.353,7.443,7.429c0,4.107-3.321,7.444-7.443,7.444
-		C409.346,280.905,406.025,277.568,406.025,273.461z" />
-                <path d="M116.123,216.788v38.371h-12.365c-8.627,0-15.61,6.999-15.61,15.626
-		c0,8.629,6.983,15.609,15.61,15.609h101.765c8.629,0,15.626-6.98,15.626-15.609c0-8.627-6.997-15.626-15.626-15.626h-12.364
-		v-38.371H271.5c16.04,0,29.083-13.041,29.083-29.083V29.082C300.583,13.042,287.54,0,271.5,0H37.781
-		C21.739,0,8.697,13.042,8.697,29.082v158.623c0,16.042,13.042,29.083,29.084,29.083H116.123z M39.933,31.236h229.415v154.316
-		H39.933V31.236z" />
                 <path
-                  d="M345.138,298.622h-170.42c-16.118,0-29.237,13.118-29.237,29.235v114.024
-		c0,16.117,13.119,29.235,29.237,29.235h170.42c16.117,0,29.235-13.118,29.235-29.235V327.857
-		C374.374,311.74,361.255,298.622,345.138,298.622z M165.583,395.805c-6.044,0-10.935-4.876-10.935-10.936
-		c0-6.059,4.891-10.95,10.935-10.95c6.028,0,10.95,4.892,10.95,10.95C176.533,390.929,171.611,395.805,165.583,395.805z
-		 M350.951,441.882c0,3.198-2.614,5.813-5.813,5.813H184.577V322.045h160.562c3.198,0,5.813,2.614,5.813,5.813V441.882z" />
-                <path d="M49.36,399.558v-133.34v-25.452H25.937v170.511c0,6.46,5.244,11.704,11.705,11.704h78.48v-23.423
-		h-5.383H49.36z" />
-                <path d="M418.989,343.237v56.32h-20.485h-4.26v23.423h36.465c6.459,0,11.703-5.244,11.703-11.704V311.033
-		h-23.423V343.237z" />
+                  d="M447.564,129.817h-68.192c-8.213,0-14.871,6.675-14.871,14.872v129.155 c0,8.213,6.658,14.873,14.871,14.873h68.192c8.197,0,14.856-6.66,14.856-14.873V144.689 C462.42,136.492,455.761,129.817,447.564,129.817z M446.81,144.689v115.13h-66.776l-0.662-114.377L446.81,144.689z M406.025,273.461c0-4.076,3.321-7.429,7.428-7.429c4.122,0,7.443,3.353,7.443,7.429c0,4.107-3.321,7.444-7.443,7.444 C409.346,280.905,406.025,277.568,406.025,273.461z" />
+                <path
+                  d="M116.123,216.788v38.371h-12.365c-8.627,0-15.61,6.999-15.61,15.626 c0,8.629,6.983,15.609,15.61,15.609h101.765c8.629,0,15.626-6.98,15.626-15.609c0-8.627-6.997-15.626-15.626-15.626h-12.364 v-38.371H271.5c16.04,0,29.083-13.041,29.083-29.083V29.082C300.583,13.042,287.54,0,271.5,0H37.781 C21.739,0,8.697,13.042,8.697,29.082v158.623c0,16.042,13.042,29.083,29.084,29.083H116.123z M39.933,31.236h229.415v154.316 H39.933V31.236z" />
+                <path
+                  d="M345.138,298.622h-170.42c-16.118,0-29.237,13.118-29.237,29.235v114.024 c0,16.117,13.119,29.235,29.237,29.235h170.42c16.117,0,29.235-13.118,29.235-29.235V327.857 C374.374,311.74,361.255,298.622,345.138,298.622z M165.583,395.805c-6.044,0-10.935-4.876-10.935-10.936 c0-6.059,4.891-10.95,10.935-10.95c6.028,0,10.95,4.892,10.95,10.95C176.533,390.929,171.611,395.805,165.583,395.805z M350.951,441.882c0,3.198-2.614,5.813-5.813,5.813H184.577V322.045h160.562c3.198,0,5.813,2.614,5.813,5.813V441.882z" />
+                <path
+                  d="M49.36,399.558v-133.34v-25.452H25.937v170.511c0,6.46,5.244,11.704,11.705,11.704h78.48v-23.423 h-5.383H49.36z" />
+                <path
+                  d="M418.989,343.237v56.32h-20.485h-4.26v23.423h36.465c6.459,0,11.703-5.244,11.703-11.704V311.033 h-23.423V343.237z" />
               </g>
             </svg>
           </div>
@@ -333,12 +323,10 @@
 <script>
 import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
-import Modal from '../Modal.vue'
 import Pagination from '../Pagination.vue'
 import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs';
-import ContactSupport from '../pricing/ContactSupport.vue'
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
 
@@ -358,10 +346,8 @@ export default {
   components: {
     MyButton,
     Miniremote,
-    Modal,
     Pagination,
-    DeviceDebugDialog,
-    ContactSupport
+    DeviceDebugDialog
   },
   data() {
     return {
@@ -494,7 +480,7 @@ export default {
     setDisplayMode(mode) {
       this.listMode = mode === 'list';
     },
-    async copyText(text, event) {
+    async copyText(text) {
       await writeText(text)
       await this.$emiter('NOTIFY', {
         type: 'success',
@@ -832,7 +818,8 @@ export default {
           timeout: 4000,
         })
       } finally {
-        const { [serial]: removed, ...rest } = this.testingRotations
+        const rest = { ...this.testingRotations }
+        delete rest[serial]
         this.testingRotations = rest
       }
     },
@@ -924,7 +911,7 @@ export default {
         }
       }
     });
-    await this.$listen('closeDevice', (e) => {
+    await this.$listen('closeDevice', () => {
       this.device = null
     });
     // 监听TitleBar组件的授权状态变更

@@ -59,11 +59,12 @@
         </label>
         <div class="flex items-center gap-6">
           <label class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <input type="radio" id="logined" value="1" v-model="account.logined" class="radio radio-primary radio-md">
+            <input type="radio" id="logined" value="1" v-model="myaccount.logined" class="radio radio-primary radio-md">
             <span class="ml-2 text-base-content">{{ $t('logined') }}</span>
           </label>
           <label class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <input type="radio" id="unlogined" value="0" v-model="account.logined" class="radio radio-primary radio-md">
+            <input type="radio" id="unlogined" value="0" v-model="myaccount.logined"
+              class="radio radio-primary radio-md">
             <span class="ml-2 text-base-content">{{ $t('unlogined') }}</span>
           </label>
         </div>
@@ -76,11 +77,11 @@
         </label>
         <div class="flex items-center gap-6">
           <label class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <input type="radio" id="enable" value="0" v-model="account.status" class="radio radio-success radio-md">
+            <input type="radio" id="enable" value="0" v-model="myaccount.status" class="radio radio-success radio-md">
             <span class="ml-2 text-base-content">{{ $t('enable') }}</span>
           </label>
           <label class="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <input type="radio" id="disable" value="1" v-model="account.status" class="radio radio-error radio-md">
+            <input type="radio" id="disable" value="1" v-model="myaccount.status" class="radio radio-error radio-md">
             <span class="ml-2 text-base-content">{{ $t('disable') }}</span>
           </label>
         </div>
@@ -95,7 +96,7 @@
           <button type="button" class="btn btn-md btn-error btn-circle" @click="clearDevice" title="Clear selection">
             ×
           </button>
-          <button v-for="(device, index) in devices" :key="device.serial" type="button"
+          <button v-for="device in devices" :key="device.serial" type="button"
             class="btn btn-md transition-all duration-200"
             :class="device.key === myaccount.device_index ? 'btn-success' : 'btn-outline btn-success'"
             @click="selectDevice(device)">
@@ -142,7 +143,45 @@ export default {
       detectingPackage: false,
     }
   },
+  watch: {
+    account: {
+      deep: true,
+      immediate: true,
+      handler(newAccount) {
+        this.myaccount = this.cloneAccount(newAccount);
+        this.myaccount.device_index = this.resolveDeviceIndex(this.myaccount.device);
+      }
+    },
+    devices: {
+      deep: true,
+      handler() {
+        this.myaccount.device_index = this.resolveDeviceIndex(this.myaccount.device);
+      }
+    }
+  },
   methods: {
+    cloneAccount(account) {
+      if (!account) {
+        return {
+          email: '',
+          pwd: '',
+          username: '',
+          packagename: '',
+          logined: '0',
+          status: '0',
+          device: null,
+          device_index: null
+        };
+      }
+      return JSON.parse(JSON.stringify(account));
+    },
+    resolveDeviceIndex(serial) {
+      if (!serial) {
+        return null;
+      }
+      const device = this.devices.find(item => item.real_serial === serial);
+      return device ? device.key : null;
+    },
     async detectPackageName() {
       if (!this.myaccount.device) {
         this.$emiter('NOTIFY', {
@@ -194,10 +233,11 @@ export default {
       this.myaccount.username = this.myaccount.username.trim()
       this.myaccount.logined = Number(this.myaccount.logined)
       this.myaccount.status = Number(this.myaccount.status)
-      if (this.myaccount.id) {
-        this.$emit('update', this.myaccount)
+      const payload = { ...this.myaccount };
+      if (payload.id) {
+        this.$emit('update', payload)
       } else {
-        this.$emit('add', this.myaccount)
+        this.$emit('add', payload)
       }
     },
 
@@ -214,8 +254,7 @@ export default {
 
   },
   mounted() {
-    this.myaccount = this.account
-    this.myaccount.device_index = this.devices.find(device => device.real_serial === this.myaccount.device)?.key
+    // Handled by watchers
   }
 }
 </script>

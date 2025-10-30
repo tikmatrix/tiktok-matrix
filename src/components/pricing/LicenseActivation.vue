@@ -8,8 +8,8 @@
                 </div>
                 <input type="text" placeholder="xxxx-xxxx-xxxx-xxxx" :disabled="license.leftdays > 0"
                     class="input input-md input-bordered flex-1 font-mono"
-                    :class="license.leftdays > 0 ? 'bg-base-200' : 'focus:border-primary'"
-                    v-model="license.license_code" />
+                    :class="license.leftdays > 0 ? 'bg-base-200' : 'focus:border-primary'" :value="localLicenseCode"
+                    @input="onInput($event.target.value)" />
                 <button @click="$emit('activate', $event)"
                     class="btn btn-md btn-success hover:btn-success-focus transition-all duration-200"
                     v-if="license.leftdays <= 0">
@@ -55,6 +55,26 @@ export default {
             required: true
         }
     },
-    emits: ['activate', 'copy-text', 'show-license-migration']
+    data() {
+        return {
+            localLicenseCode: ''
+        }
+    },
+    watch: {
+        license: {
+            immediate: true,
+            deep: true,
+            handler(value) {
+                this.localLicenseCode = value?.license_code || ''
+            }
+        }
+    },
+    emits: ['activate', 'copy-text', 'show-license-migration', 'update-license-code'],
+    methods: {
+        onInput(value) {
+            this.localLicenseCode = value
+            this.$emit('update-license-code', value)
+        }
+    }
 }
 </script>

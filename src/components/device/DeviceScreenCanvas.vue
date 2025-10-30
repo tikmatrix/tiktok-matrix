@@ -151,12 +151,12 @@ watch(() => props.screenshot, async (newScreenshot) => {
 })
 
 // 监听选中元素变化
-watch(() => props.selectedElement, (element) => {
+watch(() => props.selectedElement, () => {
     redrawForeground()
 })
 
 // 监听悬停元素变化
-watch(() => props.hoveredElement, (element) => {
+watch(() => props.hoveredElement, () => {
     redrawForeground()
 })
 

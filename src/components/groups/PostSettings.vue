@@ -47,7 +47,6 @@
 </template>
 
 <script>
-import VueSlider from "vue-3-slider-component";
 import PostFormFields from '@/components/common/PostFormFields.vue';
 import { SettingsManager } from '@/utils/settingsManager';
 
@@ -115,7 +114,6 @@ const POST_SETTING_KEYS = [
 
 export default {
   components: {
-    VueSlider,
     PostFormFields
   },
   props: {

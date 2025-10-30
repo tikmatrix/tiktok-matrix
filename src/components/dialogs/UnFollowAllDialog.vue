@@ -10,14 +10,10 @@
 
 </template>
 <script>
-import VueSlider from "vue-3-slider-component";
 import { unfollowAllSettings } from '@/utils/settingsManager';
 
 export default {
   name: 'UnFollowAll',
-  components: {
-    VueSlider
-  },
   mixins: [
     unfollowAllSettings.createVueMixin(
       {

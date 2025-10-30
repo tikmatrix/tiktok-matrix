@@ -346,7 +346,7 @@
 <script>
 import VueSlider from "vue-3-slider-component";
 import { open } from '@tauri-apps/api/dialog';
-import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
+import { cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 
 export default {
     name: 'PostFormFields',

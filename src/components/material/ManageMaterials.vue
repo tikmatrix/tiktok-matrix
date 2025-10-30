@@ -475,7 +475,6 @@ export default {
 
     async selectMaterials() {
       const content_type = this.group.content_type;
-      const image_count = this.group.image_count;
       let filters = [];
       if (content_type == 0) {
         filters = [ // 视频
