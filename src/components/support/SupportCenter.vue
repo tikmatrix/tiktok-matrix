@@ -234,6 +234,7 @@ export default {
         includeLogs: false,
         messageTail: '',
         attachment: null,
+        preparedPackage: null,
         preparedSerials: [],
         preparationTask: null,
         preparationToken: 0,
@@ -1159,6 +1160,7 @@ export default {
       this.reply.preparationToken += 1
       this.reply.preparationTask = null
       this.reply.attachment = null
+      this.reply.preparedPackage = null
       this.reply.preparedSerials = []
       this.reply.preparationError = null
       this.reply.messageTail = ''
@@ -1171,6 +1173,14 @@ export default {
         this.buildReplySerialPayload().map(device => device.realSerial)
       )
       if (!serials.length) {
+        return
+      }
+      const preparedForSerials = this.areSameSerialSet(serials, this.reply.preparedSerials)
+      if (
+        this.reply.preparationTask ||
+        (this.reply.attachment && preparedForSerials) ||
+        (this.reply.preparedPackage && preparedForSerials)
+      ) {
         return
       }
       this.startReplyLogPreparation(serials)
@@ -1222,18 +1232,19 @@ export default {
           if (!this.reply.includeLogs || this.reply.preparationToken !== currentToken) {
             return null
           }
-          const attachment = await this.uploadReplyLogs(response, normalizedSerials)
-          if (!this.reply.includeLogs || this.reply.preparationToken !== currentToken) {
-            return null
+          if (!response || !response.zip_path) {
+            throw new Error('LOG_PACKAGE_MISSING')
           }
           this.reply.messageTail = response?.message_tail || ''
-          this.reply.attachment = attachment
+          this.reply.preparedPackage = response
+          this.reply.attachment = null
           this.reply.preparedSerials = normalizedSerials
           this.reply.preparationError = null
-          return attachment
+          return response
         } catch (error) {
           if (this.reply.preparationToken === currentToken) {
             this.reply.preparationError = error
+            this.reply.preparedPackage = null
             this.reply.attachment = null
             this.reply.messageTail = ''
             this.reply.preparedSerials = []
@@ -1266,22 +1277,65 @@ export default {
         this.clearReplyPreparation()
         return []
       }
-      if (!this.areSameSerialSet(serials, this.reply.preparedSerials)) {
+      const isPreparedForSerials = () => this.areSameSerialSet(serials, this.reply.preparedSerials)
+
+      if (!isPreparedForSerials()) {
         this.clearReplyPreparation()
       }
-      if (this.reply.attachment && this.areSameSerialSet(serials, this.reply.preparedSerials)) {
+      if (this.reply.attachment && isPreparedForSerials()) {
         return [this.reply.attachment]
       }
+
+      const attemptUpload = async () => {
+        if (!isPreparedForSerials()) {
+          return []
+        }
+        if (this.reply.attachment && isPreparedForSerials()) {
+          return [this.reply.attachment]
+        }
+        const packageInfo = this.reply.preparedPackage
+        if (!packageInfo || !packageInfo.zip_path) {
+          return []
+        }
+        try {
+          const attachment = await this.uploadReplyLogs(packageInfo, serials)
+          if (isPreparedForSerials()) {
+            this.reply.attachment = attachment
+          }
+          return this.reply.attachment && isPreparedForSerials()
+            ? [this.reply.attachment]
+            : attachment
+              ? [attachment]
+              : []
+        } catch (error) {
+          console.error('prepareReplyAttachments upload failed', error)
+          this.reply.preparationError = error
+          return []
+        }
+      }
+
+      if (this.reply.preparedPackage && isPreparedForSerials()) {
+        const uploaded = await attemptUpload()
+        if (uploaded.length) {
+          return uploaded
+        }
+      }
+
       if (this.reply.preparationTask) {
         try {
           await this.reply.preparationTask
         } catch (error) {
           console.error('prepareReplyAttachments awaiting task failed', error)
         }
-        if (this.reply.attachment && this.areSameSerialSet(serials, this.reply.preparedSerials)) {
+        if (this.reply.attachment && isPreparedForSerials()) {
           return [this.reply.attachment]
         }
+        const uploaded = await attemptUpload()
+        if (uploaded.length) {
+          return uploaded
+        }
       }
+
       const task = this.startReplyLogPreparation(serials)
       if (!task) {
         return []
@@ -1292,9 +1346,7 @@ export default {
         console.error('prepareReplyAttachments start task failed', error)
         return []
       }
-      return this.reply.attachment && this.areSameSerialSet(serials, this.reply.preparedSerials)
-        ? [this.reply.attachment]
-        : []
+      return attemptUpload()
     },
     buildReplySerialPayload() {
       const sourceDevices = Array.isArray(this.devicesDetail) && this.devicesDetail.length
