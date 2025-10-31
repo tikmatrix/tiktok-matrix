@@ -246,8 +246,20 @@ export default {
         'add_product_link', 'captions', 'material_source', 'material_path', 'materials_tags', 'placement'
       ];
 
+      const preserveLocalOnEmpty = new Set(['custom_sound_keyword']);
+
       overrideKeys.forEach(key => {
         const value = this.mygroup[key];
+        const shouldSkipEmptyOverride = preserveLocalOnEmpty.has(key)
+          && (value === '' || value === null || value === undefined)
+          && this[key] !== undefined
+          && this[key] !== null
+          && this[key] !== '';
+
+        if (shouldSkipEmptyOverride) {
+          return;
+        }
+
         if (value !== undefined && value !== null) {
           if (key === 'auto_publish') {
             const numeric = Number(value);
