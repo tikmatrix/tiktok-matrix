@@ -945,6 +945,7 @@
   url: 'Запрос URL',
   urlMode: 'Ссылка на музыку',
   usdtTip: 'Пожалуйста, используйте сеть {network}, переведите {amount} USDT на адрес выше!',
+  usdtPayment: 'Оплатить USDT',
   usdtbep20: 'USDT-BEP20',
   usdttrc20: 'USDT-TRC20',
   useDefaultPackage: 'Использовать по умолчанию (из настроек)',
