@@ -39,6 +39,42 @@ export default {
             }
         },
 
+        async createAlipayCheckoutUrl(planId, planInterval) {
+            if (!this.agreePolicy) {
+                this.$refs.loadingDialogs.showAgreePolicyDialog();
+                return;
+            }
+
+            this.$refs.loadingDialogs.showCreateOrderLoadingDialog();
+
+            try {
+                const res = await this.$service.get_alipay_checkout_url({
+                    plan_id: planId,
+                    plan_interval: planInterval
+                });
+
+                if (res.code !== 0) {
+                    await this.$emiter('NOTIFY', {
+                        type: 'error',
+                        message: res.data,
+                        timeout: 2000
+                    });
+                } else {
+                    console.log('get_alipay_checkout_url:', res.data);
+                    await open(JSON.parse(res.data));
+                }
+            } catch (err) {
+                console.error('get_alipay_checkout_url error:', err);
+                await this.$emiter('NOTIFY', {
+                    type: 'error',
+                    message: this.$t('getAlipayCheckoutUrlErrorMessage'),
+                    timeout: 2000
+                });
+            } finally {
+                this.$refs.loadingDialogs.closeCreateOrderLoadingDialog();
+            }
+        },
+
         async createOrder(price, planId, planInterval, network) {
             this.$refs.loadingDialogs.showCreateOrderLoadingDialog(); try {
                 const res = await this.$service.create_order({

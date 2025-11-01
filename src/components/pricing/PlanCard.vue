@@ -53,7 +53,7 @@
             <PaymentButtons :license="license" :price-id="priceId" :amount="planAmount" :plan-id="plan.id"
                 :plan-interval="apiPlanInterval" :plan-type="planType"
                 @manage-subscription="$emit('manage-subscription')" @create-stripe-checkout="handleStripeCheckout"
-                @create-order="handleCreateOrder" />
+                @create-alipay-checkout="handleAlipayCheckout" @create-order="handleCreateOrder" />
         </div>
     </div>
 </template>
@@ -86,7 +86,7 @@ export default {
             required: true
         }
     },
-    emits: ['create-stripe-checkout', 'create-order', 'manage-subscription'],
+    emits: ['create-stripe-checkout', 'create-alipay-checkout', 'create-order', 'manage-subscription'],
     computed: {
         isPopular() {
             return this.index === 1
@@ -165,6 +165,9 @@ export default {
         },
         handleCreateOrder(price, planId, planInterval, network) {
             this.$emit('create-order', price, planId, planInterval, network);
+        },
+        handleAlipayCheckout(planId, planInterval) {
+            this.$emit('create-alipay-checkout', planId, planInterval);
         }
     }
 }

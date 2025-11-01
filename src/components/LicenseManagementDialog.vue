@@ -29,7 +29,8 @@
                     <PricingTable
                         v-else-if="whitelabelConfig.enablePay && priceTableInfo && priceTableInfo.plans.length > 0"
                         :plans="priceTableInfo.plans" :license="license"
-                        @create-stripe-checkout="createStripeCheckoutUrl" @create-order="createOrder"
+                        @create-stripe-checkout="createStripeCheckoutUrl"
+                        @create-alipay-checkout="createAlipayCheckoutUrl" @create-order="createOrder"
                         @manage-subscription="manageStripeSubscription" />
 
                     <!-- 隐私协议 -->

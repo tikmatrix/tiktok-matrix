@@ -6,7 +6,8 @@
             aria-label="Monthly" checked="checked" />
         <div class="tab-content bg-base-100 backdrop-blur border border-base-300 rounded-xl p-6 shadow-xl">
             <PlanSection :plans="plans" plan-type="monthly" :license="license"
-                @create-stripe-checkout="handleCreateStripeCheckout" @create-order="handleCreateOrder"
+                @create-stripe-checkout="handleCreateStripeCheckout"
+                @create-alipay-checkout="handleCreateAlipayCheckout" @create-order="handleCreateOrder"
                 @manage-subscription="$emit('manage-subscription')" />
         </div>
 
@@ -16,7 +17,8 @@
             :aria-label="$t('yearlyDiscount', { percent: 30 })" />
         <div class="tab-content bg-base-100 backdrop-blur border border-base-300 rounded-xl p-6 shadow-xl">
             <PlanSection :plans="plans" plan-type="yearly" :license="license"
-                @create-stripe-checkout="handleCreateStripeCheckout" @create-order="handleCreateOrder"
+                @create-stripe-checkout="handleCreateStripeCheckout"
+                @create-alipay-checkout="handleCreateAlipayCheckout" @create-order="handleCreateOrder"
                 @manage-subscription="$emit('manage-subscription')" />
         </div>
     </div>
@@ -40,13 +42,16 @@ export default {
             required: true
         }
     },
-    emits: ['create-stripe-checkout', 'create-order', 'manage-subscription'],
+    emits: ['create-stripe-checkout', 'create-alipay-checkout', 'create-order', 'manage-subscription'],
     methods: {
         handleCreateOrder(price, planId, planInterval, network) {
             this.$emit('create-order', price, planId, planInterval, network)
         },
         handleCreateStripeCheckout(price, planId, planInterval) {
             this.$emit('create-stripe-checkout', price, planId, planInterval)
+        },
+        handleCreateAlipayCheckout(planId, planInterval) {
+            this.$emit('create-alipay-checkout', planId, planInterval)
         }
     }
 }
