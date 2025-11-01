@@ -529,6 +529,14 @@ export function get_stripe_checkout_url(data) {
   })
 }
 
+export function get_alipay_checkout_url(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.get_alipay_checkout_url
+  })
+}
+
 // 获取所有标签
 export function get_tags() {
   return request({

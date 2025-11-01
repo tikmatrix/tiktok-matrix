@@ -12,7 +12,8 @@
         <div class="grid gap-4 w-full" :style="gridStyle">
             <PlanCard v-for="(plan, index) in plans" :key="plan.id + '_' + planType" :plan="plan" :plan-type="planType"
                 :index="index" :license="license" @create-stripe-checkout="handleCreateStripeCheckout"
-                @create-order="handleCreateOrder" @manage-subscription="$emit('manage-subscription')" />
+                @create-alipay-checkout="handleCreateAlipayCheckout" @create-order="handleCreateOrder"
+                @manage-subscription="$emit('manage-subscription')" />
         </div>
     </div>
 </template>
@@ -40,7 +41,7 @@ export default {
             required: true
         }
     },
-    emits: ['create-stripe-checkout', 'create-order', 'manage-subscription'],
+    emits: ['create-stripe-checkout', 'create-alipay-checkout', 'create-order', 'manage-subscription'],
     computed: {
         titleClass() {
             return this.planType === 'monthly' ? 'text-primary' : 'text-accent'
@@ -59,6 +60,9 @@ export default {
         },
         handleCreateStripeCheckout(price, planId, planInterval) {
             this.$emit('create-stripe-checkout', price, planId, planInterval)
+        },
+        handleCreateAlipayCheckout(planId, planInterval) {
+            this.$emit('create-alipay-checkout', planId, planInterval)
         }
     }
 }

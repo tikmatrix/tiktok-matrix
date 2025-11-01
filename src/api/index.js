@@ -53,6 +53,7 @@ const api = {
   scrape_now: '/api/scrape_now',
   get_stripe_portal_url: '/api/get_stripe_portal_url',
   get_stripe_checkout_url: '/api/get_stripe_checkout_url',
+  get_alipay_checkout_url: '/api/get_alipay_checkout_url',
   tiktok_query: '/api/tiktok_query',
   tag: '/api/tag',
   material_tags: '/api/material/{material_id}/tags',
