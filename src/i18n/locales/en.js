@@ -945,6 +945,7 @@
   url: 'Request URL',
   urlMode: 'Music Link',
   usdtTip: 'Please use {network} network, transfer {amount} USDT to the address above!',
+  usdtPayment: 'Pay with USDT',
   usdtbep20: 'USDT-BEP20',
   usdttrc20: 'USDT-TRC20',
   useDefaultPackage: 'Use Default (From Settings)',

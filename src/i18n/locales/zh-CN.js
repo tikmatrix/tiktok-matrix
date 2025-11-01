@@ -945,6 +945,7 @@
   url: '请求 URL',
   urlMode: '音乐链接',
   usdtTip: '请使用 {network} 网络,向上方地址转账 {amount} USDT!',
+  usdtPayment: 'USDT 加密支付',
   usdtbep20: 'USDT-BEP20',
   usdttrc20: 'USDT-TRC20',
   useDefaultPackage: '使用默认包名(从设置中获取)',
