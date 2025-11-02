@@ -59,7 +59,7 @@ function promptForVersion() {
             output: process.stdout
         });
 
-        rl.question('Please enter the version number (e.g., v1.0.0): ', (answer) => {
+        rl.question('Please enter the version number (e.g., 1.0.0): ', (answer) => {
             rl.close();
             resolve(answer.trim());
         });
