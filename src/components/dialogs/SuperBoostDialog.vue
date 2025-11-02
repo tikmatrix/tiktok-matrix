@@ -47,7 +47,7 @@
                         <span class="label-text font-semibold">{{ $t('targetUsernamesPath') }}</span>
                     </label>
                     <div class="join flex w-full">
-                        <input type="text" :placeholder="$t('selectUsernameFile')"
+                        <input type="text" :placeholder="$t('selectUsernameFile')" readonly
                             class="input input-bordered join-item  flex-1 w-full" v-model="targetUsernamesPath" />
                         <button class="btn btn-info join-item" @click="selectUsernameFile">{{ $t('select') }}</button>
                     </div>
@@ -82,7 +82,7 @@
                         </span>
                     </label>
                     <div class="join flex w-full">
-                        <input type="text" :placeholder="$t('selectPostFile')"
+                        <input type="text" :placeholder="$t('selectPostFile')" readonly
                             class="input input-bordered join-item flex-1 w-full" v-model="postLinksPath" /> <button
                             class="btn btn-info join-item" @click="selectPostLinksFile">{{ $t('select') }}</button>
                     </div>
@@ -183,7 +183,16 @@
                         <input type="number" class="input input-md input-bordered w-20"
                             v-model.number="postSettings.max_posts_count" min="1" max="50" />
                         <span class="text-md">{{ $t('posts') }}</span>
+                        <div class="alert alert-info py-2 px-3 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                class="stroke-current shrink-0 w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-md">{{ helpMaxPosts }}</span>
+                        </div>
                     </div>
+
 
 
                     <div class="flex items-center gap-3">
@@ -191,7 +200,18 @@
                         <input type="number" class="input input-md input-bordered w-20"
                             v-model.number="postSettings.repeat_times" min="1" max="20" />
                         <span class="text-md">{{ $t('times') }}</span>
+                        <div class="alert alert-info py-2 px-3 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                class="stroke-current shrink-0 w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-md">{{ helpRepeatTimes }}</span>
+                        </div>
                     </div>
+
+                    <div class="text-sm text-primary font-semibold mt-1">{{ maxTotalLabel }}: {{
+                        postSettings.max_posts_count * postSettings.repeat_times }}</div>
 
                     <div class="alert alert-info py-2 px-3">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -318,7 +338,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                    }}</button>
+                                }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -568,6 +588,16 @@ export default {
         },
         isPostLinkSource() {
             return this.dataSourceType === 'post_links';
+        }
+        ,
+        helpMaxPosts() {
+            return this.isPostLinkSource ? this.$t('maxPostsToProcessHelpPostLinks') : this.$t('maxPostsToProcessHelp');
+        },
+        helpRepeatTimes() {
+            return this.isPostLinkSource ? this.$t('repeatTimesHelpPostLinks') : this.$t('repeatTimesHelp');
+        },
+        maxTotalLabel() {
+            return this.isPostLinkSource ? this.$t('maxTotalForList') : this.$t('maxTotalPerUser');
         }
     },
     watch: {
