@@ -93,9 +93,9 @@ async function deploy() {
             version = await promptForVersion();
         }
 
-        // Ensure version starts with 'v'
-        if (!version.startsWith('v')) {
-            version = `v${version}`;
+        // Ensure version starts with 'win'
+        if (!version.startsWith('win')) {
+            version = `win${version}`;
         }
 
         const componentsLabel = [deployAgent ? 'agent' : null, deployScript ? 'script' : null].filter(Boolean).join(' & ');
