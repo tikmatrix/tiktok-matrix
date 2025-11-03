@@ -60,7 +60,7 @@
                     </label>
                     <div class="flex flex-wrap items-center gap-3">
                         <input type="number" class="input input-bordered input-md w-28" min="0"
-                            v-model.number="maxUsersCount" />
+                            v-model.number="maxUsersToProcess" />
                     </div>
                     <div class="alert alert-info py-2 px-3 mt-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -113,7 +113,7 @@
                     </label>
                     <div class="flex flex-wrap items-center gap-3">
                         <input type="number" class="input input-bordered input-md w-28" min="0"
-                            v-model.number="maxPostsCount" />
+                            v-model.number="maxPostsToProcess" />
                     </div>
                     <div class="alert alert-info py-2 px-3 mt-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -364,7 +364,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                }}</button>
+                                    }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -441,8 +441,8 @@ export default {
                 targetUsernamesPath: '',
                 postLinksPath: '',
                 accessMethod: 'search',
-                maxUsersCount: 0,
-                maxPostsCount: 0,
+                maxUsersToProcess: 0,
+                maxPostsToProcess: 0,
                 features: {
                     followUsers: false,
                     unfollowUsers: false,
@@ -482,7 +482,7 @@ export default {
             },
             [
                 'dataSourceType', 'targetUsernamesPath', 'postLinksPath', 'accessMethod', 'features',
-                'maxUsersCount', 'maxPostsCount', 'followSettings', 'dmSettings', 'postSettings',
+                'maxUsersToProcess', 'maxPostsToProcess', 'followSettings', 'dmSettings', 'postSettings',
                 'commentSettings', 'task_interval'
             ]
         )
@@ -502,9 +502,9 @@ export default {
             accessMethod: 'search', // 'search' 或 'direct'
 
             // 最大处理用户数量 0 表示不限制
-            maxUsersCount: 0,
+            maxUsersToProcess: 0,
             // 最大处理帖子数量 0 表示不限制
-            maxPostsCount: 0,
+            maxPostsToProcess: 0,
 
             // ChatGPT测试结果
             testResult: '',
@@ -569,17 +569,17 @@ export default {
             this.postLinksPath = '';
         }
 
-        const parsedMaxUsers = Number(this.maxUsersCount);
+        const parsedMaxUsers = Number(this.maxUsersToProcess);
         if (!Number.isFinite(parsedMaxUsers) || parsedMaxUsers < 0) {
-            this.maxUsersCount = 0;
+            this.maxUsersToProcess = 0;
         } else {
-            this.maxUsersCount = Math.floor(parsedMaxUsers);
+            this.maxUsersToProcess = Math.floor(parsedMaxUsers);
         }
-        const parsedMaxPosts = Number(this.maxPostsCount);
+        const parsedMaxPosts = Number(this.maxPostsToProcess);
         if (!Number.isFinite(parsedMaxPosts) || parsedMaxPosts < 0) {
-            this.maxPostsCount = 0;
+            this.maxPostsToProcess = 0;
         } else {
-            this.maxPostsCount = Math.floor(parsedMaxPosts);
+            this.maxPostsToProcess = Math.floor(parsedMaxPosts);
         }
 
         if (this.dataSourceType === 'post_links') {
@@ -660,8 +660,8 @@ export default {
                     targetUsernamesPath: '',
                     postLinksPath: '',
                     accessMethod: 'search',
-                    maxUsersCount: 0,
-                    maxPostsCount: 0,
+                    maxUsersToProcess: 0,
+                    maxPostsToProcess: 0,
                     features: {
                         followUsers: false,
                         unfollowUsers: false,
@@ -780,17 +780,17 @@ export default {
                 errors.push(this.$t('selectPostFileRequired'));
             }
 
-            const parsedMaxUsers = Number(this.maxUsersCount);
+            const parsedMaxUsers = Number(this.maxUsersToProcess);
             if (!Number.isFinite(parsedMaxUsers) || parsedMaxUsers < 0) {
-                this.maxUsersCount = 0;
+                this.maxUsersToProcess = 0;
             } else {
-                this.maxUsersCount = Math.floor(parsedMaxUsers);
+                this.maxUsersToProcess = Math.floor(parsedMaxUsers);
             }
-            const parsedMaxPosts = Number(this.maxPostsCount);
+            const parsedMaxPosts = Number(this.maxPostsToProcess);
             if (!Number.isFinite(parsedMaxPosts) || parsedMaxPosts < 0) {
-                this.maxPostsCount = 0;
+                this.maxPostsToProcess = 0;
             } else {
-                this.maxPostsCount = Math.floor(parsedMaxPosts);
+                this.maxPostsToProcess = Math.floor(parsedMaxPosts);
             }
 
             if (this.features.sendDM && !this.dmSettings.message_contents.trim()) {
