@@ -1,16 +1,11 @@
 ﻿export default {
   minimize: '最小化',
-  // SuperBoost 帮助文案
-  maxPostsToProcessHelp: '每个循环对单个用户要处理的帖子数。例如：设置为 5 表示每个循环最多打开该用户的 5 条帖子（如果该用户的帖子少于此值，实际处理数会更少）。',
-  repeatTimesHelp: '对每个用户执行的循环次数。理论上的每个用户最大处理帖子数 = 每次循环最大帖子数 × 循环次数（受该用户实际帖数限制）。',
+  maxPostsToProcessHelp: '限制每次运行要处理的帖子数量，设置为 0 表示处理文件中的全部帖子。',
+  repeatTimesHelp: '对每个用户执行的循环次数。',
   maxUsersToProcess: '最大处理用户数量',
   maxUsersToProcessHelp: '限制每次运行要处理的用户名数量，设置为 0 表示处理文件中的全部用户名。',
-  maxTotalPerUser: '每个用户的最大帖子总数（潜在）',
-  maxPostsNoticeExample: '示例：max posts = 5，repeat = 3 → 每个用户在所有循环中最多可处理 15 条帖子',
-  // 帖子链接数据源的说明
-  maxPostsToProcessHelpPostLinks: '当数据源为帖子链接文件时，每个循环从该链接文件中处理的帖子数。例如：设置为 5 表示每个循环会处理最多 5 条链接（如果列表长度不足，实际处理数会更少）。',
-  repeatTimesHelpPostLinks: '当数据源为帖子链接文件时，对链接列表执行的循环次数。潜在的处理帖子总数 = 每次循环最大帖子数 × 循环次数（受链接列表长度限制）。',
-  maxTotalForList: '来自链接列表的最大帖子总数（潜在）',
+  maxPostsPerUser: '每个用户的最大帖子总数。',
+  repeatTimesHelpPostLinks: '对链接列表执行的循环次数。',
   maximize: '最大化',
   account: '帐号',
   accountCount: '帐号数量',

@@ -1,16 +1,14 @@
 ﻿export default {
   minimize: 'Minimize',
   // SuperBoost UI helpers
-  maxPostsToProcessHelp: 'Number of posts to process per user in each cycle. Example: setting 5 means each cycle will open up to 5 posts for that user (actual processed count may be lower if the user has fewer posts).',
-  repeatTimesHelp: 'How many cycles to run for each user. Total potential posts per user = Max posts per cycle × Repeat times (subject to user\'s actual post count).',
+  maxPostsToProcessHelp: 'Limit how many posts are processed per run. Set to 0 to process every post in the file.',
+  repeatTimesHelp: 'How many cycles to run for each user.',
   maxUsersToProcess: 'Max users to process',
   maxUsersToProcessHelp: 'Limit how many usernames are processed per run. Set to 0 to process every username in the file.',
   // when data source is a post-links file
   maxPostsToProcessHelpPostLinks: 'Number of posts to process from the provided post-links file in each cycle. Example: setting 5 means each cycle will process up to 5 links from the list (actual processed count may be lower if the list has fewer links).',
-  repeatTimesHelpPostLinks: 'How many cycles to run across the post-links list. Total potential posts processed = Max posts per cycle × Repeat times (subject to the post-links list length).',
-  maxTotalForList: 'Max total posts from list (potential)',
-  maxTotalPerUser: 'Max total posts per user (potential)',
-  maxPostsNoticeExample: 'Example: max posts = 5, repeat = 3 → up to 15 posts per user across all cycles',
+  repeatTimesHelpPostLinks: 'How many cycles to run across the post-links list. ',
+  maxPostsPerUser: 'Max total posts per user',
   maximize: 'Maximize',
   account: 'Account',
   accountCount: 'Account Count',
