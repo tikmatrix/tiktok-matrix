@@ -61,7 +61,7 @@
         <font-awesome-icon icon="fa-solid fa-video" class="h-3 w-3 text-success" />
         {{ $t('boostLives') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="whitelabelConfig.targetApp === 'tiktok'"
+    <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'massDM' } })">
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />
         {{ $t('massDM') }}
