@@ -53,6 +53,25 @@
                     </div>
                 </div>
 
+                <!-- 最大处理用户数量 -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-semibold">{{ $t('maxUsersToProcess') }}</span>
+                    </label>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input type="number" class="input input-bordered input-md w-28" min="0"
+                            v-model.number="maxUsersCount" />
+                    </div>
+                    <div class="alert alert-info py-2 px-3 mt-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            class="stroke-current shrink-0 w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-md">{{ $t('maxUsersToProcessHelp') }}</span>
+                    </div>
+                </div>
+
                 <!-- 进入用户主页方式 -->
                 <div class="form-control">
                     <label class="label">
@@ -338,7 +357,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                }}</button>
+                                    }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -415,6 +434,7 @@ export default {
                 targetUsernamesPath: '',
                 postLinksPath: '',
                 accessMethod: 'search',
+                maxUsersCount: 0,
                 features: {
                     followUsers: false,
                     unfollowUsers: false,
@@ -454,7 +474,7 @@ export default {
             },
             [
                 'dataSourceType', 'targetUsernamesPath', 'postLinksPath', 'accessMethod', 'features',
-                'followSettings', 'dmSettings', 'postSettings',
+                'maxUsersCount', 'followSettings', 'dmSettings', 'postSettings',
                 'commentSettings', 'task_interval'
             ]
         )
@@ -472,6 +492,9 @@ export default {
 
             // 进入用户主页的方式
             accessMethod: 'search', // 'search' 或 'direct'
+
+            // 最大处理用户数量 0 表示不限制
+            maxUsersCount: 0,
 
             // ChatGPT测试结果
             testResult: '',
@@ -534,6 +557,13 @@ export default {
 
         if (typeof this.postLinksPath === 'undefined' || typeof this.postLinksPath !== 'string') {
             this.postLinksPath = '';
+        }
+
+        const parsedMaxUsers = Number(this.maxUsersCount);
+        if (!Number.isFinite(parsedMaxUsers) || parsedMaxUsers < 0) {
+            this.maxUsersCount = 0;
+        } else {
+            this.maxUsersCount = Math.floor(parsedMaxUsers);
         }
 
         if (this.dataSourceType === 'post_links') {
@@ -619,6 +649,7 @@ export default {
                     targetUsernamesPath: '',
                     postLinksPath: '',
                     accessMethod: 'search',
+                    maxUsersCount: 0,
                     features: {
                         followUsers: false,
                         unfollowUsers: false,
@@ -735,6 +766,13 @@ export default {
 
             if (this.isPostLinkSource && (this.features.boostPosts || this.features.massComment) && !this.postLinksPath) {
                 errors.push(this.$t('selectPostFileRequired'));
+            }
+
+            const parsedMaxUsers = Number(this.maxUsersCount);
+            if (!Number.isFinite(parsedMaxUsers) || parsedMaxUsers < 0) {
+                this.maxUsersCount = 0;
+            } else {
+                this.maxUsersCount = Math.floor(parsedMaxUsers);
             }
 
             if (this.features.sendDM && !this.dmSettings.message_contents.trim()) {

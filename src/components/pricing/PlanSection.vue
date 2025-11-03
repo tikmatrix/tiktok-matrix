@@ -4,7 +4,7 @@
         <div class="text-center mb-4">
             <div v-if="planType === 'yearly'" class="badge badge-success badge-md gap-1 mb-1">
                 <font-awesome-icon icon="fas fa-tag" class="w-3 h-3" />
-                {{ $t('save') }} 30%
+                {{ $t('savePercent', { percent: 30 }) }}
             </div>
         </div>
 
