@@ -3,6 +3,8 @@
   // SuperBoost 帮助文案
   maxPostsToProcessHelp: '每个循环对单个用户要处理的帖子数。例如：设置为 5 表示每个循环最多打开该用户的 5 条帖子（如果该用户的帖子少于此值，实际处理数会更少）。',
   repeatTimesHelp: '对每个用户执行的循环次数。理论上的每个用户最大处理帖子数 = 每次循环最大帖子数 × 循环次数（受该用户实际帖数限制）。',
+  maxUsersToProcess: '最大处理用户数量',
+  maxUsersToProcessHelp: '限制每次运行要处理的用户名数量，设置为 0 表示处理文件中的全部用户名。',
   maxTotalPerUser: '每个用户的最大帖子总数（潜在）',
   maxPostsNoticeExample: '示例：max posts = 5，repeat = 3 → 每个用户在所有循环中最多可处理 15 条帖子',
   // 帖子链接数据源的说明
@@ -710,6 +712,8 @@
   running: '运行中',
   runningTasks: '运行中任务',
   save: '保存',
+  youSave: '节省 {amount}',
+  savePercent: '节省 {percent}%',
   saveConfigError: '保存配置文件失败',
   saveConfigFile: '保存到配置文件',
   savePreset: '保存预设',

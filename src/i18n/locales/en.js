@@ -3,6 +3,8 @@
   // SuperBoost UI helpers
   maxPostsToProcessHelp: 'Number of posts to process per user in each cycle. Example: setting 5 means each cycle will open up to 5 posts for that user (actual processed count may be lower if the user has fewer posts).',
   repeatTimesHelp: 'How many cycles to run for each user. Total potential posts per user = Max posts per cycle × Repeat times (subject to user\'s actual post count).',
+  maxUsersToProcess: 'Max users to process',
+  maxUsersToProcessHelp: 'Limit how many usernames are processed per run. Set to 0 to process every username in the file.',
   // when data source is a post-links file
   maxPostsToProcessHelpPostLinks: 'Number of posts to process from the provided post-links file in each cycle. Example: setting 5 means each cycle will process up to 5 links from the list (actual processed count may be lower if the list has fewer links).',
   repeatTimesHelpPostLinks: 'How many cycles to run across the post-links list. Total potential posts processed = Max posts per cycle × Repeat times (subject to the post-links list length).',
@@ -710,6 +712,8 @@
   running: 'Running',
   runningTasks: 'Running Tasks',
   save: 'Save',
+  youSave: 'Save {amount}',
+  savePercent: 'Save {percent}%',
   saveConfigError: 'Failed to save configuration file',
   saveConfigFile: 'Save to Config File',
   savePreset: 'Save Preset',

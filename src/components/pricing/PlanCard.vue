@@ -30,7 +30,7 @@
                         ${{ plan.price.year.amount }} / {{ $t('year') }}
                     </p>
                     <p class="text-md text-success font-medium">
-                        {{ $t('save') }} ${{ yearlySavings }}
+                        {{ $t('youSave', { amount: `$${yearlySavings}` }) }}
                     </p>
                 </div>
 
