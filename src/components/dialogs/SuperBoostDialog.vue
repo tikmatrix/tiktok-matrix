@@ -16,9 +16,9 @@
             </h3>
 
             <!-- 数据源类型选择 -->
-            <div class="form-control mb-4">
-                <label class="label">
-                    <span class="label-text font-semibold">{{ $t('dataSourceType') }}</span>
+            <div class="form-control mb-4 flex items-center gap-4">
+                <label class="font-bold text-md">
+                    <span>{{ $t('dataSourceType') }}</span>
                 </label>
                 <div class="grid md:grid-cols-2 gap-3">
                     <label class="cursor-pointer flex items-start gap-3 p-3 rounded-lg border border-base-200"
@@ -42,9 +42,9 @@
 
             <div v-if="isUsernameSource" class="space-y-4">
                 <!-- 用户名文件选择 -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">{{ $t('targetUsernamesPath') }}</span>
+                <div class="form-control flex items-center gap-4">
+                    <label class="font-bold text-md">
+                        <span>{{ $t('targetUsernamesPath') }}</span>
                     </label>
                     <div class="join flex w-full">
                         <input type="text" :placeholder="$t('selectUsernameFile')" readonly
@@ -54,13 +54,13 @@
                 </div>
 
                 <!-- 最大处理用户数量 -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">{{ $t('maxUsersToProcess') }}</span>
+                <div class="form-control flex items-center gap-4">
+                    <label class="font-bold text-md">
+                        <span>{{ $t('maxUsersToProcess') }}</span>
                     </label>
                     <div class="flex flex-wrap items-center gap-3">
                         <input type="number" class="input input-bordered input-md w-28" min="0"
-                            v-model.number="maxUsersCount" />
+                            v-model.number="maxUsersToProcess" />
                     </div>
                     <div class="alert alert-info py-2 px-3 mt-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -73,9 +73,9 @@
                 </div>
 
                 <!-- 进入用户主页方式 -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">{{ $t('userProfileAccessMethod') }}</span>
+                <div class="form-control flex items-center gap-4">
+                    <label class="font-bold text-md">
+                        <span>{{ $t('userProfileAccessMethod') }}</span>
                     </label>
                     <div class="flex flex-wrap gap-4">
                         <label class="cursor-pointer flex items-center gap-2">
@@ -94,9 +94,9 @@
 
             <div v-else class="space-y-4">
                 <!-- 帖子链接文件选择 -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">{{
+                <div class="form-control flex items-center gap-4">
+                    <label class="font-bold text-md">
+                        <span>{{
                             $t('postLinksPath') }}
                         </span>
                     </label>
@@ -106,7 +106,24 @@
                             class="btn btn-info join-item" @click="selectPostLinksFile">{{ $t('select') }}</button>
                     </div>
                 </div>
-
+                <!-- 最大处理帖子数量 -->
+                <div class="form-control flex items-center gap-4">
+                    <label class="font-bold text-md">
+                        <span>{{ $t('maxPostsToProcess') }}</span>
+                    </label>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input type="number" class="input input-bordered input-md w-28" min="0"
+                            v-model.number="maxPostsToProcess" />
+                    </div>
+                    <div class="alert alert-info py-2 px-3 mt-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            class="stroke-current shrink-0 w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-md">{{ $t('maxPostsToProcessHelp') }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -197,7 +214,7 @@
             <!-- 帖子处理设置 -->
             <div class="mb-4 p-3 bg-base-50 rounded-lg border border-base-200">
                 <div class="space-y-3 flex flex-row flex-wrap gap-4">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4" v-if="isUsernameSource">
                         <span class="text-md font-bold">{{ $t('maxPostsToProcess') }}:</span>
                         <input type="number" class="input input-md input-bordered w-20"
                             v-model.number="postSettings.max_posts_count" min="1" max="50" />
@@ -208,7 +225,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-md">{{ helpMaxPosts }}</span>
+                            <span class="text-md">{{ $t('maxPostsPerUser') }}</span>
                         </div>
                     </div>
 
@@ -229,17 +246,7 @@
                         </div>
                     </div>
 
-                    <div class="text-sm text-primary font-semibold mt-1">{{ maxTotalLabel }}: {{
-                        postSettings.max_posts_count * postSettings.repeat_times }}</div>
 
-                    <div class="alert alert-info py-2 px-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            class="stroke-current shrink-0 w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span class="text-md">{{ $t('repeatTimesTip') }}</span>
-                    </div>
                 </div>
                 <!-- 观看时长 -->
                 <div class="flex w-full items-center gap-2 mt-8 mb-8">
@@ -434,7 +441,8 @@ export default {
                 targetUsernamesPath: '',
                 postLinksPath: '',
                 accessMethod: 'search',
-                maxUsersCount: 0,
+                maxUsersToProcess: 0,
+                maxPostsToProcess: 0,
                 features: {
                     followUsers: false,
                     unfollowUsers: false,
@@ -474,7 +482,7 @@ export default {
             },
             [
                 'dataSourceType', 'targetUsernamesPath', 'postLinksPath', 'accessMethod', 'features',
-                'maxUsersCount', 'followSettings', 'dmSettings', 'postSettings',
+                'maxUsersToProcess', 'maxPostsToProcess', 'followSettings', 'dmSettings', 'postSettings',
                 'commentSettings', 'task_interval'
             ]
         )
@@ -494,7 +502,9 @@ export default {
             accessMethod: 'search', // 'search' 或 'direct'
 
             // 最大处理用户数量 0 表示不限制
-            maxUsersCount: 0,
+            maxUsersToProcess: 0,
+            // 最大处理帖子数量 0 表示不限制
+            maxPostsToProcess: 0,
 
             // ChatGPT测试结果
             testResult: '',
@@ -559,11 +569,17 @@ export default {
             this.postLinksPath = '';
         }
 
-        const parsedMaxUsers = Number(this.maxUsersCount);
+        const parsedMaxUsers = Number(this.maxUsersToProcess);
         if (!Number.isFinite(parsedMaxUsers) || parsedMaxUsers < 0) {
-            this.maxUsersCount = 0;
+            this.maxUsersToProcess = 0;
         } else {
-            this.maxUsersCount = Math.floor(parsedMaxUsers);
+            this.maxUsersToProcess = Math.floor(parsedMaxUsers);
+        }
+        const parsedMaxPosts = Number(this.maxPostsToProcess);
+        if (!Number.isFinite(parsedMaxPosts) || parsedMaxPosts < 0) {
+            this.maxPostsToProcess = 0;
+        } else {
+            this.maxPostsToProcess = Math.floor(parsedMaxPosts);
         }
 
         if (this.dataSourceType === 'post_links') {
@@ -618,17 +634,12 @@ export default {
         },
         isPostLinkSource() {
             return this.dataSourceType === 'post_links';
-        }
-        ,
-        helpMaxPosts() {
-            return this.isPostLinkSource ? this.$t('maxPostsToProcessHelpPostLinks') : this.$t('maxPostsToProcessHelp');
         },
+
         helpRepeatTimes() {
             return this.isPostLinkSource ? this.$t('repeatTimesHelpPostLinks') : this.$t('repeatTimesHelp');
         },
-        maxTotalLabel() {
-            return this.isPostLinkSource ? this.$t('maxTotalForList') : this.$t('maxTotalPerUser');
-        }
+
     },
     watch: {
         dataSourceType(newValue) {
@@ -649,7 +660,8 @@ export default {
                     targetUsernamesPath: '',
                     postLinksPath: '',
                     accessMethod: 'search',
-                    maxUsersCount: 0,
+                    maxUsersToProcess: 0,
+                    maxPostsToProcess: 0,
                     features: {
                         followUsers: false,
                         unfollowUsers: false,
@@ -768,11 +780,17 @@ export default {
                 errors.push(this.$t('selectPostFileRequired'));
             }
 
-            const parsedMaxUsers = Number(this.maxUsersCount);
+            const parsedMaxUsers = Number(this.maxUsersToProcess);
             if (!Number.isFinite(parsedMaxUsers) || parsedMaxUsers < 0) {
-                this.maxUsersCount = 0;
+                this.maxUsersToProcess = 0;
             } else {
-                this.maxUsersCount = Math.floor(parsedMaxUsers);
+                this.maxUsersToProcess = Math.floor(parsedMaxUsers);
+            }
+            const parsedMaxPosts = Number(this.maxPostsToProcess);
+            if (!Number.isFinite(parsedMaxPosts) || parsedMaxPosts < 0) {
+                this.maxPostsToProcess = 0;
+            } else {
+                this.maxPostsToProcess = Math.floor(parsedMaxPosts);
             }
 
             if (this.features.sendDM && !this.dmSettings.message_contents.trim()) {
