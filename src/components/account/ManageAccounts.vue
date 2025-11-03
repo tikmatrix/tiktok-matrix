@@ -190,6 +190,7 @@ export default {
       selectedTag: '',
       batchAction: '',
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
+      pendingTagAssignments: [],
     }
   },
   watch: {
@@ -330,6 +331,41 @@ export default {
     },
 
 
+    normalizeTags(rawTags) {
+      if (!rawTags) {
+        return []
+      }
+
+      if (Array.isArray(rawTags)) {
+        return rawTags
+          .map(tag => String(tag).trim())
+          .filter(tag => tag.length > 0)
+      }
+
+      return String(rawTags)
+        .split(/[,，;\n]/)
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0)
+    },
+
+    async applyTagsToAccount(accountId, tags) {
+      if (!accountId) {
+        return
+      }
+
+      if (!tags || tags.length === 0) {
+        if (this.accountTags[accountId]) {
+          delete this.accountTags[accountId]
+          await this.saveAccountTags()
+        }
+        return
+      }
+
+      const uniqueTags = Array.from(new Set(tags))
+      this.accountTags[accountId] = uniqueTags
+      await this.saveAccountTags()
+    },
+
     async import_accounts() {
       const filePath = await open({
         multiple: false, // 是否允许多选文件
@@ -353,10 +389,32 @@ export default {
           // 输出结果
           console.log(JSON.stringify(jsonData));
           for (let account of jsonData) {
-            if (account.id) {
-              await this.$service.update_account(account)
+            const hasTagField = Object.prototype.hasOwnProperty.call(account, 'tags') ||
+              Object.prototype.hasOwnProperty.call(account, 'tag')
+            const tags = hasTagField ? this.normalizeTags(account.tags ?? account.tag) : null
+            const payload = { ...account }
+            delete payload.tags
+            delete payload.tag
+
+            if (payload.id) {
+              const response = await this.$service.update_account(payload)
+              const accountId = payload.id || response?.id || response?.data?.id
+              if (hasTagField) {
+                await this.applyTagsToAccount(accountId, tags)
+              }
             } else {
-              await this.$service.add_account(account)
+              const response = await this.$service.add_account(payload)
+              const accountId = response?.id || response?.data?.id
+              if (hasTagField && accountId) {
+                await this.applyTagsToAccount(accountId, tags)
+              } else if (hasTagField && tags && tags.length > 0) {
+                this.pendingTagAssignments.push({
+                  tags,
+                  username: payload.username,
+                  email: payload.email,
+                  device: payload.device,
+                })
+              }
             }
           }
         } catch (error) {
@@ -382,7 +440,8 @@ export default {
             device: account.device,
             device_index: account.device_index || 'offline',
             logined: account.logined,
-            status: account.status
+            status: account.status,
+            tags: (this.accountTags[account.id] || []).join(', ')
           }
         });
 
@@ -482,20 +541,57 @@ export default {
       }
     },
 
+    async applyPendingTags() {
+      if (!this.pendingTagAssignments.length) {
+        return
+      }
+
+      const remainingAssignments = []
+      let hasUpdates = false
+
+      this.pendingTagAssignments.forEach(assignment => {
+        const matchedAccount = this.accounts.find(account => {
+          if (assignment.id && account.id === assignment.id) {
+            return true
+          }
+          if (assignment.username && account.username === assignment.username) {
+            return true
+          }
+          if (assignment.email && account.email === assignment.email) {
+            return true
+          }
+          return assignment.device && account.device === assignment.device
+        })
+
+        if (matchedAccount?.id) {
+          const existingTags = this.accountTags[matchedAccount.id] || []
+          const mergedTags = Array.from(new Set([...existingTags, ...assignment.tags]))
+          this.accountTags[matchedAccount.id] = mergedTags
+          hasUpdates = true
+        } else {
+          remainingAssignments.push(assignment)
+        }
+      })
+
+      this.pendingTagAssignments = remainingAssignments
+
+      if (hasUpdates) {
+        await this.saveAccountTags()
+      }
+    },
+
     async get_accounts() {
       this.currentAccount = null
-      this.$service
-        .get_accounts()
-        .then(res => {
-          this.accounts = res.data
-          this.accounts.forEach(account => {
-            account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
-            // 添加tags字段用于搜索
-            account.tags = (this.accountTags[account.id] || []).join(' ')
-          })
-          //sort by device_index asc
-          this.accounts.sort((a, b) => a.device_index - b.device_index)
-        })
+      const res = await this.$service.get_accounts()
+      this.accounts = res.data
+      await this.applyPendingTags()
+      this.accounts.forEach(account => {
+        account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
+        // 添加tags字段用于搜索
+        account.tags = (this.accountTags[account.id] || []).join(' ')
+      })
+      //sort by device_index asc
+      this.accounts.sort((a, b) => a.device_index - b.device_index)
     },
     async add_account() {
       this.currentAccount = {
