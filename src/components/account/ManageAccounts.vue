@@ -82,10 +82,10 @@
                 </td>
                 <td>
                   <div class="flex flex-wrap gap-1 max-w-md">
-                    <div v-for="tag in accountTags[account.id] || []" :key="tag"
+                    <div v-for="tag in accountTags[accountTagKey(account)] || []" :key="tag"
                       class="badge badge-primary badge-outline gap-1">
                       {{ tag }}
-                      <button @click="removeTag(account.id, tag)" class="btn btn-md btn-circle btn-ghost">×</button>
+                      <button @click="removeTag(accountTagKey(account), tag)" class="btn btn-md btn-circle btn-ghost">×</button>
                     </div>
                     <div class="dropdown dropdown-hover">
                       <label tabindex="0" class="btn btn-md btn-circle btn-outline">+</label>
@@ -97,7 +97,7 @@
                             <div class="flex flex-wrap gap-1">
                               <div v-for="tag in allUniqueTags" :key="tag"
                                 class="badge badge-md badge-outline cursor-pointer hover:bg-primary hover:text-primary-content"
-                                @click="selectExistingTag(account.id, tag)">
+                                @click="selectExistingTag(accountTagKey(account), tag)">
                                 {{ tag }}
                               </div>
                             </div>
@@ -106,9 +106,9 @@
                           <div>
                             <div class="text-md font-semibold mb-1">{{ $t('newTag') }}</div>
                             <div class="join">
-                              <input v-model="newTagInput[account.id]" class="input input-bordered input-md join-item"
-                                :placeholder="$t('enterNewTag')" @keyup.enter="addTag(account.id)" />
-                              <button class="btn btn-md btn-primary join-item" @click="addTag(account.id)">
+                              <input v-model="newTagInput[accountTagKey(account)]" class="input input-bordered input-md join-item"
+                                :placeholder="$t('enterNewTag')" @keyup.enter="addTag(accountTagKey(account))" />
+                              <button class="btn btn-md btn-primary join-item" @click="addTag(accountTagKey(account))">
                                 {{ $t('add') }}
                               </button>
                             </div>
@@ -255,12 +255,19 @@ export default {
       }
 
       return this.accounts.filter(account => {
-        const accountTags = this.accountTags[account.id] || [];
+        const accountTags = this.accountTags[this.accountTagKey(account)] || [];
         return accountTags.includes(this.selectedTag);
       });
     }
   },
   methods: {
+    accountTagKey(account) {
+      if (!account) {
+        return ''
+      }
+
+      return account.username || String(account.id || account.email || account.device || '')
+    },
     openAnalytics() {
       this.$emiter('showDialog', { name: 'accountAnalytics' });
     },
@@ -348,21 +355,21 @@ export default {
         .filter(tag => tag.length > 0)
     },
 
-    async applyTagsToAccount(accountId, tags) {
-      if (!accountId) {
+    async applyTagsToAccount(accountKey, tags) {
+      if (!accountKey) {
         return
       }
 
       if (!tags || tags.length === 0) {
-        if (this.accountTags[accountId]) {
-          delete this.accountTags[accountId]
+        if (this.accountTags[accountKey]) {
+          delete this.accountTags[accountKey]
           await this.saveAccountTags()
         }
         return
       }
 
-      const uniqueTags = Array.from(new Set(tags))
-      this.accountTags[accountId] = uniqueTags
+      const uniqueTags = Array.from(new Set(this.normalizeTags(tags)))
+      this.accountTags[accountKey] = uniqueTags
       await this.saveAccountTags()
     },
 
@@ -398,21 +405,26 @@ export default {
 
             if (payload.id) {
               const response = await this.$service.update_account(payload)
-              const accountId = payload.id || response?.id || response?.data?.id
+              const accountKey = payload.username || response?.username || response?.data?.username
               if (hasTagField) {
-                await this.applyTagsToAccount(accountId, tags)
+                const fallbackKey = accountKey || (payload.id != null ? String(payload.id) : null)
+                await this.applyTagsToAccount(fallbackKey, tags)
               }
             } else {
               const response = await this.$service.add_account(payload)
+              const accountKey = payload.username || response?.username || response?.data?.username
               const accountId = response?.id || response?.data?.id
-              if (hasTagField && accountId) {
-                await this.applyTagsToAccount(accountId, tags)
+              if (hasTagField && accountKey) {
+                await this.applyTagsToAccount(accountKey, tags)
+              } else if (hasTagField && accountId) {
+                await this.applyTagsToAccount(String(accountId), tags)
               } else if (hasTagField && tags && tags.length > 0) {
                 this.pendingTagAssignments.push({
                   tags,
                   username: payload.username,
                   email: payload.email,
                   device: payload.device,
+                  id: accountId || payload.id,
                 })
               }
             }
@@ -441,7 +453,7 @@ export default {
             device_index: account.device_index || 'offline',
             logined: account.logined,
             status: account.status,
-            tags: (this.accountTags[account.id] || []).join(', ')
+            tags: (this.accountTags[this.accountTagKey(account)] || []).join(', ')
           }
         });
 
@@ -502,42 +514,89 @@ export default {
     },
 
     // 添加新标签
-    async addTag(accountId) {
-      if (!this.newTagInput[accountId] || this.newTagInput[accountId].trim() === '') return
+    async addTag(accountKey) {
+      if (!accountKey || !this.newTagInput[accountKey] || this.newTagInput[accountKey].trim() === '') return
 
-      if (!this.accountTags[accountId]) {
-        this.accountTags[accountId] = []
+      if (!this.accountTags[accountKey]) {
+        this.accountTags[accountKey] = []
       }
 
-      const tag = this.newTagInput[accountId].trim()
-      if (!this.accountTags[accountId].includes(tag)) {
-        this.accountTags[accountId].push(tag)
+      const tag = this.newTagInput[accountKey].trim()
+      if (!this.accountTags[accountKey].includes(tag)) {
+        this.accountTags[accountKey].push(tag)
         await this.saveAccountTags()
       }
 
-      this.newTagInput[accountId] = ''
+      this.newTagInput[accountKey] = ''
     },
 
     // 选择已有标签
-    async selectExistingTag(accountId, tag) {
-      if (!this.accountTags[accountId]) {
-        this.accountTags[accountId] = []
+    async selectExistingTag(accountKey, tag) {
+      if (!accountKey) {
+        return
       }
 
-      if (!this.accountTags[accountId].includes(tag)) {
-        this.accountTags[accountId].push(tag)
+      if (!this.accountTags[accountKey]) {
+        this.accountTags[accountKey] = []
+      }
+
+      if (!this.accountTags[accountKey].includes(tag)) {
+        this.accountTags[accountKey].push(tag)
         await this.saveAccountTags()
       }
     },
 
     // 移除标签
-    async removeTag(accountId, tag) {
-      if (this.accountTags[accountId]) {
-        const index = this.accountTags[accountId].indexOf(tag)
+    async removeTag(accountKey, tag) {
+      if (this.accountTags[accountKey]) {
+        const index = this.accountTags[accountKey].indexOf(tag)
         if (index > -1) {
-          this.accountTags[accountId].splice(index, 1)
+          this.accountTags[accountKey].splice(index, 1)
           await this.saveAccountTags()
         }
+      }
+    },
+
+    async normalizeAccountTags() {
+      if (!this.accounts || !this.accounts.length) {
+        return
+      }
+
+      const idToUsername = {}
+      this.accounts.forEach(account => {
+        if (account?.id != null && account?.username) {
+          idToUsername[String(account.id)] = account.username
+        }
+      })
+
+      const normalized = {}
+      let changed = false
+
+      Object.entries(this.accountTags || {}).forEach(([key, tags]) => {
+        const targetKey = idToUsername[key] || key
+        if (targetKey !== key) {
+          changed = true
+        }
+
+        const normalizedTags = this.normalizeTags(tags)
+        const dedupedTags = Array.from(new Set(normalizedTags))
+
+        if (!normalized[targetKey]) {
+          normalized[targetKey] = dedupedTags
+        } else {
+          normalized[targetKey] = Array.from(new Set([
+            ...normalized[targetKey],
+            ...dedupedTags,
+          ]))
+          changed = true
+        }
+      })
+
+      if (changed || Object.keys(normalized).length !== Object.keys(this.accountTags || {}).length) {
+        this.accountTags = normalized
+        await this.saveAccountTags()
+      } else {
+        this.accountTags = normalized
       }
     },
 
@@ -563,10 +622,11 @@ export default {
           return assignment.device && account.device === assignment.device
         })
 
-        if (matchedAccount?.id) {
-          const existingTags = this.accountTags[matchedAccount.id] || []
+        if (matchedAccount) {
+          const tagKey = this.accountTagKey(matchedAccount)
+          const existingTags = this.accountTags[tagKey] || []
           const mergedTags = Array.from(new Set([...existingTags, ...assignment.tags]))
-          this.accountTags[matchedAccount.id] = mergedTags
+          this.accountTags[tagKey] = mergedTags
           hasUpdates = true
         } else {
           remainingAssignments.push(assignment)
@@ -584,11 +644,12 @@ export default {
       this.currentAccount = null
       const res = await this.$service.get_accounts()
       this.accounts = res.data
+      await this.normalizeAccountTags()
       await this.applyPendingTags()
       this.accounts.forEach(account => {
         account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
         // 添加tags字段用于搜索
-        account.tags = (this.accountTags[account.id] || []).join(' ')
+        account.tags = (this.accountTags[this.accountTagKey(account)] || []).join(' ')
       })
       //sort by device_index asc
       this.accounts.sort((a, b) => a.device_index - b.device_index)
