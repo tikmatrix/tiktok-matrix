@@ -59,7 +59,7 @@ function promptForVersion() {
             output: process.stdout
         });
 
-        rl.question('Please enter the version number (e.g., v1.0.0): ', (answer) => {
+        rl.question('Please enter the version number (e.g., 1.0.0): ', (answer) => {
             rl.close();
             resolve(answer.trim());
         });
@@ -93,9 +93,9 @@ async function deploy() {
             version = await promptForVersion();
         }
 
-        // Ensure version starts with 'v'
-        if (!version.startsWith('v')) {
-            version = `v${version}`;
+        // Ensure version starts with 'win'
+        if (!version.startsWith('win')) {
+            version = `win${version}`;
         }
 
         const componentsLabel = [deployAgent ? 'agent' : null, deployScript ? 'script' : null].filter(Boolean).join(' & ');
