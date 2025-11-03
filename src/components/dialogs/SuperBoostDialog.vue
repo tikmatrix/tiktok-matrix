@@ -12,7 +12,7 @@
         <div class="card-body p-4">
             <h3 class="card-title text-lg mb-4 text-primary">
                 <font-awesome-icon icon="fa-solid fa-database" class="mr-2" />
-                {{ $t('userDataSource') }}
+                {{ $t('dataSourceLabel') }}
             </h3>
 
             <!-- 数据源类型选择 -->
@@ -39,89 +39,222 @@
                     </label>
                 </div>
             </div>
+            <div class="space-y-6">
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="border border-base-200 rounded-lg p-4 bg-base-50">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-md flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-chart-column" />
+                                {{ $t('datasetStatsTitle') }}
+                            </h4>
+                            <span class="badge badge-outline" v-if="activeDatasetConfig.id">
+                                {{ $t('datasetId') }}: {{ activeDatasetConfig.id }}
+                            </span>
+                        </div>
+                        <div v-if="activeDatasetLoading" class="flex items-center gap-2 text-md text-base-content/70">
+                            <span class="loading loading-spinner loading-sm"></span>
+                            <span>{{ $t('datasetLoading') }}</span>
+                        </div>
+                        <div v-else-if="activeDatasetStats" class="grid grid-cols-2 gap-3 text-md">
+                            <div>
+                                <div class="text-sm text-base-content/60">{{ $t('datasetTotal') }}</div>
+                                <div class="font-semibold text-lg">{{ activeDatasetStats.total }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-base-content/60">{{ $t('datasetConsumed') }}</div>
+                                <div class="font-semibold text-lg">{{ activeDatasetStats.consumed }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-base-content/60">{{ $t('datasetRemaining') }}</div>
+                                <div class="font-semibold text-lg">{{ activeDatasetStats.remaining }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-base-content/60">{{ $t('datasetLastUpdated') }}</div>
+                                <div class="font-semibold text-lg">
+                                    {{ activeDatasetStats.updated_at ? formatLocalTime(activeDatasetStats.updated_at) :
+                                        '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="alert alert-info py-3">
+                            <font-awesome-icon icon="fa-solid fa-circle-info" class="mr-2" />
+                            <span>{{ $t('datasetNotConfigured') }}</span>
+                        </div>
+                    </div>
 
-            <div v-if="isUsernameSource" class="space-y-4">
-                <!-- 用户名文件选择 -->
-                <div class="form-control flex items-center gap-4">
-                    <label class="font-bold text-md">
-                        <span>{{ $t('targetUsernamesPath') }}</span>
-                    </label>
-                    <div class="join flex w-full">
-                        <input type="text" :placeholder="$t('selectUsernameFile')" readonly
-                            class="input input-bordered join-item  flex-1 w-full" v-model="targetUsernamesPath" />
-                        <button class="btn btn-info join-item" @click="selectUsernameFile">{{ $t('select') }}</button>
+                    <div class="border border-base-200 rounded-lg p-4 bg-base-50">
+                        <h4 class="font-semibold text-md mb-3 flex items-center gap-2">
+                            <font-awesome-icon icon="fa-solid fa-diagram-project" />
+                            {{ $t('datasetStrategyTitle') }}
+                        </h4>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="cursor-pointer flex items-start gap-2 p-3 rounded-lg border border-base-300"
+                                :class="{ 'border-primary bg-primary/10': dataSourceStrategy === 'shared_pool' }">
+                                <input type="radio" class="radio radio-primary mt-1" value="shared_pool"
+                                    :checked="dataSourceStrategy === 'shared_pool'"
+                                    @change="changeActiveDatasetStrategy('shared_pool')">
+                                <div>
+                                    <div class="font-semibold">{{ $t('datasetSharedPool') }}</div>
+                                    <p class="text-sm text-base-content/70">{{ $t('datasetSharedPoolDesc') }}</p>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer flex items-start gap-2 p-3 rounded-lg border border-base-300"
+                                :class="{ 'border-secondary bg-secondary/10': dataSourceStrategy === 'consume_once' }">
+                                <input type="radio" class="radio radio-secondary mt-1" value="consume_once"
+                                    :checked="dataSourceStrategy === 'consume_once'"
+                                    @change="changeActiveDatasetStrategy('consume_once')">
+                                <div>
+                                    <div class="font-semibold">{{ $t('datasetConsumeOnce') }}</div>
+                                    <p class="text-sm text-base-content/70">{{ $t('datasetConsumeOnceDesc') }}</p>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 最大处理用户数量 -->
-                <div class="form-control flex items-center gap-4">
-                    <label class="font-bold text-md">
-                        <span>{{ $t('maxUsersToProcess') }}</span>
+                <div class="form-control">
+                    <label class="font-bold text-md mb-2 flex items-center gap-2">
+                        <font-awesome-icon icon="fa-solid fa-file-import" />
+                        <span>{{ $t('datasetImportLabel') }}</span>
                     </label>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <input type="number" class="input input-bordered input-md w-28" min="0"
-                            v-model.number="maxUsersToProcess" />
+                    <textarea class="textarea textarea-bordered textarea-md h-32" v-model="activeDatasetInput"
+                        :placeholder="$t('datasetImportPlaceholder')"></textarea>
+                    <div class="flex flex-wrap items-center gap-3 mt-3">
+                        <button class="btn btn-info btn-sm" @click="selectDatasetFile">
+                            <font-awesome-icon icon="fa-solid fa-file-arrow-up" class="mr-1" />
+                            {{ $t('selectDatasetFile') }}
+                        </button>
+                        <button class="btn btn-primary btn-sm" :disabled="activeDatasetImporting"
+                            @click="handleDatasetImport('append')">
+                            <span v-if="activeDatasetImporting" class="loading loading-spinner loading-sm mr-2"></span>
+                            {{ $t('appendImport') }}
+                        </button>
+                        <button class="btn btn-secondary btn-sm" :disabled="activeDatasetImporting"
+                            @click="handleDatasetImport('replace')">
+                            <span v-if="activeDatasetImporting" class="loading loading-spinner loading-sm mr-2"></span>
+                            {{ $t('replaceImport') }}
+                        </button>
+                        <button class="btn btn-outline btn-error btn-sm"
+                            :disabled="!activeDatasetConfig.id || activeDatasetLoading" @click="clearActiveDataset">
+                            {{ $t('clearDataset') }}
+                        </button>
                     </div>
-                    <div class="alert alert-info py-2 px-3 mt-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            class="stroke-current shrink-0 w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span class="text-md">{{ $t('maxUsersToProcessHelp') }}</span>
+                    <p class="text-sm text-base-content/70 mt-2">{{ $t('datasetImportHint') }}</p>
+                </div>
+
+                <div v-if="activeDatasetSummary" class="alert alert-info mt-3">
+                    <font-awesome-icon icon="fa-solid fa-clipboard-check" class="mr-2" />
+                    <div>
+                        <div class="font-semibold">{{ $t('datasetImportSummary') }}</div>
+                        <div class="grid md:grid-cols-2 gap-2 text-sm mt-2">
+                            <div>{{ $t('datasetInserted', { count: activeDatasetSummary.inserted }) }}</div>
+                            <div>{{ $t('datasetDuplicates', { count: activeDatasetSummary.duplicates }) }}</div>
+                            <div>{{ $t('datasetSkipped', { count: activeDatasetSummary.skipped_empty }) }}</div>
+                            <div>{{ $t('datasetRemoved', { count: activeDatasetSummary.removed }) }}</div>
+                            <div>{{ $t('datasetTruncated', { count: activeDatasetSummary.truncated }) }}</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 进入用户主页方式 -->
-                <div class="form-control flex items-center gap-4">
-                    <label class="font-bold text-md">
-                        <span>{{ $t('userProfileAccessMethod') }}</span>
-                    </label>
-                    <div class="flex flex-wrap gap-4">
-                        <label class="cursor-pointer flex items-center gap-2">
-                            <input type="radio" name="accessMethod" class="radio radio-primary" value="search"
-                                v-model="accessMethod" />
-                            <span>{{ $t('searchUser') }}</span>
-                        </label>
-                        <label class="cursor-pointer flex items-center gap-2">
-                            <input type="radio" name="accessMethod" class="radio radio-primary" value="direct"
-                                v-model="accessMethod" />
-                            <span>{{ $t('directOpenProfile') }}</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else class="space-y-4">
-                <!-- 帖子链接文件选择 -->
-                <div class="form-control flex items-center gap-4">
-                    <label class="font-bold text-md">
-                        <span>{{
-                            $t('postLinksPath') }}
+                <div class="border border-base-200 rounded-lg overflow-hidden">
+                    <div class="px-4 py-2 bg-base-200 flex items-center justify-between">
+                        <span class="font-semibold text-md flex items-center gap-2">
+                            <font-awesome-icon icon="fa-solid fa-list" />
+                            {{ $t('datasetPreviewTitle') }}
                         </span>
-                    </label>
-                    <div class="join flex w-full">
-                        <input type="text" :placeholder="$t('selectPostFile')" readonly
-                            class="input input-bordered join-item flex-1 w-full" v-model="postLinksPath" /> <button
-                            class="btn btn-info join-item" @click="selectPostLinksFile">{{ $t('select') }}</button>
+                        <span class="text-sm text-base-content/70">{{ $t('datasetPreviewHint', {
+                            count:
+                                datasetPreviewLimit
+                        }) }}</span>
+                    </div>
+                    <div v-if="activeDatasetEntries.length" class="overflow-x-auto">
+                        <table class="table table-zebra table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>{{ $t('datasetValue') }}</th>
+                                    <th>{{ $t('datasetStatus') }}</th>
+                                    <th>{{ $t('datasetLastError') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(entry, idx) in activeDatasetEntries" :key="entry.id">
+                                    <td>{{ idx + 1 }}</td>
+                                    <td class="break-all">{{ entry.value }}</td>
+                                    <td>
+                                        <span v-if="entry.consumed" class="badge badge-sm badge-success">
+                                            {{ $t('datasetConsumedFlag') }}
+                                        </span>
+                                        <span v-else class="badge badge-sm badge-outline">
+                                            {{ $t('datasetAvailableFlag') }}
+                                        </span>
+                                    </td>
+                                    <td class="text-sm text-error" v-if="entry.last_error">{{ entry.last_error }}</td>
+                                    <td v-else class="text-sm text-base-content/60">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-else class="p-4 text-sm text-base-content/70">
+                        {{ $t('datasetPreviewEmpty') }}
                     </div>
                 </div>
-                <!-- 最大处理帖子数量 -->
-                <div class="form-control flex items-center gap-4">
-                    <label class="font-bold text-md">
-                        <span>{{ $t('maxPostsToProcess') }}</span>
-                    </label>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <input type="number" class="input input-bordered input-md w-28" min="0"
-                            v-model.number="maxPostsToProcess" />
+
+                <div v-if="isUsernameSource" class="space-y-4">
+                    <div class="form-control flex items-center gap-4">
+                        <label class="font-bold text-md">
+                            <span>{{ $t('maxUsersToProcess') }}</span>
+                        </label>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <input type="number" class="input input-bordered input-md w-28" min="0"
+                                v-model.number="maxUsersToProcess" />
+                        </div>
+                        <div class="alert alert-info py-2 px-3 mt-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                class="stroke-current shrink-0 w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-md">{{ $t('maxUsersToProcessHelp') }}</span>
+                        </div>
                     </div>
-                    <div class="alert alert-info py-2 px-3 mt-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            class="stroke-current shrink-0 w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span class="text-md">{{ $t('maxPostsToProcessHelp') }}</span>
+
+                    <div class="form-control flex items-center gap-4">
+                        <label class="font-bold text-md">
+                            <span>{{ $t('userProfileAccessMethod') }}</span>
+                        </label>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="cursor-pointer flex items-center gap-2">
+                                <input type="radio" name="accessMethod" class="radio radio-primary" value="search"
+                                    v-model="accessMethod" />
+                                <span>{{ $t('searchUser') }}</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-2">
+                                <input type="radio" name="accessMethod" class="radio radio-primary" value="direct"
+                                    v-model="accessMethod" />
+                                <span>{{ $t('directOpenProfile') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="space-y-4">
+                    <div class="form-control flex items-center gap-4">
+                        <label class="font-bold text-md">
+                            <span>{{ $t('maxPostsToProcess') }}</span>
+                        </label>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <input type="number" class="input input-bordered input-md w-28" min="0"
+                                v-model.number="maxPostsToProcess" />
+                        </div>
+                        <div class="alert alert-info py-2 px-3 mt-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                class="stroke-current shrink-0 w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-md">{{ $t('maxPostsToProcessHelp') }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -242,7 +375,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-md">{{ helpRepeatTimes }}</span>
+                            <span class="text-md">{{ helpRepeatTimes() }}</span>
                         </div>
                     </div>
 
@@ -426,8 +559,21 @@
 
 <script>
 import { open } from '@tauri-apps/api/dialog';
+import { readTextFile } from '@tauri-apps/api/fs';
 import { superBoostSettings } from '@/utils/settingsManager';
 import VueSlider from "vue-3-slider-component";
+
+const DATASET_KEYS = ['usernames', 'post_links'];
+const DATASET_PREVIEW_LIMIT = 50;
+
+const DEFAULT_DATASET_CONFIG = () => ({
+    usernames: { id: 0, strategy: 'shared_pool' },
+    post_links: { id: 0, strategy: 'shared_pool' }
+});
+
+function cloneDefaultDatasetConfig() {
+    return JSON.parse(JSON.stringify(DEFAULT_DATASET_CONFIG()));
+}
 
 export default {
     name: 'SuperBoostDialog',
@@ -438,8 +584,9 @@ export default {
         superBoostSettings.createVueMixin(
             {
                 dataSourceType: 'usernames',
-                targetUsernamesPath: '',
-                postLinksPath: '',
+                dataSourceStrategy: 'shared_pool',
+                datasetId: 0,
+                datasetConfig: cloneDefaultDatasetConfig(),
                 accessMethod: 'search',
                 maxUsersToProcess: 0,
                 maxPostsToProcess: 0,
@@ -481,36 +628,55 @@ export default {
                 task_interval: [0, 0]
             },
             [
-                'dataSourceType', 'targetUsernamesPath', 'postLinksPath', 'accessMethod', 'features',
-                'maxUsersToProcess', 'maxPostsToProcess', 'followSettings', 'dmSettings', 'postSettings',
-                'commentSettings', 'task_interval'
+                'dataSourceType',
+                'dataSourceStrategy',
+                'datasetId',
+                'datasetConfig',
+                'accessMethod',
+                'features',
+                'maxUsersToProcess',
+                'maxPostsToProcess',
+                'followSettings',
+                'dmSettings',
+                'postSettings',
+                'commentSettings',
+                'task_interval'
             ]
         )
     ],
     data() {
         return {
-            // 数据源类型
             dataSourceType: 'usernames',
-
-            // 统一的目标用户名文件路径
-            targetUsernamesPath: '',
-
-            // 帖子链接文件路径
-            postLinksPath: '',
-
-            // 进入用户主页的方式
-            accessMethod: 'search', // 'search' 或 'direct'
-
-            // 最大处理用户数量 0 表示不限制
-            maxUsersToProcess: 0,
-            // 最大处理帖子数量 0 表示不限制
-            maxPostsToProcess: 0,
-
-            // ChatGPT测试结果
+            dataSourceStrategy: 'shared_pool',
+            datasetId: 0,
+            datasetConfig: cloneDefaultDatasetConfig(),
+            datasetStats: {
+                usernames: null,
+                post_links: null
+            },
+            datasetEntries: {
+                usernames: [],
+                post_links: []
+            },
+            datasetInputs: {
+                usernames: '',
+                post_links: ''
+            },
+            datasetSummaries: {
+                usernames: null,
+                post_links: null
+            },
+            datasetLoading: {
+                usernames: false,
+                post_links: false
+            },
+            datasetImporting: {
+                usernames: false,
+                post_links: false
+            },
+            datasetPreviewLimit: DATASET_PREVIEW_LIMIT,
             testResult: '',
             testResultStyle: 'text-gray-500',
-
-            // 功能开关
             features: {
                 followUsers: false,
                 unfollowUsers: false,
@@ -518,30 +684,22 @@ export default {
                 boostPosts: false,
                 massComment: false
             },
-
-            // 关注用户设置
             followSettings: {
-                boost_type: 'follow' // 'follow' 或 'unFollow'
+                boost_type: 'follow'
             },
-
-            // 私信设置
             dmSettings: {
                 message_contents: '',
                 insert_emoji: false
             },
-
-            // 帖子操作设置
             postSettings: {
-                max_posts_count: 1, // 最大处理帖子数量
+                max_posts_count: 1,
                 enable_like: false,
                 enable_favorite: false,
                 enable_repost: false,
                 enable_share: false,
-                repeat_times: 1, // 默认值为 1
-                view_durations: [5, 30] // 观看时长范围，单位秒
+                repeat_times: 1,
+                view_durations: [5, 30]
             },
-
-            // 评论设置
             commentSettings: {
                 comment_content: '',
                 insert_emoji: false,
@@ -554,33 +712,17 @@ export default {
                     system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
                 }
             },
-            // 任务间隔时间
+            maxUsersToProcess: 0,
+            maxPostsToProcess: 0,
+            accessMethod: 'search',
             task_interval: [0, 0]
-        }
+        };
     },
     async mounted() {
-        let needsReset = false;
+        this.ensureDatasetConfig();
 
-        if (typeof this.dataSourceType === 'undefined' || !['usernames', 'post_links'].includes(this.dataSourceType)) {
-            this.dataSourceType = 'usernames';
-        }
-
-        if (typeof this.postLinksPath === 'undefined' || typeof this.postLinksPath !== 'string') {
-            this.postLinksPath = '';
-        }
-
-        const parsedMaxUsers = Number(this.maxUsersToProcess);
-        if (!Number.isFinite(parsedMaxUsers) || parsedMaxUsers < 0) {
-            this.maxUsersToProcess = 0;
-        } else {
-            this.maxUsersToProcess = Math.floor(parsedMaxUsers);
-        }
-        const parsedMaxPosts = Number(this.maxPostsToProcess);
-        if (!Number.isFinite(parsedMaxPosts) || parsedMaxPosts < 0) {
-            this.maxPostsToProcess = 0;
-        } else {
-            this.maxPostsToProcess = Math.floor(parsedMaxPosts);
-        }
+        this.maxUsersToProcess = this.normalizeNonNegativeInt(this.maxUsersToProcess);
+        this.maxPostsToProcess = this.normalizeNonNegativeInt(this.maxPostsToProcess);
 
         if (this.dataSourceType === 'post_links') {
             this.features.followUsers = false;
@@ -589,44 +731,11 @@ export default {
         }
 
         if (typeof this.features.unfollowUsers === 'undefined') {
-            this.$set(this.features, 'unfollowUsers', false);
+            this.features.unfollowUsers = false;
         }
 
-        // 检查 postSettings 是否为有效对象
-        if (typeof this.postSettings === 'string' || !this.postSettings) {
-            console.error(`postSettings 异常: ${typeof this.postSettings}`, this.postSettings);
-            needsReset = true;
-        } else {
-            if (typeof this.postSettings.enable_share === 'undefined') {
-                this.$set(this.postSettings, 'enable_share', false);
-            }
-            if (!this.postSettings.repeat_times || this.postSettings.repeat_times < 1) {
-                this.$set(this.postSettings, 'repeat_times', 1);
-            }
-        }
-
-        // 检查 commentSettings 是否为有效对象
-        if (typeof this.commentSettings === 'string' || !this.commentSettings) {
-            console.error(`commentSettings 异常: ${typeof this.commentSettings}`, this.commentSettings);
-            needsReset = true;
-        } else {
-            // 确保 commentSettings.chatgpt_settings 对象存在
-            if (!this.commentSettings.chatgpt_settings) {
-                this.$set(this.commentSettings, 'chatgpt_settings', {
-                    url: 'https://api.openai.com/v1/chat/completions',
-                    api_key: '',
-                    model: 'gpt-3.5-turbo',
-                    system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
-                });
-            }
-        }
-
-        // 如果发现问题，尝试重置设置文件并重新加载
-        if (needsReset) {
-            console.warn('检测到设置异常，尝试修复...');
-            await this.resetSettingsFile();
-            console.log('设置已重置并重新加载');
-        }
+        await this.validateComplexSettingsStructure();
+        await this.initializeDatasets();
     },
     computed: {
         isUsernameSource() {
@@ -635,9 +744,34 @@ export default {
         isPostLinkSource() {
             return this.dataSourceType === 'post_links';
         },
-
-        helpRepeatTimes() {
-            return this.isPostLinkSource ? this.$t('repeatTimesHelpPostLinks') : this.$t('repeatTimesHelp');
+        activeDatasetKey() {
+            return this.isUsernameSource ? 'usernames' : 'post_links';
+        },
+        activeDatasetConfig() {
+            return this.datasetConfig[this.activeDatasetKey] || { id: 0, strategy: 'shared_pool' };
+        },
+        activeDatasetStats() {
+            return this.datasetStats[this.activeDatasetKey];
+        },
+        activeDatasetEntries() {
+            return this.datasetEntries[this.activeDatasetKey] || [];
+        },
+        activeDatasetInput: {
+            get() {
+                return this.datasetInputs[this.activeDatasetKey] || '';
+            },
+            set(value) {
+                this.datasetInputs[this.activeDatasetKey] = value;
+            }
+        },
+        activeDatasetSummary() {
+            return this.datasetSummaries[this.activeDatasetKey];
+        },
+        activeDatasetImporting() {
+            return this.datasetImporting[this.activeDatasetKey];
+        },
+        activeDatasetLoading() {
+            return this.datasetLoading[this.activeDatasetKey];
         },
 
     },
@@ -648,17 +782,281 @@ export default {
                 if (this.features.unfollowUsers) this.features.unfollowUsers = false;
                 if (this.features.sendDM) this.features.sendDM = false;
             }
+            this.syncActiveDatasetState();
         }
     },
     methods: {
-        // 重置设置文件
+        ensureDatasetConfig() {
+            if (!this.datasetConfig || typeof this.datasetConfig !== 'object') {
+                this.datasetConfig = cloneDefaultDatasetConfig();
+            }
+            DATASET_KEYS.forEach((key) => {
+                const current = this.datasetConfig[key];
+                if (!current || typeof current !== 'object') {
+                    this.datasetConfig[key] = { id: 0, strategy: 'shared_pool' };
+                    return;
+                }
+                if (typeof current.id === 'string') {
+                    current.id = Number(current.id) || 0;
+                }
+                if (!['shared_pool', 'consume_once'].includes(current.strategy)) {
+                    current.strategy = 'shared_pool';
+                }
+            });
+        },
+        normalizeStrategy(strategy) {
+            return ['shared_pool', 'consume_once'].includes(strategy) ? strategy : 'shared_pool';
+        },
+        getDatasetKeyConfig(key) {
+            return this.datasetConfig[key] || { id: 0, strategy: 'shared_pool' };
+        },
+        setDatasetConfig(key, updates) {
+            const current = { ...this.getDatasetKeyConfig(key) };
+            if (updates.id !== undefined) {
+                current.id = Number(updates.id) || 0;
+            }
+            if (updates.strategy !== undefined) {
+                current.strategy = this.normalizeStrategy(updates.strategy);
+            }
+            this.datasetConfig[key] = current;
+            if (this.activeDatasetKey === key) {
+                this.datasetId = current.id || 0;
+                this.dataSourceStrategy = current.strategy;
+            }
+        },
+        syncActiveDatasetState() {
+            this.ensureDatasetConfig();
+            const config = this.getDatasetKeyConfig(this.activeDatasetKey);
+            this.datasetId = Number(config.id) || 0;
+            this.dataSourceStrategy = this.normalizeStrategy(config.strategy);
+        },
+        async initializeDatasets() {
+            this.syncActiveDatasetState();
+            await Promise.all(
+                DATASET_KEYS.map((key) => this.refreshDataset(key, { silent: true }))
+            );
+        },
+        async refreshDataset(key, { silent = false } = {}) {
+            const config = this.getDatasetKeyConfig(key);
+            if (!config.id) {
+                this.datasetStats[key] = null;
+                this.datasetEntries[key] = [];
+                return;
+            }
+
+            if (!silent) {
+                this.datasetLoading[key] = true;
+            }
+            try {
+                const response = await this.$service.get_super_boost_dataset({
+                    dataset_id: config.id,
+                    limit: this.datasetPreviewLimit,
+                    offset: 0
+                });
+                if (response.code === 0) {
+                    const { stats, entries } = response.data;
+                    this.applyDatasetDetail(key, stats, entries || []);
+                } else {
+                    throw new Error(response.error || response.data || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Failed to load dataset', error);
+                this.notify('error', this.$t('datasetLoadFailed'));
+            } finally {
+                if (!silent) {
+                    this.datasetLoading[key] = false;
+                }
+            }
+        },
+        applyDatasetDetail(key, stats, entries = []) {
+            if (!stats) {
+                return;
+            }
+            const normalizedStrategy = this.normalizeStrategy(stats.strategy);
+            this.setDatasetConfig(key, {
+                id: stats.id,
+                strategy: normalizedStrategy
+            });
+            this.datasetStats[key] = {
+                ...stats,
+                strategy: normalizedStrategy
+            };
+            this.datasetEntries[key] = entries.slice(0, this.datasetPreviewLimit);
+            if (this.activeDatasetKey === key) {
+                this.datasetId = Number(stats.id) || 0;
+                this.dataSourceStrategy = normalizedStrategy;
+            }
+        },
+        async handleDatasetImport(mode) {
+            const key = this.activeDatasetKey;
+            const config = this.getDatasetKeyConfig(key);
+            const raw = (this.activeDatasetInput || '').trim();
+            if (!raw) {
+                this.notify('warning', this.$t('datasetImportEmpty'));
+                return;
+            }
+
+            this.datasetImporting[key] = true;
+            try {
+                const response = await this.$service.import_super_boost_dataset({
+                    dataset_id: config.id > 0 ? config.id : null,
+                    data_type: key,
+                    strategy: this.dataSourceStrategy,
+                    raw_text: raw,
+                    mode
+                });
+                if (response.code === 0) {
+                    const { dataset, summary } = response.data;
+                    this.applyDatasetDetail(key, dataset.stats, dataset.entries || []);
+                    this.datasetSummaries[key] = summary;
+                    this.datasetInputs[key] = '';
+                    await this.saveComponentSettings();
+                    this.notify('success', this.$t('datasetImportSuccess'));
+                } else {
+                    throw new Error(response.error || response.data || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Failed to import dataset', error);
+                this.notify('error', `${this.$t('datasetImportFailed')}: ${error.message || error}`);
+            } finally {
+                this.datasetImporting[key] = false;
+            }
+        },
+        async selectDatasetFile() {
+            const filePath = await open({
+                multiple: false,
+                directory: false,
+                filters: [{ name: 'Text Files', extensions: ['txt', 'csv'] }]
+            });
+            if (!filePath) return;
+            try {
+                const content = await readTextFile(filePath);
+                this.activeDatasetInput = content;
+                this.notify('success', this.$t('datasetFileLoaded'));
+            } catch (error) {
+                console.error('Failed to load dataset file', error);
+                this.notify('error', this.$t('datasetFileLoadFailed'));
+            }
+        },
+        async clearActiveDataset() {
+            const key = this.activeDatasetKey;
+            const config = this.getDatasetKeyConfig(key);
+            if (!config.id) {
+                this.datasetStats[key] = null;
+                this.datasetEntries[key] = [];
+                this.datasetSummaries[key] = null;
+                return;
+            }
+            this.datasetLoading[key] = true;
+            try {
+                const response = await this.$service.clear_super_boost_dataset({ dataset_id: config.id });
+                if (response.code === 0) {
+                    const { stats, entries } = response.data;
+                    this.applyDatasetDetail(key, stats, entries || []);
+                    this.datasetSummaries[key] = null;
+                    await this.saveComponentSettings();
+                    this.notify('success', this.$t('datasetCleared'));
+                } else {
+                    throw new Error(response.error || response.data || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Failed to clear dataset', error);
+                this.notify('error', `${this.$t('datasetClearFailed')}: ${error.message || error}`);
+            } finally {
+                this.datasetLoading[key] = false;
+            }
+        },
+        async changeActiveDatasetStrategy(strategy) {
+            const normalized = this.normalizeStrategy(strategy);
+            if (this.dataSourceStrategy === normalized) {
+                return;
+            }
+
+            const key = this.activeDatasetKey;
+            const previous = this.dataSourceStrategy;
+            this.dataSourceStrategy = normalized;
+            this.setDatasetConfig(key, { strategy: normalized });
+
+            if (this.datasetId > 0) {
+                try {
+                    const response = await this.$service.update_super_boost_dataset({
+                        dataset_id: this.datasetId,
+                        strategy: normalized
+                    });
+                    if (response.code === 0) {
+                        const { stats, entries } = response.data;
+                        this.applyDatasetDetail(key, stats, entries || []);
+                        await this.saveComponentSettings();
+                        this.notify('success', this.$t('datasetStrategyUpdateSuccess'));
+                    } else {
+                        throw new Error(response.error || response.data || 'Unknown error');
+                    }
+                } catch (error) {
+                    console.error('Failed to update dataset strategy', error);
+                    this.dataSourceStrategy = previous;
+                    this.setDatasetConfig(key, { strategy: previous });
+                    this.notify('error', `${this.$t('datasetStrategyUpdateFailed')}: ${error.message || error}`);
+                }
+            } else {
+                await this.saveComponentSettings();
+            }
+        },
+        formatLocalTime(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+            return date.toLocaleString();
+        },
+        helpRepeatTimes() {
+            return this.isPostLinkSource ? this.$t('repeatTimesHelpPostLinks') : this.$t('repeatTimesHelp');
+        },
+        normalizeNonNegativeInt(value) {
+            const parsed = Number(value);
+            if (!Number.isFinite(parsed) || parsed < 0) {
+                return 0;
+            }
+            return Math.floor(parsed);
+        },
+        async validateComplexSettingsStructure() {
+            let needsReset = false;
+
+            if (typeof this.postSettings === 'string' || !this.postSettings) {
+                needsReset = true;
+            } else {
+                if (typeof this.postSettings.enable_share === 'undefined') {
+                    this.postSettings.enable_share = false;
+                }
+                if (!this.postSettings.repeat_times || this.postSettings.repeat_times < 1) {
+                    this.postSettings.repeat_times = 1;
+                }
+            }
+
+            if (typeof this.commentSettings === 'string' || !this.commentSettings) {
+                needsReset = true;
+            } else if (!this.commentSettings.chatgpt_settings) {
+                this.commentSettings.chatgpt_settings = {
+                    url: 'https://api.openai.com/v1/chat/completions',
+                    api_key: '',
+                    model: 'gpt-3.5-turbo',
+                    system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
+                };
+            }
+
+            if (needsReset) {
+                console.warn('检测到设置异常，尝试修复...');
+                await this.resetSettingsFile();
+                console.log('设置已重置并重新加载');
+            }
+        },
         async resetSettingsFile() {
             try {
-                // 使用默认设置重置
                 const defaultSettings = {
                     dataSourceType: 'usernames',
-                    targetUsernamesPath: '',
-                    postLinksPath: '',
+                    dataSourceStrategy: 'shared_pool',
+                    datasetId: 0,
+                    datasetConfig: cloneDefaultDatasetConfig(),
                     accessMethod: 'search',
                     maxUsersToProcess: 0,
                     maxPostsToProcess: 0,
@@ -696,48 +1094,36 @@ export default {
                             model: 'gpt-3.5-turbo',
                             system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
                         }
-                    }
+                    },
+                    task_interval: [0, 0]
                 };
 
                 await superBoostSettings.resetSettings(defaultSettings);
-                console.log('设置文件已重置');
-                // 重新加载设置
                 await this.loadComponentSettings();
+                this.datasetInputs = {
+                    usernames: '',
+                    post_links: ''
+                };
+                this.datasetSummaries = {
+                    usernames: null,
+                    post_links: null
+                };
+                this.datasetStats = {
+                    usernames: null,
+                    post_links: null
+                };
+                this.datasetEntries = {
+                    usernames: [],
+                    post_links: []
+                };
+                this.ensureDatasetConfig();
+                await this.initializeDatasets();
                 return true;
             } catch (error) {
                 console.error('重置设置文件失败:', error);
                 return false;
             }
         },
-
-        // 选择用户名文件
-        async selectUsernameFile() {
-            const filePath = await open({
-                multiple: false,
-                directory: false,
-                filters: [
-                    { name: 'Text Files', extensions: ['txt'] }
-                ]
-            });
-            if (filePath) {
-                this.targetUsernamesPath = filePath;
-            }
-        },
-
-        async selectPostLinksFile() {
-            const filePath = await open({
-                multiple: false,
-                directory: false,
-                filters: [
-                    { name: 'Text Files', extensions: ['txt'] }
-                ]
-            });
-            if (filePath) {
-                this.postLinksPath = filePath;
-            }
-        },
-
-        // 测试ChatGPT连接
         async testChatGPT() {
             try {
                 this.testResult = 'Testing...';
@@ -749,7 +1135,6 @@ export default {
                     system_prompt: this.commentSettings.chatgpt_settings.system_prompt,
                     post_caption: 'This is a test post caption for TikTok.',
                 });
-                console.log(response);
                 if (response.code == 0) {
                     this.testResult = response.data;
                     this.testResultStyle = 'text-success';
@@ -762,8 +1147,6 @@ export default {
                 this.testResultStyle = 'text-error';
             }
         },
-
-        // 验证配置
         validateSettings() {
             const errors = [];
 
@@ -771,27 +1154,12 @@ export default {
                 errors.push(this.$t('selectAtLeastOneFeature'));
             }
 
-            // 如果选择了需要用户名列表的功能，检查文件路径
-            if (this.isUsernameSource && (this.features.followUsers || this.features.unfollowUsers || this.features.sendDM) && !this.targetUsernamesPath) {
-                errors.push(this.$t('selectUsernameFileRequired'));
+            if (!this.activeDatasetConfig.id) {
+                errors.push(this.$t('selectDatasetRequired'));
             }
 
-            if (this.isPostLinkSource && (this.features.boostPosts || this.features.massComment) && !this.postLinksPath) {
-                errors.push(this.$t('selectPostFileRequired'));
-            }
-
-            const parsedMaxUsers = Number(this.maxUsersToProcess);
-            if (!Number.isFinite(parsedMaxUsers) || parsedMaxUsers < 0) {
-                this.maxUsersToProcess = 0;
-            } else {
-                this.maxUsersToProcess = Math.floor(parsedMaxUsers);
-            }
-            const parsedMaxPosts = Number(this.maxPostsToProcess);
-            if (!Number.isFinite(parsedMaxPosts) || parsedMaxPosts < 0) {
-                this.maxPostsToProcess = 0;
-            } else {
-                this.maxPostsToProcess = Math.floor(parsedMaxPosts);
-            }
+            this.maxUsersToProcess = this.normalizeNonNegativeInt(this.maxUsersToProcess);
+            this.maxPostsToProcess = this.normalizeNonNegativeInt(this.maxPostsToProcess);
 
             if (this.features.sendDM && !this.dmSettings.message_contents.trim()) {
                 errors.push(this.$t('enterMessageContent'));
@@ -807,8 +1175,6 @@ export default {
 
             return errors;
         },
-
-        // 执行超级脚本
         async runScript(enable_multi_account = false, rotate_proxy = false) {
             const errors = this.validateSettings();
             if (errors.length > 0) {
@@ -816,10 +1182,10 @@ export default {
                 return;
             }
 
+            await this.saveComponentSettings();
 
-            // 发送到后端执行
             await this.$emiter('run_now_by_account', {
-                name: 'super_boost_v2',
+                name: 'super_boost_v3',
                 args: {
                     enable_multi_account: enable_multi_account,
                     rotate_proxy: rotate_proxy,
@@ -827,6 +1193,14 @@ export default {
                     max_interval: Number(this.task_interval[1]),
                 }
             });
+        },
+        notify(type, message, timeout = 2000) {
+            if (this.$emiter) {
+                this.$emiter('NOTIFY', { type, message, timeout });
+            } else {
+                const logger = type === 'error' ? console.error : console.log;
+                logger(message);
+            }
         }
     }
 }
