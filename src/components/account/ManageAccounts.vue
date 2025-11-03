@@ -389,7 +389,9 @@ export default {
           // 输出结果
           console.log(JSON.stringify(jsonData));
           for (let account of jsonData) {
-            const tags = this.normalizeTags(account.tags ?? account.tag)
+            const hasTagField = Object.prototype.hasOwnProperty.call(account, 'tags') ||
+              Object.prototype.hasOwnProperty.call(account, 'tag')
+            const tags = hasTagField ? this.normalizeTags(account.tags ?? account.tag) : null
             const payload = { ...account }
             delete payload.tags
             delete payload.tag
@@ -397,13 +399,15 @@ export default {
             if (payload.id) {
               const response = await this.$service.update_account(payload)
               const accountId = payload.id || response?.id || response?.data?.id
-              await this.applyTagsToAccount(accountId, tags)
+              if (hasTagField) {
+                await this.applyTagsToAccount(accountId, tags)
+              }
             } else {
               const response = await this.$service.add_account(payload)
               const accountId = response?.id || response?.data?.id
-              if (accountId) {
+              if (hasTagField && accountId) {
                 await this.applyTagsToAccount(accountId, tags)
-              } else if (tags.length > 0) {
+              } else if (hasTagField && tags && tags.length > 0) {
                 this.pendingTagAssignments.push({
                   tags,
                   username: payload.username,
