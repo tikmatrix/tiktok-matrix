@@ -112,91 +112,108 @@
                     </div>
                 </div>
 
-                <div class="form-control">
-                    <label class="font-bold text-md mb-2 flex items-center gap-2">
-                        <font-awesome-icon icon="fa-solid fa-file-import" />
-                        <span>{{ $t('datasetImportLabel') }}</span>
-                    </label>
-                    <textarea class="textarea textarea-bordered textarea-md h-32" v-model="activeDatasetInput"
-                        :placeholder="$t('datasetImportPlaceholder')"></textarea>
-                    <div class="flex flex-wrap items-center gap-3 mt-3">
-                        <button class="btn btn-info btn-sm" @click="selectDatasetFile">
-                            <font-awesome-icon icon="fa-solid fa-file-arrow-up" class="mr-1" />
-                            {{ $t('selectDatasetFile') }}
-                        </button>
-                        <button class="btn btn-primary btn-sm" :disabled="activeDatasetImporting"
-                            @click="handleDatasetImport('append')">
-                            <span v-if="activeDatasetImporting" class="loading loading-spinner loading-sm mr-2"></span>
-                            {{ $t('appendImport') }}
-                        </button>
-                        <button class="btn btn-secondary btn-sm" :disabled="activeDatasetImporting"
-                            @click="handleDatasetImport('replace')">
-                            <span v-if="activeDatasetImporting" class="loading loading-spinner loading-sm mr-2"></span>
-                            {{ $t('replaceImport') }}
-                        </button>
-                        <button class="btn btn-outline btn-error btn-sm"
-                            :disabled="!activeDatasetConfig.id || activeDatasetLoading" @click="clearActiveDataset">
-                            {{ $t('clearDataset') }}
-                        </button>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- 左侧：导入面板 -->
+                    <div>
+                        <div class="form-control">
+                            <label class="font-bold text-md mb-2 flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-file-import" />
+                                <span>{{ $t('datasetImportLabel') }}</span>
+                            </label>
+                            <textarea class="textarea textarea-bordered textarea-md h-48 lg:h-64"
+                                v-model="activeDatasetInput" :placeholder="$t('datasetImportPlaceholder')"></textarea>
+                            <div class="flex flex-wrap items-center gap-3 mt-3">
+                                <button class="btn btn-info btn-sm" @click="selectDatasetFile">
+                                    <font-awesome-icon icon="fa-solid fa-file-arrow-up" class="mr-1" />
+                                    {{ $t('selectDatasetFile') }}
+                                </button>
+                                <button class="btn btn-primary btn-sm" :disabled="activeDatasetImporting"
+                                    @click="handleDatasetImport('append')">
+                                    <span v-if="activeDatasetImporting"
+                                        class="loading loading-spinner loading-sm mr-2"></span>
+                                    {{ $t('appendImport') }}
+                                </button>
+                                <button class="btn btn-secondary btn-sm" :disabled="activeDatasetImporting"
+                                    @click="handleDatasetImport('replace')">
+                                    <span v-if="activeDatasetImporting"
+                                        class="loading loading-spinner loading-sm mr-2"></span>
+                                    {{ $t('replaceImport') }}
+                                </button>
+                                <button class="btn btn-outline btn-error btn-sm"
+                                    :disabled="!activeDatasetConfig.id || activeDatasetLoading"
+                                    @click="clearActiveDataset">
+                                    {{ $t('clearDataset') }}
+                                </button>
+                            </div>
+                            <p class="text-sm text-base-content/70 mt-2">{{ $t('datasetImportHint') }}</p>
+                        </div>
+
+                        <!-- summary moved below the import+preview grid to align widths -->
                     </div>
-                    <p class="text-sm text-base-content/70 mt-2">{{ $t('datasetImportHint') }}</p>
+
+                    <!-- 右侧：预览列表（限定高度，可滚动） -->
+                    <div>
+                        <div class="border border-base-200 rounded-lg overflow-hidden">
+                            <div class="px-4 py-2 bg-base-200 flex items-center justify-between">
+                                <span class="font-semibold text-md flex items-center gap-2">
+                                    <font-awesome-icon icon="fa-solid fa-list" />
+                                    {{ $t('datasetPreviewTitle') }}
+                                </span>
+                                <span class="text-sm text-base-content/70">{{ $t('datasetPreviewHint', {
+                                    count:
+                                        datasetPreviewLimit
+                                }) }}</span>
+                            </div>
+                            <div v-if="activeDatasetEntries.length" class="overflow-x-auto">
+                                <div class="max-h-64 overflow-y-auto">
+                                    <table class="table table-zebra table-sm w-full">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ $t('datasetValue') }}</th>
+                                                <th>{{ $t('datasetStatus') }}</th>
+                                                <th>{{ $t('datasetLastError') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(entry, idx) in activeDatasetEntries" :key="entry.id">
+                                                <td>{{ idx + 1 }}</td>
+                                                <td class="break-all">{{ entry.value }}</td>
+                                                <td>
+                                                    <span v-if="entry.consumed" class="badge badge-sm badge-success">
+                                                        {{ $t('datasetConsumedFlag') }}
+                                                    </span>
+                                                    <span v-else class="badge badge-sm badge-outline">
+                                                        {{ $t('datasetAvailableFlag') }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-sm text-error" v-if="entry.last_error">{{
+                                                    entry.last_error }}</td>
+                                                <td v-else class="text-sm text-base-content/60">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div v-else class="p-4 text-sm text-base-content/70">
+                                {{ $t('datasetPreviewEmpty') }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div v-if="activeDatasetSummary" class="alert alert-info mt-3">
+                <!-- 导入结果：放在导入面板与预览下方，宽度与两列一致 -->
+                <div v-if="activeDatasetSummary" class="alert alert-info mt-3 w-full">
                     <font-awesome-icon icon="fa-solid fa-clipboard-check" class="mr-2" />
                     <div>
-                        <div class="font-semibold">{{ $t('datasetImportSummary') }}</div>
-                        <div class="grid md:grid-cols-2 gap-2 text-sm mt-2">
+                        <div class="flex gap-2 text-sm mt-2">
+                            <div class="font-semibold">{{ $t('datasetImportSummary') }}:</div>
                             <div>{{ $t('datasetInserted', { count: activeDatasetSummary.inserted }) }}</div>
                             <div>{{ $t('datasetDuplicates', { count: activeDatasetSummary.duplicates }) }}</div>
                             <div>{{ $t('datasetSkipped', { count: activeDatasetSummary.skipped_empty }) }}</div>
                             <div>{{ $t('datasetRemoved', { count: activeDatasetSummary.removed }) }}</div>
                             <div>{{ $t('datasetTruncated', { count: activeDatasetSummary.truncated }) }}</div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="border border-base-200 rounded-lg overflow-hidden">
-                    <div class="px-4 py-2 bg-base-200 flex items-center justify-between">
-                        <span class="font-semibold text-md flex items-center gap-2">
-                            <font-awesome-icon icon="fa-solid fa-list" />
-                            {{ $t('datasetPreviewTitle') }}
-                        </span>
-                        <span class="text-sm text-base-content/70">{{ $t('datasetPreviewHint', {
-                            count:
-                                datasetPreviewLimit
-                        }) }}</span>
-                    </div>
-                    <div v-if="activeDatasetEntries.length" class="overflow-x-auto">
-                        <table class="table table-zebra table-sm">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>{{ $t('datasetValue') }}</th>
-                                    <th>{{ $t('datasetStatus') }}</th>
-                                    <th>{{ $t('datasetLastError') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(entry, idx) in activeDatasetEntries" :key="entry.id">
-                                    <td>{{ idx + 1 }}</td>
-                                    <td class="break-all">{{ entry.value }}</td>
-                                    <td>
-                                        <span v-if="entry.consumed" class="badge badge-sm badge-success">
-                                            {{ $t('datasetConsumedFlag') }}
-                                        </span>
-                                        <span v-else class="badge badge-sm badge-outline">
-                                            {{ $t('datasetAvailableFlag') }}
-                                        </span>
-                                    </td>
-                                    <td class="text-sm text-error" v-if="entry.last_error">{{ entry.last_error }}</td>
-                                    <td v-else class="text-sm text-base-content/60">-</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div v-else class="p-4 text-sm text-base-content/70">
-                        {{ $t('datasetPreviewEmpty') }}
                     </div>
                 </div>
 
@@ -219,23 +236,6 @@
                         </div>
                     </div>
 
-                    <div class="form-control flex items-center gap-4">
-                        <label class="font-bold text-md">
-                            <span>{{ $t('userProfileAccessMethod') }}</span>
-                        </label>
-                        <div class="flex flex-wrap gap-4">
-                            <label class="cursor-pointer flex items-center gap-2">
-                                <input type="radio" name="accessMethod" class="radio radio-primary" value="search"
-                                    v-model="accessMethod" />
-                                <span>{{ $t('searchUser') }}</span>
-                            </label>
-                            <label class="cursor-pointer flex items-center gap-2">
-                                <input type="radio" name="accessMethod" class="radio radio-primary" value="direct"
-                                    v-model="accessMethod" />
-                                <span>{{ $t('directOpenProfile') }}</span>
-                            </label>
-                        </div>
-                    </div>
                 </div>
 
                 <div v-else class="space-y-4">
@@ -270,6 +270,27 @@
             </h3>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+
+                <!-- 进入用户主页方式（全宽） -->
+                <div class="col-span-1 lg:col-span-2 xl:col-span-3">
+                    <div class="form-control flex items-center gap-4">
+                        <label class="font-bold text-md">
+                            <span>{{ $t('userProfileAccessMethod') }}</span>
+                        </label>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="cursor-pointer flex items-center gap-2">
+                                <input type="radio" name="accessMethod" class="radio radio-primary" value="search"
+                                    v-model="accessMethod" />
+                                <span>{{ $t('searchUser') }}</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center gap-2">
+                                <input type="radio" name="accessMethod" class="radio radio-primary" value="direct"
+                                    v-model="accessMethod" />
+                                <span>{{ $t('directOpenProfile') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 关注操作配置 -->
                 <div :class="[
@@ -497,7 +518,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                    }}</button>
+                                }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -719,6 +740,7 @@ export default {
         };
     },
     async mounted() {
+        await this.ensureSettingsLoaded();
         this.ensureDatasetConfig();
 
         this.maxUsersToProcess = this.normalizeNonNegativeInt(this.maxUsersToProcess);
