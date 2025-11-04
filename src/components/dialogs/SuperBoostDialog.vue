@@ -17,9 +17,6 @@
 
             <!-- 数据源类型选择 -->
             <div class="form-control mb-4 flex items-center gap-4">
-                <label class="font-bold text-md">
-                    <span>{{ $t('dataSourceType') }}</span>
-                </label>
                 <div class="grid md:grid-cols-2 gap-3">
                     <label class="cursor-pointer flex items-start gap-3 p-3 rounded-lg border border-base-200"
                         :class="{ 'bg-primary/5 border-primary': isUsernameSource }">
@@ -159,10 +156,9 @@
                                     <font-awesome-icon icon="fa-solid fa-list" />
                                     {{ $t('datasetPreviewTitle') }}
                                 </span>
-                                <span class="text-sm text-base-content/70">{{ $t('datasetPreviewHint', {
-                                    count:
-                                        datasetPreviewLimit
-                                }) }}</span>
+                                <span class="text-sm text-base-content/70" v-if="datasetPreviewSummaryText">
+                                    {{ datasetPreviewSummaryText }}
+                                </span>
                             </div>
                             <div v-if="activeDatasetEntries.length" class="overflow-x-auto">
                                 <div class="max-h-64 overflow-y-auto">
@@ -172,12 +168,13 @@
                                                 <th>#</th>
                                                 <th>{{ $t('datasetValue') }}</th>
                                                 <th>{{ $t('datasetStatus') }}</th>
-                                                <th>{{ $t('datasetLastError') }}</th>
+                                                <th>{{ $t('datasetUpdatedAt') }}</th>
+                                                <th>{{ $t('datasetHasError') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-for="(entry, idx) in activeDatasetEntries" :key="entry.id">
-                                                <td>{{ idx + 1 }}</td>
+                                                <td>{{ formatDatasetRowIndex(idx) }}</td>
                                                 <td class="break-all">{{ entry.value }}</td>
                                                 <td>
                                                     <span v-if="entry.consumed" class="badge badge-sm badge-success">
@@ -187,12 +184,52 @@
                                                         {{ $t('datasetAvailableFlag') }}
                                                     </span>
                                                 </td>
-                                                <td class="text-sm text-error" v-if="entry.last_error">{{
-                                                    entry.last_error }}</td>
-                                                <td v-else class="text-sm text-base-content/60">-</td>
+                                                <td class="text-sm text-base-content/70">
+                                                    {{ formatLocalTime(entry.updated_at) }}
+                                                </td>
+                                                <td :title="entry.last_error || ''">
+                                                    <span v-if="entry.last_error" class="badge badge-sm badge-error">
+                                                        {{ $t('datasetHasErrorYes') }}
+                                                    </span>
+                                                    <span v-else class="badge badge-sm badge-success">
+                                                        {{ $t('datasetHasErrorNo') }}
+                                                    </span>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                                <div class="border-t border-base-200 px-4 py-3 flex flex-wrap items-center gap-3 justify-between"
+                                    v-if="activeDatasetPagination.total">
+                                    <div class="text-sm text-base-content/70" v-if="datasetPreviewRangeText">
+                                        {{ datasetPreviewRangeText }}
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-sm font-medium" for="dataset-page-size">
+                                            {{ $t('datasetPageSizeLabel') }}
+                                        </label>
+                                        <select id="dataset-page-size" class="select select-bordered select-sm"
+                                            :value="activeDatasetPagination.pageSize" @change="onDatasetPageSizeChange">
+                                            <option v-for="size in datasetPageSizeOptions" :key="size" :value="size">
+                                                {{ size }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button class="btn btn-sm"
+                                            @click="changeActiveDatasetPage(activeDatasetPagination.currentPage - 1)"
+                                            :disabled="activeDatasetPagination.currentPage <= 1">
+                                            {{ $t('previous') }}
+                                        </button>
+                                        <span class="text-sm">
+                                            {{ activeDatasetPagination.currentPage }} / {{ activeDatasetPageCount }}
+                                        </span>
+                                        <button class="btn btn-sm"
+                                            @click="changeActiveDatasetPage(activeDatasetPagination.currentPage + 1)"
+                                            :disabled="activeDatasetPagination.currentPage >= activeDatasetPageCount">
+                                            {{ $t('next') }}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div v-else class="p-4 text-sm text-base-content/70">
@@ -262,7 +299,7 @@
     </div>
 
     <!-- 模块2：用户相关操作 -->
-    <div class="card bg-base-100 border border-base-300 mb-4">
+    <div class="card bg-base-100 border border-base-300 mb-4" v-if="isUsernameSource">
         <div class="card-body p-4">
             <h3 class="card-title text-lg mb-4 text-primary">
                 <font-awesome-icon icon="fa-solid fa-users" class="mr-2" />
@@ -295,48 +332,42 @@
                 <!-- 关注操作配置 -->
                 <div :class="[
                     'border border-base-200 rounded-lg p-3 transition-all',
-                    features.followUsers ? 'bg-success/10 border-success shadow' : 'bg-base-50',
-                    !isUsernameSource ? 'opacity-50' : ''
+                    features.followUsers ? 'bg-success/10 border-success shadow' : 'bg-base-50'
                 ]">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <font-awesome-icon icon="fa-solid fa-user-plus" class="text-success" />
                             <span class="font-semibold">{{ $t('followUsersAction') }}</span>
                         </div>
-                        <input type="checkbox" class="toggle toggle-success toggle-md" v-model="features.followUsers"
-                            :disabled="!isUsernameSource" />
+                        <input type="checkbox" class="toggle toggle-success toggle-md" v-model="features.followUsers" />
                     </div>
                 </div>
 
                 <!-- 取消关注配置 -->
                 <div :class="[
                     'border border-base-200 rounded-lg p-3 transition-all',
-                    features.unfollowUsers ? 'bg-error/10 border-error shadow' : 'bg-base-50',
-                    !isUsernameSource ? 'opacity-50' : ''
+                    features.unfollowUsers ? 'bg-error/10 border-error shadow' : 'bg-base-50'
                 ]">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <font-awesome-icon icon="fa-solid fa-user-minus" class="text-error" />
                             <span class="font-semibold">{{ $t('unfollowUsersAction') }}</span>
                         </div>
-                        <input type="checkbox" class="toggle toggle-error toggle-md" v-model="features.unfollowUsers"
-                            :disabled="!isUsernameSource" />
+                        <input type="checkbox" class="toggle toggle-error toggle-md" v-model="features.unfollowUsers" />
                     </div>
                 </div>
 
                 <!-- 私信操作配置 -->
                 <div :class="[
                     'border border-base-200 rounded-lg p-3 transition-all space-y-3',
-                    features.sendDM ? 'bg-info/10 border-info shadow' : 'bg-base-50',
-                    !isUsernameSource ? 'opacity-50' : ''
+                    features.sendDM ? 'bg-info/10 border-info shadow' : 'bg-base-50'
                 ]">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <font-awesome-icon icon="fa-solid fa-envelope" class="text-info" />
                             <span class="font-semibold">{{ $t('sendDMAction') }}</span>
                         </div>
-                        <input type="checkbox" class="toggle toggle-info toggle-md" v-model="features.sendDM"
-                            :disabled="!isUsernameSource" />
+                        <input type="checkbox" class="toggle toggle-info toggle-md" v-model="features.sendDM" />
                     </div>
 
                     <div v-if="features.sendDM" class="form-control">
@@ -585,7 +616,20 @@ import { superBoostSettings } from '@/utils/settingsManager';
 import VueSlider from "vue-3-slider-component";
 
 const DATASET_KEYS = ['usernames', 'post_links'];
-const DATASET_PREVIEW_LIMIT = 50;
+const DEFAULT_DATASET_PAGE_SIZE = 50;
+const DATASET_PAGE_SIZE_OPTIONS = [20, 50, 100, 200];
+
+const createDefaultPaginationState = () => ({
+    currentPage: 1,
+    pageSize: DEFAULT_DATASET_PAGE_SIZE,
+    total: 0
+});
+
+const createInitialPaginationState = () =>
+    DATASET_KEYS.reduce((acc, key) => {
+        acc[key] = createDefaultPaginationState();
+        return acc;
+    }, {});
 
 const DEFAULT_DATASET_CONFIG = () => ({
     usernames: { id: 0, strategy: 'shared_pool' },
@@ -695,7 +739,8 @@ export default {
                 usernames: false,
                 post_links: false
             },
-            datasetPreviewLimit: DATASET_PREVIEW_LIMIT,
+            datasetPagination: createInitialPaginationState(),
+            datasetPageSizeOptions: DATASET_PAGE_SIZE_OPTIONS,
             testResult: '',
             testResultStyle: 'text-gray-500',
             features: {
@@ -795,6 +840,44 @@ export default {
         activeDatasetLoading() {
             return this.datasetLoading[this.activeDatasetKey];
         },
+        activeDatasetPagination() {
+            return this.datasetPagination[this.activeDatasetKey] || createDefaultPaginationState();
+        },
+        activeDatasetPageCount() {
+            const { total, pageSize } = this.activeDatasetPagination;
+            if (!total || !pageSize) {
+                return 1;
+            }
+            return Math.max(1, Math.ceil(total / pageSize));
+        },
+        activeDatasetPageRange() {
+            const { total, pageSize, currentPage } = this.activeDatasetPagination;
+            if (!total || !pageSize) {
+                return { start: 0, end: 0 };
+            }
+            const start = (currentPage - 1) * pageSize + 1;
+            const end = Math.min(currentPage * pageSize, total);
+            return { start, end };
+        },
+        datasetPreviewSummaryText() {
+            const { total, currentPage } = this.activeDatasetPagination;
+            if (!total) {
+                return '';
+            }
+            return this.$t('datasetPreviewHint', {
+                page: currentPage,
+                pages: this.activeDatasetPageCount,
+                total
+            });
+        },
+        datasetPreviewRangeText() {
+            const { total } = this.activeDatasetPagination;
+            if (!total) {
+                return '';
+            }
+            const { start, end } = this.activeDatasetPageRange;
+            return this.$t('datasetPreviewRange', { start, end, total });
+        },
 
     },
     watch: {
@@ -808,6 +891,52 @@ export default {
         }
     },
     methods: {
+        getDatasetPagination(key) {
+            if (!this.datasetPagination[key]) {
+                this.datasetPagination = {
+                    ...this.datasetPagination,
+                    [key]: createDefaultPaginationState()
+                };
+            }
+            return this.datasetPagination[key];
+        },
+        updateDatasetPagination(key, updates = {}) {
+            const current = this.getDatasetPagination(key);
+            this.datasetPagination = {
+                ...this.datasetPagination,
+                [key]: {
+                    ...current,
+                    ...updates
+                }
+            };
+        },
+        async changeActiveDatasetPage(page) {
+            const key = this.activeDatasetKey;
+            const pagination = this.getDatasetPagination(key);
+            const totalPages = pagination.total && pagination.pageSize
+                ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize))
+                : 1;
+            const targetPage = Math.min(Math.max(1, page), totalPages);
+            if (targetPage === pagination.currentPage) {
+                return;
+            }
+            await this.refreshDataset(key, { page: targetPage, pageSize: pagination.pageSize });
+        },
+        async changeActiveDatasetPageSize(size) {
+            const pageSize = Number(size);
+            if (!Number.isFinite(pageSize) || pageSize <= 0) {
+                return;
+            }
+            const key = this.activeDatasetKey;
+            const pagination = this.getDatasetPagination(key);
+            if (pagination.pageSize === pageSize) {
+                return;
+            }
+            await this.refreshDataset(key, { page: 1, pageSize });
+        },
+        onDatasetPageSizeChange(event) {
+            this.changeActiveDatasetPageSize(event.target.value);
+        },
         ensureDatasetConfig() {
             if (!this.datasetConfig || typeof this.datasetConfig !== 'object') {
                 this.datasetConfig = cloneDefaultDatasetConfig();
@@ -858,13 +987,19 @@ export default {
                 DATASET_KEYS.map((key) => this.refreshDataset(key, { silent: true }))
             );
         },
-        async refreshDataset(key, { silent = false } = {}) {
+        async refreshDataset(key, { silent = false, page, pageSize } = {}) {
             const config = this.getDatasetKeyConfig(key);
             if (!config.id) {
                 this.datasetStats[key] = null;
                 this.datasetEntries[key] = [];
+                this.updateDatasetPagination(key, { total: 0, currentPage: 1 });
                 return;
             }
+
+            const pagination = this.getDatasetPagination(key);
+            const effectivePageSize = Number(pageSize) > 0 ? Number(pageSize) : pagination.pageSize || DEFAULT_DATASET_PAGE_SIZE;
+            const requestedPage = Number(page) > 0 ? Number(page) : pagination.currentPage || 1;
+            const offset = (requestedPage - 1) * effectivePageSize;
 
             if (!silent) {
                 this.datasetLoading[key] = true;
@@ -872,12 +1007,27 @@ export default {
             try {
                 const response = await this.$service.get_super_boost_dataset({
                     dataset_id: config.id,
-                    limit: this.datasetPreviewLimit,
-                    offset: 0
+                    limit: effectivePageSize,
+                    offset
                 });
                 if (response.code === 0) {
                     const { stats, entries } = response.data;
-                    this.applyDatasetDetail(key, stats, entries || []);
+                    const entriesList = Array.isArray(entries) ? entries : [];
+                    const total = stats && typeof stats.total === 'number' ? stats.total : pagination.total;
+
+                    if (entriesList.length === 0 && total > 0 && requestedPage > 1) {
+                        const lastPage = Math.max(1, Math.ceil(total / effectivePageSize));
+                        if (lastPage !== requestedPage) {
+                            await this.refreshDataset(key, { silent, page: lastPage, pageSize: effectivePageSize });
+                            return;
+                        }
+                    }
+
+                    this.applyDatasetDetail(key, stats, entriesList, {
+                        page: requestedPage,
+                        pageSize: effectivePageSize,
+                        total: typeof total === 'number' ? total : entriesList.length
+                    });
                 } else {
                     throw new Error(response.error || response.data || 'Unknown error');
                 }
@@ -890,7 +1040,7 @@ export default {
                 }
             }
         },
-        applyDatasetDetail(key, stats, entries = []) {
+        applyDatasetDetail(key, stats, entries = [], pagination = {}) {
             if (!stats) {
                 return;
             }
@@ -903,7 +1053,20 @@ export default {
                 ...stats,
                 strategy: normalizedStrategy
             };
-            this.datasetEntries[key] = entries.slice(0, this.datasetPreviewLimit);
+            this.datasetEntries[key] = entries;
+            const currentPagination = this.getDatasetPagination(key);
+            const pageSize = Number(pagination.pageSize) > 0 ? Number(pagination.pageSize) : currentPagination.pageSize;
+            const total = typeof pagination.total === 'number'
+                ? pagination.total
+                : (typeof stats.total === 'number' ? stats.total : currentPagination.total);
+            const requestedPage = Number(pagination.page) > 0 ? Number(pagination.page) : currentPagination.currentPage;
+            const pageCount = pageSize > 0 && total > 0 ? Math.max(1, Math.ceil(total / pageSize)) : 1;
+            const currentPage = Math.min(Math.max(1, requestedPage || 1), pageCount);
+            this.updateDatasetPagination(key, {
+                pageSize,
+                total,
+                currentPage
+            });
             if (this.activeDatasetKey === key) {
                 this.datasetId = Number(stats.id) || 0;
                 this.dataSourceStrategy = normalizedStrategy;
@@ -929,7 +1092,12 @@ export default {
                 });
                 if (response.code === 0) {
                     const { dataset, summary } = response.data;
-                    this.applyDatasetDetail(key, dataset.stats, dataset.entries || []);
+                    const currentPagination = this.getDatasetPagination(key);
+                    this.applyDatasetDetail(key, dataset.stats, dataset.entries || [], {
+                        page: 1,
+                        pageSize: currentPagination.pageSize,
+                        total: dataset?.stats?.total
+                    });
                     this.datasetSummaries[key] = summary;
                     this.datasetInputs[key] = '';
                     await this.saveComponentSettings();
@@ -967,6 +1135,7 @@ export default {
                 this.datasetStats[key] = null;
                 this.datasetEntries[key] = [];
                 this.datasetSummaries[key] = null;
+                this.updateDatasetPagination(key, { total: 0, currentPage: 1 });
                 return;
             }
             this.datasetLoading[key] = true;
@@ -974,7 +1143,12 @@ export default {
                 const response = await this.$service.clear_super_boost_dataset({ dataset_id: config.id });
                 if (response.code === 0) {
                     const { stats, entries } = response.data;
-                    this.applyDatasetDetail(key, stats, entries || []);
+                    const currentPagination = this.getDatasetPagination(key);
+                    this.applyDatasetDetail(key, stats, entries || [], {
+                        page: 1,
+                        pageSize: currentPagination.pageSize,
+                        total: stats?.total
+                    });
                     this.datasetSummaries[key] = null;
                     await this.saveComponentSettings();
                     this.notify('success', this.$t('datasetCleared'));
@@ -1007,7 +1181,12 @@ export default {
                     });
                     if (response.code === 0) {
                         const { stats, entries } = response.data;
-                        this.applyDatasetDetail(key, stats, entries || []);
+                        const currentPagination = this.getDatasetPagination(key);
+                        this.applyDatasetDetail(key, stats, entries || [], {
+                            page: currentPagination.currentPage,
+                            pageSize: currentPagination.pageSize,
+                            total: stats?.total
+                        });
                         await this.saveComponentSettings();
                         this.notify('success', this.$t('datasetStrategyUpdateSuccess'));
                     } else {
@@ -1029,7 +1208,21 @@ export default {
             if (Number.isNaN(date.getTime())) {
                 return value;
             }
-            return date.toLocaleString();
+            return new Intl.DateTimeFormat(undefined, {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).format(date);
+        },
+        formatDatasetRowIndex(idx) {
+            const { start } = this.activeDatasetPageRange;
+            if (!start) {
+                return idx + 1;
+            }
+            return start + idx;
         },
         helpRepeatTimes() {
             return this.isPostLinkSource ? this.$t('repeatTimesHelpPostLinks') : this.$t('repeatTimesHelp');
@@ -1138,6 +1331,7 @@ export default {
                     usernames: [],
                     post_links: []
                 };
+                this.datasetPagination = createInitialPaginationState();
                 this.ensureDatasetConfig();
                 await this.initializeDatasets();
                 return true;
@@ -1172,9 +1366,6 @@ export default {
         validateSettings() {
             const errors = [];
 
-            if (!Object.values(this.features).some(feature => feature)) {
-                errors.push(this.$t('selectAtLeastOneFeature'));
-            }
 
             if (!this.activeDatasetConfig.id) {
                 errors.push(this.$t('selectDatasetRequired'));
