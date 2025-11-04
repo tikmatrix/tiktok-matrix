@@ -107,8 +107,8 @@ export class SettingsManager {
                                 // 如果默认值是对象但加载值不是，则使用默认值
                                 if (defaultType === 'object' && defaultType !== loadedType) {
                                     console.warn(`Type mismatch for setting ${key}: expected object but got ${loadedType}. Using default value.`);
-                                    // 使用Vue的$set方法确保响应式
-                                    this.$set(this, key, JSON.parse(JSON.stringify(defaultSettings[key])));
+                                    // 在 Vue 3 中直接赋值即可触发响应式代理
+                                    this[key] = JSON.parse(JSON.stringify(defaultSettings[key]));
                                 } else {
                                     console.log(`Setting ${key} from ${JSON.stringify(this[key])} to ${JSON.stringify(loadedValue)}`);
                                     this[key] = loadedValue;
