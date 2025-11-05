@@ -293,9 +293,9 @@
                         </div>
                     </div>
 
-                </div> -->
+                </div>
 
-                <!-- <div v-else class="space-y-4">
+                <div v-else class="space-y-4">
                     <div class="form-control flex items-center gap-4">
                         <label class="font-bold text-md">
                             <span>{{ $t('maxPostsToProcess') }}</span>
@@ -574,7 +574,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                }}</button>
+                                    }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
