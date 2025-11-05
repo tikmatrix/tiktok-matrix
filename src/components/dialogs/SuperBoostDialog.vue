@@ -282,47 +282,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- 
-                <div v-if="isUsernameSource" class="space-y-4">
-                    <div class="form-control flex items-center gap-4">
-                        <label class="font-bold text-md">
-                            <span>{{ $t('maxUsersToProcess') }}</span>
-                        </label>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <input type="number" class="input input-bordered input-md w-28" min="0"
-                                v-model.number="maxUsersToProcess" />
-                        </div>
-                        <div class="alert alert-info py-2 px-3 mt-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                class="stroke-current shrink-0 w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-md">{{ $t('maxUsersToProcessHelp') }}</span>
-                        </div>
-                    </div>
 
-                </div>
-
-                <div v-else class="space-y-4">
-                    <div class="form-control flex items-center gap-4">
-                        <label class="font-bold text-md">
-                            <span>{{ $t('maxPostsToProcess') }}</span>
-                        </label>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <input type="number" class="input input-bordered input-md w-28" min="0"
-                                v-model.number="maxPostsToProcess" />
-                        </div>
-                        <div class="alert alert-info py-2 px-3 mt-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                class="stroke-current shrink-0 w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-md">{{ $t('maxPostsToProcessHelp') }}</span>
-                        </div>
-                    </div>
-                </div> -->
             </div>
         </div>
     </div>
@@ -402,19 +362,99 @@
                             <input type="checkbox" class="toggle toggle-info toggle-md" v-model="features.sendDM" />
                         </div>
 
-                        <div v-if="features.sendDM" class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-md">{{ $t('messageContents') }}</span>
-                            </label>
-                            <textarea class="textarea textarea-md textarea-bordered h-16"
-                                v-model="dmSettings.message_contents"
-                                :placeholder="$t('messageContentsTips')"></textarea>
+                        <div v-if="features.sendDM" class="space-y-3">
+                            <div class="flex flex-row items-center gap-2 mb-3">
+                                <label class="font-bold text-md">{{ $t('generateByChatGPT') }}:</label>
+                                <input type="checkbox" class="toggle toggle-accent toggle-md"
+                                    v-model="dmSettings.generate_by_chatgpt" />
+                            </div>
 
-                            <label class="cursor-pointer flex items-center gap-2 mt-2">
-                                <input type="checkbox" class="checkbox checkbox-md checkbox-accent"
-                                    v-model="dmSettings.insert_emoji" />
-                                <span class="text-md">{{ $t('insertEmoji') }}</span>
-                            </label>
+                            <div v-if="dmSettings.generate_by_chatgpt" class="space-y-3">
+                                <div class="border border-base-200 rounded-lg p-3 bg-base-50">
+                                    <h4 class="font-semibold text-md mb-2">{{ $t('chatgptSettings') }}</h4>
+
+                                    <div class="grid grid-cols-1 gap-2">
+                                        <div>
+                                            <label class="label py-1">
+                                                <span class="label-text text-md">{{ $t('url') }}</span>
+                                            </label>
+                                            <input type="text" class="input input-md w-full"
+                                                placeholder="https://api.openai.com/v1/chat/completions"
+                                                v-model="dmChatgptUrl" />
+                                        </div>
+
+                                        <div>
+                                            <label class="label py-1">
+                                                <span class="label-text text-md">{{ $t('apiKey') }}</span>
+                                            </label>
+                                            <div class="flex items-center gap-2">
+                                                <input :type="dmApiKeyVisible ? 'text' : 'password'"
+                                                    class="input input-md w-full" placeholder="sk-********"
+                                                    v-model="dmChatgptApiKey" />
+                                                <button type="button" class="btn btn-ghost btn-square btn-sm"
+                                                    @click="dmApiKeyVisible = !dmApiKeyVisible"
+                                                    :title="dmApiKeyVisible ? $t('hide') : $t('show')">
+                                                    <font-awesome-icon
+                                                        :icon="dmApiKeyVisible ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="label py-1">
+                                                <span class="label-text text-md">{{ $t('model') }}</span>
+                                            </label>
+                                            <input type="text" class="input input-md" placeholder="gpt-4o-mini"
+                                                v-model="dmChatgptModel" />
+                                        </div>
+
+                                        <div>
+                                            <label class="label py-1">
+                                                <span class="label-text text-md">{{ $t('systemPrompt') }}</span>
+                                            </label>
+                                            <textarea class="textarea textarea-md h-12"
+                                                :placeholder="$t('systemPromptTips')"
+                                                v-model="dmChatgptSystemPrompt"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    <button class="btn btn-md btn-primary" @click="testChatGPT('dm')">{{
+                                        $t('testChatGPT') }}</button>
+                                    <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
+                                </div>
+                            </div>
+
+                            <div v-else class="space-y-3">
+                                <div class="form-control">
+                                    <label class="label py-1">
+                                        <span class="label-text text-md">{{ $t('messageContents') }}</span>
+                                    </label>
+                                    <textarea class="textarea textarea-md textarea-bordered h-16"
+                                        v-model="dmSettings.message_contents"
+                                        :placeholder="$t('messageContentsTips')"></textarea>
+                                </div>
+
+                                <div class="flex gap-4">
+                                    <label class="cursor-pointer flex items-center gap-2">
+                                        <input type="radio" name="dmMessageOrder" value="random"
+                                            class="radio radio-md radio-primary" v-model="dmSettings.message_order" />
+                                        <span class="text-md">{{ $t('random') }}</span>
+                                    </label>
+                                    <label class="cursor-pointer flex items-center gap-2">
+                                        <input type="radio" name="dmMessageOrder" value="sequential"
+                                            class="radio radio-md radio-primary" v-model="dmSettings.message_order" />
+                                        <span class="text-md">{{ $t('sequential') }}</span>
+                                    </label>
+                                </div>
+
+                                <label class="cursor-pointer flex items-center gap-2">
+                                    <input type="checkbox" class="checkbox checkbox-md checkbox-accent"
+                                        v-model="dmSettings.insert_emoji" />
+                                    <span class="text-md">{{ $t('insertEmoji') }}</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -431,7 +471,7 @@
             </h3>
 
             <!-- 帖子处理设置 -->
-            <div class="mb-4 p-3 bg-base-50 rounded-lg border border-base-200">
+            <div :class="['border border-base-200 rounded-lg p-3 transition-all', 'bg-base-50']" class="mb-4">
                 <div class="space-y-3 flex flex-row flex-wrap gap-4">
                     <div class="flex items-center gap-4" v-if="isUsernameSource">
                         <span class="text-md font-bold">{{ $t('maxPostsToProcess') }}:</span>
@@ -488,7 +528,10 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                 <!-- 帖子互动操作 -->
-                <div class="border border-base-200 rounded-lg p-4 bg-base-50">
+                <div :class="[
+                    'border border-base-200 rounded-lg p-3 transition-all',
+                    features.boostPosts ? 'bg-error/10 border-error shadow' : 'bg-base-50'
+                ]">
                     <div class="flex items-center mb-4">
                         <input type="checkbox" class="checkbox checkbox-primary mr-3" v-model="features.boostPosts" />
                         <font-awesome-icon icon="fa-solid fa-heart" class="text-error mr-2" />
@@ -526,7 +569,10 @@
                 </div>
 
                 <!-- 评论操作 -->
-                <div class="border border-base-200 rounded-lg p-4 bg-base-50">
+                <div :class="[
+                    'border border-base-200 rounded-lg p-3 transition-all',
+                    features.massComment ? 'bg-warning/10 border-warning shadow' : 'bg-base-50'
+                ]">
                     <div class="flex items-center mb-4">
                         <input type="checkbox" class="checkbox checkbox-primary mr-3" v-model="features.massComment" />
                         <font-awesome-icon icon="fa-solid fa-comment" class="text-warning mr-2" />
@@ -541,8 +587,8 @@
                         </div>
 
                         <div v-if="commentSettings.generate_by_chatgpt" class="space-y-3">
-                            <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-3">
-                                <legend class="fieldset-legend text-md">{{ $t('chatgptSettings') }}</legend>
+                            <div class="border border-base-200 rounded-lg p-3 bg-base-50">
+                                <h4 class="font-semibold text-md mb-2">{{ $t('chatgptSettings') }}</h4>
 
                                 <div class="grid grid-cols-1 gap-2">
                                     <div>
@@ -558,15 +604,24 @@
                                         <label class="label py-1">
                                             <span class="label-text text-md">{{ $t('apiKey') }}</span>
                                         </label>
-                                        <input type="password" class="input input-md w-full" placeholder="sk-********"
-                                            v-model="commentSettings.chatgpt_settings.api_key" />
+                                        <div class="flex items-center gap-2">
+                                            <input :type="commentApiKeyVisible ? 'text' : 'password'"
+                                                class="input input-md w-full" placeholder="sk-********"
+                                                v-model="commentSettings.chatgpt_settings.api_key" />
+                                            <button type="button" class="btn btn-ghost btn-square btn-sm"
+                                                @click="commentApiKeyVisible = !commentApiKeyVisible"
+                                                :title="commentApiKeyVisible ? $t('hide') : $t('show')">
+                                                <font-awesome-icon
+                                                    :icon="commentApiKeyVisible ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div>
                                         <label class="label py-1">
                                             <span class="label-text text-md">{{ $t('model') }}</span>
                                         </label>
-                                        <input type="text" class="input input-md" placeholder="gpt-3.5-turbo"
+                                        <input type="text" class="input input-md" placeholder="gpt-4o-mini"
                                             v-model="commentSettings.chatgpt_settings.model" />
                                     </div>
 
@@ -579,7 +634,7 @@
                                             v-model="commentSettings.chatgpt_settings.system_prompt"></textarea>
                                     </div>
                                 </div>
-                            </fieldset>
+                            </div>
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
@@ -692,8 +747,6 @@ export default {
                 datasetId: 0,
                 datasetConfig: cloneDefaultDatasetConfig(),
                 accessMethod: 'search',
-                maxUsersToProcess: 0,
-                maxPostsToProcess: 0,
                 features: {
                     followUsers: false,
                     unfollowUsers: false,
@@ -706,7 +759,16 @@ export default {
                 },
                 dmSettings: {
                     message_contents: '',
-                    insert_emoji: false
+                    message_order: 'random',
+                    insert_emoji: false,
+                    generate_by_chatgpt: false,
+                    chatgpt_prompt: '',
+                    chatgpt_settings: {
+                        url: 'https://api.openai.com/v1/chat/completions',
+                        api_key: '',
+                        model: 'gpt-4o-mini',
+                        system_prompt: 'Craft a friendly, concise Instagram direct message that encourages engagement. Keep it under 200 characters and include a clear call-to-action.'
+                    }
                 },
                 postSettings: {
                     max_posts_count: 1,
@@ -725,7 +787,7 @@ export default {
                     chatgpt_settings: {
                         url: 'https://api.openai.com/v1/chat/completions',
                         api_key: '',
-                        model: 'gpt-3.5-turbo',
+                        model: 'gpt-4o-mini',
                         system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
                     }
                 },
@@ -738,8 +800,6 @@ export default {
                 'datasetConfig',
                 'accessMethod',
                 'features',
-                'maxUsersToProcess',
-                'maxPostsToProcess',
                 'followSettings',
                 'dmSettings',
                 'postSettings',
@@ -794,8 +854,19 @@ export default {
             },
             dmSettings: {
                 message_contents: '',
-                insert_emoji: false
+                message_order: 'random',
+                insert_emoji: false,
+                generate_by_chatgpt: false,
+                chatgpt_prompt: '',
+                chatgpt_settings: {
+                    url: 'https://api.openai.com/v1/chat/completions',
+                    api_key: '',
+                    model: 'gpt-4o-mini',
+                    system_prompt: 'Craft a friendly, concise Instagram direct message that encourages engagement. Keep it under 200 characters and include a clear call-to-action.'
+                }
             },
+            // 控制 API Key 明文显示
+            dmApiKeyVisible: false,
             postSettings: {
                 max_posts_count: 1,
                 enable_like: false,
@@ -813,12 +884,12 @@ export default {
                 chatgpt_settings: {
                     url: 'https://api.openai.com/v1/chat/completions',
                     api_key: '',
-                    model: 'gpt-3.5-turbo',
+                    model: 'gpt-4o-mini',
                     system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
                 }
             },
-            maxUsersToProcess: 0,
-            maxPostsToProcess: 0,
+            // 控制评论 API Key 明文显示
+            commentApiKeyVisible: false,
             accessMethod: 'search',
             task_interval: [0, 0],
             activeTab: 'data_source'
@@ -828,8 +899,6 @@ export default {
         await this.ensureSettingsLoaded();
         this.ensureDatasetConfig();
 
-        this.maxUsersToProcess = this.normalizeNonNegativeInt(this.maxUsersToProcess);
-        this.maxPostsToProcess = this.normalizeNonNegativeInt(this.maxPostsToProcess);
 
         if (this.dataSourceType === 'post_links') {
             this.features.followUsers = false;
@@ -903,6 +972,49 @@ export default {
         },
         // NOTE: moved dataset preview helpers to methods to avoid calling composables/getCurrentInstance
         // from inside computed getters which can trigger Vue warning in some plugin/composable usage.
+
+        // Safe accessors for DM ChatGPT nested settings to avoid render errors when
+        // the persisted settings object doesn't include `chatgpt_settings` yet.
+        dmChatgptUrl: {
+            get() {
+                return (this.dmSettings && this.dmSettings.chatgpt_settings && this.dmSettings.chatgpt_settings.url) || 'https://api.openai.com/v1/chat/completions';
+            },
+            set(value) {
+                if (!this.dmSettings) this.dmSettings = {};
+                if (!this.dmSettings.chatgpt_settings) this.dmSettings.chatgpt_settings = {};
+                this.dmSettings.chatgpt_settings.url = value;
+            }
+        },
+        dmChatgptApiKey: {
+            get() {
+                return (this.dmSettings && this.dmSettings.chatgpt_settings && this.dmSettings.chatgpt_settings.api_key) || '';
+            },
+            set(value) {
+                if (!this.dmSettings) this.dmSettings = {};
+                if (!this.dmSettings.chatgpt_settings) this.dmSettings.chatgpt_settings = {};
+                this.dmSettings.chatgpt_settings.api_key = value;
+            }
+        },
+        dmChatgptModel: {
+            get() {
+                return (this.dmSettings && this.dmSettings.chatgpt_settings && this.dmSettings.chatgpt_settings.model) || 'gpt-4o-mini';
+            },
+            set(value) {
+                if (!this.dmSettings) this.dmSettings = {};
+                if (!this.dmSettings.chatgpt_settings) this.dmSettings.chatgpt_settings = {};
+                this.dmSettings.chatgpt_settings.model = value;
+            }
+        },
+        dmChatgptSystemPrompt: {
+            get() {
+                return (this.dmSettings && this.dmSettings.chatgpt_settings && this.dmSettings.chatgpt_settings.system_prompt) || 'Craft a friendly, concise Instagram direct message that encourages engagement. Keep it under 200 characters and include a clear call-to-action.';
+            },
+            set(value) {
+                if (!this.dmSettings) this.dmSettings = {};
+                if (!this.dmSettings.chatgpt_settings) this.dmSettings.chatgpt_settings = {};
+                this.dmSettings.chatgpt_settings.system_prompt = value;
+            }
+        }
 
     },
     watch: {
@@ -1356,7 +1468,7 @@ export default {
                 this.commentSettings.chatgpt_settings = {
                     url: 'https://api.openai.com/v1/chat/completions',
                     api_key: '',
-                    model: 'gpt-3.5-turbo',
+                    model: 'gpt-4o-mini',
                     system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
                 };
             }
@@ -1375,8 +1487,6 @@ export default {
                     datasetId: 0,
                     datasetConfig: cloneDefaultDatasetConfig(),
                     accessMethod: 'search',
-                    maxUsersToProcess: 0,
-                    maxPostsToProcess: 0,
                     features: {
                         followUsers: false,
                         unfollowUsers: false,
@@ -1389,7 +1499,16 @@ export default {
                     },
                     dmSettings: {
                         message_contents: '',
-                        insert_emoji: false
+                        message_order: 'random',
+                        insert_emoji: false,
+                        generate_by_chatgpt: false,
+                        chatgpt_prompt: '',
+                        chatgpt_settings: {
+                            url: 'https://api.openai.com/v1/chat/completions',
+                            api_key: '',
+                            model: 'gpt-4o-mini',
+                            system_prompt: 'Craft a friendly, concise Instagram direct message that encourages engagement. Keep it under 200 characters and include a clear call-to-action.'
+                        }
                     },
                     postSettings: {
                         max_posts_count: 1,
@@ -1408,7 +1527,7 @@ export default {
                         chatgpt_settings: {
                             url: 'https://api.openai.com/v1/chat/completions',
                             api_key: '',
-                            model: 'gpt-3.5-turbo',
+                            model: 'gpt-4o-mini',
                             system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
                         }
                     },
@@ -1442,17 +1561,34 @@ export default {
                 return false;
             }
         },
-        async testChatGPT() {
+        async testChatGPT(scope = 'comment') {
             try {
                 this.testResult = 'Testing...';
                 this.testResultStyle = 'text-warning';
+
+                let url, api_key, model, system_prompt, post_caption;
+                if (scope === 'dm') {
+                    url = this.dmChatgptUrl;
+                    api_key = this.dmChatgptApiKey;
+                    model = this.dmChatgptModel;
+                    system_prompt = this.dmChatgptSystemPrompt;
+                    post_caption = 'This is a test DM generation.';
+                } else {
+                    url = this.commentSettings.chatgpt_settings.url;
+                    api_key = this.commentSettings.chatgpt_settings.api_key;
+                    model = this.commentSettings.chatgpt_settings.model;
+                    system_prompt = this.commentSettings.chatgpt_settings.system_prompt;
+                    post_caption = 'This is a test post caption for TikTok.';
+                }
+
                 const response = await this.$service.chatgpt_completion({
-                    url: this.commentSettings.chatgpt_settings.url,
-                    api_key: this.commentSettings.chatgpt_settings.api_key,
-                    model: this.commentSettings.chatgpt_settings.model,
-                    system_prompt: this.commentSettings.chatgpt_settings.system_prompt,
-                    post_caption: 'This is a test post caption for TikTok.',
+                    url,
+                    api_key,
+                    model,
+                    system_prompt,
+                    post_caption,
                 });
+
                 if (response.code == 0) {
                     this.testResult = response.data;
                     this.testResultStyle = 'text-success';
@@ -1461,7 +1597,7 @@ export default {
                     this.testResultStyle = 'text-error';
                 }
             } catch (error) {
-                this.testResult = 'Error: ' + error.message;
+                this.testResult = 'Error: ' + (error && error.message ? error.message : String(error));
                 this.testResultStyle = 'text-error';
             }
         },
@@ -1473,11 +1609,17 @@ export default {
                 errors.push(this.$t('selectDatasetRequired'));
             }
 
-            this.maxUsersToProcess = this.normalizeNonNegativeInt(this.maxUsersToProcess);
-            this.maxPostsToProcess = this.normalizeNonNegativeInt(this.maxPostsToProcess);
 
-            if (this.features.sendDM && !this.dmSettings.message_contents.trim()) {
-                errors.push(this.$t('enterMessageContent'));
+            if (this.features.sendDM) {
+                const hasMessageContent = (this.dmSettings.message_contents || '').trim().length > 0;
+                if (this.dmSettings.generate_by_chatgpt) {
+                    const hasPrompt = (this.dmSettings.chatgpt_prompt || '').trim().length > 0;
+                    if (!hasPrompt && !hasMessageContent) {
+                        errors.push(this.$t('enterChatGPTPromptOrMessage'));
+                    }
+                } else if (!hasMessageContent) {
+                    errors.push(this.$t('enterMessageContent'));
+                }
             }
 
             if (this.features.boostPosts && (!Number.isInteger(this.postSettings.repeat_times) || this.postSettings.repeat_times < 1)) {
