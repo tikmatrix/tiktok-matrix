@@ -19,6 +19,8 @@
   datasetSharedPoolDesc: '所有设备共享同一份数据，不会消耗条目。',
   datasetConsumeOnce: '单次消耗',
   datasetConsumeOnceDesc: '每条数据仅在使用时消耗，失败的条目会自动回滚到池中。',
+  consumeOnceLimitLabel: '单次任务最大消耗量',
+  consumeOnceLimitHelp: '限制本次任务最多消耗的数据条数，设置为 0 表示不限制。',
   datasetImportLabel: '导入数据',
   datasetImportPlaceholder: '在此粘贴用户名或帖子链接，每行一条...',
   selectDatasetFile: '导入 TXT',

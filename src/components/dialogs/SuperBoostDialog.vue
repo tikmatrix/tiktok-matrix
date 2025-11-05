@@ -135,6 +135,18 @@
                                 </div>
                             </label>
                         </div>
+                        <div v-if="dataSourceStrategy === 'consume_once'"
+                            class="mt-4 border border-secondary/40 bg-secondary/5 rounded-lg p-3 space-y-2">
+                            <label class="font-semibold text-md flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-gauge-high" />
+                                <span>{{ $t('consumeOnceLimitLabel') }}</span>
+                            </label>
+                            <div class="flex items-center gap-3">
+                                <input type="number" min="0" class="input input-bordered input-sm w-32"
+                                    v-model.number="consumeOnceLimit" />
+                            </div>
+                            <p class="text-sm text-base-content/70">{{ $t('consumeOnceLimitHelp') }}</p>
+                        </div>
                     </div>
                 </div>
 
@@ -638,7 +650,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                }}</button>
+                                    }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -726,8 +738,8 @@ const createInitialPaginationState = () =>
     }, {});
 
 const DEFAULT_DATASET_CONFIG = () => ({
-    usernames: { id: 0, strategy: 'shared_pool' },
-    post_links: { id: 0, strategy: 'shared_pool' }
+    usernames: { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0 },
+    post_links: { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0 }
 });
 
 function cloneDefaultDatasetConfig() {
@@ -970,6 +982,16 @@ export default {
             const end = Math.min(currentPage * pageSize, total);
             return { start, end };
         },
+        consumeOnceLimit: {
+            get() {
+                const limit = this.activeDatasetConfig.consumeOnceLimit;
+                return typeof limit === 'number' && limit >= 0 ? limit : 0;
+            },
+            set(value) {
+                const sanitized = this.normalizeNonNegativeInt(value);
+                this.setDatasetConfig(this.activeDatasetKey, { consumeOnceLimit: sanitized });
+            }
+        },
         // NOTE: moved dataset preview helpers to methods to avoid calling composables/getCurrentInstance
         // from inside computed getters which can trigger Vue warning in some plugin/composable usage.
 
@@ -1158,8 +1180,12 @@ export default {
             DATASET_KEYS.forEach((key) => {
                 const current = this.datasetConfig[key];
                 if (!current || typeof current !== 'object') {
-                    this.datasetConfig[key] = { id: 0, strategy: 'shared_pool' };
+                    this.datasetConfig[key] = { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0 };
                     return;
+                }
+                if (typeof current.consumeOnceLimit === 'undefined' && typeof current.consume_once_limit !== 'undefined') {
+                    current.consumeOnceLimit = current.consume_once_limit;
+                    delete current.consume_once_limit;
                 }
                 if (typeof current.id === 'string') {
                     current.id = Number(current.id) || 0;
@@ -1167,13 +1193,28 @@ export default {
                 if (!['shared_pool', 'consume_once'].includes(current.strategy)) {
                     current.strategy = 'shared_pool';
                 }
+                const parsedLimit = typeof current.consumeOnceLimit === 'string'
+                    ? Number(current.consumeOnceLimit)
+                    : Number(current.consumeOnceLimit ?? 0);
+                if (!Number.isFinite(parsedLimit) || parsedLimit < 0) {
+                    current.consumeOnceLimit = 0;
+                } else {
+                    current.consumeOnceLimit = Math.floor(parsedLimit);
+                }
             });
         },
         normalizeStrategy(strategy) {
             return ['shared_pool', 'consume_once'].includes(strategy) ? strategy : 'shared_pool';
         },
         getDatasetKeyConfig(key) {
-            return this.datasetConfig[key] || { id: 0, strategy: 'shared_pool' };
+            const config = this.datasetConfig[key];
+            if (!config || typeof config !== 'object') {
+                return { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0 };
+            }
+            if (typeof config.consumeOnceLimit !== 'number' || config.consumeOnceLimit < 0) {
+                config.consumeOnceLimit = 0;
+            }
+            return config;
         },
         setDatasetConfig(key, updates) {
             const current = { ...this.getDatasetKeyConfig(key) };
@@ -1182,6 +1223,11 @@ export default {
             }
             if (updates.strategy !== undefined) {
                 current.strategy = this.normalizeStrategy(updates.strategy);
+            }
+            if (updates.consumeOnceLimit !== undefined) {
+                current.consumeOnceLimit = this.normalizeNonNegativeInt(updates.consumeOnceLimit);
+            } else if (updates.consume_once_limit !== undefined) {
+                current.consumeOnceLimit = this.normalizeNonNegativeInt(updates.consume_once_limit);
             }
             this.datasetConfig[key] = current;
             if (this.activeDatasetKey === key) {

@@ -22,6 +22,8 @@
   datasetSharedPoolDesc: 'All devices share the same dataset without consuming entries.',
   datasetConsumeOnce: 'Consume once',
   datasetConsumeOnceDesc: 'Each entry is consumed once per use. Failed items will automatically return to the pool.',
+  consumeOnceLimitLabel: 'Max entries per run',
+  consumeOnceLimitHelp: 'Limit how many dataset entries this task consumes per run. Set to 0 to disable the limit.',
   datasetImportLabel: 'Import dataset entries',
   datasetImportPlaceholder: 'Paste usernames or post links here, one entry per line...',
   selectDatasetFile: 'Load TXT',
