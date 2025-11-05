@@ -81,7 +81,7 @@
                             <span class="loading loading-spinner loading-sm"></span>
                             <span>{{ $t('datasetLoading') }}</span>
                         </div>
-                        <div v-else-if="activeDatasetStats" class="grid grid-cols-2 gap-3 text-md">
+                        <div v-else-if="activeDatasetStats" class="grid grid-cols-2 md:grid-cols-3 gap-3 text-md">
                             <div>
                                 <div class="text-sm text-base-content/60">{{ $t('datasetTotal') }}</div>
                                 <div class="font-semibold text-lg">{{ activeDatasetStats.total }}</div>
@@ -89,6 +89,14 @@
                             <div>
                                 <div class="text-sm text-base-content/60">{{ $t('datasetConsumed') }}</div>
                                 <div class="font-semibold text-lg">{{ activeDatasetStats.consumed }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-base-content/60">{{ $t('datasetSuccess') }}</div>
+                                <div class="font-semibold text-lg">{{ activeDatasetStats.success_count }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-base-content/60">{{ $t('datasetFailed') }}</div>
+                                <div class="font-semibold text-lg">{{ activeDatasetStats.failed_count }}</div>
                             </div>
                             <div>
                                 <div class="text-sm text-base-content/60">{{ $t('datasetRemaining') }}</div>
@@ -136,16 +144,29 @@
                             </label>
                         </div>
                         <div v-if="dataSourceStrategy === 'consume_once'"
-                            class="mt-4 border border-secondary/40 bg-secondary/5 rounded-lg p-3 space-y-2">
-                            <label class="font-semibold text-md flex items-center gap-2">
-                                <font-awesome-icon icon="fa-solid fa-gauge-high" />
-                                <span>{{ $t('consumeOnceLimitLabel') }}</span>
-                            </label>
-                            <div class="flex items-center gap-3">
-                                <input type="number" min="0" class="input input-bordered input-sm w-32"
-                                    v-model.number="consumeOnceLimit" />
+                            class="mt-4 border border-secondary/40 bg-secondary/5 rounded-lg p-3 space-y-4">
+                            <div class="space-y-2">
+                                <label class="font-semibold text-md flex items-center gap-2">
+                                    <font-awesome-icon icon="fa-solid fa-gauge-high" />
+                                    <span>{{ $t('consumeOnceLimitLabel') }}</span>
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <input type="number" min="0" class="input input-bordered input-sm w-32"
+                                        v-model.number="consumeOnceLimit" />
+                                </div>
+                                <p class="text-sm text-base-content/70">{{ $t('consumeOnceLimitHelp') }}</p>
                             </div>
-                            <p class="text-sm text-base-content/70">{{ $t('consumeOnceLimitHelp') }}</p>
+                            <div class="space-y-2">
+                                <label class="font-semibold text-md flex items-center gap-2">
+                                    <font-awesome-icon icon="fa-solid fa-rotate-right" />
+                                    <span>{{ $t('consumeOnceRetryLabel') }}</span>
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <input type="number" min="0" class="input input-bordered input-sm w-32"
+                                        v-model.number="consumeOnceMaxRetries" />
+                                </div>
+                                <p class="text-sm text-base-content/70">{{ $t('consumeOnceRetryHelp') }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -738,8 +759,8 @@ const createInitialPaginationState = () =>
     }, {});
 
 const DEFAULT_DATASET_CONFIG = () => ({
-    usernames: { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0 },
-    post_links: { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0 }
+    usernames: { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0, consumeOnceMaxRetries: 3 },
+    post_links: { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0, consumeOnceMaxRetries: 3 }
 });
 
 function cloneDefaultDatasetConfig() {
@@ -938,7 +959,12 @@ export default {
             return this.isUsernameSource ? 'usernames' : 'post_links';
         },
         activeDatasetConfig() {
-            return this.datasetConfig[this.activeDatasetKey] || { id: 0, strategy: 'shared_pool' };
+            return this.datasetConfig[this.activeDatasetKey] || {
+                id: 0,
+                strategy: 'shared_pool',
+                consumeOnceLimit: 0,
+                consumeOnceMaxRetries: 3
+            };
         },
         activeDatasetStats() {
             return this.datasetStats[this.activeDatasetKey];
@@ -990,6 +1016,16 @@ export default {
             set(value) {
                 const sanitized = this.normalizeNonNegativeInt(value);
                 this.setDatasetConfig(this.activeDatasetKey, { consumeOnceLimit: sanitized });
+            }
+        },
+        consumeOnceMaxRetries: {
+            get() {
+                const retries = this.activeDatasetConfig.consumeOnceMaxRetries;
+                return typeof retries === 'number' && retries >= 0 ? retries : 0;
+            },
+            set(value) {
+                const sanitized = this.normalizeNonNegativeInt(value);
+                this.setDatasetConfig(this.activeDatasetKey, { consumeOnceMaxRetries: sanitized });
             }
         },
         // NOTE: moved dataset preview helpers to methods to avoid calling composables/getCurrentInstance
@@ -1180,12 +1216,21 @@ export default {
             DATASET_KEYS.forEach((key) => {
                 const current = this.datasetConfig[key];
                 if (!current || typeof current !== 'object') {
-                    this.datasetConfig[key] = { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0 };
+                    this.datasetConfig[key] = {
+                        id: 0,
+                        strategy: 'shared_pool',
+                        consumeOnceLimit: 0,
+                        consumeOnceMaxRetries: 3
+                    };
                     return;
                 }
                 if (typeof current.consumeOnceLimit === 'undefined' && typeof current.consume_once_limit !== 'undefined') {
                     current.consumeOnceLimit = current.consume_once_limit;
                     delete current.consume_once_limit;
+                }
+                if (typeof current.consumeOnceMaxRetries === 'undefined' && typeof current.consume_once_max_retries !== 'undefined') {
+                    current.consumeOnceMaxRetries = current.consume_once_max_retries;
+                    delete current.consume_once_max_retries;
                 }
                 if (typeof current.id === 'string') {
                     current.id = Number(current.id) || 0;
@@ -1201,6 +1246,14 @@ export default {
                 } else {
                     current.consumeOnceLimit = Math.floor(parsedLimit);
                 }
+                const parsedRetries = typeof current.consumeOnceMaxRetries === 'string'
+                    ? Number(current.consumeOnceMaxRetries)
+                    : Number(current.consumeOnceMaxRetries ?? 3);
+                if (!Number.isFinite(parsedRetries) || parsedRetries < 0) {
+                    current.consumeOnceMaxRetries = 3;
+                } else {
+                    current.consumeOnceMaxRetries = Math.floor(parsedRetries);
+                }
             });
         },
         normalizeStrategy(strategy) {
@@ -1209,10 +1262,13 @@ export default {
         getDatasetKeyConfig(key) {
             const config = this.datasetConfig[key];
             if (!config || typeof config !== 'object') {
-                return { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0 };
+                return { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0, consumeOnceMaxRetries: 3 };
             }
             if (typeof config.consumeOnceLimit !== 'number' || config.consumeOnceLimit < 0) {
                 config.consumeOnceLimit = 0;
+            }
+            if (typeof config.consumeOnceMaxRetries !== 'number' || config.consumeOnceMaxRetries < 0) {
+                config.consumeOnceMaxRetries = 3;
             }
             return config;
         },
@@ -1228,6 +1284,11 @@ export default {
                 current.consumeOnceLimit = this.normalizeNonNegativeInt(updates.consumeOnceLimit);
             } else if (updates.consume_once_limit !== undefined) {
                 current.consumeOnceLimit = this.normalizeNonNegativeInt(updates.consume_once_limit);
+            }
+            if (updates.consumeOnceMaxRetries !== undefined) {
+                current.consumeOnceMaxRetries = this.normalizeNonNegativeInt(updates.consumeOnceMaxRetries);
+            } else if (updates.consume_once_max_retries !== undefined) {
+                current.consumeOnceMaxRetries = this.normalizeNonNegativeInt(updates.consume_once_max_retries);
             }
             this.datasetConfig[key] = current;
             if (this.activeDatasetKey === key) {
@@ -1305,12 +1366,25 @@ export default {
                 return;
             }
             const normalizedStrategy = this.normalizeStrategy(stats.strategy);
-            this.setDatasetConfig(key, {
+            const updates = {
                 id: stats.id,
                 strategy: normalizedStrategy
-            });
+            };
+            if (typeof stats.consume_once_limit !== 'undefined') {
+                updates.consume_once_limit = stats.consume_once_limit;
+            }
+            if (typeof stats.consume_once_max_retries !== 'undefined') {
+                updates.consume_once_max_retries = stats.consume_once_max_retries;
+            }
+            this.setDatasetConfig(key, updates);
+            const successCount = typeof stats.success_count === 'number'
+                ? stats.success_count
+                : (typeof stats.consumed === 'number' ? stats.consumed : 0);
+            const failedCount = typeof stats.failed_count === 'number' ? stats.failed_count : 0;
             this.datasetStats[key] = {
                 ...stats,
+                success_count: successCount,
+                failed_count: failedCount,
                 strategy: normalizedStrategy
             };
             this.datasetEntries[key] = entries;
