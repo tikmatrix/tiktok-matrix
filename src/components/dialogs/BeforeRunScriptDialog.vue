@@ -162,13 +162,6 @@ export default {
       licenseLimit: null,
     }
   },
-  watch: {
-    enable_multi_account(val) {
-      if (!val && this.rotate_proxy) {
-        this.rotate_proxy = false
-      }
-    }
-  },
   methods: {
     async update_settings() {
       await this.$service.update_settings(this.settings)
