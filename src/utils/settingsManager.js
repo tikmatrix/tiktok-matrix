@@ -95,8 +95,6 @@ export class SettingsManager {
                         console.log(`=== Loading component settings for ${settingsManager.filename} ===`);
                         try {
                             const settings = await settingsManager.loadSettings(defaultSettings);
-                            console.log('Loaded settings:', settings);
-
                             // 将设置应用到组件数据，同时确保对象类型正确
                             Object.keys(settings).forEach(key => {
                                 if (key in this.$data) {
@@ -111,7 +109,6 @@ export class SettingsManager {
                                         // 在 Vue 3 中直接赋值即可触发响应式代理
                                         this[key] = JSON.parse(JSON.stringify(defaultSettings[key]));
                                     } else {
-                                        console.log(`Setting ${key} from ${JSON.stringify(this[key])} to ${JSON.stringify(loadedValue)}`);
                                         this[key] = loadedValue;
                                     }
                                 }

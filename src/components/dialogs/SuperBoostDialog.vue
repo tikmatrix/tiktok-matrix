@@ -11,7 +11,7 @@
     <div class="bg-base-100 border border-base-300 rounded-2xl shadow-sm mb-6">
         <div class="px-4 py-3 overflow-x-auto">
             <div class="tabs tabs-lifted tabs-lg min-w-max">
-                <button v-for="(tab, index) in availableTabs" :key="tab.key" type="button"
+                <button v-for="(tab, index) in availableTabs()" :key="tab.key" type="button"
                     class="tab flex items-center gap-3 whitespace-nowrap transition" :class="[
                         tab.key === activeTab ? 'tab-active text-primary' : 'opacity-70 hover:opacity-100',
                         'px-4'
@@ -64,9 +64,18 @@
                                 <font-awesome-icon icon="fa-solid fa-chart-column" />
                                 {{ $t('datasetStatsTitle') }}
                             </h4>
-                            <span class="badge badge-outline" v-if="activeDatasetConfig.id">
-                                {{ $t('datasetId') }}: {{ activeDatasetConfig.id }}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="badge badge-outline" v-if="activeDatasetConfig.id">
+                                    {{ $t('datasetId') }}: {{ activeDatasetConfig.id }}
+                                </span>
+                                <!-- 刷新按钮 -->
+                                <button class="btn btn-sm btn-ghost" @click="refreshActiveDataset"
+                                    :disabled="activeDatasetLoading" :title="$t('refresh')">
+                                    <span v-if="activeDatasetLoading"
+                                        class="loading loading-spinner loading-sm mr-2"></span>
+                                    <font-awesome-icon icon="fa-solid fa-arrows-rotate" />
+                                </button>
+                            </div>
                         </div>
                         <div v-if="activeDatasetLoading" class="flex items-center gap-2 text-md text-base-content/70">
                             <span class="loading loading-spinner loading-sm"></span>
@@ -176,8 +185,8 @@
                                     <font-awesome-icon icon="fa-solid fa-list" />
                                     {{ $t('datasetPreviewTitle') }}
                                 </span>
-                                <span class="text-sm text-base-content/70" v-if="datasetPreviewSummaryText">
-                                    {{ datasetPreviewSummaryText }}
+                                <span class="text-sm text-base-content/70" v-if="datasetPreviewSummaryText()">
+                                    {{ datasetPreviewSummaryText() }}
                                 </span>
                             </div>
                             <div v-if="activeDatasetEntries.length" class="overflow-x-auto">
@@ -221,8 +230,8 @@
                                 </div>
                                 <div class="border-t border-base-200 px-4 py-3 flex flex-wrap items-center gap-3 justify-between"
                                     v-if="activeDatasetPagination.total">
-                                    <div class="text-sm text-base-content/70" v-if="datasetPreviewRangeText">
-                                        {{ datasetPreviewRangeText }}
+                                    <div class="text-sm text-base-content/70" v-if="datasetPreviewRangeText()">
+                                        {{ datasetPreviewRangeText() }}
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <label class="text-sm font-medium" for="dataset-page-size">
@@ -574,7 +583,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                    }}</button>
+                                }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -843,33 +852,7 @@ export default {
         isPostLinkSource() {
             return this.dataSourceType === 'post_links';
         },
-        availableTabs() {
-            const tabs = [
-                {
-                    key: 'data_source',
-                    label: this.$t('dataSourceLabel'),
-                    icon: 'fa-solid fa-database'
-                }
-            ];
-            if (this.isUsernameSource) {
-                tabs.push({
-                    key: 'user_actions',
-                    label: this.$t('userRelatedActions'),
-                    icon: 'fa-solid fa-users'
-                });
-            }
-            tabs.push({
-                key: 'post_actions',
-                label: this.$t('postRelatedActions'),
-                icon: 'fa-solid fa-photo-film'
-            });
-            tabs.push({
-                key: 'task_interval',
-                label: this.$t('taskInterval'),
-                icon: 'fa-solid fa-clock'
-            });
-            return tabs;
-        },
+        // availableTabs moved to methods to avoid calling composables (like i18n) inside computed getters
         activeDatasetKey() {
             return this.isUsernameSource ? 'usernames' : 'post_links';
         },
@@ -918,6 +901,67 @@ export default {
             const end = Math.min(currentPage * pageSize, total);
             return { start, end };
         },
+        // NOTE: moved dataset preview helpers to methods to avoid calling composables/getCurrentInstance
+        // from inside computed getters which can trigger Vue warning in some plugin/composable usage.
+
+    },
+    watch: {
+        dataSourceType(newValue) {
+            if (newValue === 'post_links') {
+                if (this.features.followUsers) this.features.followUsers = false;
+                if (this.features.unfollowUsers) this.features.unfollowUsers = false;
+                if (this.features.sendDM) this.features.sendDM = false;
+            }
+            this.syncActiveDatasetState();
+            this.ensureActiveTab();
+        },
+
+    },
+    methods: {
+        setActiveTab(key) {
+            if (this.activeTab === key) {
+                return;
+            }
+            const target = this.availableTabs().find((tab) => tab.key === key);
+            if (target) {
+                this.activeTab = key;
+            }
+        },
+        ensureActiveTab() {
+            const current = this.availableTabs().find((tab) => tab.key === this.activeTab);
+            const tabs = this.availableTabs();
+            if (!current && tabs.length) {
+                this.activeTab = tabs[0].key;
+            }
+        },
+        availableTabs() {
+            const tabs = [
+                {
+                    key: 'data_source',
+                    label: this.$t('dataSourceLabel'),
+                    icon: 'fa-solid fa-database'
+                }
+            ];
+            if (this.isUsernameSource) {
+                tabs.push({
+                    key: 'user_actions',
+                    label: this.$t('userRelatedActions'),
+                    icon: 'fa-solid fa-users'
+                });
+            }
+            tabs.push({
+                key: 'post_actions',
+                label: this.$t('postRelatedActions'),
+                icon: 'fa-solid fa-photo-film'
+            });
+            tabs.push({
+                key: 'task_interval',
+                label: this.$t('taskInterval'),
+                icon: 'fa-solid fa-clock'
+            });
+            return tabs;
+        },
+        // moved from computed to avoid composable/getCurrentInstance usage inside computed getters
         datasetPreviewSummaryText() {
             const { total, currentPage } = this.activeDatasetPagination;
             if (!total) {
@@ -936,38 +980,6 @@ export default {
             }
             const { start, end } = this.activeDatasetPageRange;
             return this.$t('datasetPreviewRange', { start, end, total });
-        },
-
-    },
-    watch: {
-        dataSourceType(newValue) {
-            if (newValue === 'post_links') {
-                if (this.features.followUsers) this.features.followUsers = false;
-                if (this.features.unfollowUsers) this.features.unfollowUsers = false;
-                if (this.features.sendDM) this.features.sendDM = false;
-            }
-            this.syncActiveDatasetState();
-            this.ensureActiveTab();
-        },
-        availableTabs() {
-            this.ensureActiveTab();
-        }
-    },
-    methods: {
-        setActiveTab(key) {
-            if (this.activeTab === key) {
-                return;
-            }
-            const target = this.availableTabs.find((tab) => tab.key === key);
-            if (target) {
-                this.activeTab = key;
-            }
-        },
-        ensureActiveTab() {
-            const current = this.availableTabs.find((tab) => tab.key === this.activeTab);
-            if (!current && this.availableTabs.length) {
-                this.activeTab = this.availableTabs[0].key;
-            }
         },
         getDatasetPagination(key) {
             if (!this.datasetPagination[key]) {
@@ -1014,6 +1026,18 @@ export default {
         },
         onDatasetPageSizeChange(event) {
             this.changeActiveDatasetPageSize(event.target.value);
+        },
+        // Refresh the currently active dataset (bound to the new UI button)
+        async refreshActiveDataset() {
+            // If there is no configured dataset id for the active key, nothing to do
+            const cfg = this.activeDatasetConfig || { id: 0 };
+            if (!cfg.id) return;
+            try {
+                await this.refreshDataset(this.activeDatasetKey);
+            } catch (e) {
+                // refreshDataset already handles notify on error; keep silent here
+                console.error('refreshActiveDataset failed', e);
+            }
         },
         ensureDatasetConfig() {
             if (!this.datasetConfig || typeof this.datasetConfig !== 'object') {
