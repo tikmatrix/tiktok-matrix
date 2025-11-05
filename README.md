@@ -18,7 +18,7 @@ Tutorial: <https://tikmatrix.com/docs/intro>
 - Mass boosting (Post): Like, comment, favorite, share, and follow posts in bulk.
 - Mass boosting (Live): Like and comment on live streams in bulk.
 - Mass direct messaging: Send bulk messages to users.
-- Consume-once dataset protection: Cap how many usernames or links each Super Boost run consumes to preserve data for multi-account rotations.
+- Consume-once dataset protection: Cap how many usernames or links each Super Marketing run consumes to preserve data for multi-account rotations.
 - Scrape TikTok user followers.
 - Mass follow back: Follow all followers and send a hello direct message.
 - Minute-level task scheduling: Automate tasks with minute-level precision.

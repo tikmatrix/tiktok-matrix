@@ -1,13 +1,11 @@
 ﻿export default {
   minimize: 'Minimize',
-  // SuperBoost UI helpers
   maxPostsToProcessHelp: 'Limit how many posts are processed per run. Set to 0 to process all configured posts.',
   maxRetryCount: 'Max Retry Count',
   maxRetryCountHelp: 'Maximum number of automatic retries for failed tasks. Tasks exceeding this limit will not be retried.',
   repeatTimesHelp: 'How many cycles to run for each user.',
   maxUsersToProcess: 'Max users to process',
   maxUsersToProcessHelp: 'Limit how many usernames are processed per run. Set to 0 to process all configured usernames.',
-  // when data source is a post-links file
   maxPostsToProcessHelpPostLinks: 'Number of posts to process from the provided post-links file in each cycle. Example: setting 5 means each cycle will process up to 5 links from the list (actual processed count may be lower if the list has fewer links).',
   repeatTimesHelpPostLinks: 'How many cycles to run across the post-links list. ',
   maxPostsPerUser: 'Max total posts per user',
@@ -911,8 +909,8 @@
   success: 'Success',
   successRate: 'Success Rate',
   successTasks: 'Success Tasks',
-  superBoost: 'Super Marketing',
-  superBoostWarning: 'Super Marketing Script integrates follow, DM, post actions, and comment functions. Execute multiple social media marketing strategies with one click to boost account activity and content engagement.',
+  superMarketing: 'Super Marketing',
+  superMarketingWarning: 'Super Marketing Script integrates follow, DM, post actions, and comment functions. Execute multiple social media marketing strategies with one click to boost account activity and content engagement.',
   supportedSites: 'Supported Sites',
   switchAccount: 'Switch Account',
   switchAccountWarning: 'The multi-account switching feature allows you to Test the switching of accounts seamlessly.',

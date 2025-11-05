@@ -81,7 +81,7 @@ const api = {
   support_ticket_detail: '/agent/api/support/detail',
   support_append_message: '/agent/api/support/append-message',
   support_update_status: '/agent/api/support/update-status',
-  super_boost_dataset_import: '/api/super_boost/datasets/import',
-  super_boost_dataset: '/api/super_boost/datasets',
+  super_marketing_dataset_import: '/api/super_marketing/datasets/import',
+  super_marketing_dataset: '/api/super_marketing/datasets',
 }
 export default api

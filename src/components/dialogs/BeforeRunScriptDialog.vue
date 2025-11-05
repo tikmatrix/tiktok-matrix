@@ -21,7 +21,7 @@
           || script.name === 'massComment'
           || script.name === 'switchAccount'
           || script.name === 'boostComments'
-          || script.name === 'superBoost'">
+          || script.name === 'superMarketing'">
           <label class="font-bold text-info">{{ $t('enableMultiAccount') }}:</label>
           <input type="checkbox" class="toggle toggle-accent" v-model="enable_multi_account" />
         </div>
@@ -69,7 +69,7 @@
     <BoostLivesDialog v-if="script.name === 'boostLives'" ref="currentDialog" />
     <MassCommentDialog v-if="script.name === 'massComment'" ref="currentDialog" />
     <SwitchAccountDialog v-if="script.name === 'switchAccount'" ref="currentDialog" />
-    <SuperBoostDialog v-if="script.name === 'superBoost'" ref="currentDialog" />
+    <SuperMarketingDialog v-if="script.name === 'superMarketing'" ref="currentDialog" />
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
@@ -96,7 +96,7 @@ import MatchAccounts from './MatchAccounts.vue'
 import MassCommentDialog from './MassCommentDialog.vue'
 import BoostLivesDialog from './BoostLivesDialog.vue'
 import SwitchAccountDialog from './SwitchAccountDialog.vue'
-import SuperBoostDialog from './SuperBoostDialog.vue'
+import SuperMarketingDialog from './SuperMarketingDialog.vue'
 import { beforeRunScriptSettings } from '@/utils/settingsManager';
 
 const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
@@ -153,7 +153,7 @@ export default {
     MassCommentDialog,
     BoostLivesDialog,
     SwitchAccountDialog,
-    SuperBoostDialog
+    SuperMarketingDialog
   },
 
   data() {

@@ -400,33 +400,33 @@ export function script(scriptRequest) {
   })
 }
 
-export function import_super_boost_dataset(data) {
+export function import_super_marketing_dataset(data) {
   return request({
     method: 'post',
-    url: api.super_boost_dataset_import,
+    url: api.super_marketing_dataset_import,
     data
   })
 }
 
-export function get_super_boost_dataset({ dataset_id, limit = 50, offset = 0 }) {
+export function get_super_marketing_dataset({ dataset_id, limit = 50, offset = 0 }) {
   return request({
     method: 'get',
-    url: `${api.super_boost_dataset}/${dataset_id}`,
+    url: `${api.super_marketing_dataset}/${dataset_id}`,
     params: { limit, offset }
   })
 }
 
-export function clear_super_boost_dataset({ dataset_id }) {
+export function clear_super_marketing_dataset({ dataset_id }) {
   return request({
     method: 'delete',
-    url: `${api.super_boost_dataset}/${dataset_id}`
+    url: `${api.super_marketing_dataset}/${dataset_id}`
   })
 }
 
-export function update_super_boost_dataset({ dataset_id, strategy }) {
+export function update_super_marketing_dataset({ dataset_id, strategy }) {
   return request({
     method: 'put',
-    url: `${api.super_boost_dataset}/${dataset_id}`,
+    url: `${api.super_marketing_dataset}/${dataset_id}`,
     data: { strategy }
   })
 }

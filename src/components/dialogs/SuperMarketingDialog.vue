@@ -3,7 +3,7 @@
     <div class="alert alert-info mb-4 shadow-lg">
         <div>
             <font-awesome-icon icon="fa-solid fa-rocket" class="h-6 w-6 mr-2" />
-            <span>{{ $t('superBoostWarning') }}</span>
+            <span>{{ $t('superMarketingWarning') }}</span>
         </div>
     </div>
 
@@ -739,7 +739,7 @@
 <script>
 import { open } from '@tauri-apps/api/dialog';
 import { readTextFile } from '@tauri-apps/api/fs';
-import { superBoostSettings } from '@/utils/settingsManager';
+import { superMarketingSettings } from '@/utils/settingsManager';
 import VueSlider from "vue-3-slider-component";
 
 const DATASET_KEYS = ['usernames', 'post_links'];
@@ -768,12 +768,12 @@ function cloneDefaultDatasetConfig() {
 }
 
 export default {
-    name: 'SuperBoostDialog',
+    name: 'SuperMarketingDialog',
     components: {
         VueSlider
     },
     mixins: [
-        superBoostSettings.createVueMixin(
+        superMarketingSettings.createVueMixin(
             {
                 dataSourceType: 'usernames',
                 dataSourceStrategy: 'shared_pool',
@@ -1326,7 +1326,7 @@ export default {
                 this.datasetLoading[key] = true;
             }
             try {
-                const response = await this.$service.get_super_boost_dataset({
+                const response = await this.$service.get_super_marketing_dataset({
                     dataset_id: config.id,
                     limit: effectivePageSize,
                     offset
@@ -1417,7 +1417,7 @@ export default {
 
             this.datasetImporting[key] = true;
             try {
-                const response = await this.$service.import_super_boost_dataset({
+                const response = await this.$service.import_super_marketing_dataset({
                     dataset_id: config.id > 0 ? config.id : null,
                     data_type: key,
                     strategy: this.dataSourceStrategy,
@@ -1474,7 +1474,7 @@ export default {
             }
             this.datasetLoading[key] = true;
             try {
-                const response = await this.$service.clear_super_boost_dataset({ dataset_id: config.id });
+                const response = await this.$service.clear_super_marketing_dataset({ dataset_id: config.id });
                 if (response.code === 0) {
                     const { stats, entries } = response.data;
                     const currentPagination = this.getDatasetPagination(key);
@@ -1509,7 +1509,7 @@ export default {
 
             if (this.datasetId > 0) {
                 try {
-                    const response = await this.$service.update_super_boost_dataset({
+                    const response = await this.$service.update_super_marketing_dataset({
                         dataset_id: this.datasetId,
                         strategy: normalized
                     });
@@ -1654,7 +1654,7 @@ export default {
                     task_interval: [0, 0]
                 };
 
-                await superBoostSettings.resetSettings(defaultSettings);
+                await superMarketingSettings.resetSettings(defaultSettings);
                 await this.loadComponentSettings();
                 this.datasetInputs = {
                     usernames: '',
@@ -1762,7 +1762,7 @@ export default {
             await this.saveComponentSettings();
 
             await this.$emiter('run_now_by_account', {
-                name: 'super_boost_v3',
+                name: 'super_marketing',
                 args: {
                     enable_multi_account: enable_multi_account,
                     rotate_proxy: rotate_proxy,
