@@ -333,7 +333,7 @@
                     {{ $t('userRelatedActions') }}
                 </h3>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
 
                 <!-- 进入用户主页方式（全宽） -->
                 <div class="col-span-1 lg:col-span-2 xl:col-span-3">
@@ -413,6 +413,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </template>
 
     <!-- 模块3：帖子相关操作 -->
