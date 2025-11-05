@@ -660,7 +660,7 @@
   postActions: 'Like/Comment/Share/Favorite/View',
   postBoostSettings: 'Post Actions Settings',
   postBots: 'Post Bots',
-  postInteractionAction: 'Post Interaction Action',
+  postInteractionAction: 'Post Interaction Action(default: View Post)',
   postLimit: 'Post Limit',
   postProcessSettings: 'Post Processing Settings',
   postRelatedActions: 'Post Related Actions',

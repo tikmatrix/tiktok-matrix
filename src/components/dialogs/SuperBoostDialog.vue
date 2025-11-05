@@ -11,17 +11,11 @@
     <div class="bg-base-100 border border-base-300 rounded-2xl shadow-sm mb-6">
         <div class="px-4 py-3 overflow-x-auto">
             <div class="tabs tabs-lifted tabs-lg min-w-max">
-                <button
-                    v-for="(tab, index) in availableTabs"
-                    :key="tab.key"
-                    type="button"
-                    class="tab flex items-center gap-3 whitespace-nowrap transition"
-                    :class="[
+                <button v-for="(tab, index) in availableTabs" :key="tab.key" type="button"
+                    class="tab flex items-center gap-3 whitespace-nowrap transition" :class="[
                         tab.key === activeTab ? 'tab-active text-primary' : 'opacity-70 hover:opacity-100',
                         'px-4'
-                    ]"
-                    @click="setActiveTab(tab.key)"
-                >
+                    ]" @click="setActiveTab(tab.key)">
                     <span class="badge badge-sm"
                         :class="tab.key === activeTab ? 'badge-primary' : 'badge-ghost text-base-content/70'">
                         {{ index + 1 }}
@@ -279,7 +273,7 @@
                         </div>
                     </div>
                 </div>
-
+                <!-- 
                 <div v-if="isUsernameSource" class="space-y-4">
                     <div class="form-control flex items-center gap-4">
                         <label class="font-bold text-md">
@@ -299,9 +293,9 @@
                         </div>
                     </div>
 
-                </div>
+                </div> -->
 
-                <div v-else class="space-y-4">
+                <!-- <div v-else class="space-y-4">
                     <div class="form-control flex items-center gap-4">
                         <label class="font-bold text-md">
                             <span>{{ $t('maxPostsToProcess') }}</span>
@@ -319,7 +313,7 @@
                             <span class="text-md">{{ $t('maxPostsToProcessHelp') }}</span>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
@@ -335,85 +329,88 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
 
-                <!-- 进入用户主页方式（全宽） -->
-                <div class="col-span-1 lg:col-span-2 xl:col-span-3">
-                    <div class="form-control flex items-center gap-4">
-                        <label class="font-bold text-md">
-                            <span>{{ $t('userProfileAccessMethod') }}</span>
-                        </label>
-                        <div class="flex flex-wrap gap-4">
-                            <label class="cursor-pointer flex items-center gap-2">
-                                <input type="radio" name="accessMethod" class="radio radio-primary" value="search"
-                                    v-model="accessMethod" />
-                                <span>{{ $t('searchUser') }}</span>
+                    <!-- 进入用户主页方式（全宽） -->
+                    <div class="col-span-1 lg:col-span-2 xl:col-span-3">
+                        <div class="form-control flex items-center gap-4">
+                            <label class="font-bold text-md">
+                                <span>{{ $t('userProfileAccessMethod') }}</span>
                             </label>
-                            <label class="cursor-pointer flex items-center gap-2">
-                                <input type="radio" name="accessMethod" class="radio radio-primary" value="direct"
-                                    v-model="accessMethod" />
-                                <span>{{ $t('directOpenProfile') }}</span>
+                            <div class="flex flex-wrap gap-4">
+                                <label class="cursor-pointer flex items-center gap-2">
+                                    <input type="radio" name="accessMethod" class="radio radio-primary" value="search"
+                                        v-model="accessMethod" />
+                                    <span>{{ $t('searchUser') }}</span>
+                                </label>
+                                <label class="cursor-pointer flex items-center gap-2">
+                                    <input type="radio" name="accessMethod" class="radio radio-primary" value="direct"
+                                        v-model="accessMethod" />
+                                    <span>{{ $t('directOpenProfile') }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 关注操作配置 -->
+                    <div :class="[
+                        'border border-base-200 rounded-lg p-3 transition-all',
+                        features.followUsers ? 'bg-success/10 border-success shadow' : 'bg-base-50'
+                    ]">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-user-plus" class="text-success" />
+                                <span class="font-semibold">{{ $t('followUsersAction') }}</span>
+                            </div>
+                            <input type="checkbox" class="toggle toggle-success toggle-md"
+                                v-model="features.followUsers" />
+                        </div>
+                    </div>
+
+                    <!-- 取消关注配置 -->
+                    <div :class="[
+                        'border border-base-200 rounded-lg p-3 transition-all',
+                        features.unfollowUsers ? 'bg-error/10 border-error shadow' : 'bg-base-50'
+                    ]">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-user-minus" class="text-error" />
+                                <span class="font-semibold">{{ $t('unfollowUsersAction') }}</span>
+                            </div>
+                            <input type="checkbox" class="toggle toggle-error toggle-md"
+                                v-model="features.unfollowUsers" />
+                        </div>
+                    </div>
+
+                    <!-- 私信操作配置 -->
+                    <div :class="[
+                        'border border-base-200 rounded-lg p-3 transition-all space-y-3',
+                        features.sendDM ? 'bg-info/10 border-info shadow' : 'bg-base-50'
+                    ]">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-envelope" class="text-info" />
+                                <span class="font-semibold">{{ $t('sendDMAction') }}</span>
+                            </div>
+                            <input type="checkbox" class="toggle toggle-info toggle-md" v-model="features.sendDM" />
+                        </div>
+
+                        <div v-if="features.sendDM" class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-md">{{ $t('messageContents') }}</span>
+                            </label>
+                            <textarea class="textarea textarea-md textarea-bordered h-16"
+                                v-model="dmSettings.message_contents"
+                                :placeholder="$t('messageContentsTips')"></textarea>
+
+                            <label class="cursor-pointer flex items-center gap-2 mt-2">
+                                <input type="checkbox" class="checkbox checkbox-md checkbox-accent"
+                                    v-model="dmSettings.insert_emoji" />
+                                <span class="text-md">{{ $t('insertEmoji') }}</span>
                             </label>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 关注操作配置 -->
-                <div :class="[
-                    'border border-base-200 rounded-lg p-3 transition-all',
-                    features.followUsers ? 'bg-success/10 border-success shadow' : 'bg-base-50'
-                ]">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <font-awesome-icon icon="fa-solid fa-user-plus" class="text-success" />
-                            <span class="font-semibold">{{ $t('followUsersAction') }}</span>
-                        </div>
-                        <input type="checkbox" class="toggle toggle-success toggle-md" v-model="features.followUsers" />
-                    </div>
-                </div>
-
-                <!-- 取消关注配置 -->
-                <div :class="[
-                    'border border-base-200 rounded-lg p-3 transition-all',
-                    features.unfollowUsers ? 'bg-error/10 border-error shadow' : 'bg-base-50'
-                ]">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <font-awesome-icon icon="fa-solid fa-user-minus" class="text-error" />
-                            <span class="font-semibold">{{ $t('unfollowUsersAction') }}</span>
-                        </div>
-                        <input type="checkbox" class="toggle toggle-error toggle-md" v-model="features.unfollowUsers" />
-                    </div>
-                </div>
-
-                <!-- 私信操作配置 -->
-                <div :class="[
-                    'border border-base-200 rounded-lg p-3 transition-all space-y-3',
-                    features.sendDM ? 'bg-info/10 border-info shadow' : 'bg-base-50'
-                ]">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <font-awesome-icon icon="fa-solid fa-envelope" class="text-info" />
-                            <span class="font-semibold">{{ $t('sendDMAction') }}</span>
-                        </div>
-                        <input type="checkbox" class="toggle toggle-info toggle-md" v-model="features.sendDM" />
-                    </div>
-
-                    <div v-if="features.sendDM" class="form-control">
-                        <label class="label py-1">
-                            <span class="label-text text-md">{{ $t('messageContents') }}</span>
-                        </label>
-                        <textarea class="textarea textarea-md textarea-bordered h-16"
-                            v-model="dmSettings.message_contents" :placeholder="$t('messageContentsTips')"></textarea>
-
-                        <label class="cursor-pointer flex items-center gap-2 mt-2">
-                            <input type="checkbox" class="checkbox checkbox-md checkbox-accent"
-                                v-model="dmSettings.insert_emoji" />
-                            <span class="text-md">{{ $t('insertEmoji') }}</span>
-                        </label>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
     </template>
 
     <!-- 模块3：帖子相关操作 -->

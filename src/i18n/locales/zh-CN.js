@@ -656,7 +656,7 @@
   postActions: '点赞/评论/分享/收藏/观看',
   postBoostSettings: '帖子操作设置',
   postBots: 'Post Bots',
-  postInteractionAction: '帖子互动操作',
+  postInteractionAction: '帖子互动操作(默认查看帖子)',
   postLimit: '处理帖子数量',
   postProcessSettings: '帖子处理设置',
   postRelatedActions: '帖子相关操作',

@@ -659,7 +659,7 @@
   postActions: 'Лайк/Комментарий/Поделиться/Избранное/Просмотр',
   postBoostSettings: 'Настройки действий с постами',
   postBots: 'Боты публикации',
-  postInteractionAction: 'Действие взаимодействия с постами',
+  postInteractionAction: 'Действие взаимодействия с постами(по умолчанию: Просмотр поста)',
   postLimit: 'Лимит постов',
   postProcessSettings: 'Настройки обработки постов',
   postRelatedActions: 'Действия, связанные с постами',
