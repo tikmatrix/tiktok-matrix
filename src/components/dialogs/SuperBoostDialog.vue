@@ -7,8 +7,34 @@
         </div>
     </div>
 
+    <!-- 流程导航：横向 Tab -->
+    <div class="bg-base-100 border border-base-300 rounded-2xl shadow-sm mb-6">
+        <div class="px-4 py-3 overflow-x-auto">
+            <div class="tabs tabs-lifted tabs-lg min-w-max">
+                <button
+                    v-for="(tab, index) in availableTabs"
+                    :key="tab.key"
+                    type="button"
+                    class="tab flex items-center gap-3 whitespace-nowrap transition"
+                    :class="[
+                        tab.key === activeTab ? 'tab-active text-primary' : 'opacity-70 hover:opacity-100',
+                        'px-4'
+                    ]"
+                    @click="setActiveTab(tab.key)"
+                >
+                    <span class="badge badge-sm"
+                        :class="tab.key === activeTab ? 'badge-primary' : 'badge-ghost text-base-content/70'">
+                        {{ index + 1 }}
+                    </span>
+                    <font-awesome-icon :icon="tab.icon" class="text-base" />
+                    <span class="font-semibold">{{ tab.label }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 模块1：输入用户数据源 -->
-    <div class="card bg-base-100 border border-base-300 mb-4">
+    <div v-show="activeTab === 'data_source'" class="card bg-base-100 border border-base-300 mb-4">
         <div class="card-body p-4">
             <h3 class="card-title text-lg mb-4 text-primary">
                 <font-awesome-icon icon="fa-solid fa-database" class="mr-2" />
@@ -299,14 +325,15 @@
     </div>
 
     <!-- 模块2：用户相关操作 -->
-    <div class="card bg-base-100 border border-base-300 mb-4" v-if="isUsernameSource">
-        <div class="card-body p-4">
-            <h3 class="card-title text-lg mb-4 text-primary">
-                <font-awesome-icon icon="fa-solid fa-users" class="mr-2" />
-                {{ $t('userRelatedActions') }}
-            </h3>
+    <template v-if="isUsernameSource">
+        <div v-show="activeTab === 'user_actions'" class="card bg-base-100 border border-base-300 mb-4">
+            <div class="card-body p-4">
+                <h3 class="card-title text-lg mb-4 text-primary">
+                    <font-awesome-icon icon="fa-solid fa-users" class="mr-2" />
+                    {{ $t('userRelatedActions') }}
+                </h3>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
 
                 <!-- 进入用户主页方式（全宽） -->
                 <div class="col-span-1 lg:col-span-2 xl:col-span-3">
@@ -387,9 +414,10 @@
             </div>
         </div>
     </div>
+    </template>
 
     <!-- 模块3：帖子相关操作 -->
-    <div class="card bg-base-100 border border-base-300 mb-4">
+    <div v-show="activeTab === 'post_actions'" class="card bg-base-100 border border-base-300 mb-4">
         <div class="card-body p-4">
             <h3 class="card-title text-lg mb-4 text-primary">
                 <font-awesome-icon icon="fa-solid fa-photo-film" class="mr-2" />
@@ -587,23 +615,28 @@
                 </div>
 
             </div>
-            <div class="divider my-2"></div>
-            <!-- 添加任务间隔时间设置 -->
-            <div class="flex flex-row items-center mt-8 mb-8">
-                <label class="font-bold mr-4">{{ $t('taskInterval') }}:</label>
+        </div>
+    </div>
+
+    <!-- 模块4：任务间隔设置 -->
+    <div v-show="activeTab === 'task_interval'" class="card bg-base-100 border border-base-300">
+        <div class="card-body p-4 space-y-4">
+            <h3 class="card-title text-lg text-primary">
+                <font-awesome-icon icon="fa-solid fa-clock" class="mr-2" />
+                {{ $t('taskInterval') }}
+            </h3>
+            <p class="text-sm text-base-content/70">
+                {{ $t('taskIntervalTip') }}
+            </p>
+            <div class="flex flex-col gap-4">
                 <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
                     0: '0',
                     5: '5',
                     10: '10' + ' ' + $t('minute')
                 }" />
-            </div>
-            <div class="alert alert-info py-2 px-3">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    class="stroke-current shrink-0 w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span class="text-md">{{ $t('taskIntervalTip') }}</span>
+                <div class="text-sm text-base-content/70">
+                    {{ $t('taskInterval') }}: {{ task_interval[0] }} - {{ task_interval[1] }}
+                </div>
             </div>
         </div>
     </div>
@@ -781,7 +814,8 @@ export default {
             maxUsersToProcess: 0,
             maxPostsToProcess: 0,
             accessMethod: 'search',
-            task_interval: [0, 0]
+            task_interval: [0, 0],
+            activeTab: 'data_source'
         };
     },
     async mounted() {
@@ -803,6 +837,7 @@ export default {
 
         await this.validateComplexSettingsStructure();
         await this.initializeDatasets();
+        this.ensureActiveTab();
     },
     computed: {
         isUsernameSource() {
@@ -810,6 +845,33 @@ export default {
         },
         isPostLinkSource() {
             return this.dataSourceType === 'post_links';
+        },
+        availableTabs() {
+            const tabs = [
+                {
+                    key: 'data_source',
+                    label: this.$t('dataSourceLabel'),
+                    icon: 'fa-solid fa-database'
+                }
+            ];
+            if (this.isUsernameSource) {
+                tabs.push({
+                    key: 'user_actions',
+                    label: this.$t('userRelatedActions'),
+                    icon: 'fa-solid fa-users'
+                });
+            }
+            tabs.push({
+                key: 'post_actions',
+                label: this.$t('postRelatedActions'),
+                icon: 'fa-solid fa-photo-film'
+            });
+            tabs.push({
+                key: 'task_interval',
+                label: this.$t('taskInterval'),
+                icon: 'fa-solid fa-clock'
+            });
+            return tabs;
         },
         activeDatasetKey() {
             return this.isUsernameSource ? 'usernames' : 'post_links';
@@ -888,9 +950,28 @@ export default {
                 if (this.features.sendDM) this.features.sendDM = false;
             }
             this.syncActiveDatasetState();
+            this.ensureActiveTab();
+        },
+        availableTabs() {
+            this.ensureActiveTab();
         }
     },
     methods: {
+        setActiveTab(key) {
+            if (this.activeTab === key) {
+                return;
+            }
+            const target = this.availableTabs.find((tab) => tab.key === key);
+            if (target) {
+                this.activeTab = key;
+            }
+        },
+        ensureActiveTab() {
+            const current = this.availableTabs.find((tab) => tab.key === this.activeTab);
+            if (!current && this.availableTabs.length) {
+                this.activeTab = this.availableTabs[0].key;
+            }
+        },
         getDatasetPagination(key) {
             if (!this.datasetPagination[key]) {
                 this.datasetPagination = {
