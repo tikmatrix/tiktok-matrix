@@ -111,6 +111,7 @@ export default {
         min_interval: Number(this.task_interval[0]),
         max_interval: Number(this.task_interval[1]),
       })
+      return true;
     },
 
 

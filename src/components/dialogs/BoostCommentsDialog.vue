@@ -144,19 +144,19 @@ export default {
 
         async runScript(enable_multi_account = false, rotate_proxy = false) {
             if (!this.filterTargetCommentUrl()) {
-                return;
+                return false;
             }
 
             // 检查是否至少选择了一个提升选项
             if (!this.enable_like_comment && !this.enable_reply_comment) {
                 alert(this.$t('selectAtLeastOneOption'))
-                return;
+                return false;
             }
 
             // 如果启用回复评论，检查回复内容
             if (this.enable_reply_comment && this.reply_contents.trim() === '') {
                 alert(this.$t('replyContentsRequired'))
-                return;
+                return false;
             }
 
             await this.$emiter('run_now_by_account', {
@@ -168,6 +168,7 @@ export default {
                     rotate_proxy: rotate_proxy,
                 }
             })
+            return true;
         },
     }
 }

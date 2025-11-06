@@ -152,6 +152,7 @@ export default {
           rotate_proxy: rotate_proxy,
         }
       })
+      return true;
     },
   }
 }

@@ -63,7 +63,7 @@
                             <font-awesome-icon icon="fa-solid fa-file-import" />
                             <h4 class="font-semibold text-md">{{ $t('datasetImportLabel') }}</h4>
                         </div>
-                        <textarea class="textarea textarea-bordered textarea-md h-96" v-model="activeDatasetInput"
+                        <textarea class="textarea textarea-bordered textarea-md h-64" v-model="activeDatasetInput"
                             :placeholder="$t('datasetImportPlaceholder')"></textarea>
                         <div class="flex flex-wrap items-center gap-3">
                             <button class="btn btn-info btn-sm" @click="selectDatasetFile">
@@ -87,7 +87,7 @@
                                 {{ $t('clearDataset') }}
                             </button>
                         </div>
-                        <p class="text-xs text-base-content/60">{{ $t('datasetImportHint') }}</p>
+                        <span class="text-xs text-base-content/60">{{ $t('datasetImportHint') }}</span>
                         <div v-if="activeDatasetSummary" class="alert alert-info mt-2 text-xs sm:text-sm">
                             <font-awesome-icon icon="fa-solid fa-clipboard-check" class="mr-2" />
                             <div class="flex flex-wrap gap-2">
@@ -102,14 +102,14 @@
                         </div>
                     </div>
                     <div class="border border-base-200 rounded-lg bg-base-50 p-4 flex flex-col gap-4">
-                        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                                <label class="font-semibold text-sm flex items-center gap-2">
-                                    <font-awesome-icon icon="fa-solid fa-chart-column" />
-                                    {{ $t('datasetSelectLabel') }}
-                                </label>
-                                <div class="flex items-center gap-2">
-                                    <select class="select select-bordered select-sm min-w-[200px]"
+                        <div class="flex flex-col gap-3">
+                            <label class="font-semibold text-sm flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-chart-column" />
+                                {{ $t('datasetSelectLabel') }}
+                            </label>
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4">
+                                <div class="flex items-center gap-2 min-w-[200px] sm:flex-1 sm:min-w-[240px]">
+                                    <select class="select select-bordered select-sm w-full"
                                         :value="String(activeDatasetConfig.id || '')" @change="handleDatasetSelect"
                                         :disabled="datasetOptionsLoading[activeDatasetKey]">
                                         <option value="">{{ $t('datasetSelectPlaceholder') }}</option>
@@ -121,27 +121,17 @@
                                     <span v-if="datasetOptionsLoading[activeDatasetKey]"
                                         class="loading loading-spinner loading-xs"></span>
                                 </div>
+                                <div v-if="activeDatasetConfig.id"
+                                    class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 lg:flex-1">
+                                    <input class="input input-bordered input-sm flex-1"
+                                        :placeholder="$t('datasetLabelPlaceholder')" v-model="activeDatasetLabelDraft"
+                                        :disabled="activeDatasetLoading" />
+                                    <button class="btn btn-sm btn-outline" @click="saveActiveDatasetLabel"
+                                        :disabled="activeDatasetLoading">
+                                        {{ $t('save') }}
+                                    </button>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="badge badge-outline" v-if="activeDatasetConfig.id">
-                                    {{ $t('datasetId') }}: {{ activeDatasetConfig.id }}
-                                </span>
-                                <button class="btn btn-sm btn-ghost" @click="refreshActiveDataset"
-                                    :disabled="activeDatasetLoading" :title="$t('refresh')">
-                                    <span v-if="activeDatasetLoading"
-                                        class="loading loading-spinner loading-sm mr-1"></span>
-                                    <font-awesome-icon icon="fa-solid fa-arrows-rotate" />
-                                </button>
-                            </div>
-                        </div>
-                        <div v-if="activeDatasetConfig.id" class="flex flex-col sm:flex-row sm:items-center gap-3">
-                            <input class="input input-bordered input-sm flex-1"
-                                :placeholder="$t('datasetLabelPlaceholder')" v-model="activeDatasetLabelDraft"
-                                :disabled="activeDatasetLoading" />
-                            <button class="btn btn-sm btn-outline" @click="saveActiveDatasetLabel"
-                                :disabled="activeDatasetLoading">
-                                {{ $t('save') }}
-                            </button>
                         </div>
                         <div v-if="activeDatasetLoading" class="flex items-center gap-2 text-md text-base-content/70">
                             <span class="loading loading-spinner loading-sm"></span>
@@ -151,7 +141,7 @@
                             <font-awesome-icon icon="fa-solid fa-circle-info" />
                             <span>{{ $t('datasetNotConfigured') }}</span>
                         </div>
-                        <div class="border border-dashed border-base-200 rounded-lg p-4 bg-base-100">
+                        <div class="border border-dashed border-base-200 rounded-lg  bg-base-100">
                             <h4 class="font-semibold text-md mb-3 flex items-center gap-2">
                                 <font-awesome-icon icon="fa-solid fa-diagram-project" />
                                 {{ $t('datasetStrategyTitle') }}
@@ -182,14 +172,35 @@
                             </div>
                         </div>
                         <div class="border border-base-200 rounded-lg overflow-hidden">
-                            <div class="px-4 py-2 bg-base-200 flex items-center justify-between">
+                            <div
+                                class="px-4 py-2 bg-base-200 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                                 <span class="font-semibold text-md flex items-center gap-2">
                                     <font-awesome-icon icon="fa-solid fa-list" />
                                     {{ $t('datasetPreviewTitle') }}
                                 </span>
-                                <span class="text-sm text-base-content/70" v-if="datasetPreviewSummaryText()">
-                                    {{ datasetPreviewSummaryText() }}
-                                </span>
+                                <div v-if="activeDatasetPagination.total"
+                                    class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-base-content/70 lg:justify-end">
+
+                                    <span class="hidden md:inline text-xs text-base-content/60 whitespace-nowrap"
+                                        v-if="datasetPreviewRangeText()">
+                                        {{ datasetPreviewRangeText() }}
+                                    </span>
+                                    <div class="flex items-center gap-1">
+                                        <button class="btn btn-ghost btn-xs px-2"
+                                            @click="changeActiveDatasetPage(activeDatasetPagination.currentPage - 1)"
+                                            :disabled="activeDatasetPagination.currentPage <= 1">
+                                            {{ $t('previous') }}
+                                        </button>
+                                        <span class="font-medium whitespace-nowrap">
+                                            {{ activeDatasetPagination.currentPage }} / {{ activeDatasetPageCount }}
+                                        </span>
+                                        <button class="btn btn-ghost btn-xs px-2"
+                                            @click="changeActiveDatasetPage(activeDatasetPagination.currentPage + 1)"
+                                            :disabled="activeDatasetPagination.currentPage >= activeDatasetPageCount">
+                                            {{ $t('next') }}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div v-if="activeDatasetConfig.id && activeDatasetEntries.length" class="overflow-x-auto">
                                 <div class="max-h-64 overflow-y-auto">
@@ -220,38 +231,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="border-t border-base-200 px-4 py-3 flex flex-wrap items-center gap-3 justify-between"
-                                    v-if="activeDatasetPagination.total">
-                                    <div class="text-sm text-base-content/70" v-if="datasetPreviewRangeText()">
-                                        {{ datasetPreviewRangeText() }}
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <label class="text-sm font-medium" for="dataset-page-size">
-                                            {{ $t('datasetPageSizeLabel') }}
-                                        </label>
-                                        <select id="dataset-page-size" class="select select-bordered select-sm"
-                                            :value="activeDatasetPagination.pageSize" @change="onDatasetPageSizeChange">
-                                            <option v-for="size in datasetPageSizeOptions" :key="size" :value="size">
-                                                {{ size }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <button class="btn btn-sm"
-                                            @click="changeActiveDatasetPage(activeDatasetPagination.currentPage - 1)"
-                                            :disabled="activeDatasetPagination.currentPage <= 1">
-                                            {{ $t('previous') }}
-                                        </button>
-                                        <span class="text-sm">
-                                            {{ activeDatasetPagination.currentPage }} / {{ activeDatasetPageCount }}
-                                        </span>
-                                        <button class="btn btn-sm"
-                                            @click="changeActiveDatasetPage(activeDatasetPagination.currentPage + 1)"
-                                            :disabled="activeDatasetPagination.currentPage >= activeDatasetPageCount">
-                                            {{ $t('next') }}
-                                        </button>
-                                    </div>
-                                </div>
+
                             </div>
                             <div v-else class="p-4 text-sm text-base-content/70">
                                 <span v-if="!activeDatasetConfig.id">{{ $t('datasetPreviewUnselected') }}</span>
@@ -1104,10 +1084,11 @@ export default {
                 return '';
             }
             const label = typeof option.label === 'string' ? option.label.trim() : '';
+            const idText = `${this.$t('datasetId')}: ${option.id}`;
             if (label) {
-                return label;
+                return `${label} · ${idText}`;
             }
-            return `${this.$t('datasetId')}: ${option.id}`;
+            return idText;
         },
         async refreshDatasetOptions(key, { silent = false } = {}) {
             if (!silent) {
@@ -1270,18 +1251,6 @@ export default {
         },
         onDatasetPageSizeChange(event) {
             this.changeActiveDatasetPageSize(event.target.value);
-        },
-        // Refresh the currently active dataset (bound to the new UI button)
-        async refreshActiveDataset() {
-            // If there is no configured dataset id for the active key, nothing to do
-            const cfg = this.activeDatasetConfig || { id: 0 };
-            if (!cfg.id) return;
-            try {
-                await this.refreshDataset(this.activeDatasetKey);
-            } catch (e) {
-                // refreshDataset already handles notify on error; keep silent here
-                console.error('refreshActiveDataset failed', e);
-            }
         },
         ensureDatasetConfig() {
             if (!this.datasetConfig || typeof this.datasetConfig !== 'object') {
@@ -1804,8 +1773,8 @@ export default {
         async runScript(enable_multi_account = false, rotate_proxy = false, selecedDevices = []) {
             const errors = this.validateSettings();
             if (errors.length > 0) {
-                alert(errors.join('\n'));
-                return;
+                this.notify('error', errors[0]);
+                return false;
             }
 
             await this.saveComponentSettings();
@@ -1847,7 +1816,9 @@ export default {
             } catch (error) {
                 console.error('Failed to run super marketing script:', error);
                 this.notify('error', `Failed to start tasks: ${error.message || error}`);
+                return false;
             }
+            return true;
         },
         notify(type, message, timeout = 2000) {
             if (this.$emiter) {

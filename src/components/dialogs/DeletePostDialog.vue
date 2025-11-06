@@ -36,6 +36,7 @@ export default {
         name: 'delete_post',
         args: { enable_multi_account, rotate_proxy }
       })
+      return true;
     },
   }
 }

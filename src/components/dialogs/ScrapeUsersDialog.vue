@@ -103,10 +103,10 @@ export default {
     },
     async runScript(enable_multi_account = false, rotate_proxy = false) {
       if (!this.filterTargetUsername()) {
-        return;
+        return false;
       }
       if (!this.filterSearchKeyword()) {
-        return;
+        return false;
       }
       await this.$emiter('massScrape', {
         mode: this.scrape_mode,
@@ -115,6 +115,7 @@ export default {
         enable_multi_account: enable_multi_account,
         rotate_proxy: rotate_proxy
       })
+      return true;
     },
   },
   async mounted() {

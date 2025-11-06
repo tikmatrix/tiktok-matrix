@@ -20,6 +20,7 @@ export default {
         name: 'switch_account',
         args: { enable_multi_account, rotate_proxy }
       })
+      return true;
     },
   },
   async mounted() {

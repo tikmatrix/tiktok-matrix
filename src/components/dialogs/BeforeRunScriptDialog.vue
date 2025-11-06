@@ -73,8 +73,10 @@
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
-      <button class="btn btn-success" :disabled="selecedDevices.length === 0" @click="runScript">{{ $t('startScript')
-        }}</button>
+      <button class="btn btn-success" :disabled="selecedDevices.length === 0 || isRunning" @click="runScript">
+        <span v-if="isRunning" class="loading loading-spinner loading-sm mr-2"></span>
+        {{ isRunning ? $t('startScript') + '...' : $t('startScript') }}
+      </button>
     </div>
   </div>
 </template>
@@ -160,6 +162,8 @@ export default {
     return {
       // 其他非设置相关的数据可以保留在这里
       licenseLimit: null,
+      // 标记脚本是否正在启动，防止重复点击
+      isRunning: false,
     }
   },
   methods: {
@@ -179,13 +183,30 @@ export default {
       }
     },
     async runScript() {
+      // 防止重复点击
+      if (this.isRunning) return
+
       if (this.selecedDevices.length === 0) {
         return;
       }
 
-      if (this.$refs.currentDialog && typeof this.$refs.currentDialog.runScript === 'function') {
-        await this.$refs.currentDialog.runScript(this.enable_multi_account, this.rotate_proxy, this.selecedDevices);
-        await this.$emiter('closeDialog', {})
+      // 保证只会执行一次
+      this.isRunning = true
+      try {
+        if (this.$refs.currentDialog && typeof this.$refs.currentDialog.runScript === 'function') {
+          const success = await this.$refs.currentDialog.runScript(this.enable_multi_account, this.rotate_proxy, this.selecedDevices);
+          if (success) {
+            // 关闭对话框（组件可能会被卸载）
+            await this.$emiter('closeDialog', {})
+          }
+        }
+      } catch (err) {
+        // 保持原有行为，记录错误以便排查
+        console.error('runScript error', err)
+        throw err
+      } finally {
+        // 若组件已被卸载，设置 isRunning 无意义但不会报错；保守地恢复状态
+        try { this.isRunning = false } catch (e) { /* ignore */ }
       }
     },
   },

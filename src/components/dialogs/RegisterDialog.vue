@@ -72,6 +72,7 @@ export default {
           rotate_proxy
         }
       })
+      return true;
     },
 
   },
