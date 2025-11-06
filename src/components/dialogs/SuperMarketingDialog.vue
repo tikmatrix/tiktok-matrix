@@ -143,31 +143,7 @@
                                 </div>
                             </label>
                         </div>
-                        <div v-if="dataSourceStrategy === 'consume_once'"
-                            class="mt-4 border border-secondary/40 bg-secondary/5 rounded-lg p-3 space-y-4">
-                            <div class="space-y-2">
-                                <label class="font-semibold text-md flex items-center gap-2">
-                                    <font-awesome-icon icon="fa-solid fa-gauge-high" />
-                                    <span>{{ $t('consumeOnceLimitLabel') }}</span>
-                                </label>
-                                <div class="flex items-center gap-3">
-                                    <input type="number" min="0" class="input input-bordered input-sm w-32"
-                                        v-model.number="consumeOnceLimit" />
-                                </div>
-                                <p class="text-sm text-base-content/70">{{ $t('consumeOnceLimitHelp') }}</p>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="font-semibold text-md flex items-center gap-2">
-                                    <font-awesome-icon icon="fa-solid fa-rotate-right" />
-                                    <span>{{ $t('consumeOnceRetryLabel') }}</span>
-                                </label>
-                                <div class="flex items-center gap-3">
-                                    <input type="number" min="0" class="input input-bordered input-sm w-32"
-                                        v-model.number="consumeOnceMaxRetries" />
-                                </div>
-                                <p class="text-sm text-base-content/70">{{ $t('consumeOnceRetryHelp') }}</p>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -759,8 +735,8 @@ const createInitialPaginationState = () =>
     }, {});
 
 const DEFAULT_DATASET_CONFIG = () => ({
-    usernames: { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0, consumeOnceMaxRetries: 3 },
-    post_links: { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0, consumeOnceMaxRetries: 3 }
+    usernames: { id: 0, strategy: 'shared_pool' },
+    post_links: { id: 0, strategy: 'shared_pool' }
 });
 
 function cloneDefaultDatasetConfig() {
@@ -961,9 +937,7 @@ export default {
         activeDatasetConfig() {
             return this.datasetConfig[this.activeDatasetKey] || {
                 id: 0,
-                strategy: 'shared_pool',
-                consumeOnceLimit: 0,
-                consumeOnceMaxRetries: 3
+                strategy: 'shared_pool'
             };
         },
         activeDatasetStats() {
@@ -1007,26 +981,6 @@ export default {
             const start = (currentPage - 1) * pageSize + 1;
             const end = Math.min(currentPage * pageSize, total);
             return { start, end };
-        },
-        consumeOnceLimit: {
-            get() {
-                const limit = this.activeDatasetConfig.consumeOnceLimit;
-                return typeof limit === 'number' && limit >= 0 ? limit : 0;
-            },
-            set(value) {
-                const sanitized = this.normalizeNonNegativeInt(value);
-                this.setDatasetConfig(this.activeDatasetKey, { consumeOnceLimit: sanitized });
-            }
-        },
-        consumeOnceMaxRetries: {
-            get() {
-                const retries = this.activeDatasetConfig.consumeOnceMaxRetries;
-                return typeof retries === 'number' && retries >= 0 ? retries : 0;
-            },
-            set(value) {
-                const sanitized = this.normalizeNonNegativeInt(value);
-                this.setDatasetConfig(this.activeDatasetKey, { consumeOnceMaxRetries: sanitized });
-            }
         },
         // NOTE: moved dataset preview helpers to methods to avoid calling composables/getCurrentInstance
         // from inside computed getters which can trigger Vue warning in some plugin/composable usage.
@@ -1218,41 +1172,15 @@ export default {
                 if (!current || typeof current !== 'object') {
                     this.datasetConfig[key] = {
                         id: 0,
-                        strategy: 'shared_pool',
-                        consumeOnceLimit: 0,
-                        consumeOnceMaxRetries: 3
+                        strategy: 'shared_pool'
                     };
                     return;
-                }
-                if (typeof current.consumeOnceLimit === 'undefined' && typeof current.consume_once_limit !== 'undefined') {
-                    current.consumeOnceLimit = current.consume_once_limit;
-                    delete current.consume_once_limit;
-                }
-                if (typeof current.consumeOnceMaxRetries === 'undefined' && typeof current.consume_once_max_retries !== 'undefined') {
-                    current.consumeOnceMaxRetries = current.consume_once_max_retries;
-                    delete current.consume_once_max_retries;
                 }
                 if (typeof current.id === 'string') {
                     current.id = Number(current.id) || 0;
                 }
                 if (!['shared_pool', 'consume_once'].includes(current.strategy)) {
                     current.strategy = 'shared_pool';
-                }
-                const parsedLimit = typeof current.consumeOnceLimit === 'string'
-                    ? Number(current.consumeOnceLimit)
-                    : Number(current.consumeOnceLimit ?? 0);
-                if (!Number.isFinite(parsedLimit) || parsedLimit < 0) {
-                    current.consumeOnceLimit = 0;
-                } else {
-                    current.consumeOnceLimit = Math.floor(parsedLimit);
-                }
-                const parsedRetries = typeof current.consumeOnceMaxRetries === 'string'
-                    ? Number(current.consumeOnceMaxRetries)
-                    : Number(current.consumeOnceMaxRetries ?? 3);
-                if (!Number.isFinite(parsedRetries) || parsedRetries < 0) {
-                    current.consumeOnceMaxRetries = 3;
-                } else {
-                    current.consumeOnceMaxRetries = Math.floor(parsedRetries);
                 }
             });
         },
@@ -1262,13 +1190,7 @@ export default {
         getDatasetKeyConfig(key) {
             const config = this.datasetConfig[key];
             if (!config || typeof config !== 'object') {
-                return { id: 0, strategy: 'shared_pool', consumeOnceLimit: 0, consumeOnceMaxRetries: 3 };
-            }
-            if (typeof config.consumeOnceLimit !== 'number' || config.consumeOnceLimit < 0) {
-                config.consumeOnceLimit = 0;
-            }
-            if (typeof config.consumeOnceMaxRetries !== 'number' || config.consumeOnceMaxRetries < 0) {
-                config.consumeOnceMaxRetries = 3;
+                return { id: 0, strategy: 'shared_pool' };
             }
             return config;
         },
@@ -1279,16 +1201,6 @@ export default {
             }
             if (updates.strategy !== undefined) {
                 current.strategy = this.normalizeStrategy(updates.strategy);
-            }
-            if (updates.consumeOnceLimit !== undefined) {
-                current.consumeOnceLimit = this.normalizeNonNegativeInt(updates.consumeOnceLimit);
-            } else if (updates.consume_once_limit !== undefined) {
-                current.consumeOnceLimit = this.normalizeNonNegativeInt(updates.consume_once_limit);
-            }
-            if (updates.consumeOnceMaxRetries !== undefined) {
-                current.consumeOnceMaxRetries = this.normalizeNonNegativeInt(updates.consumeOnceMaxRetries);
-            } else if (updates.consume_once_max_retries !== undefined) {
-                current.consumeOnceMaxRetries = this.normalizeNonNegativeInt(updates.consume_once_max_retries);
             }
             this.datasetConfig[key] = current;
             if (this.activeDatasetKey === key) {
@@ -1370,12 +1282,6 @@ export default {
                 id: stats.id,
                 strategy: normalizedStrategy
             };
-            if (typeof stats.consume_once_limit !== 'undefined') {
-                updates.consume_once_limit = stats.consume_once_limit;
-            }
-            if (typeof stats.consume_once_max_retries !== 'undefined') {
-                updates.consume_once_max_retries = stats.consume_once_max_retries;
-            }
             this.setDatasetConfig(key, updates);
             const successCount = typeof stats.success_count === 'number'
                 ? stats.success_count
@@ -1560,13 +1466,6 @@ export default {
         },
         helpRepeatTimes() {
             return this.isPostLinkSource ? this.$t('repeatTimesHelpPostLinks') : this.$t('repeatTimesHelp');
-        },
-        normalizeNonNegativeInt(value) {
-            const parsed = Number(value);
-            if (!Number.isFinite(parsed) || parsed < 0) {
-                return 0;
-            }
-            return Math.floor(parsed);
         },
         async validateComplexSettingsStructure() {
             let needsReset = false;
