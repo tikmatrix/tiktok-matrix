@@ -17,6 +17,7 @@ export default {
   methods: {
     async runScript(enable_multi_account = false, rotate_proxy = false) {
       await this.$emiter('run_now_by_account', { name: 'login', args: { enable_multi_account, rotate_proxy } })
+      return true;
     },
   },
   async mounted() {

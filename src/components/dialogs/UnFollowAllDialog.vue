@@ -40,6 +40,7 @@ export default {
           rotate_proxy
         }
       })
+      return true;
     },
   },
   async mounted() {

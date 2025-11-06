@@ -84,41 +84,55 @@ export class SettingsManager {
                 return data;
             },
 
-            async created() {
-                // 在组件创建时立即加载设置，这样能确保迁移的数据被立即应用
-                await this.loadComponentSettings();
+            created() {
+                // 在组件创建时启动加载流程，并保存 Promise 供后续等待
+                this.__settingsReadyPromise = this.loadComponentSettings();
             },
 
             methods: {
-                async loadComponentSettings() {
-                    console.log(`=== Loading component settings for ${settingsManager.filename} ===`);
-                    try {
-                        const settings = await settingsManager.loadSettings(defaultSettings);
-                        console.log('Loaded settings:', settings);
+                loadComponentSettings() {
+                    const load = async () => {
+                        console.log(`=== Loading component settings for ${settingsManager.filename} ===`);
+                        try {
+                            const settings = await settingsManager.loadSettings(defaultSettings);
+                            // 将设置应用到组件数据，同时确保对象类型正确
+                            Object.keys(settings).forEach(key => {
+                                if (key in this.$data) {
+                                    // 判断默认值和加载值的类型是否匹配
+                                    const defaultType = typeof defaultSettings[key];
+                                    const loadedValue = settings[key];
+                                    const loadedType = typeof loadedValue;
 
-                        // 将设置应用到组件数据，同时确保对象类型正确
-                        Object.keys(settings).forEach(key => {
-                            if (key in this.$data) {
-                                // 判断默认值和加载值的类型是否匹配
-                                const defaultType = typeof defaultSettings[key];
-                                const loadedValue = settings[key];
-                                const loadedType = typeof loadedValue;
-
-                                // 如果默认值是对象但加载值不是，则使用默认值
-                                if (defaultType === 'object' && defaultType !== loadedType) {
-                                    console.warn(`Type mismatch for setting ${key}: expected object but got ${loadedType}. Using default value.`);
-                                    // 使用Vue的$set方法确保响应式
-                                    this.$set(this, key, JSON.parse(JSON.stringify(defaultSettings[key])));
-                                } else {
-                                    console.log(`Setting ${key} from ${JSON.stringify(this[key])} to ${JSON.stringify(loadedValue)}`);
-                                    this[key] = loadedValue;
+                                    // 如果默认值是对象但加载值不是，则使用默认值
+                                    if (defaultType === 'object' && defaultType !== loadedType) {
+                                        console.warn(`Type mismatch for setting ${key}: expected object but got ${loadedType}. Using default value.`);
+                                        // 在 Vue 3 中直接赋值即可触发响应式代理
+                                        this[key] = JSON.parse(JSON.stringify(defaultSettings[key]));
+                                    } else {
+                                        this[key] = loadedValue;
+                                    }
                                 }
-                            }
-                        });
+                            });
 
-                        console.log('Component settings loaded successfully');
+                            console.log('Component settings loaded successfully');
+                        } catch (error) {
+                            console.error('Failed to load component settings:', error);
+                        }
+                    };
+
+                    const promise = load();
+                    this.__settingsReadyPromise = promise;
+                    return promise;
+                },
+
+                async ensureSettingsLoaded() {
+                    if (!this.__settingsReadyPromise) {
+                        this.__settingsReadyPromise = this.loadComponentSettings();
+                    }
+                    try {
+                        await this.__settingsReadyPromise;
                     } catch (error) {
-                        console.error('Failed to load component settings:', error);
+                        // loadComponentSettings 已处理错误日志，这里保持静默
                     }
                 },
 
@@ -178,7 +192,7 @@ export const beforeRunScriptSettings = new SettingsManager('before_run_script_se
 export const boostLivesSettings = new SettingsManager('boost_lives_settings.json');
 export const massCommentSettings = new SettingsManager('mass_comment_settings.json');
 export const followBackSettings = new SettingsManager('follow_back_settings.json');
-export const superBoostSettings = new SettingsManager('super_boost_settings.json');
+export const superMarketingSettings = new SettingsManager('super_marketing_settings.json');
 export const boostCommentsSettings = new SettingsManager('boost_comments_settings.json');
 
 // 导出常用函数

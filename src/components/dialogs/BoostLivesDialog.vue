@@ -201,13 +201,13 @@ export default {
     },
     async runScript(enable_multi_account = false, rotate_proxy = false) {
       if (!this.filterTargetUsername()) {
-        return;
+        return false;
       }
 
       // 检查如果启用了评论但没有输入评论文本
       if (this.enable_comment && !this.comment_texts.trim()) {
         alert(this.$t('commentTextsRequired'))
-        return;
+        return false;
       }
 
       // 传递与后端脚本匹配的参数
@@ -220,6 +220,7 @@ export default {
           rotate_proxy: rotate_proxy,
         }
       })
+      return true;
     },
   }
 }

@@ -32,6 +32,11 @@
         <button class="btn btn-md btn-primary mt-1 ml-1 mb-1" @click="$emiter('stop_task')">
             <font-awesome-icon icon="fa fa-stop" class="h-3 w-3 text-error" />{{ $t('stopTask') }}
         </button>
+        <a class="link link-primary flex items-center gap-2 text-md leading-snug max-w-full md:max-w-md whitespace-normal break-words"
+            :href="whitelabelConfig.officialWebsite + '/docs/troubleshooting/task_failed'" target="_blank">
+            <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5 shrink-0" />
+            <span class="text-left">{{ $t('taskFailedTip') }}</span>
+        </a>
         <fieldset
             class="fieldset p-1 bg-base-100 border border-base-300 rounded-box text-center align-middle flex flex-row items-center">
             <label class="fieldset-label">
@@ -39,11 +44,15 @@
                 <input type="checkbox" checked="checked" class="toggle toggle-primary" v-model="autoRetry" />
             </label>
         </fieldset>
-        <a class="link link-primary flex items-start gap-2 text-md leading-snug max-w-full md:max-w-md whitespace-normal break-words"
-            :href="whitelabelConfig.officialWebsite + '/docs/troubleshooting/task_failed'" target="_blank">
-            <font-awesome-icon icon="fas fa-question-circle" class="h-5 w-5 shrink-0" />
-            <span class="text-left">{{ $t('taskFailedTip') }}</span>
-        </a>
+        <fieldset
+            class="fieldset p-1 ml-1 bg-base-100 border border-base-300 rounded-box text-center align-middle flex flex-row items-center">
+            <label class="fieldset-label flex items-center gap-2">
+                {{ $t('maxRetryCount') }}:
+                <input type="number" min="1" max="10" class="input input-bordered input-sm w-16"
+                    v-model.number="maxRetryCount" @change="updateMaxRetryCount" />
+            </label>
+        </fieldset>
+
     </div>
 
 
@@ -63,6 +72,7 @@ export default {
             whitelabelConfig: cloneDefaultWhiteLabelConfig(),
             taskCounts: {},
             autoRetry: false,
+            maxRetryCount: 3,
             isCountingTasks: false
         }
     },
@@ -94,8 +104,40 @@ export default {
         if (storedAutoRetry !== null) {
             this.autoRetry = storedAutoRetry === 'true';
         }
+
+        // 从后端加载最大重试次数配置
+        this.loadMaxRetryCount();
     },
     methods: {
+        async loadMaxRetryCount() {
+            try {
+                const res = await this.$service.get_settings();
+                if (res && res.data && res.data.max_retry_count) {
+                    this.maxRetryCount = res.data.max_retry_count;
+                }
+            } catch (error) {
+                console.error('Failed to load max retry count:', error);
+            }
+        },
+        async updateMaxRetryCount() {
+            try {
+                await this.$service.update_settings({
+                    max_retry_count: this.maxRetryCount
+                });
+                await this.$emiter('NOTIFY', {
+                    type: 'success',
+                    message: `${this.$t('maxRetryCount')}: ${this.maxRetryCount}`,
+                    timeout: 2000
+                });
+            } catch (error) {
+                console.error('Failed to update max retry count:', error);
+                await this.$emiter('NOTIFY', {
+                    type: 'error',
+                    message: this.$t('updateFailed'),
+                    timeout: 2000
+                });
+            }
+        },
         countTasks() {
             // 如果正在执行,则忽略新的请求
             if (this.isCountingTasks) {

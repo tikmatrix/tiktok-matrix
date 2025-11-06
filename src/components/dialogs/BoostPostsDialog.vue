@@ -115,7 +115,7 @@ export default {
     },
     async runScript(enable_multi_account = false, rotate_proxy = false) {
       if (!this.filterTargetPostUrl()) {
-        return;
+        return false;
       }
       await this.$emiter('run_now_by_account', {
         name: 'boost_post',
@@ -126,6 +126,7 @@ export default {
           rotate_proxy: rotate_proxy
         }
       })
+      return true;
     },
   }
 }

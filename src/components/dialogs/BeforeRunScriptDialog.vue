@@ -21,7 +21,7 @@
           || script.name === 'massComment'
           || script.name === 'switchAccount'
           || script.name === 'boostComments'
-          || script.name === 'superBoost'">
+          || script.name === 'superMarketing'">
           <label class="font-bold text-info">{{ $t('enableMultiAccount') }}:</label>
           <input type="checkbox" class="toggle toggle-accent" v-model="enable_multi_account" />
         </div>
@@ -69,12 +69,14 @@
     <BoostLivesDialog v-if="script.name === 'boostLives'" ref="currentDialog" />
     <MassCommentDialog v-if="script.name === 'massComment'" ref="currentDialog" />
     <SwitchAccountDialog v-if="script.name === 'switchAccount'" ref="currentDialog" />
-    <SuperBoostDialog v-if="script.name === 'superBoost'" ref="currentDialog" />
+    <SuperMarketingDialog v-if="script.name === 'superMarketing'" ref="currentDialog" />
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
-      <button class="btn btn-success" :disabled="selecedDevices.length === 0" @click="runScript">{{ $t('startScript')
-      }}</button>
+      <button class="btn btn-success" :disabled="selecedDevices.length === 0 || isRunning" @click="runScript">
+        <span v-if="isRunning" class="loading loading-spinner loading-sm mr-2"></span>
+        {{ isRunning ? $t('startScript') + '...' : $t('startScript') }}
+      </button>
     </div>
   </div>
 </template>
@@ -96,7 +98,7 @@ import MatchAccounts from './MatchAccounts.vue'
 import MassCommentDialog from './MassCommentDialog.vue'
 import BoostLivesDialog from './BoostLivesDialog.vue'
 import SwitchAccountDialog from './SwitchAccountDialog.vue'
-import SuperBoostDialog from './SuperBoostDialog.vue'
+import SuperMarketingDialog from './SuperMarketingDialog.vue'
 import { beforeRunScriptSettings } from '@/utils/settingsManager';
 
 const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
@@ -153,20 +155,15 @@ export default {
     MassCommentDialog,
     BoostLivesDialog,
     SwitchAccountDialog,
-    SuperBoostDialog
+    SuperMarketingDialog
   },
 
   data() {
     return {
       // 其他非设置相关的数据可以保留在这里
       licenseLimit: null,
-    }
-  },
-  watch: {
-    enable_multi_account(val) {
-      if (!val && this.rotate_proxy) {
-        this.rotate_proxy = false
-      }
+      // 标记脚本是否正在启动，防止重复点击
+      isRunning: false,
     }
   },
   methods: {
@@ -186,13 +183,30 @@ export default {
       }
     },
     async runScript() {
+      // 防止重复点击
+      if (this.isRunning) return
+
       if (this.selecedDevices.length === 0) {
         return;
       }
 
-      if (this.$refs.currentDialog && typeof this.$refs.currentDialog.runScript === 'function') {
-        await this.$refs.currentDialog.runScript(this.enable_multi_account, this.rotate_proxy);
-        await this.$emiter('closeDialog', {})
+      // 保证只会执行一次
+      this.isRunning = true
+      try {
+        if (this.$refs.currentDialog && typeof this.$refs.currentDialog.runScript === 'function') {
+          const success = await this.$refs.currentDialog.runScript(this.enable_multi_account, this.rotate_proxy, this.selecedDevices);
+          if (success) {
+            // 关闭对话框（组件可能会被卸载）
+            await this.$emiter('closeDialog', {})
+          }
+        }
+      } catch (err) {
+        // 保持原有行为，记录错误以便排查
+        console.error('runScript error', err)
+        throw err
+      } finally {
+        // 若组件已被卸载，设置 isRunning 无意义但不会报错；保守地恢复状态
+        try { this.isRunning = false } catch (e) { /* ignore */ }
       }
     },
   },

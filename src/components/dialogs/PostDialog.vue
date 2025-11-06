@@ -158,7 +158,7 @@ export default {
           message: this.$t('soundInputRequired'),
           timeout: 2000
         });
-        return;
+        return false;
       }
 
       if (this.add_sound === 'custom' && !this.custom_sound_keyword) {
@@ -167,7 +167,7 @@ export default {
           message: this.$t('customSoundInputRequired'),
           timeout: 2000
         });
-        return;
+        return false;
       }
 
       // 验证素材配置
@@ -177,7 +177,7 @@ export default {
           message: this.$t('selectFolderFailed'),
           timeout: 2000
         });
-        return;
+        return false;
       }
 
       await this.$emiter('run_now_by_account', {
@@ -187,6 +187,7 @@ export default {
           rotate_proxy: rotate_proxy
         }
       })
+      return true;
     },
   },
 }

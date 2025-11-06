@@ -124,7 +124,7 @@ export default {
 
     async runScript(enable_multi_account = false, rotate_proxy = false) {
       if (!this.filterTargetPostUrl()) {
-        return;
+        return false;
       }
 
       await this.$emiter('massComment', {
@@ -133,6 +133,7 @@ export default {
         enable_multi_account: enable_multi_account,
         rotate_proxy: rotate_proxy,
       })
+      return true;
     },
   },
 }

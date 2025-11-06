@@ -61,7 +61,7 @@
         <font-awesome-icon icon="fa-solid fa-video" class="h-3 w-3 text-success" />
         {{ $t('boostLives') }}
     </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1"
+    <!-- <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'massDM' } })">
         <font-awesome-icon icon="fa-solid fa-message" class="h-3 w-3" />
         {{ $t('massDM') }}
@@ -70,7 +70,7 @@
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'massComment' } })">
         <font-awesome-icon icon="fa-solid fa-comment" class="h-3 w-3" />
         {{ $t('massComment') }}
-    </button>
+    </button> -->
     <button class="btn btn-md btn-primary  ml-1 mb-1"
         @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'scrapeUsers' } })">
         <font-awesome-icon icon="fas fa-spider" class="h-3 w-3 mr-1" />
@@ -89,9 +89,9 @@
 
     <!-- 超级营销脚本 -->
     <button class="btn btn-md btn-success ml-1 mb-1"
-        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'superBoost' } })">
+        @click="$emiter('showDialog', { name: 'beforeRunScriptDialog', script: { name: 'superMarketing' } })">
         <font-awesome-icon icon="fa-solid fa-rocket" class="h-3 w-3 mr-1" />
-        {{ $t('superBoost') }}
+        {{ $t('superMarketing') }}
     </button>
 </template>
 <script>

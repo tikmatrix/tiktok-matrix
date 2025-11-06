@@ -101,6 +101,5 @@ export function validateWhiteLabelConfig(config) {
 }
 
 export function cloneDefaultWhiteLabelConfig() {
-    console.log('Cloning default whitelabel config:', JSON.stringify(DEFAULT_WHITELABEL_CONFIG));
     return JSON.parse(JSON.stringify(DEFAULT_WHITELABEL_CONFIG));
 }

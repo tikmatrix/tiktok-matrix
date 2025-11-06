@@ -52,8 +52,9 @@
                 </td>
                 <td>
                   <div class="space-x-4">
-                    <button class="btn btn-md btn-primary rounded" @click="retry(task)">{{
-                      $t('retry') }}</button>
+                    <button class="btn btn-md btn-primary rounded" @click="retry(task)" :disabled="!canRetry(task)"
+                      :title="retryTooltip(task)">{{
+                        $t('retry') }}</button>
                     <button class="btn btn-md btn-error rounded" @click="deleteTask(task)">{{
                       $t('delete') }}</button>
                   </div>
@@ -112,7 +113,8 @@ export default {
     return {
       tasks: [],
       currentDevice: null,
-      searchStatus: ''
+      searchStatus: '',
+      maxRetryCount: 3
     }
   },
   computed: {
@@ -126,6 +128,16 @@ export default {
 
   },
   methods: {
+    async loadMaxRetryCount() {
+      try {
+        const res = await this.$service.get_settings();
+        if (res && res.data && res.data.max_retry_count) {
+          this.maxRetryCount = res.data.max_retry_count;
+        }
+      } catch (error) {
+        console.error('Failed to load max retry count:', error);
+      }
+    },
     getTaskArg(args, key) {
       try {
         console.log(args);
@@ -174,15 +186,47 @@ export default {
           })
         })
     },
+    canRetry(task) {
+      const retryCount = task?.retry_count ?? 0
+      return retryCount < this.maxRetryCount
+    },
+    retryTooltip(task) {
+      if (this.canRetry(task)) {
+        return ''
+      }
+      return this.$t('maxRetryReached', { count: this.maxRetryCount })
+    },
 
     async retry(task) {
+      if (!this.canRetry(task)) {
+        await this.$emiter('NOTIFY', {
+          type: 'warning',
+          message: this.$t('maxRetryReachedMessage', { count: this.maxRetryCount }),
+          timeout: 2500
+        })
+        return
+      }
       this.$service
         .update_task({
           id: task.id,
           status: 0,
           serial: task.serial
         })
-        .then(() => {
+        .then(async (res) => {
+          if (!res || res.code !== 0) {
+            const message = res?.data || this.$t('retryFailed')
+            await this.$emiter('NOTIFY', {
+              type: 'error',
+              message,
+              timeout: 2500
+            })
+            return
+          }
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('retryQueued'),
+            timeout: 2000
+          })
           this.get_tasks()
         })
     },
@@ -200,12 +244,32 @@ export default {
     async retry_all_failed() {
       this.$service
         .retry_all_failed_tasks()
-        .then(() => {
+        .then(async (res) => {
+          if (!res || res.code !== 0) {
+            const message = res?.data || this.$t('retryAllFailedMessage')
+            await this.$emiter('NOTIFY', {
+              type: 'error',
+              message,
+              timeout: 2500
+            })
+            return
+          }
+          const resetCount = res.data || 0
+          const notifyType = resetCount > 0 ? 'success' : 'info'
+          const notifyMessage = resetCount > 0
+            ? this.$t('retryAllQueued', { count: resetCount })
+            : this.$t('retryAllLimitReached', { count: this.maxRetryCount })
+          await this.$emiter('NOTIFY', {
+            type: notifyType,
+            message: notifyMessage,
+            timeout: 2500
+          })
           this.get_tasks()
         })
     }
   },
   async mounted() {
+    this.loadMaxRetryCount();
     this.get_tasks()
   }
 }
