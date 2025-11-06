@@ -400,6 +400,18 @@ export function script(scriptRequest) {
   })
 }
 
+export function list_super_marketing_datasets({ data_type } = {}) {
+  const params = {}
+  if (data_type) {
+    params.data_type = data_type
+  }
+  return request({
+    method: 'get',
+    url: api.super_marketing_dataset,
+    params
+  })
+}
+
 export function import_super_marketing_dataset(data) {
   return request({
     method: 'post',
@@ -423,11 +435,35 @@ export function clear_super_marketing_dataset({ dataset_id }) {
   })
 }
 
-export function update_super_marketing_dataset({ dataset_id, strategy }) {
+export function update_super_marketing_dataset({ dataset_id, strategy, label }) {
+  const payload = {}
+  if (typeof strategy !== 'undefined') {
+    payload.strategy = strategy
+  }
+  if (typeof label !== 'undefined') {
+    payload.label = label
+  }
   return request({
     method: 'put',
     url: `${api.super_marketing_dataset}/${dataset_id}`,
-    data: { strategy }
+    data: payload
+  })
+}
+
+export function update_super_marketing_dataset_entry({ dataset_id, entry_id, value, limit = 50, offset = 0 }) {
+  return request({
+    method: 'put',
+    url: `${api.super_marketing_dataset}/${dataset_id}/entries/${entry_id}`,
+    data: { value },
+    params: { limit, offset }
+  })
+}
+
+export function delete_super_marketing_dataset_entry({ dataset_id, entry_id, limit = 50, offset = 0 }) {
+  return request({
+    method: 'delete',
+    url: `${api.super_marketing_dataset}/${dataset_id}/entries/${entry_id}`,
+    params: { limit, offset }
   })
 }
 

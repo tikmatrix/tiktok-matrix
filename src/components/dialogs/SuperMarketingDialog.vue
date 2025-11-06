@@ -57,137 +57,130 @@
                 </div>
             </div>
             <div class="space-y-6">
-                <div class="grid gap-4 md:grid-cols-2">
-                    <div class="border border-base-200 rounded-lg p-4 bg-base-50">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-semibold text-md flex items-center gap-2">
-                                <font-awesome-icon icon="fa-solid fa-chart-column" />
-                                {{ $t('datasetStatsTitle') }}
-                            </h4>
+                <div class="grid gap-4 xl:grid-cols-2">
+                    <div class="border border-base-200 rounded-lg p-4 bg-base-50 flex flex-col gap-3">
+                        <div class="flex items-center gap-2">
+                            <font-awesome-icon icon="fa-solid fa-file-import" />
+                            <h4 class="font-semibold text-md">{{ $t('datasetImportLabel') }}</h4>
+                        </div>
+                        <textarea class="textarea textarea-bordered textarea-md h-96" v-model="activeDatasetInput"
+                            :placeholder="$t('datasetImportPlaceholder')"></textarea>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button class="btn btn-info btn-sm" @click="selectDatasetFile">
+                                <font-awesome-icon icon="fa-solid fa-file-arrow-up" class="mr-1" />
+                                {{ $t('selectDatasetFile') }}
+                            </button>
+                            <button class="btn btn-primary btn-sm" :disabled="activeDatasetImporting"
+                                @click="handleDatasetImport('append')">
+                                <span v-if="activeDatasetImporting"
+                                    class="loading loading-spinner loading-sm mr-2"></span>
+                                {{ $t('appendImport') }}
+                            </button>
+                            <button class="btn btn-secondary btn-sm" :disabled="activeDatasetImporting"
+                                @click="handleDatasetImport('replace')">
+                                <span v-if="activeDatasetImporting"
+                                    class="loading loading-spinner loading-sm mr-2"></span>
+                                {{ $t('replaceImport') }}
+                            </button>
+                            <button class="btn btn-outline btn-error btn-sm"
+                                :disabled="!activeDatasetConfig.id || activeDatasetLoading" @click="clearActiveDataset">
+                                {{ $t('clearDataset') }}
+                            </button>
+                        </div>
+                        <p class="text-xs text-base-content/60">{{ $t('datasetImportHint') }}</p>
+                        <div v-if="activeDatasetSummary" class="alert alert-info mt-2 text-xs sm:text-sm">
+                            <font-awesome-icon icon="fa-solid fa-clipboard-check" class="mr-2" />
+                            <div class="flex flex-wrap gap-2">
+                                <span>{{ $t('datasetInserted', { count: activeDatasetSummary.inserted }) }}</span>
+                                <span>{{ $t('datasetDuplicates', { count: activeDatasetSummary.duplicates })
+                                    }}</span>
+                                <span>{{ $t('datasetSkipped', { count: activeDatasetSummary.skipped_empty })
+                                    }}</span>
+                                <span>{{ $t('datasetRemoved', { count: activeDatasetSummary.removed }) }}</span>
+                                <span>{{ $t('datasetTruncated', { count: activeDatasetSummary.truncated }) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-base-200 rounded-lg bg-base-50 p-4 flex flex-col gap-4">
+                        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <label class="font-semibold text-sm flex items-center gap-2">
+                                    <font-awesome-icon icon="fa-solid fa-chart-column" />
+                                    {{ $t('datasetSelectLabel') }}
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <select class="select select-bordered select-sm min-w-[200px]"
+                                        :value="String(activeDatasetConfig.id || '')" @change="handleDatasetSelect"
+                                        :disabled="datasetOptionsLoading[activeDatasetKey]">
+                                        <option value="">{{ $t('datasetSelectPlaceholder') }}</option>
+                                        <option v-for="option in activeDatasetOptions" :key="option.id"
+                                            :value="String(option.id)">
+                                            {{ formatDatasetOptionLabel(option) }}
+                                        </option>
+                                    </select>
+                                    <span v-if="datasetOptionsLoading[activeDatasetKey]"
+                                        class="loading loading-spinner loading-xs"></span>
+                                </div>
+                            </div>
                             <div class="flex items-center gap-2">
                                 <span class="badge badge-outline" v-if="activeDatasetConfig.id">
                                     {{ $t('datasetId') }}: {{ activeDatasetConfig.id }}
                                 </span>
-                                <!-- 刷新按钮 -->
                                 <button class="btn btn-sm btn-ghost" @click="refreshActiveDataset"
                                     :disabled="activeDatasetLoading" :title="$t('refresh')">
                                     <span v-if="activeDatasetLoading"
-                                        class="loading loading-spinner loading-sm mr-2"></span>
+                                        class="loading loading-spinner loading-sm mr-1"></span>
                                     <font-awesome-icon icon="fa-solid fa-arrows-rotate" />
                                 </button>
                             </div>
+                        </div>
+                        <div v-if="activeDatasetConfig.id" class="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <input class="input input-bordered input-sm flex-1"
+                                :placeholder="$t('datasetLabelPlaceholder')" v-model="activeDatasetLabelDraft"
+                                :disabled="activeDatasetLoading" />
+                            <button class="btn btn-sm btn-outline" @click="saveActiveDatasetLabel"
+                                :disabled="activeDatasetLoading">
+                                {{ $t('save') }}
+                            </button>
                         </div>
                         <div v-if="activeDatasetLoading" class="flex items-center gap-2 text-md text-base-content/70">
                             <span class="loading loading-spinner loading-sm"></span>
                             <span>{{ $t('datasetLoading') }}</span>
                         </div>
-                        <div v-else-if="activeDatasetStats" class="grid grid-cols-2 md:grid-cols-3 gap-3 text-md">
-                            <div>
-                                <div class="text-sm text-base-content/60">{{ $t('datasetTotal') }}</div>
-                                <div class="font-semibold text-lg">{{ activeDatasetStats.total }}</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-base-content/60">{{ $t('datasetConsumed') }}</div>
-                                <div class="font-semibold text-lg">{{ activeDatasetStats.consumed }}</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-base-content/60">{{ $t('datasetSuccess') }}</div>
-                                <div class="font-semibold text-lg">{{ activeDatasetStats.success_count }}</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-base-content/60">{{ $t('datasetFailed') }}</div>
-                                <div class="font-semibold text-lg">{{ activeDatasetStats.failed_count }}</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-base-content/60">{{ $t('datasetRemaining') }}</div>
-                                <div class="font-semibold text-lg">{{ activeDatasetStats.remaining }}</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-base-content/60">{{ $t('datasetLastUpdated') }}</div>
-                                <div class="font-semibold text-lg">
-                                    {{ activeDatasetStats.updated_at ? formatLocalTime(activeDatasetStats.updated_at) :
-                                        '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="alert alert-info py-3">
-                            <font-awesome-icon icon="fa-solid fa-circle-info" class="mr-2" />
+                        <div v-if="!activeDatasetStats" class="alert alert-info py-3 flex items-center gap-2">
+                            <font-awesome-icon icon="fa-solid fa-circle-info" />
                             <span>{{ $t('datasetNotConfigured') }}</span>
                         </div>
-                    </div>
-
-                    <div class="border border-base-200 rounded-lg p-4 bg-base-50">
-                        <h4 class="font-semibold text-md mb-3 flex items-center gap-2">
-                            <font-awesome-icon icon="fa-solid fa-diagram-project" />
-                            {{ $t('datasetStrategyTitle') }}
-                        </h4>
-                        <div class="flex flex-wrap gap-4">
-                            <label class="cursor-pointer flex items-start gap-2 p-3 rounded-lg border border-base-300"
-                                :class="{ 'border-primary bg-primary/10': dataSourceStrategy === 'shared_pool' }">
-                                <input type="radio" class="radio radio-primary mt-1" value="shared_pool"
-                                    :checked="dataSourceStrategy === 'shared_pool'"
-                                    @change="changeActiveDatasetStrategy('shared_pool')">
-                                <div>
-                                    <div class="font-semibold">{{ $t('datasetSharedPool') }}</div>
-                                    <p class="text-sm text-base-content/70">{{ $t('datasetSharedPoolDesc') }}</p>
-                                </div>
-                            </label>
-                            <label class="cursor-pointer flex items-start gap-2 p-3 rounded-lg border border-base-300"
-                                :class="{ 'border-secondary bg-secondary/10': dataSourceStrategy === 'consume_once' }">
-                                <input type="radio" class="radio radio-secondary mt-1" value="consume_once"
-                                    :checked="dataSourceStrategy === 'consume_once'"
-                                    @change="changeActiveDatasetStrategy('consume_once')">
-                                <div>
-                                    <div class="font-semibold">{{ $t('datasetConsumeOnce') }}</div>
-                                    <p class="text-sm text-base-content/70">{{ $t('datasetConsumeOnceDesc') }}</p>
-                                </div>
-                            </label>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <!-- 左侧：导入面板 -->
-                    <div>
-                        <div class="form-control">
-                            <label class="font-bold text-md mb-2 flex items-center gap-2">
-                                <font-awesome-icon icon="fa-solid fa-file-import" />
-                                <span>{{ $t('datasetImportLabel') }}</span>
-                            </label>
-                            <textarea class="textarea textarea-bordered textarea-md h-48 lg:h-64"
-                                v-model="activeDatasetInput" :placeholder="$t('datasetImportPlaceholder')"></textarea>
-                            <div class="flex flex-wrap items-center gap-3 mt-3">
-                                <button class="btn btn-info btn-sm" @click="selectDatasetFile">
-                                    <font-awesome-icon icon="fa-solid fa-file-arrow-up" class="mr-1" />
-                                    {{ $t('selectDatasetFile') }}
-                                </button>
-                                <button class="btn btn-primary btn-sm" :disabled="activeDatasetImporting"
-                                    @click="handleDatasetImport('append')">
-                                    <span v-if="activeDatasetImporting"
-                                        class="loading loading-spinner loading-sm mr-2"></span>
-                                    {{ $t('appendImport') }}
-                                </button>
-                                <button class="btn btn-secondary btn-sm" :disabled="activeDatasetImporting"
-                                    @click="handleDatasetImport('replace')">
-                                    <span v-if="activeDatasetImporting"
-                                        class="loading loading-spinner loading-sm mr-2"></span>
-                                    {{ $t('replaceImport') }}
-                                </button>
-                                <button class="btn btn-outline btn-error btn-sm"
-                                    :disabled="!activeDatasetConfig.id || activeDatasetLoading"
-                                    @click="clearActiveDataset">
-                                    {{ $t('clearDataset') }}
-                                </button>
+                        <div class="border border-dashed border-base-200 rounded-lg p-4 bg-base-100">
+                            <h4 class="font-semibold text-md mb-3 flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-diagram-project" />
+                                {{ $t('datasetStrategyTitle') }}
+                            </h4>
+                            <div class="flex flex-col gap-3">
+                                <label
+                                    class="cursor-pointer flex items-start gap-2 p-3 rounded-lg border border-base-300"
+                                    :class="{ 'border-primary bg-primary/10': dataSourceStrategy === 'shared_pool' }">
+                                    <input type="radio" class="radio radio-primary mt-1" value="shared_pool"
+                                        :checked="dataSourceStrategy === 'shared_pool'"
+                                        @change="changeActiveDatasetStrategy('shared_pool')">
+                                    <div>
+                                        <div class="font-semibold">{{ $t('datasetSharedPool') }}</div>
+                                        <p class="text-sm text-base-content/70">{{ $t('datasetSharedPoolDesc') }}</p>
+                                    </div>
+                                </label>
+                                <label
+                                    class="cursor-pointer flex items-start gap-2 p-3 rounded-lg border border-base-300"
+                                    :class="{ 'border-secondary bg-secondary/10': dataSourceStrategy === 'consume_once' }">
+                                    <input type="radio" class="radio radio-secondary mt-1" value="consume_once"
+                                        :checked="dataSourceStrategy === 'consume_once'"
+                                        @change="changeActiveDatasetStrategy('consume_once')">
+                                    <div>
+                                        <div class="font-semibold">{{ $t('datasetConsumeOnce') }}</div>
+                                        <p class="text-sm text-base-content/70">{{ $t('datasetConsumeOnceDesc') }}</p>
+                                    </div>
+                                </label>
                             </div>
-                            <p class="text-sm text-base-content/70 mt-2">{{ $t('datasetImportHint') }}</p>
                         </div>
-
-                        <!-- summary moved below the import+preview grid to align widths -->
-                    </div>
-
-                    <!-- 右侧：预览列表（限定高度，可滚动） -->
-                    <div>
                         <div class="border border-base-200 rounded-lg overflow-hidden">
                             <div class="px-4 py-2 bg-base-200 flex items-center justify-between">
                                 <span class="font-semibold text-md flex items-center gap-2">
@@ -198,40 +191,30 @@
                                     {{ datasetPreviewSummaryText() }}
                                 </span>
                             </div>
-                            <div v-if="activeDatasetEntries.length" class="overflow-x-auto">
+                            <div v-if="activeDatasetConfig.id && activeDatasetEntries.length" class="overflow-x-auto">
                                 <div class="max-h-64 overflow-y-auto">
                                     <table class="table table-zebra table-sm w-full">
                                         <thead>
                                             <tr>
-                                                <th>#</th>
+                                                <th class="w-12">#</th>
                                                 <th>{{ $t('datasetValue') }}</th>
-                                                <th>{{ $t('datasetStatus') }}</th>
                                                 <th>{{ $t('datasetUpdatedAt') }}</th>
-                                                <th>{{ $t('datasetHasError') }}</th>
+                                                <th class="w-20 text-right">{{ $t('actions') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-for="(entry, idx) in activeDatasetEntries" :key="entry.id">
                                                 <td>{{ formatDatasetRowIndex(idx) }}</td>
                                                 <td class="break-all">{{ entry.value }}</td>
-                                                <td>
-                                                    <span v-if="entry.consumed" class="badge badge-sm badge-success">
-                                                        {{ $t('datasetConsumedFlag') }}
-                                                    </span>
-                                                    <span v-else class="badge badge-sm badge-outline">
-                                                        {{ $t('datasetAvailableFlag') }}
-                                                    </span>
-                                                </td>
                                                 <td class="text-sm text-base-content/70">
                                                     {{ formatLocalTime(entry.updated_at) }}
                                                 </td>
-                                                <td :title="entry.last_error || ''">
-                                                    <span v-if="entry.last_error" class="badge badge-sm badge-error">
-                                                        {{ $t('datasetHasErrorYes') }}
-                                                    </span>
-                                                    <span v-else class="badge badge-sm badge-success">
-                                                        {{ $t('datasetHasErrorNo') }}
-                                                    </span>
+                                                <td class="text-right">
+                                                    <button class="btn btn-ghost btn-xs text-error"
+                                                        @click="deleteDatasetEntry(entry)"
+                                                        :disabled="activeDatasetLoading">
+                                                        <font-awesome-icon icon="fa-solid fa-trash" />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -271,27 +254,12 @@
                                 </div>
                             </div>
                             <div v-else class="p-4 text-sm text-base-content/70">
-                                {{ $t('datasetPreviewEmpty') }}
+                                <span v-if="!activeDatasetConfig.id">{{ $t('datasetPreviewUnselected') }}</span>
+                                <span v-else>{{ $t('datasetPreviewEmpty') }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- 导入结果：放在导入面板与预览下方，宽度与两列一致 -->
-                <div v-if="activeDatasetSummary" class="alert alert-info mt-3 w-full">
-                    <font-awesome-icon icon="fa-solid fa-clipboard-check" class="mr-2" />
-                    <div>
-                        <div class="flex gap-2 text-sm mt-2">
-                            <div class="font-semibold">{{ $t('datasetImportSummary') }}:</div>
-                            <div>{{ $t('datasetInserted', { count: activeDatasetSummary.inserted }) }}</div>
-                            <div>{{ $t('datasetDuplicates', { count: activeDatasetSummary.duplicates }) }}</div>
-                            <div>{{ $t('datasetSkipped', { count: activeDatasetSummary.skipped_empty }) }}</div>
-                            <div>{{ $t('datasetRemoved', { count: activeDatasetSummary.removed }) }}</div>
-                            <div>{{ $t('datasetTruncated', { count: activeDatasetSummary.truncated }) }}</div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
@@ -647,7 +615,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                }}</button>
+                                    }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -735,8 +703,8 @@ const createInitialPaginationState = () =>
     }, {});
 
 const DEFAULT_DATASET_CONFIG = () => ({
-    usernames: { id: 0, strategy: 'shared_pool' },
-    post_links: { id: 0, strategy: 'shared_pool' }
+    usernames: { id: 0, strategy: 'shared_pool', label: '' },
+    post_links: { id: 0, strategy: 'shared_pool', label: '' }
 });
 
 function cloneDefaultDatasetConfig() {
@@ -839,6 +807,18 @@ export default {
                 usernames: null,
                 post_links: null
             },
+            datasetOptions: {
+                usernames: [],
+                post_links: []
+            },
+            datasetOptionsLoading: {
+                usernames: false,
+                post_links: false
+            },
+            datasetLabelDrafts: {
+                usernames: '',
+                post_links: ''
+            },
             datasetLoading: {
                 usernames: false,
                 post_links: false
@@ -937,7 +917,8 @@ export default {
         activeDatasetConfig() {
             return this.datasetConfig[this.activeDatasetKey] || {
                 id: 0,
-                strategy: 'shared_pool'
+                strategy: 'shared_pool',
+                label: ''
             };
         },
         activeDatasetStats() {
@@ -965,6 +946,18 @@ export default {
         },
         activeDatasetPagination() {
             return this.datasetPagination[this.activeDatasetKey] || createDefaultPaginationState();
+        },
+        activeDatasetOptions() {
+            return this.datasetOptions[this.activeDatasetKey] || [];
+        },
+        activeDatasetLabelDraft: {
+            get() {
+                const value = this.datasetLabelDrafts[this.activeDatasetKey];
+                return typeof value === 'string' ? value : '';
+            },
+            set(value) {
+                this.datasetLabelDrafts[this.activeDatasetKey] = value;
+            }
         },
         activeDatasetPageCount() {
             const { total, pageSize } = this.activeDatasetPagination;
@@ -1030,7 +1023,7 @@ export default {
 
     },
     watch: {
-        dataSourceType(newValue) {
+        async dataSourceType(newValue) {
             if (newValue === 'post_links') {
                 if (this.features.followUsers) this.features.followUsers = false;
                 if (this.features.unfollowUsers) this.features.unfollowUsers = false;
@@ -1038,6 +1031,7 @@ export default {
             }
             this.syncActiveDatasetState();
             this.ensureActiveTab();
+            await this.refreshDatasetOptions(this.activeDatasetKey, { silent: true });
         },
 
     },
@@ -1105,6 +1099,132 @@ export default {
             const { start, end } = this.activeDatasetPageRange;
             return this.$t('datasetPreviewRange', { start, end, total });
         },
+        formatDatasetOptionLabel(option) {
+            if (!option) {
+                return '';
+            }
+            const label = typeof option.label === 'string' ? option.label.trim() : '';
+            if (label) {
+                return label;
+            }
+            return `${this.$t('datasetId')}: ${option.id}`;
+        },
+        async refreshDatasetOptions(key, { silent = false } = {}) {
+            if (!silent) {
+                this.datasetOptionsLoading[key] = true;
+            }
+            try {
+                const response = await this.$service.list_super_marketing_datasets({ data_type: key });
+                if (response.code === 0 && Array.isArray(response.data)) {
+                    const normalized = response.data.map((item) => ({
+                        id: Number(item.id) || 0,
+                        data_type: item.data_type,
+                        label: typeof item.label === 'string' ? item.label : '',
+                        total: Number(item.total) || 0,
+                        consumed: Number(item.consumed) || 0,
+                        remaining: Number(item.remaining) || 0,
+                        updated_at: item.updated_at || null
+                    }));
+                    this.datasetOptions[key] = normalized;
+                } else {
+                    throw new Error(response.error || response.data || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Failed to load dataset options', error);
+                if (!silent) {
+                    this.notify('error', this.$t('datasetOptionsLoadFailed'));
+                }
+            } finally {
+                if (!silent) {
+                    this.datasetOptionsLoading[key] = false;
+                }
+            }
+        },
+        async handleDatasetSelect(event) {
+            const key = this.activeDatasetKey;
+            const value = Number(event?.target?.value || 0);
+            const option = this.activeDatasetOptions.find((item) => Number(item.id) === value);
+            this.setDatasetConfig(key, {
+                id: value,
+                label: option ? option.label || '' : ''
+            });
+            await this.saveComponentSettings();
+            if (value > 0) {
+                await this.refreshDataset(key, { page: 1 });
+            } else {
+                this.datasetStats[key] = null;
+                this.datasetEntries[key] = [];
+                this.datasetSummaries[key] = null;
+                this.updateDatasetPagination(key, { total: 0, currentPage: 1 });
+            }
+        },
+        async saveActiveDatasetLabel() {
+            const datasetId = this.activeDatasetConfig.id;
+            if (!datasetId) {
+                this.notify('warning', this.$t('selectDatasetRequired'));
+                return;
+            }
+            const label = (this.activeDatasetLabelDraft || '').trim();
+            try {
+                const pagination = this.getDatasetPagination(this.activeDatasetKey);
+                const response = await this.$service.update_super_marketing_dataset({
+                    dataset_id: datasetId,
+                    label
+                });
+                if (response.code === 0) {
+                    await this.refreshDataset(this.activeDatasetKey, {
+                        page: pagination.currentPage,
+                        pageSize: pagination.pageSize
+                    });
+                    await this.refreshDatasetOptions(this.activeDatasetKey, { silent: true });
+                    await this.saveComponentSettings();
+                    this.notify('success', this.$t('datasetLabelUpdateSuccess'));
+                } else {
+                    throw new Error(response.error || response.data || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Failed to update dataset label', error);
+                this.notify('error', `${this.$t('datasetLabelUpdateFailed')}: ${error.message || error}`);
+            }
+        },
+        getActiveDatasetPaginationParams() {
+            const pagination = this.getDatasetPagination(this.activeDatasetKey);
+            const limit = Number(pagination.pageSize) > 0 ? Number(pagination.pageSize) : DEFAULT_DATASET_PAGE_SIZE;
+            const currentPage = Number(pagination.currentPage) > 0 ? Number(pagination.currentPage) : 1;
+            const offset = (currentPage - 1) * limit;
+            return { limit, offset, currentPage };
+        },
+        async deleteDatasetEntry(entry) {
+            const datasetId = this.activeDatasetConfig.id;
+            if (!datasetId || !entry || !entry.id) {
+                return;
+            }
+
+            try {
+                const { limit, offset, currentPage } = this.getActiveDatasetPaginationParams();
+                const response = await this.$service.delete_super_marketing_dataset_entry({
+                    dataset_id: datasetId,
+                    entry_id: entry.id,
+                    limit,
+                    offset
+                });
+                if (response.code === 0) {
+                    const { stats, entries } = response.data;
+                    this.applyDatasetDetail(this.activeDatasetKey, stats, entries || [], {
+                        page: currentPage,
+                        pageSize: limit,
+                        total: stats?.total
+                    });
+                    await this.refreshDatasetOptions(this.activeDatasetKey, { silent: true });
+                    this.notify('success', this.$t('datasetEntryDeleteSuccess'));
+                } else {
+                    throw new Error(response.error || response.data || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Failed to delete dataset entry', error);
+                this.notify('error', `${this.$t('datasetEntryDeleteFailed')}: ${error.message || error}`);
+            }
+        },
         getDatasetPagination(key) {
             if (!this.datasetPagination[key]) {
                 this.datasetPagination = {
@@ -1168,20 +1288,25 @@ export default {
                 this.datasetConfig = cloneDefaultDatasetConfig();
             }
             DATASET_KEYS.forEach((key) => {
-                const current = this.datasetConfig[key];
+                let current = this.datasetConfig[key];
                 if (!current || typeof current !== 'object') {
-                    this.datasetConfig[key] = {
-                        id: 0,
-                        strategy: 'shared_pool'
-                    };
-                    return;
+                    current = { id: 0, strategy: 'shared_pool', label: '' };
+                } else {
+                    if (typeof current.id === 'string') {
+                        current.id = Number(current.id) || 0;
+                    }
+                    if (!['shared_pool', 'consume_once'].includes(current.strategy)) {
+                        current.strategy = 'shared_pool';
+                    }
+                    if (typeof current.label !== 'string') {
+                        current.label = '';
+                    }
                 }
-                if (typeof current.id === 'string') {
-                    current.id = Number(current.id) || 0;
-                }
-                if (!['shared_pool', 'consume_once'].includes(current.strategy)) {
-                    current.strategy = 'shared_pool';
-                }
+                this.datasetConfig[key] = {
+                    id: Number(current.id) || 0,
+                    strategy: current.strategy,
+                    label: typeof current.label === 'string' ? current.label : ''
+                };
             });
         },
         normalizeStrategy(strategy) {
@@ -1190,7 +1315,7 @@ export default {
         getDatasetKeyConfig(key) {
             const config = this.datasetConfig[key];
             if (!config || typeof config !== 'object') {
-                return { id: 0, strategy: 'shared_pool' };
+                return { id: 0, strategy: 'shared_pool', label: '' };
             }
             return config;
         },
@@ -1202,7 +1327,11 @@ export default {
             if (updates.strategy !== undefined) {
                 current.strategy = this.normalizeStrategy(updates.strategy);
             }
+            if (updates.label !== undefined) {
+                current.label = typeof updates.label === 'string' ? updates.label : '';
+            }
             this.datasetConfig[key] = current;
+            this.datasetLabelDrafts[key] = current.label || '';
             if (this.activeDatasetKey === key) {
                 this.datasetId = current.id || 0;
                 this.dataSourceStrategy = current.strategy;
@@ -1213,11 +1342,15 @@ export default {
             const config = this.getDatasetKeyConfig(this.activeDatasetKey);
             this.datasetId = Number(config.id) || 0;
             this.dataSourceStrategy = this.normalizeStrategy(config.strategy);
+            this.datasetLabelDrafts[this.activeDatasetKey] = typeof config.label === 'string' ? config.label : '';
         },
         async initializeDatasets() {
             this.syncActiveDatasetState();
             await Promise.all(
-                DATASET_KEYS.map((key) => this.refreshDataset(key, { silent: true }))
+                DATASET_KEYS.map(async (key) => {
+                    await this.refreshDatasetOptions(key, { silent: true });
+                    await this.refreshDataset(key, { silent: true });
+                })
             );
         },
         async refreshDataset(key, { silent = false, page, pageSize } = {}) {
@@ -1226,6 +1359,7 @@ export default {
                 this.datasetStats[key] = null;
                 this.datasetEntries[key] = [];
                 this.updateDatasetPagination(key, { total: 0, currentPage: 1 });
+                this.datasetLabelDrafts[key] = '';
                 return;
             }
 
@@ -1280,18 +1414,14 @@ export default {
             const normalizedStrategy = this.normalizeStrategy(stats.strategy);
             const updates = {
                 id: stats.id,
-                strategy: normalizedStrategy
+                strategy: normalizedStrategy,
+                label: typeof stats.label === 'string' ? stats.label : ''
             };
             this.setDatasetConfig(key, updates);
-            const successCount = typeof stats.success_count === 'number'
-                ? stats.success_count
-                : (typeof stats.consumed === 'number' ? stats.consumed : 0);
-            const failedCount = typeof stats.failed_count === 'number' ? stats.failed_count : 0;
             this.datasetStats[key] = {
                 ...stats,
-                success_count: successCount,
-                failed_count: failedCount,
-                strategy: normalizedStrategy
+                strategy: normalizedStrategy,
+                label: updates.label
             };
             this.datasetEntries[key] = entries;
             const currentPagination = this.getDatasetPagination(key);
@@ -1311,6 +1441,24 @@ export default {
                 this.datasetId = Number(stats.id) || 0;
                 this.dataSourceStrategy = normalizedStrategy;
             }
+            const options = this.datasetOptions[key] || [];
+            const optionPayload = {
+                id: Number(stats.id) || 0,
+                data_type: stats.data_type,
+                label: updates.label,
+                total: Number(stats.total) || 0,
+                consumed: Number(stats.consumed) || 0,
+                remaining: Number(stats.remaining) || 0,
+                updated_at: stats.updated_at || null
+            };
+            const existingIndex = options.findIndex((item) => Number(item.id) === optionPayload.id);
+            if (existingIndex >= 0) {
+                const next = [...options];
+                next.splice(existingIndex, 1, optionPayload);
+                this.datasetOptions[key] = next;
+            } else if (optionPayload.id > 0) {
+                this.datasetOptions[key] = [...options, optionPayload];
+            }
         },
         async handleDatasetImport(mode) {
             const key = this.activeDatasetKey;
@@ -1328,7 +1476,8 @@ export default {
                     data_type: key,
                     strategy: this.dataSourceStrategy,
                     raw_text: raw,
-                    mode
+                    mode,
+                    label: this.activeDatasetLabelDraft
                 });
                 if (response.code === 0) {
                     const { dataset, summary } = response.data;
@@ -1340,6 +1489,7 @@ export default {
                     });
                     this.datasetSummaries[key] = summary;
                     this.datasetInputs[key] = '';
+                    await this.refreshDatasetOptions(key, { silent: true });
                     await this.saveComponentSettings();
                     this.notify('success', this.$t('datasetImportSuccess'));
                 } else {
@@ -1390,6 +1540,7 @@ export default {
                         total: stats?.total
                     });
                     this.datasetSummaries[key] = null;
+                    await this.refreshDatasetOptions(key, { silent: true });
                     await this.saveComponentSettings();
                     this.notify('success', this.$t('datasetCleared'));
                 } else {
@@ -1415,18 +1566,17 @@ export default {
 
             if (this.datasetId > 0) {
                 try {
+                    const pagination = this.getDatasetPagination(key);
                     const response = await this.$service.update_super_marketing_dataset({
                         dataset_id: this.datasetId,
                         strategy: normalized
                     });
                     if (response.code === 0) {
-                        const { stats, entries } = response.data;
-                        const currentPagination = this.getDatasetPagination(key);
-                        this.applyDatasetDetail(key, stats, entries || [], {
-                            page: currentPagination.currentPage,
-                            pageSize: currentPagination.pageSize,
-                            total: stats?.total
+                        await this.refreshDataset(key, {
+                            page: pagination.currentPage,
+                            pageSize: pagination.pageSize
                         });
+                        await this.refreshDatasetOptions(key, { silent: true });
                         await this.saveComponentSettings();
                         this.notify('success', this.$t('datasetStrategyUpdateSuccess'));
                     } else {
