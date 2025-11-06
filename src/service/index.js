@@ -430,6 +430,15 @@ export function update_super_marketing_dataset({ dataset_id, strategy }) {
     data: { strategy }
   })
 }
+
+export function super_marketing_run_now(data) {
+  return request({
+    method: 'post',
+    url: api.super_marketing_run_now,
+    data
+  })
+}
+
 export function scan_tcp(data) {
   return request({
     method: 'post',

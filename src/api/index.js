@@ -83,5 +83,6 @@ const api = {
   support_update_status: '/agent/api/support/update-status',
   super_marketing_dataset_import: '/api/super_marketing/datasets/import',
   super_marketing_dataset: '/api/super_marketing/datasets',
+  super_marketing_run_now: '/api/task/super_marketing/run_now',
 }
 export default api

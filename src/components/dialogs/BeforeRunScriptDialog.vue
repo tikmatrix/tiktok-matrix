@@ -74,7 +74,7 @@
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
       <button class="btn btn-success" :disabled="selecedDevices.length === 0" @click="runScript">{{ $t('startScript')
-      }}</button>
+        }}</button>
     </div>
   </div>
 </template>
@@ -184,7 +184,7 @@ export default {
       }
 
       if (this.$refs.currentDialog && typeof this.$refs.currentDialog.runScript === 'function') {
-        await this.$refs.currentDialog.runScript(this.enable_multi_account, this.rotate_proxy);
+        await this.$refs.currentDialog.runScript(this.enable_multi_account, this.rotate_proxy, this.selecedDevices);
         await this.$emiter('closeDialog', {})
       }
     },

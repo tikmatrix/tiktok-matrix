@@ -671,7 +671,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                    }}</button>
+                                }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -1752,7 +1752,7 @@ export default {
 
             return errors;
         },
-        async runScript(enable_multi_account = false, rotate_proxy = false) {
+        async runScript(enable_multi_account = false, rotate_proxy = false, selecedDevices = []) {
             const errors = this.validateSettings();
             if (errors.length > 0) {
                 alert(errors.join('\n'));
@@ -1761,15 +1761,44 @@ export default {
 
             await this.saveComponentSettings();
 
-            await this.$emiter('run_now_by_account', {
-                name: 'super_marketing',
-                args: {
-                    enable_multi_account: enable_multi_account,
-                    rotate_proxy: rotate_proxy,
-                    min_interval: Number(this.task_interval[0]),
-                    max_interval: Number(this.task_interval[1]),
+            // Build script_args object
+            const scriptArgs = {
+                enable_multi_account: enable_multi_account,
+                rotate_proxy: rotate_proxy,
+                min_interval: Number(this.task_interval[0]),
+                max_interval: Number(this.task_interval[1]),
+            };
+
+            // Call the dedicated super_marketing API and mirror Sidebar's behavior
+            try {
+                const res = await this.$service.super_marketing_run_now({
+                    serials: selecedDevices,
+                    script_name: 'super_marketing',
+                    script_args: JSON.stringify(scriptArgs),
+                    dataset_id: this.activeDatasetConfig.id
+                });
+
+                if (res && res.code === 40004) {
+                    // No account available
+                    this.notify('error', this.$t('noAccount'));
+                    return;
                 }
-            });
+
+                // reload task list in UI
+                await this.$emiter('reload_tasks', {});
+
+                if (res && typeof res.code !== 'undefined' && res.code !== 0) {
+                    // non-success code
+                    this.notify('error', res.data || this.$t('taskCreateFailed') || 'Failed to create tasks');
+                } else {
+                    // success: use same success message format as Sidebar
+                    const successMsg = `${res && res.data ? res.data : ''} ${this.$t('taskCreated')}`.trim();
+                    this.notify('success', successMsg, 2000);
+                }
+            } catch (error) {
+                console.error('Failed to run super marketing script:', error);
+                this.notify('error', `Failed to start tasks: ${error.message || error}`);
+            }
         },
         notify(type, message, timeout = 2000) {
             if (this.$emiter) {
