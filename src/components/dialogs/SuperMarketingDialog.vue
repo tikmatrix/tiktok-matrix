@@ -636,24 +636,61 @@
         </div>
     </div>
 
-    <!-- 模块4：任务间隔设置 -->
+    <!-- 模块4：任务设置 -->
     <div v-show="activeTab === 'task_interval'" class="card bg-base-100 border border-base-300">
-        <div class="card-body p-4 space-y-4">
-            <h3 class="card-title text-lg text-primary">
-                <font-awesome-icon icon="fa-solid fa-clock" class="mr-2" />
-                {{ $t('taskInterval') }}
-            </h3>
-            <p class="text-sm text-base-content/70">
-                {{ $t('taskIntervalTip') }}
-            </p>
-            <div class="flex flex-col gap-4">
-                <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
-                    0: '0',
-                    5: '5',
-                    10: '10' + ' ' + $t('minute')
-                }" />
-                <div class="text-sm text-base-content/70">
-                    {{ $t('taskInterval') }}: {{ task_interval[0] }} - {{ task_interval[1] }}
+        <div class="card-body p-4 space-y-6">
+            <div class="space-y-2">
+                <h3 class="card-title text-lg text-primary">
+                    <font-awesome-icon icon="fa-solid fa-clock" class="mr-2" />
+                    {{ $t('taskSettings') }}
+                </h3>
+                <p class="text-sm text-base-content/70">
+                    {{ $t('taskSettingsTip') }}
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="border border-base-200 rounded-lg p-4 bg-base-50 space-y-3">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div class="space-y-2">
+                            <div class="font-semibold text-md flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-diagram-project" class="text-primary" />
+                                <span>{{ $t('mergeSameUsernameTasks') }}</span>
+                            </div>
+                            <p class="text-sm text-base-content/70 leading-relaxed">
+                                {{ $t('mergeSameUsernameTasksOnDesc') }}
+                            </p>
+                            <p class="text-sm text-base-content/70 leading-relaxed">
+                                {{ $t('mergeSameUsernameTasksOffDesc') }}
+                            </p>
+                        </div>
+                        <input type="checkbox" class="toggle toggle-primary toggle-lg self-start"
+                            v-model="merge_same_username_tasks" />
+                    </div>
+                    <div class="alert alert-info text-xs sm:text-sm">
+                        <font-awesome-icon icon="fa-solid fa-circle-info" class="mr-2" />
+                        <span>{{ $t('mergeSameUsernameTasksInfo') }}</span>
+                    </div>
+                </div>
+
+                <div class="border border-base-200 rounded-lg p-4 bg-base-50 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <font-awesome-icon icon="fa-solid fa-clock" class="text-primary" />
+                        <span class="font-semibold text-md">{{ $t('taskInterval') }}</span>
+                    </div>
+                    <p class="text-sm text-base-content/70">
+                        {{ $t('taskIntervalTip') }}
+                    </p>
+                    <div class="flex flex-col gap-4">
+                        <VueSlider v-model="task_interval" :width="500" :min="0" :max="10" :marks="{
+                            0: '0',
+                            5: '5',
+                            10: '10' + ' ' + $t('minute')
+                        }" />
+                        <div class="text-sm text-base-content/70">
+                            {{ $t('taskInterval') }}: {{ task_interval[0] }} - {{ task_interval[1] }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -727,6 +764,7 @@ export default {
                         system_prompt: 'Craft a friendly, concise Instagram direct message that encourages engagement. Keep it under 200 characters and include a clear call-to-action.'
                     }
                 },
+                merge_same_username_tasks: false,
                 postSettings: {
                     max_posts_count: 1,
                     enable_like: false,
@@ -759,6 +797,7 @@ export default {
                 'features',
                 'followSettings',
                 'dmSettings',
+                'merge_same_username_tasks',
                 'postSettings',
                 'commentSettings',
                 'task_interval'
@@ -860,6 +899,7 @@ export default {
             // 控制评论 API Key 明文显示
             commentApiKeyVisible: false,
             accessMethod: 'search',
+            merge_same_username_tasks: false,
             task_interval: [0, 0],
             activeTab: 'data_source'
         };
@@ -1054,7 +1094,7 @@ export default {
             });
             tabs.push({
                 key: 'task_interval',
-                label: this.$t('taskInterval'),
+                label: this.$t('taskSettings'),
                 icon: 'fa-solid fa-clock'
             });
             return tabs;
@@ -1785,6 +1825,7 @@ export default {
                 rotate_proxy: rotate_proxy,
                 min_interval: Number(this.task_interval[0]),
                 max_interval: Number(this.task_interval[1]),
+                merge_same_username_tasks: this.merge_same_username_tasks
             };
 
             // Call the dedicated super_marketing API and mirror Sidebar's behavior
@@ -1793,7 +1834,8 @@ export default {
                     serials: selecedDevices,
                     script_name: 'super_marketing',
                     script_args: JSON.stringify(scriptArgs),
-                    dataset_id: this.activeDatasetConfig.id
+                    dataset_id: this.activeDatasetConfig.id,
+                    merge_same_username_tasks: this.merge_same_username_tasks
                 });
 
                 if (res && res.code === 40004) {
