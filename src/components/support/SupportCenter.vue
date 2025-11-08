@@ -3096,7 +3096,7 @@ export default {
   font-size: 14px;
 }
 
-.attachment-preview-overlay {
+:global(.attachment-preview-overlay) {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.75);
@@ -3107,7 +3107,7 @@ export default {
   z-index: 1200;
 }
 
-.attachment-preview-modal {
+:global(.attachment-preview-modal) {
   width: min(960px, 92vw);
   max-height: 92vh;
   background: var(--color-base-100);
@@ -3119,42 +3119,42 @@ export default {
   box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
 }
 
-.attachment-preview-header {
+:global(.attachment-preview-header) {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.attachment-preview-title {
+:global(.attachment-preview-title) {
   display: flex;
   flex-direction: column;
   gap: 4px;
   color: var(--color-base-content);
 }
 
-.attachment-preview-name {
+:global(.attachment-preview-name) {
   font-size: 18px;
   font-weight: 600;
   word-break: break-all;
 }
 
-.attachment-preview-count {
+:global(.attachment-preview-count) {
   font-size: 13px;
   opacity: 0.7;
 }
 
-.preview-close {
+:global(.preview-close) {
   background: var(--color-base-200);
   border: none;
   color: var(--color-base-content);
 }
 
-.preview-close:hover {
+:global(.preview-close:hover) {
   background: var(--color-base-300);
 }
 
-.attachment-preview-body {
+:global(.attachment-preview-body) {
   flex: 1;
   background: var(--color-base-200);
   border-radius: 12px;
@@ -3166,16 +3166,16 @@ export default {
   overflow: hidden;
 }
 
-.attachment-preview-body img,
-.attachment-preview-body video {
+:global(.attachment-preview-body img),
+:global(.attachment-preview-body video) {
   max-width: 100%;
   max-height: 100%;
   border-radius: 12px;
 }
 
-.attachment-preview-loading,
-.attachment-preview-error,
-.attachment-preview-empty {
+:global(.attachment-preview-loading),
+:global(.attachment-preview-error),
+:global(.attachment-preview-empty) {
   width: 100%;
   height: 100%;
   display: flex;
@@ -3186,28 +3186,28 @@ export default {
   padding: 24px;
 }
 
-.attachment-preview-error {
+:global(.attachment-preview-error) {
   color: var(--color-error, #f87171);
 }
 
-.attachment-preview-footer {
+:global(.attachment-preview-footer) {
   display: flex;
   justify-content: center;
   gap: 16px;
 }
 
-.preview-nav svg {
+:global(.preview-nav svg) {
   width: 20px;
   height: 20px;
 }
 
-.attachment-preview-fade-enter-active,
-.attachment-preview-fade-leave-active {
+:global(.attachment-preview-fade-enter-active),
+:global(.attachment-preview-fade-leave-active) {
   transition: opacity 0.2s ease;
 }
 
-.attachment-preview-fade-enter-from,
-.attachment-preview-fade-leave-to {
+:global(.attachment-preview-fade-enter-from),
+:global(.attachment-preview-fade-leave-to) {
   opacity: 0;
 }
 </style>
