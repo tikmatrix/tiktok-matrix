@@ -1,5 +1,58 @@
 <template>
   <div class="support-center">
+    <teleport to="body">
+      <transition name="attachment-preview-fade">
+        <div v-if="attachmentPreview.visible" class="attachment-preview-overlay"
+          @click.self="closeAttachmentPreview">
+          <div class="attachment-preview-modal" role="dialog" aria-modal="true">
+            <header class="attachment-preview-header">
+              <div class="attachment-preview-title">
+                <span class="attachment-preview-name">{{ getActivePreviewName() || '-' }}</span>
+                <span class="attachment-preview-count">{{ attachmentPreview.currentIndex + 1 }} /
+                  {{ attachmentPreview.items.length }}</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-circle preview-close" aria-label="Close preview"
+                @click="closeAttachmentPreview">
+                ×
+              </button>
+            </header>
+            <div class="attachment-preview-body">
+              <div v-if="attachmentPreview.loading" class="attachment-preview-loading">
+                <span class="loading loading-spinner loading-lg"></span>
+              </div>
+              <div v-else-if="attachmentPreview.error" class="attachment-preview-error">
+                {{ attachmentPreview.error }}
+              </div>
+              <template v-else>
+                <img v-if="getActivePreviewType() === 'image' && getActivePreviewUrl()"
+                  :src="getActivePreviewUrl()" :alt="getActivePreviewName()" />
+                <video v-else-if="getActivePreviewType() === 'video' && getActivePreviewUrl()" controls autoplay muted
+                  playsinline :src="getActivePreviewUrl()"></video>
+                <div v-else class="attachment-preview-empty">
+                  {{ $t('supportAttachmentUnsupported') }}
+                </div>
+              </template>
+            </div>
+            <footer class="attachment-preview-footer">
+              <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
+                :disabled="attachmentPreview.items.length <= 1" aria-label="Previous attachment"
+                @click="showPreviousAttachment">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                </svg>
+              </button>
+              <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
+                :disabled="attachmentPreview.items.length <= 1" aria-label="Next attachment"
+                @click="showNextAttachment">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="m10 6 1.41 1.41L7.83 11H20v2H7.83l3.58 3.59L10 18l-6-6z" />
+                </svg>
+              </button>
+            </footer>
+          </div>
+        </div>
+      </transition>
+    </teleport>
     <div v-if="viewMode === 'list'" class="support-list">
       <div class="list-header">
         <div class="titles">
@@ -109,57 +162,6 @@
             <div>
               <h3 class="summary-subject">{{ currentTicket.subject }}</h3>
 
-              <transition name="attachment-preview-fade">
-                <div v-if="attachmentPreview.visible" class="attachment-preview-overlay"
-                  @click.self="closeAttachmentPreview">
-                  <div class="attachment-preview-modal" role="dialog" aria-modal="true">
-                    <header class="attachment-preview-header">
-                      <div class="attachment-preview-title">
-                        <span class="attachment-preview-name">{{ getActivePreviewName() || '-' }}</span>
-                        <span class="attachment-preview-count">{{ attachmentPreview.currentIndex + 1 }} /
-                          {{ attachmentPreview.items.length }}</span>
-                      </div>
-                      <button type="button" class="btn btn-sm btn-circle preview-close" aria-label="Close preview"
-                        @click="closeAttachmentPreview">
-                        ×
-                      </button>
-                    </header>
-                    <div class="attachment-preview-body">
-                      <div v-if="attachmentPreview.loading" class="attachment-preview-loading">
-                        <span class="loading loading-spinner loading-lg"></span>
-                      </div>
-                      <div v-else-if="attachmentPreview.error" class="attachment-preview-error">
-                        {{ attachmentPreview.error }}
-                      </div>
-                      <template v-else>
-                        <img v-if="getActivePreviewType() === 'image' && getActivePreviewUrl()"
-                          :src="getActivePreviewUrl()" :alt="getActivePreviewName()" />
-                        <video v-else-if="getActivePreviewType() === 'video' && getActivePreviewUrl()" controls autoplay
-                          muted playsinline :src="getActivePreviewUrl()"></video>
-                        <div v-else class="attachment-preview-empty">
-                          {{ $t('supportAttachmentUnsupported') }}
-                        </div>
-                      </template>
-                    </div>
-                    <footer class="attachment-preview-footer">
-                      <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
-                        :disabled="attachmentPreview.items.length <= 1" aria-label="Previous attachment"
-                        @click="showPreviousAttachment">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                        </svg>
-                      </button>
-                      <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
-                        :disabled="attachmentPreview.items.length <= 1" aria-label="Next attachment"
-                        @click="showNextAttachment">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path fill="currentColor" d="m10 6 1.41 1.41L7.83 11H20v2H7.83l3.58 3.59L10 18l-6-6z" />
-                        </svg>
-                      </button>
-                    </footer>
-                  </div>
-                </div>
-              </transition>
               <p class="summary-meta">
                 #{{ currentTicket.ticket_no }} · {{ formatDate(currentTicket.updated_at) }}
               </p>
