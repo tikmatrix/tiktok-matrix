@@ -42,6 +42,44 @@
         </div>
       </div>
 
+      <div class="form-row attachments-row">
+        <label class="form-label">{{ $t('supportAttachmentsLabel') }}</label>
+        <div class="input-wrapper attachments-wrapper">
+          <div class="attachment-toolbar">
+            <button type="button" class="btn btn-outline btn-sm" @click="pickAttachments">
+              {{ $t('supportAttachmentsSelect') }}
+            </button>
+            <span class="text-sm text-base-content">
+              {{ $t('supportAttachmentsHint', { size: formatBytes(attachmentSizeLimit), count: attachmentCountLimit })
+              }}
+            </span>
+          </div>
+
+          <div v-if="attachments.length" class="attachment-list">
+            <div v-for="item in attachments" :key="item.id" class="attachment-card">
+              <div class="attachment-preview" :class="`type-${item.type}`">
+                <img v-if="item.previewUrl" :src="item.previewUrl" :alt="item.fileName" />
+                <span v-else class="preview-icon">{{ item.type === 'video' ? '🎬' : '📎' }}</span>
+              </div>
+              <div class="attachment-info">
+                <div class="attachment-name">{{ item.fileName }}</div>
+                <div class="attachment-meta">
+                  {{ formatBytes(item.size) }} · {{ item.type.toUpperCase() }}
+                  <span v-if="item.uploading">· {{ $t('supportAttachmentUploading') }}</span>
+                  <span v-else-if="item.error" class="text-error">· {{ $t('supportAttachmentFailed') }}</span>
+                </div>
+                <div class="attachment-actions">
+                  <button type="button" class="btn btn-ghost btn-xs" @click="removeAttachment(item.id)">
+                    {{ $t('supportAttachmentRemove') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p v-else class="text-sm text-base-content">{{ $t('supportAttachmentsEmpty') }}</p>
+        </div>
+      </div>
+
     </form>
 
     <div class="devices-section">
@@ -106,6 +144,20 @@
 </template>
 
 <script>
+import { open } from '@tauri-apps/api/dialog'
+import { readBinaryFile } from '@tauri-apps/api/fs'
+import { convertFileSrc } from '@tauri-apps/api/tauri'
+
+const MAX_CUSTOM_ATTACHMENTS = 6
+const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024
+const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'heic']
+const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm']
+const MEDIA_FILTERS = [
+  {
+    name: 'Images & Videos',
+    extensions: [...IMAGE_EXTENSIONS, ...VIDEO_EXTENSIONS]
+  }
+]
 
 export default {
   name: 'SupportForm',
@@ -140,10 +192,17 @@ export default {
       logPreparationTask: null,
       logPreparationToken: 0,
       logPreparationError: null,
-      lastPreparedSerials: []
+      lastPreparedSerials: [],
+      attachments: []
     }
   },
   computed: {
+    attachmentSizeLimit() {
+      return MAX_ATTACHMENT_SIZE
+    },
+    attachmentCountLimit() {
+      return MAX_CUSTOM_ATTACHMENTS
+    },
     deviceRows() {
       return (this.devices || []).map(device => ({
         ...device,
@@ -204,6 +263,221 @@ export default {
       this.resetSubject()
       this.clearLogPreparation()
       this.selectedSerials = [...this.selecedDevices]
+      this.attachments = []
+    },
+    async pickAttachments() {
+      try {
+        if (this.attachments.length >= MAX_CUSTOM_ATTACHMENTS) {
+          await this.notify('warning', this.$t('supportAttachmentLimitReached', { count: MAX_CUSTOM_ATTACHMENTS }))
+          return
+        }
+        const selection = await open({
+          multiple: true,
+          directory: false,
+          filters: MEDIA_FILTERS
+        })
+        const paths = Array.isArray(selection) ? selection : selection ? [selection] : []
+        if (!paths.length) {
+          return
+        }
+        for (const filePath of paths) {
+          if (this.attachments.length >= MAX_CUSTOM_ATTACHMENTS) {
+            await this.notify('warning', this.$t('supportAttachmentLimitReached', { count: MAX_CUSTOM_ATTACHMENTS }))
+            break
+          }
+          await this.addAttachmentFromPath(filePath)
+        }
+      } catch (error) {
+        console.error('pickAttachments error', error)
+        await this.notify('error', this.$t('supportAttachmentSelectFailed'))
+      }
+    },
+    async addAttachmentFromPath(path) {
+      const normalizedPath = typeof path === 'string' ? path : ''
+      if (!normalizedPath) {
+        return
+      }
+      if (this.attachments.some(item => item.path === normalizedPath)) {
+        await this.notify('warning', this.$t('supportAttachmentDuplicate'))
+        return
+      }
+      try {
+        // Some Tauri versions don't export `stat`. Read the binary and determine size from the returned data.
+        const bytes = await readBinaryFile(normalizedPath)
+        const size = Number(bytes?.length ?? bytes?.byteLength ?? 0)
+        if (!Number.isFinite(size) || size <= 0) {
+          await this.notify('warning', this.$t('supportAttachmentInvalid'))
+          return
+        }
+        if (size > MAX_ATTACHMENT_SIZE) {
+          await this.notify('warning', this.$t('supportAttachmentTooLarge', { size: this.formatBytes(MAX_ATTACHMENT_SIZE) }))
+          return
+        }
+        const fileName = this.extractFileName(normalizedPath)
+        const contentType = this.guessContentType(fileName)
+        const attachmentType = this.classifyAttachmentType(contentType, fileName)
+        if (attachmentType === 'other') {
+          await this.notify('warning', this.$t('supportAttachmentUnsupported'))
+          return
+        }
+        const attachmentId =
+          typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : `att-${Date.now()}-${Math.random().toString(16).slice(2)}`
+        this.attachments = [
+          ...this.attachments,
+          {
+            id: attachmentId,
+            path: normalizedPath,
+            fileName,
+            size,
+            contentType,
+            type: attachmentType,
+            previewUrl: this.buildPreviewUrl(normalizedPath, attachmentType),
+            uploading: false,
+            uploadResult: null,
+            error: null
+          }
+        ]
+      } catch (error) {
+        console.error('addAttachmentFromPath error', error)
+        await this.notify('error', this.$t('supportAttachmentReadFailed'))
+      }
+    },
+    removeAttachment(id) {
+      this.attachments = this.attachments.filter(item => item.id !== id)
+    },
+    buildPreviewUrl(path, type) {
+      if (type !== 'image') {
+        return null
+      }
+      try {
+        return typeof convertFileSrc === 'function' ? convertFileSrc(path) : null
+      } catch (error) {
+        console.warn('buildPreviewUrl convertFileSrc error', error)
+        return null
+      }
+    },
+    extractFileName(path) {
+      if (!path) {
+        return 'attachment.bin'
+      }
+      const segments = path.split(/[/\\]/)
+      const name = segments[segments.length - 1] || 'attachment.bin'
+      return name
+    },
+    guessContentType(fileName) {
+      if (!fileName) {
+        return 'application/octet-stream'
+      }
+      const ext = fileName.split('.').pop()?.toLowerCase()
+      if (!ext) {
+        return 'application/octet-stream'
+      }
+      if (IMAGE_EXTENSIONS.includes(ext)) {
+        if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg'
+        if (ext === 'png') return 'image/png'
+        if (ext === 'gif') return 'image/gif'
+        if (ext === 'webp') return 'image/webp'
+        if (ext === 'bmp') return 'image/bmp'
+        if (ext === 'heic') return 'image/heic'
+        return `image/${ext}`
+      }
+      if (VIDEO_EXTENSIONS.includes(ext)) {
+        if (ext === 'mp4' || ext === 'm4v') return 'video/mp4'
+        if (ext === 'mov') return 'video/quicktime'
+        if (ext === 'avi') return 'video/x-msvideo'
+        if (ext === 'webm') return 'video/webm'
+        if (ext === 'mkv') return 'video/x-matroska'
+        return `video/${ext}`
+      }
+      return 'application/octet-stream'
+    },
+    classifyAttachmentType(contentType, fileName) {
+      const normalized = (contentType || '').toLowerCase()
+      if (normalized.startsWith('image/')) {
+        return 'image'
+      }
+      if (normalized.startsWith('video/')) {
+        return 'video'
+      }
+      const ext = fileName?.split('.').pop()?.toLowerCase()
+      if (ext && IMAGE_EXTENSIONS.includes(ext)) {
+        return 'image'
+      }
+      if (ext && VIDEO_EXTENSIONS.includes(ext)) {
+        return 'video'
+      }
+      return 'other'
+    },
+    async ensureCustomAttachmentUpload(item, serials) {
+      if (!item) {
+        return null
+      }
+      if (item.uploadResult) {
+        return item.uploadResult
+      }
+      item.uploading = true
+      item.error = null
+      try {
+        const response = await this.$service.support_upload({
+          file_path: item.path,
+          file_name: item.fileName,
+          content_type: item.contentType,
+          file_size: item.size,
+          serials,
+          attachment_meta: {
+            type: item.type,
+            originalName: item.fileName
+          },
+          client_app: this.clientInfoNormalized.app_name,
+          client_version: this.clientInfoNormalized.client_version,
+          skip_cache: true
+        })
+        const attachment = this.parseUploadResponse(response, {
+          fileName: item.fileName,
+          fileSize: item.size,
+          contentType: item.contentType,
+          serials,
+          type: item.type
+        })
+        item.uploadResult = attachment
+        return attachment
+      } catch (error) {
+        item.error = error
+        throw error
+      } finally {
+        item.uploading = false
+      }
+    },
+    async uploadCustomAttachments(serials) {
+      if (!Array.isArray(this.attachments) || !this.attachments.length) {
+        return []
+      }
+      const uploads = []
+      for (const item of this.attachments) {
+        try {
+          const result = await this.ensureCustomAttachmentUpload(item, serials)
+          if (result) {
+            uploads.push(result)
+          }
+        } catch (error) {
+          console.error('uploadCustomAttachments error', error)
+          const message = error?.message || this.$t('supportAttachmentUploadFailed')
+          await this.notify('error', message)
+          throw error
+        }
+      }
+      return uploads
+    },
+    formatBytes(bytes) {
+      if (!Number.isFinite(bytes) || bytes <= 0) {
+        return '0 B'
+      }
+      const units = ['B', 'KB', 'MB', 'GB']
+      const exp = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+      const value = bytes / 1024 ** exp
+      return `${value.toFixed(exp === 0 ? 0 : 1)} ${units[exp]}`
     },
     selectAllDevices() {
       this.selectedSerials = this.deviceRows.map(device => device.real_serial)
@@ -733,6 +1007,7 @@ export default {
           }
         }
         const messageBody = `${this.form.description}\n\n${this.$t('supportLogNote')}`
+        const mediaAttachments = await this.uploadCustomAttachments(normalizedSerials)
         const payload = {
           subject: this.form.subject,
           message: messageBody,
@@ -741,7 +1016,7 @@ export default {
           locale: this.$i18n.locale || 'en',
           contact_email: this.form.email,
           serials: serialPayload,
-          attachments: attachment ? [attachment] : [],
+          attachments: [...mediaAttachments, ...(attachment ? [attachment] : [])],
           client: this.clientInfoNormalized,
           app: this.clientInfoNormalized.app_name
         }
@@ -872,6 +1147,80 @@ export default {
   border: 1px solid var(--color-base-300);
   background: var(--color-base-100);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.attachments-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.attachment-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.attachment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.attachment-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 10px;
+  background: var(--color-base-100);
+  min-width: 220px;
+  max-width: 320px;
+}
+
+.attachment-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  background: var(--color-base-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.attachment-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-icon {
+  font-size: 20px;
+}
+
+.attachment-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attachment-name {
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.attachment-meta {
+  font-size: 12px;
+  color: var(--color-base-content);
+}
+
+.attachment-actions {
+  display: flex;
+  gap: 6px;
 }
 
 .input-wrapper .input:focus,

@@ -150,6 +150,20 @@
               </header>
               <div class="conversation-body">{{ message.body }}</div>
               <pre v-if="message.message_tail" class="conversation-tail">{{ message.message_tail }}</pre>
+              <div v-if="hasMessageAttachments(message)" class="conversation-attachments">
+                <div class="attachments-summary">
+                  {{ $t('supportDetailAttachmentsSummary', { count: message.attachments.length }) }}
+                </div>
+                <ul class="attachments-list">
+                  <li v-for="(attachment, index) in message.attachments"
+                    :key="attachment.id || attachment.storage_key || attachment.storageKey || `${message.id || 'msg'}-${index}`"
+                    class="attachment-item">
+                    <span class="attachment-name">
+                      {{ resolveAttachmentName(attachment, index) }}
+                    </span>
+                  </li>
+                </ul>
+              </div>
             </article>
           </div>
         </section>
@@ -158,6 +172,36 @@
           <h4>{{ $t('supportDetailReply') }}</h4>
           <textarea v-model="reply.body" class="textarea textarea-bordered w-full" rows="5"
             :placeholder="$t('supportDetailReplyPlaceholder')"></textarea>
+          <div class="reply-attachments">
+            <div class="attachments-toolbar">
+              <button type="button" class="btn btn-outline btn-sm" @click="pickReplyAttachments">
+                {{ $t('supportAttachmentsSelect') }}
+              </button>
+              <span class="attachments-hint">
+                {{ $t('supportAttachmentsHint', {
+                  size: formatBytes(replyAttachmentSizeLimit), count:
+                replyAttachmentCountLimit }) }}
+              </span>
+            </div>
+            <ul v-if="reply.attachments.length" class="attachments-list">
+              <li v-for="attachment in reply.attachments" :key="attachment.id" class="attachment-item">
+                <span class="attachment-name">{{ attachment.fileName }}</span>
+                <span class="attachment-size">{{ formatBytes(attachment.size) }}</span>
+                <span class="attachment-type">{{ attachment.type.toUpperCase() }}</span>
+                <span v-if="attachment.uploading" class="attachment-status uploading">
+                  {{ $t('supportAttachmentUploading') }}
+                </span>
+                <span v-else-if="attachment.error" class="attachment-status error">
+                  {{ $t('supportAttachmentFailed') }}
+                </span>
+                <button type="button" class="btn btn-ghost btn-xs attachment-remove"
+                  @click="removeReplyAttachment(attachment.id)">
+                  {{ $t('supportAttachmentRemove') }}
+                </button>
+              </li>
+            </ul>
+            <p v-else class="attachments-empty">{{ $t('supportAttachmentsEmpty') }}</p>
+          </div>
           <div class="reply-options">
             <label class="label cursor-pointer">
               <input type="checkbox" class="checkbox checkbox-sm" v-model="reply.includeLogs" />
@@ -199,7 +243,20 @@
 <script>
 import SupportForm from './SupportForm.vue'
 import { getName, getVersion } from '@tauri-apps/api/app'
+import { open } from '@tauri-apps/api/dialog'
+import { readBinaryFile } from '@tauri-apps/api/fs'
 import { getSupportUnreadState, extractTicketKey } from '../../utils/supportNotifications.js'
+
+const MAX_REPLY_ATTACHMENTS = 6
+const MAX_REPLY_ATTACHMENT_SIZE = 50 * 1024 * 1024
+const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'heic']
+const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm']
+const MEDIA_FILTERS = [
+  {
+    name: 'Images & Videos',
+    extensions: [...IMAGE_EXTENSIONS, ...VIDEO_EXTENSIONS]
+  }
+]
 
 export default {
   name: 'SupportCenter',
@@ -239,7 +296,8 @@ export default {
         preparationTask: null,
         preparationToken: 0,
         preparationError: null,
-        sending: false
+        sending: false,
+        attachments: []
       },
       detailRetryHandle: null,
       highlightTicketNo: null,
@@ -278,6 +336,12 @@ export default {
       const status = this.currentTicket?.status || this.currentTicket?.statusDb
       if (!status) return false
       return String(status).toLowerCase() === 'closed'
+    },
+    replyAttachmentSizeLimit() {
+      return MAX_REPLY_ATTACHMENT_SIZE
+    },
+    replyAttachmentCountLimit() {
+      return MAX_REPLY_ATTACHMENTS
     }
   },
   watch: {
@@ -575,6 +639,226 @@ export default {
         return list.join(', ')
       }
       return String(list)
+    },
+    formatBytes(bytes) {
+      if (!Number.isFinite(bytes) || bytes <= 0) {
+        return '0 B'
+      }
+      const units = ['B', 'KB', 'MB', 'GB']
+      const exp = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+      const value = bytes / 1024 ** exp
+      return `${value.toFixed(exp === 0 ? 0 : 1)} ${units[exp]}`
+    },
+    async pickReplyAttachments() {
+      try {
+        if (this.reply.attachments.length >= this.replyAttachmentCountLimit) {
+          await this.notify('warning', this.$t('supportAttachmentLimitReached', { count: this.replyAttachmentCountLimit }))
+          return
+        }
+        const selection = await open({
+          multiple: true,
+          directory: false,
+          filters: MEDIA_FILTERS
+        })
+        const paths = Array.isArray(selection) ? selection : selection ? [selection] : []
+        if (!paths.length) {
+          return
+        }
+        for (const filePath of paths) {
+          if (this.reply.attachments.length >= this.replyAttachmentCountLimit) {
+            await this.notify('warning', this.$t('supportAttachmentLimitReached', { count: this.replyAttachmentCountLimit }))
+            break
+          }
+          await this.addReplyAttachmentFromPath(filePath)
+        }
+      } catch (error) {
+        console.error('pickReplyAttachments error', error)
+        await this.notify('error', this.$t('supportAttachmentSelectFailed'))
+      }
+    },
+    async addReplyAttachmentFromPath(path) {
+      const normalizedPath = typeof path === 'string' ? path : ''
+      if (!normalizedPath) {
+        return
+      }
+      if (this.reply.attachments.some(item => item.path === normalizedPath)) {
+        await this.notify('warning', this.$t('supportAttachmentDuplicate'))
+        return
+      }
+      try {
+        const bytes = await readBinaryFile(normalizedPath)
+        const size = Number(bytes?.length ?? bytes?.byteLength ?? 0)
+        if (!Number.isFinite(size) || size <= 0) {
+          await this.notify('warning', this.$t('supportAttachmentInvalid'))
+          return
+        }
+        if (size > this.replyAttachmentSizeLimit) {
+          await this.notify('warning', this.$t('supportAttachmentTooLarge', { size: this.formatBytes(this.replyAttachmentSizeLimit) }))
+          return
+        }
+        const fileName = this.extractFileName(normalizedPath)
+        const contentType = this.guessContentType(fileName)
+        const attachmentType = this.classifyAttachmentType(contentType, fileName)
+        if (attachmentType === 'other') {
+          await this.notify('warning', this.$t('supportAttachmentUnsupported'))
+          return
+        }
+        const attachmentId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `att-${Date.now()}-${Math.random().toString(16).slice(2)}`
+        this.reply.attachments = [
+          ...this.reply.attachments,
+          {
+            id: attachmentId,
+            path: normalizedPath,
+            fileName,
+            size,
+            contentType,
+            type: attachmentType,
+            uploading: false,
+            uploadResult: null,
+            error: null
+          }
+        ]
+      } catch (error) {
+        console.error('addReplyAttachmentFromPath error', error)
+        await this.notify('error', this.$t('supportAttachmentReadFailed'))
+      }
+    },
+    removeReplyAttachment(id) {
+      this.reply.attachments = this.reply.attachments.filter(item => item.id !== id)
+    },
+    extractFileName(path) {
+      if (!path) {
+        return 'attachment.bin'
+      }
+      const segments = path.split(/[/\\]/)
+      return segments[segments.length - 1] || 'attachment.bin'
+    },
+    guessContentType(fileName) {
+      if (!fileName) {
+        return 'application/octet-stream'
+      }
+      const ext = fileName.split('.').pop()?.toLowerCase()
+      if (!ext) {
+        return 'application/octet-stream'
+      }
+      if (IMAGE_EXTENSIONS.includes(ext)) {
+        if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg'
+        if (ext === 'png') return 'image/png'
+        if (ext === 'gif') return 'image/gif'
+        if (ext === 'webp') return 'image/webp'
+        if (ext === 'bmp') return 'image/bmp'
+        if (ext === 'heic') return 'image/heic'
+        return `image/${ext}`
+      }
+      if (VIDEO_EXTENSIONS.includes(ext)) {
+        if (ext === 'mp4' || ext === 'm4v') return 'video/mp4'
+        if (ext === 'mov') return 'video/quicktime'
+        if (ext === 'avi') return 'video/x-msvideo'
+        if (ext === 'webm') return 'video/webm'
+        if (ext === 'mkv') return 'video/x-matroska'
+        return `video/${ext}`
+      }
+      return 'application/octet-stream'
+    },
+    classifyAttachmentType(contentType, fileName) {
+      const normalized = (contentType || '').toLowerCase()
+      if (normalized.startsWith('image/')) {
+        return 'image'
+      }
+      if (normalized.startsWith('video/')) {
+        return 'video'
+      }
+      const ext = fileName?.split('.').pop()?.toLowerCase()
+      if (ext && IMAGE_EXTENSIONS.includes(ext)) {
+        return 'image'
+      }
+      if (ext && VIDEO_EXTENSIONS.includes(ext)) {
+        return 'video'
+      }
+      return 'other'
+    },
+    async ensureReplyAttachmentUpload(item, serials) {
+      if (!item) {
+        return null
+      }
+      if (item.uploadResult) {
+        return item.uploadResult
+      }
+      item.uploading = true
+      item.error = null
+      try {
+        const response = await this.$service.support_upload({
+          file_path: item.path,
+          file_name: item.fileName,
+          content_type: item.contentType,
+          file_size: item.size,
+          serials,
+          attachment_meta: {
+            type: item.type,
+            originalName: item.fileName
+          },
+          client_app: this.clientInfoNormalized.app_name,
+          client_version: this.clientInfoNormalized.client_version,
+          skip_cache: true
+        })
+        const attachment = this.parseUploadResponse(response, {
+          fileName: item.fileName,
+          fileSize: item.size,
+          contentType: item.contentType,
+          serials,
+          type: item.type
+        })
+        item.uploadResult = attachment
+        return attachment
+      } catch (error) {
+        item.error = error
+        throw error
+      } finally {
+        item.uploading = false
+      }
+    },
+    async uploadReplyCustomAttachments(serials) {
+      if (!Array.isArray(this.reply.attachments) || !this.reply.attachments.length) {
+        return []
+      }
+      const uploads = []
+      for (const item of this.reply.attachments) {
+        try {
+          const result = await this.ensureReplyAttachmentUpload(item, serials)
+          if (result) {
+            uploads.push(result)
+          }
+        } catch (error) {
+          console.error('uploadReplyCustomAttachments error', error)
+          const message = error?.message || this.$t('supportAttachmentUploadFailed')
+          await this.notify('error', message)
+          throw error
+        }
+      }
+      return uploads
+    },
+    hasMessageAttachments(message) {
+      return Array.isArray(message?.attachments) && message.attachments.length > 0
+    },
+    resolveAttachmentName(attachment, index = 0) {
+      if (!attachment || typeof attachment !== 'object') {
+        return this.$t('supportDetailAttachmentDefaultName', { index: index + 1 })
+      }
+      const name = this.normalizeMetadataField(
+        attachment.file_name,
+        attachment.fileName,
+        attachment.filename,
+        attachment.originalName,
+        attachment.storage_key,
+        attachment.storageKey,
+        attachment.key
+      )
+      if (name) {
+        return name
+      }
+      return this.$t('supportDetailAttachmentDefaultName', { index: index + 1 })
     },
     formatConnection(value) {
       if (!value) return '-'
@@ -1155,6 +1439,7 @@ export default {
       this.reply.includeLogs = false
       this.clearReplyPreparation()
       this.reply.sending = false
+      this.reply.attachments = []
     },
     clearReplyPreparation() {
       this.reply.preparationToken += 1
@@ -1550,8 +1835,14 @@ export default {
         const serialPayload = this.buildReplySerialPayload()
         const serials = this.normalizeSerialList(serialPayload.map(device => device.realSerial))
         let attachments = []
+        if (this.reply.attachments.length) {
+          const customAttachments = await this.uploadReplyCustomAttachments(serials)
+          attachments = attachments.concat(customAttachments)
+        }
+        let logAttachments = []
         if (this.reply.includeLogs && serials.length) {
-          attachments = await this.prepareReplyAttachments(serials)
+          logAttachments = await this.prepareReplyAttachments(serials)
+          attachments = attachments.concat(logAttachments)
         } else if (this.reply.includeLogs && !serials.length) {
           this.reply.includeLogs = false
           this.clearReplyPreparation()
@@ -1570,7 +1861,7 @@ export default {
           ticketId: ticketId ? String(ticketId) : undefined,
           ticketNo: ticketNo ? String(ticketNo) : undefined,
           message,
-          message_tail: attachments.length ? this.reply.messageTail || '' : '',
+          message_tail: logAttachments.length ? this.reply.messageTail || '' : '',
           source: 'app',
           role: 'customer',
           serials: serialPayload,
@@ -1583,6 +1874,7 @@ export default {
         if (this.reply.includeLogs) {
           this.scheduleReplyLogPreparation()
         }
+        this.reply.attachments = []
         await this.loadTicketDetail(this.currentTicket)
       } catch (error) {
         console.error('support submitReply error', error)
@@ -1948,21 +2240,67 @@ export default {
   gap: 6px;
 }
 
-.attachment-item {
+.attachments-list {
   display: flex;
+  flex-direction: row;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.attachment-item {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
   color: var(--color-base-content);
+  padding: 6px 10px;
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  white-space: nowrap;
 }
 
 .attachment-name {
   font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .attachment-size {
   color: var(--color-base-content);
   font-size: 12px;
+  margin-left: 6px;
+  opacity: 0.8;
+
+}
+
+.attachment-type {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-base-content);
+  opacity: 0.8;
+}
+
+.attachment-status {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.attachment-status.uploading {
+  color: var(--color-primary);
+}
+
+.attachment-status.error {
+  color: var(--color-error, #f87171);
+}
+
+.attachment-remove {
+  margin-left: 4px;
 }
 
 .reply-card {
@@ -1979,6 +2317,35 @@ export default {
 .reply-actions {
   display: flex;
   gap: 8px;
+}
+
+.reply-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reply-attachments .attachments-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reply-attachments .attachments-hint {
+  font-size: 12px;
+  color: var(--color-base-content);
+  opacity: 0.9;
+}
+
+.reply-attachments .attachments-empty {
+  font-size: 12px;
+  color: var(--color-base-content);
+  opacity: 0.8;
+}
+
+.reply-attachments .attachments-list {
+  justify-content: flex-start;
 }
 
 .empty-cell.compact {
