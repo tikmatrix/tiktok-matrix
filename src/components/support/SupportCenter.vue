@@ -1,5 +1,57 @@
 <template>
   <div class="support-center">
+    <teleport to="body">
+      <transition name="attachment-preview-fade">
+        <div v-if="attachmentPreview.visible" class="attachment-preview-overlay" @click.self="closeAttachmentPreview">
+          <div class="attachment-preview-modal" role="dialog" aria-modal="true">
+            <header class="attachment-preview-header">
+              <div class="attachment-preview-title">
+                <span class="attachment-preview-name">{{ getActivePreviewName() || '-' }}</span>
+                <span class="attachment-preview-count">{{ attachmentPreview.currentIndex + 1 }} /
+                  {{ attachmentPreview.items.length }}</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-circle preview-close" aria-label="Close preview"
+                @click="closeAttachmentPreview">
+                ×
+              </button>
+            </header>
+            <div class="attachment-preview-body">
+              <div v-if="attachmentPreview.loading" class="attachment-preview-loading">
+                <span class="loading loading-spinner loading-lg"></span>
+              </div>
+              <div v-else-if="attachmentPreview.error" class="attachment-preview-error">
+                {{ attachmentPreview.error }}
+              </div>
+              <template v-else>
+                <img v-if="getActivePreviewType() === 'image' && getActivePreviewUrl()" :src="getActivePreviewUrl()"
+                  :alt="getActivePreviewName()" />
+                <video v-else-if="getActivePreviewType() === 'video' && getActivePreviewUrl()" controls autoplay muted
+                  playsinline :src="getActivePreviewUrl()"></video>
+                <div v-else class="attachment-preview-empty">
+                  {{ $t('supportAttachmentUnsupported') }}
+                </div>
+              </template>
+            </div>
+            <footer class="attachment-preview-footer">
+              <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
+                :disabled="attachmentPreview.items.length <= 1" aria-label="Previous attachment"
+                @click="showPreviousAttachment">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                </svg>
+              </button>
+              <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
+                :disabled="attachmentPreview.items.length <= 1" aria-label="Next attachment"
+                @click="showNextAttachment">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="m10 6 1.41 1.41L7.83 11H20v2H7.83l3.58 3.59L10 18l-6-6z" />
+                </svg>
+              </button>
+            </footer>
+          </div>
+        </div>
+      </transition>
+    </teleport>
     <div v-if="viewMode === 'list'" class="support-list">
       <div class="list-header">
         <div class="titles">
@@ -3141,7 +3193,7 @@ export default {
   font-size: 14px;
 }
 
-.attachment-preview-overlay {
+:global(.attachment-preview-overlay) {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.75);
@@ -3152,7 +3204,7 @@ export default {
   z-index: 1200;
 }
 
-.attachment-preview-modal {
+:global(.attachment-preview-modal) {
   width: min(960px, 92vw);
   max-height: 92vh;
   background: var(--color-base-100);
@@ -3164,42 +3216,42 @@ export default {
   box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
 }
 
-.attachment-preview-header {
+:global(.attachment-preview-header) {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.attachment-preview-title {
+:global(.attachment-preview-title) {
   display: flex;
   flex-direction: column;
   gap: 4px;
   color: var(--color-base-content);
 }
 
-.attachment-preview-name {
+:global(.attachment-preview-name) {
   font-size: 18px;
   font-weight: 600;
   word-break: break-all;
 }
 
-.attachment-preview-count {
+:global(.attachment-preview-count) {
   font-size: 13px;
   opacity: 0.7;
 }
 
-.preview-close {
+:global(.preview-close) {
   background: var(--color-base-200);
   border: none;
   color: var(--color-base-content);
 }
 
-.preview-close:hover {
+:global(.preview-close:hover) {
   background: var(--color-base-300);
 }
 
-.attachment-preview-body {
+:global(.attachment-preview-body) {
   flex: 1;
   background: var(--color-base-200);
   border-radius: 12px;
@@ -3211,16 +3263,16 @@ export default {
   overflow: hidden;
 }
 
-.attachment-preview-body img,
-.attachment-preview-body video {
+:global(.attachment-preview-body img),
+:global(.attachment-preview-body video) {
   max-width: 100%;
   max-height: 100%;
   border-radius: 12px;
 }
 
-.attachment-preview-loading,
-.attachment-preview-error,
-.attachment-preview-empty {
+:global(.attachment-preview-loading),
+:global(.attachment-preview-error),
+:global(.attachment-preview-empty) {
   width: 100%;
   height: 100%;
   display: flex;
@@ -3231,28 +3283,28 @@ export default {
   padding: 24px;
 }
 
-.attachment-preview-error {
+:global(.attachment-preview-error) {
   color: var(--color-error, #f87171);
 }
 
-.attachment-preview-footer {
+:global(.attachment-preview-footer) {
   display: flex;
   justify-content: center;
   gap: 16px;
 }
 
-.preview-nav svg {
+:global(.preview-nav svg) {
   width: 20px;
   height: 20px;
 }
 
-.attachment-preview-fade-enter-active,
-.attachment-preview-fade-leave-active {
+:global(.attachment-preview-fade-enter-active),
+:global(.attachment-preview-fade-leave-active) {
   transition: opacity 0.2s ease;
 }
 
-.attachment-preview-fade-enter-from,
-.attachment-preview-fade-leave-to {
+:global(.attachment-preview-fade-enter-from),
+:global(.attachment-preview-fade-leave-to) {
   opacity: 0;
 }
 </style>
