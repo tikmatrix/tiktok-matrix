@@ -87,20 +87,23 @@
         <div>
           <h3 class="m-0">{{ $t('supportDeviceSelection') }}</h3>
           <div class="selected-summary">
-            <span class="summary-text">{{ $t('selectedDevices') }}: {{ selectedSerials.length }} {{ $t('units')
-            }}</span>
+            <span class="summary-text">{{ $t('selectedDevices') }}: {{ selectedSerials.length }} /
+              {{ deviceSelectionLimit }} {{ $t('units') }}</span>
             <div class="summary-badges">
               <span v-for="serial in selectedSerials" :key="serial" class="badge badge-outline">
                 {{ getDeviceNo(serial) }}
               </span>
-              <span v-if="!selectedSerials.length" class="text-error text-sm">
-                {{ $t('noDevicesSelected') }}
+              <span v-if="!selectedSerials.length" class="selection-empty">
+                {{ $t('supportDeviceSelectionOptional') }}
               </span>
             </div>
+            <p class="selection-hint">
+              {{ $t('supportDeviceSelectionHint', { count: deviceSelectionLimit }) }}
+            </p>
           </div>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" @click="selectAllDevices">
-          {{ $t('supportSelectAllDevices') }}
+          {{ $t('supportSelectAllDevices', { count: deviceSelectionLimit }) }}
         </button>
       </div>
 
@@ -150,6 +153,7 @@ import { convertFileSrc } from '@tauri-apps/api/tauri'
 
 const MAX_CUSTOM_ATTACHMENTS = 6
 const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024
+const MAX_SELECTED_DEVICES = 5
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'heic']
 const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm']
 const MEDIA_FILTERS = [
@@ -183,7 +187,7 @@ export default {
         priority: 'p3',
         email: ''
       },
-      selectedSerials: [...this.selecedDevices],
+      selectedSerials: [],
       messageTail: '',
       submitting: false,
       submittedTicket: null,
@@ -202,6 +206,9 @@ export default {
     },
     attachmentCountLimit() {
       return MAX_CUSTOM_ATTACHMENTS
+    },
+    deviceSelectionLimit() {
+      return MAX_SELECTED_DEVICES
     },
     deviceRows() {
       return (this.devices || []).map(device => ({
@@ -229,10 +236,16 @@ export default {
     selecedDevices: {
       immediate: true,
       handler(newVal) {
-        this.selectedSerials = Array.isArray(newVal) ? [...newVal] : []
+        const sanitized = this.sanitizeSelection(Array.isArray(newVal) ? [...newVal] : [], { silent: true })
+        this.selectedSerials = sanitized
       }
     },
     selectedSerials(newVal) {
+      const sanitized = this.sanitizeSelection(newVal, { silent: true })
+      if (sanitized.length !== newVal.length || sanitized.some((value, index) => value !== newVal[index])) {
+        this.selectedSerials = sanitized
+        return
+      }
       this.handleSelectedSerialsChanged(newVal)
     }
   },
@@ -262,7 +275,8 @@ export default {
       }
       this.resetSubject()
       this.clearLogPreparation()
-      this.selectedSerials = [...this.selecedDevices]
+      const initialSelection = Array.isArray(this.selecedDevices) ? [...this.selecedDevices] : []
+      this.selectedSerials = this.sanitizeSelection(initialSelection, { silent: true })
       this.attachments = []
     },
     async pickAttachments() {
@@ -534,16 +548,26 @@ export default {
       return `${value.toFixed(exp === 0 ? 0 : 1)} ${units[exp]}`
     },
     selectAllDevices() {
-      this.selectedSerials = this.deviceRows.map(device => device.real_serial)
+      const allSerials = this.deviceRows.map(device => device.real_serial)
+      this.selectedSerials = this.sanitizeSelection(allSerials, { silent: false })
     },
     deviceSelected(serial) {
       return this.selectedSerials.includes(serial)
     },
     toggleDevice(serial) {
-      if (this.selectedSerials.includes(serial)) {
-        this.selectedSerials = this.selectedSerials.filter(item => item !== serial)
+      const normalized = typeof serial === 'string' ? serial : serial != null ? String(serial) : ''
+      if (!normalized.trim()) {
+        return
+      }
+      const cleanedSerial = normalized.trim()
+      if (this.selectedSerials.includes(cleanedSerial)) {
+        this.selectedSerials = this.selectedSerials.filter(item => item !== cleanedSerial)
       } else {
-        this.selectedSerials = [...this.selectedSerials, serial]
+        if (this.selectedSerials.length >= this.deviceSelectionLimit) {
+          this.notify('warning', this.$t('supportDeviceLimitWarning', { count: this.deviceSelectionLimit }))
+          return
+        }
+        this.selectedSerials = [...this.selectedSerials, cleanedSerial]
       }
     },
     getDeviceNo(serial) {
@@ -607,6 +631,32 @@ export default {
         }
       }
       return true
+    },
+    sanitizeSelection(list, options = {}) {
+      const { silent = false } = options
+      if (!Array.isArray(list)) {
+        return []
+      }
+      const unique = []
+      let exceeded = false
+      list.forEach(value => {
+        if (value === null || value === undefined) {
+          return
+        }
+        const text = String(value).trim()
+        if (!text || unique.includes(text)) {
+          return
+        }
+        if (unique.length >= MAX_SELECTED_DEVICES) {
+          exceeded = true
+          return
+        }
+        unique.push(text)
+      })
+      if (exceeded && !silent) {
+        this.notify('warning', this.$t('supportDeviceLimitWarning', { count: MAX_SELECTED_DEVICES }))
+      }
+      return unique
     },
     scheduleLogPreparation(serialsOverride) {
       const serials = this.normalizeSerialList(
@@ -1044,10 +1094,6 @@ export default {
         await this.notify('warning', this.$t('supportValidationMessage'))
         return
       }
-      if (!this.selectedSerials.length) {
-        await this.notify('warning', this.$t('supportNeedDeviceWarning'))
-        return
-      }
       this.submitting = true
       try {
         const serialPayload = this.buildSerialPayload()
@@ -1173,6 +1219,19 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.selection-empty {
+  font-size: 12px;
+  color: var(--color-base-content);
+  opacity: 0.8;
+}
+
+.selection-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-base-content);
+  opacity: 0.8;
 }
 
 .form-row {
