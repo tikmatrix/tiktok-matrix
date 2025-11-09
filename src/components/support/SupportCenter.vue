@@ -241,6 +241,59 @@
           </div>
         </section>
 
+        <section class="detail-card reply-card">
+          <h4>{{ $t('supportDetailReply') }}</h4>
+          <textarea v-model="reply.body" class="textarea textarea-bordered w-full" rows="5"
+            :placeholder="$t('supportDetailReplyPlaceholder')"></textarea>
+          <div class="reply-attachments">
+            <div class="attachments-toolbar">
+              <button type="button" class="btn btn-outline btn-sm" @click="pickReplyAttachments">
+                {{ $t('supportAttachmentsSelect') }}
+              </button>
+              <span class="attachments-hint">
+                {{ $t('supportAttachmentsHint', {
+                  size: formatBytes(replyAttachmentSizeLimit), count:
+                    replyAttachmentCountLimit
+                }) }}
+              </span>
+            </div>
+            <ul v-if="reply.attachments.length" class="attachments-list">
+              <li v-for="attachment in reply.attachments" :key="attachment.id" class="attachment-item">
+                <span class="attachment-name">{{ attachment.fileName }}</span>
+                <span class="attachment-size">{{ formatBytes(attachment.size) }}</span>
+                <span class="attachment-type">{{ attachment.type.toUpperCase() }}</span>
+                <span v-if="attachment.uploading" class="attachment-status uploading">
+                  {{ $t('supportAttachmentUploading') }}
+                </span>
+                <span v-else-if="attachment.error" class="attachment-status error">
+                  {{ $t('supportAttachmentFailed') }}
+                </span>
+                <button type="button" class="btn btn-ghost btn-xs attachment-remove"
+                  @click="removeReplyAttachment(attachment.id)">
+                  {{ $t('supportAttachmentRemove') }}
+                </button>
+              </li>
+            </ul>
+            <p v-else class="attachments-empty">{{ $t('supportAttachmentsEmpty') }}</p>
+          </div>
+          <div class="reply-options">
+            <label class="label cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm" v-model="reply.includeLogs" />
+              <span class="label-text ml-2">{{ $t('supportDetailAttachLogs') }}</span>
+            </label>
+          </div>
+          <div class="reply-actions">
+            <button type="button" class="btn btn-primary btn-sm" :disabled="reply.sending || !reply.body.trim()"
+              @click="submitReply">
+              <span v-if="reply.sending" class="loading loading-spinner loading-xs mr-1"></span>
+              {{ $t('supportDetailReplySubmit') }}
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" :disabled="reply.sending" @click="resetReply">
+              {{ $t('supportDetailReplyReset') }}
+            </button>
+          </div>
+        </section>
+
         <section class="detail-card conversation-card">
           <h4>{{ $t('supportDetailConversation') }}</h4>
           <div v-if="!messages.length" class="empty-cell compact">{{ $t('supportDetailNoMessages') }}</div>
@@ -297,59 +350,6 @@
                 </div>
               </div>
             </article>
-          </div>
-        </section>
-
-        <section class="detail-card reply-card">
-          <h4>{{ $t('supportDetailReply') }}</h4>
-          <textarea v-model="reply.body" class="textarea textarea-bordered w-full" rows="5"
-            :placeholder="$t('supportDetailReplyPlaceholder')"></textarea>
-          <div class="reply-attachments">
-            <div class="attachments-toolbar">
-              <button type="button" class="btn btn-outline btn-sm" @click="pickReplyAttachments">
-                {{ $t('supportAttachmentsSelect') }}
-              </button>
-              <span class="attachments-hint">
-                {{ $t('supportAttachmentsHint', {
-                  size: formatBytes(replyAttachmentSizeLimit), count:
-                    replyAttachmentCountLimit
-                }) }}
-              </span>
-            </div>
-            <ul v-if="reply.attachments.length" class="attachments-list">
-              <li v-for="attachment in reply.attachments" :key="attachment.id" class="attachment-item">
-                <span class="attachment-name">{{ attachment.fileName }}</span>
-                <span class="attachment-size">{{ formatBytes(attachment.size) }}</span>
-                <span class="attachment-type">{{ attachment.type.toUpperCase() }}</span>
-                <span v-if="attachment.uploading" class="attachment-status uploading">
-                  {{ $t('supportAttachmentUploading') }}
-                </span>
-                <span v-else-if="attachment.error" class="attachment-status error">
-                  {{ $t('supportAttachmentFailed') }}
-                </span>
-                <button type="button" class="btn btn-ghost btn-xs attachment-remove"
-                  @click="removeReplyAttachment(attachment.id)">
-                  {{ $t('supportAttachmentRemove') }}
-                </button>
-              </li>
-            </ul>
-            <p v-else class="attachments-empty">{{ $t('supportAttachmentsEmpty') }}</p>
-          </div>
-          <div class="reply-options">
-            <label class="label cursor-pointer">
-              <input type="checkbox" class="checkbox checkbox-sm" v-model="reply.includeLogs" />
-              <span class="label-text ml-2">{{ $t('supportDetailAttachLogs') }}</span>
-            </label>
-          </div>
-          <div class="reply-actions">
-            <button type="button" class="btn btn-primary btn-sm" :disabled="reply.sending || !reply.body.trim()"
-              @click="submitReply">
-              <span v-if="reply.sending" class="loading loading-spinner loading-xs mr-1"></span>
-              {{ $t('supportDetailReplySubmit') }}
-            </button>
-            <button type="button" class="btn btn-outline btn-sm" :disabled="reply.sending" @click="resetReply">
-              {{ $t('supportDetailReplyReset') }}
-            </button>
           </div>
         </section>
       </div>
@@ -1954,6 +1954,12 @@ export default {
           .map(message => this.decorateMessageEntry(message))
           .filter(Boolean)
         if (list.length) {
+          // Ensure messages are ordered newest first (top to bottom)
+          list.sort((a, b) => {
+            const ta = Number(a?.created_at ?? a?.timestamp ?? 0) || 0
+            const tb = Number(b?.created_at ?? b?.timestamp ?? 0) || 0
+            return tb - ta
+          })
           return list
         }
       }
