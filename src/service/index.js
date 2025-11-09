@@ -957,6 +957,15 @@ export function support_upload(data) {
   })
 }
 
+export async function support_file_info(data) {
+  const response = await request({
+    method: 'post',
+    url: api.support_file_info,
+    data
+  })
+  return normalizeSupportResponse(response)
+}
+
 export async function support_create_ticket(input, options = {}) {
   const payload = input?.payload ? input.payload : input;
   const attachmentsInput = options.attachments ?? input?.attachmentsFiles ?? input?.attachments;

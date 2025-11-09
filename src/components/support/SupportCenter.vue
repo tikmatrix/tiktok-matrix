@@ -377,7 +377,7 @@
 import SupportForm from './SupportForm.vue'
 import { getName, getVersion } from '@tauri-apps/api/app'
 import { open } from '@tauri-apps/api/dialog'
-import { readBinaryFile } from '@tauri-apps/api/fs'
+import { readBinaryFile, readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { getSupportUnreadState, extractTicketKey } from '../../utils/supportNotifications.js'
 
 const MAX_REPLY_ATTACHMENTS = 6
@@ -446,7 +446,9 @@ export default {
         error: null
       },
       attachmentPreviewCache: {},
-      attachmentPreviewKeyHandler: null
+      attachmentPreviewKeyHandler: null,
+      agentBaseUrl: '',
+      agentBaseUrlPromise: null
     }
   },
   computed: {
@@ -515,6 +517,62 @@ export default {
         console.error('support setupUnreadState error', error)
         this.unreadTicketMap = {}
       }
+    },
+    async resolveAgentBaseUrl() {
+      if (this.agentBaseUrl) {
+        return this.agentBaseUrl
+      }
+      if (this.agentBaseUrlPromise) {
+        return this.agentBaseUrlPromise
+      }
+
+      const loader = (async () => {
+        let port = '50809'
+        try {
+          const content = await readTextFile('port.txt', { dir: BaseDirectory.AppData })
+          if (content && content.trim()) {
+            port = content.trim()
+          }
+        } catch (error) {
+          console.warn('support resolveAgentBaseUrl read port failed', error)
+        }
+
+        if (!port || port === '0') {
+          port = '50809'
+        }
+
+        const baseUrl = `http://localhost:${port}`
+        this.agentBaseUrl = baseUrl
+        this.agentBaseUrlPromise = null
+        return baseUrl
+      })()
+
+      this.agentBaseUrlPromise = loader
+      return loader
+    },
+    async buildAttachmentStreamingUrl(params) {
+      const baseUrl = await this.resolveAgentBaseUrl()
+      if (!baseUrl) {
+        return ''
+      }
+
+      const query = new URLSearchParams()
+      if (params && typeof params === 'object') {
+        Object.keys(params).forEach(key => {
+          const value = params[key]
+          if (value === undefined || value === null) {
+            return
+          }
+          const text = String(value).trim()
+          if (!text) {
+            return
+          }
+          query.set(key, text)
+        })
+      }
+
+      const queryString = query.toString()
+      return `${baseUrl}/agent/api/support/download${queryString ? `?${queryString}` : ''}`
     },
     async registerSupportListeners() {
       if (typeof this.$listen !== 'function') {
@@ -819,6 +877,56 @@ export default {
         await this.notify('error', this.$t('supportAttachmentSelectFailed'))
       }
     },
+    async fetchAttachmentMetadata(path) {
+      const result = {
+        filePath: path,
+        fileName: this.extractFileName(path),
+        fileExtension: null,
+        size: NaN,
+        source: 'unknown'
+      }
+      if (!path) {
+        return result
+      }
+
+      if (this.$service && typeof this.$service.support_file_info === 'function') {
+        try {
+          const response = await this.$service.support_file_info({ file_path: path })
+          const data = response?.data ?? response
+          if (data && typeof data === 'object') {
+            if (typeof data.file_name === 'string' && data.file_name.trim()) {
+              result.fileName = data.file_name.trim()
+            }
+            const size = Number(data.file_size ?? data.size)
+            if (Number.isFinite(size) && size >= 0) {
+              result.size = size
+            }
+            const extension = (data.file_extension ?? data.extension ?? '').toString().trim()
+            if (extension) {
+              result.fileExtension = extension.replace(/^\./, '').toLowerCase()
+            }
+            result.source = 'agent'
+          }
+        } catch (error) {
+          console.warn('support_file_info metadata error', error)
+        }
+      }
+
+      if (!Number.isFinite(result.size) || result.size <= 0) {
+        try {
+          const bytes = await readBinaryFile(path)
+          const size = Number(bytes?.length ?? bytes?.byteLength ?? 0)
+          if (Number.isFinite(size) && size > 0) {
+            result.size = size
+            result.source = result.source === 'agent' ? 'agent-fallback' : 'tauri'
+          }
+        } catch (error) {
+          console.warn('fallback readBinaryFile metadata error', error)
+        }
+      }
+
+      return result
+    },
     async addReplyAttachmentFromPath(path) {
       const normalizedPath = typeof path === 'string' ? path : ''
       if (!normalizedPath) {
@@ -829,8 +937,8 @@ export default {
         return
       }
       try {
-        const bytes = await readBinaryFile(normalizedPath)
-        const size = Number(bytes?.length ?? bytes?.byteLength ?? 0)
+        const metadata = await this.fetchAttachmentMetadata(normalizedPath)
+        const size = Number(metadata?.size)
         if (!Number.isFinite(size) || size <= 0) {
           await this.notify('warning', this.$t('supportAttachmentInvalid'))
           return
@@ -839,7 +947,11 @@ export default {
           await this.notify('warning', this.$t('supportAttachmentTooLarge', { size: this.formatBytes(this.replyAttachmentSizeLimit) }))
           return
         }
-        const fileName = this.extractFileName(normalizedPath)
+        let fileName = (metadata?.fileName || '').trim() || this.extractFileName(normalizedPath)
+        const extension = (metadata?.fileExtension || '').toLowerCase()
+        if (extension && !fileName.toLowerCase().endsWith(`.${extension}`)) {
+          fileName = `${fileName}.${extension}`
+        }
         const contentType = this.guessContentType(fileName)
         const attachmentType = this.classifyAttachmentType(contentType, fileName)
         if (attachmentType === 'other') {
@@ -860,7 +972,8 @@ export default {
             type: attachmentType,
             uploading: false,
             uploadResult: null,
-            error: null
+            error: null,
+            metadataSource: metadata?.source || 'unknown'
           }
         ]
       } catch (error) {
@@ -1187,7 +1300,8 @@ export default {
         loading: false,
         error: null,
         promise: null,
-        bytesLength: 0
+        bytesLength: 0,
+        isStreaming: false
       }
       return this.setPreviewCacheEntry(key, entry)
     },
@@ -1313,6 +1427,43 @@ export default {
       if (!params || !Object.keys(params).length) {
         throw new Error('ATTACHMENT_PREVIEW_MISSING_PARAMS')
       }
+
+      const entryType = entry.type || this.getAttachmentMediaType(attachment)
+      if (entryType === 'video') {
+        const streamingPromise = (async () => {
+          try {
+            this.updatePreviewCacheEntry(entry.key, { loading: true, error: null })
+            const streamUrl = await this.buildAttachmentStreamingUrl(params)
+            if (!streamUrl) {
+              throw new Error('ATTACHMENT_PREVIEW_STREAM_URL_MISSING')
+            }
+            const updated = this.updatePreviewCacheEntry(entry.key, {
+              blobUrl: streamUrl,
+              mimeType: entry.mimeType || 'video/*',
+              fileName: entry.fileName || this.resolveAttachmentFileName(attachment),
+              loaded: true,
+              loading: false,
+              error: null,
+              promise: null,
+              bytesLength: 0,
+              isStreaming: true
+            })
+            return updated
+          } catch (error) {
+            this.updatePreviewCacheEntry(entry.key, {
+              loading: false,
+              loaded: false,
+              promise: null,
+              error: error?.message || String(error),
+              isStreaming: false
+            })
+            throw error
+          }
+        })()
+        this.updatePreviewCacheEntry(entry.key, { promise: streamingPromise, loading: true, error: null })
+        return streamingPromise
+      }
+
       const downloadPromise = (async () => {
         try {
           this.updatePreviewCacheEntry(entry.key, { loading: true, error: null })
@@ -1325,7 +1476,7 @@ export default {
           const dispositionHeader = this.extractResponseHeader(response?.headers, 'content-disposition')
           const mimeType = contentTypeHeader || entry.mimeType || (this.isImageAttachment(attachment) ? 'image/*' : 'video/*')
           const fileName = this.extractFilenameFromDisposition(dispositionHeader) || entry.fileName || this.resolveAttachmentFileName(attachment)
-          if (entry.blobUrl) {
+          if (entry.blobUrl && String(entry.blobUrl).startsWith('blob:')) {
             try {
               URL.revokeObjectURL(entry.blobUrl)
             } catch (error) {
@@ -1342,7 +1493,8 @@ export default {
             loading: false,
             error: null,
             promise: null,
-            bytesLength: bytes.length
+            bytesLength: bytes.length,
+            isStreaming: false
           })
           return updated
         } catch (error) {
@@ -1350,7 +1502,8 @@ export default {
             loading: false,
             loaded: false,
             promise: null,
-            error: error?.message || String(error)
+            error: error?.message || String(error),
+            isStreaming: false
           })
           throw error
         }
@@ -1606,7 +1759,7 @@ export default {
       if (force) {
         const entries = Object.values(this.attachmentPreviewCache || {})
         entries.forEach(entry => {
-          if (entry && entry.blobUrl) {
+          if (entry && entry.blobUrl && String(entry.blobUrl).startsWith('blob:')) {
             try {
               URL.revokeObjectURL(entry.blobUrl)
             } catch (error) {

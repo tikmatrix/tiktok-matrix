@@ -292,6 +292,56 @@ export default {
         await this.notify('error', this.$t('supportAttachmentSelectFailed'))
       }
     },
+    async fetchAttachmentMetadata(path) {
+      const result = {
+        filePath: path,
+        fileName: this.extractFileName(path),
+        fileExtension: null,
+        size: NaN,
+        source: 'unknown'
+      }
+      if (!path) {
+        return result
+      }
+
+      if (this.$service && typeof this.$service.support_file_info === 'function') {
+        try {
+          const response = await this.$service.support_file_info({ file_path: path })
+          const data = response?.data ?? response
+          if (data && typeof data === 'object') {
+            if (typeof data.file_name === 'string' && data.file_name.trim()) {
+              result.fileName = data.file_name.trim()
+            }
+            const size = Number(data.file_size ?? data.size)
+            if (Number.isFinite(size) && size >= 0) {
+              result.size = size
+            }
+            const extension = (data.file_extension ?? data.extension ?? '').toString().trim()
+            if (extension) {
+              result.fileExtension = extension.replace(/^\./, '').toLowerCase()
+            }
+            result.source = 'agent'
+          }
+        } catch (error) {
+          console.warn('support_file_info metadata error', error)
+        }
+      }
+
+      if (!Number.isFinite(result.size) || result.size <= 0) {
+        try {
+          const bytes = await readBinaryFile(path)
+          const size = Number(bytes?.length ?? bytes?.byteLength ?? 0)
+          if (Number.isFinite(size) && size > 0) {
+            result.size = size
+            result.source = result.source === 'agent' ? 'agent-fallback' : 'tauri'
+          }
+        } catch (error) {
+          console.warn('fallback readBinaryFile metadata error', error)
+        }
+      }
+
+      return result
+    },
     async addAttachmentFromPath(path) {
       const normalizedPath = typeof path === 'string' ? path : ''
       if (!normalizedPath) {
@@ -302,9 +352,8 @@ export default {
         return
       }
       try {
-        // Some Tauri versions don't export `stat`. Read the binary and determine size from the returned data.
-        const bytes = await readBinaryFile(normalizedPath)
-        const size = Number(bytes?.length ?? bytes?.byteLength ?? 0)
+        const metadata = await this.fetchAttachmentMetadata(normalizedPath)
+        const size = Number(metadata?.size)
         if (!Number.isFinite(size) || size <= 0) {
           await this.notify('warning', this.$t('supportAttachmentInvalid'))
           return
@@ -313,7 +362,11 @@ export default {
           await this.notify('warning', this.$t('supportAttachmentTooLarge', { size: this.formatBytes(MAX_ATTACHMENT_SIZE) }))
           return
         }
-        const fileName = this.extractFileName(normalizedPath)
+        let fileName = (metadata?.fileName || '').trim() || this.extractFileName(normalizedPath)
+        const extension = (metadata?.fileExtension || '').toLowerCase()
+        if (extension && !fileName.toLowerCase().endsWith(`.${extension}`)) {
+          fileName = `${fileName}.${extension}`
+        }
         const contentType = this.guessContentType(fileName)
         const attachmentType = this.classifyAttachmentType(contentType, fileName)
         if (attachmentType === 'other') {
@@ -336,7 +389,8 @@ export default {
             previewUrl: this.buildPreviewUrl(normalizedPath, attachmentType),
             uploading: false,
             uploadResult: null,
-            error: null
+            error: null,
+            metadataSource: metadata?.source || 'unknown'
           }
         ]
       } catch (error) {

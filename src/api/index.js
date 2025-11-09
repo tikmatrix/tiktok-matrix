@@ -75,6 +75,7 @@ const api = {
   report_distributor_install: '/api/report_distributor_install',
   support_logs: '/agent/api/support/logs',
   support_upload: '/agent/api/support/upload',
+  support_file_info: '/agent/api/support/file-info',
   support_ticket: '/agent/api/support/ticket',
   support_tickets_list: '/agent/api/support/tickets',
   support_summary: '/agent/api/support/summary',
