@@ -1,5 +1,57 @@
 <template>
   <div class="support-center">
+    <teleport to="body">
+      <transition name="attachment-preview-fade">
+        <div v-if="attachmentPreview.visible" class="attachment-preview-overlay" @click.self="closeAttachmentPreview">
+          <div class="attachment-preview-modal" role="dialog" aria-modal="true">
+            <header class="attachment-preview-header">
+              <div class="attachment-preview-title">
+                <span class="attachment-preview-name">{{ getActivePreviewName() || '-' }}</span>
+                <span class="attachment-preview-count">{{ attachmentPreview.currentIndex + 1 }} /
+                  {{ attachmentPreview.items.length }}</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-circle preview-close" aria-label="Close preview"
+                @click="closeAttachmentPreview">
+                ×
+              </button>
+            </header>
+            <div class="attachment-preview-body">
+              <div v-if="attachmentPreview.loading" class="attachment-preview-loading">
+                <span class="loading loading-spinner loading-lg"></span>
+              </div>
+              <div v-else-if="attachmentPreview.error" class="attachment-preview-error">
+                {{ attachmentPreview.error }}
+              </div>
+              <template v-else>
+                <img v-if="getActivePreviewType() === 'image' && getActivePreviewUrl()" :src="getActivePreviewUrl()"
+                  :alt="getActivePreviewName()" />
+                <video v-else-if="getActivePreviewType() === 'video' && getActivePreviewUrl()" controls autoplay muted
+                  playsinline :src="getActivePreviewUrl()"></video>
+                <div v-else class="attachment-preview-empty">
+                  {{ $t('supportAttachmentUnsupported') }}
+                </div>
+              </template>
+            </div>
+            <footer class="attachment-preview-footer">
+              <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
+                :disabled="attachmentPreview.items.length <= 1" aria-label="Previous attachment"
+                @click="showPreviousAttachment">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                </svg>
+              </button>
+              <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
+                :disabled="attachmentPreview.items.length <= 1" aria-label="Next attachment"
+                @click="showNextAttachment">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="m10 6 1.41 1.41L7.83 11H20v2H7.83l3.58 3.59L10 18l-6-6z" />
+                </svg>
+              </button>
+            </footer>
+          </div>
+        </div>
+      </transition>
+    </teleport>
     <div v-if="viewMode === 'list'" class="support-list">
       <div class="list-header">
         <div class="titles">
@@ -108,6 +160,56 @@
           <div class="summary-top">
             <div>
               <h3 class="summary-subject">{{ currentTicket.subject }}</h3>
+
+              <dialog ref="attachment-preview" class="modal" role="dialog" aria-modal="true"
+                @click="onAttachmentDialogClick" @close="onAttachmentDialogClose">
+                <div class="attachment-preview-modal" role="document">
+                  <header class="attachment-preview-header">
+                    <div class="attachment-preview-title">
+                      <span class="attachment-preview-name">{{ getActivePreviewName() || '-' }}</span>
+                      <span class="attachment-preview-count">{{ attachmentPreview.currentIndex + 1 }} /
+                        {{ attachmentPreview.items.length }}</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-circle preview-close" aria-label="Close preview"
+                      @click="closeAttachmentPreview">
+                      ×
+                    </button>
+                  </header>
+                  <div class="attachment-preview-body">
+                    <div v-if="attachmentPreview.loading" class="attachment-preview-loading">
+                      <span class="loading loading-spinner loading-lg"></span>
+                    </div>
+                    <div v-else-if="attachmentPreview.error" class="attachment-preview-error">
+                      {{ attachmentPreview.error }}
+                    </div>
+                    <template v-else>
+                      <img v-if="getActivePreviewType() === 'image' && getActivePreviewUrl()"
+                        :src="getActivePreviewUrl()" :alt="getActivePreviewName()" />
+                      <video v-else-if="getActivePreviewType() === 'video' && getActivePreviewUrl()" controls autoplay
+                        muted playsinline :src="getActivePreviewUrl()"></video>
+                      <div v-else class="attachment-preview-empty">
+                        {{ $t('supportAttachmentUnsupported') }}
+                      </div>
+                    </template>
+                  </div>
+                  <footer class="attachment-preview-footer">
+                    <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
+                      :disabled="attachmentPreview.items.length <= 1" aria-label="Previous attachment"
+                      @click="showPreviousAttachment">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                      </svg>
+                    </button>
+                    <button type="button" class="btn btn-circle btn-outline btn-sm preview-nav"
+                      :disabled="attachmentPreview.items.length <= 1" aria-label="Next attachment"
+                      @click="showNextAttachment">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
+                      </svg>
+                    </button>
+                  </footer>
+                </div>
+              </dialog>
               <p class="summary-meta">
                 #{{ currentTicket.ticket_no }} · {{ formatDate(currentTicket.updated_at) }}
               </p>
@@ -139,25 +241,41 @@
           </div>
         </section>
 
-        <section class="detail-card conversation-card">
-          <h4>{{ $t('supportDetailConversation') }}</h4>
-          <div v-if="!messages.length" class="empty-cell compact">{{ $t('supportDetailNoMessages') }}</div>
-          <div v-else class="conversation-list">
-            <article v-for="message in messages" :key="message.id" class="conversation-item">
-              <header class="conversation-header">
-                <span class="message-role" :class="roleClass(message.role)">{{ formatRole(message.role) }}</span>
-                <span class="message-time">{{ message.created_at_display }}</span>
-              </header>
-              <div class="conversation-body">{{ message.body }}</div>
-              <pre v-if="message.message_tail" class="conversation-tail">{{ message.message_tail }}</pre>
-            </article>
-          </div>
-        </section>
-
         <section class="detail-card reply-card">
           <h4>{{ $t('supportDetailReply') }}</h4>
           <textarea v-model="reply.body" class="textarea textarea-bordered w-full" rows="5"
             :placeholder="$t('supportDetailReplyPlaceholder')"></textarea>
+          <div class="reply-attachments">
+            <div class="attachments-toolbar">
+              <button type="button" class="btn btn-outline btn-sm" @click="pickReplyAttachments">
+                {{ $t('supportAttachmentsSelect') }}
+              </button>
+              <span class="attachments-hint">
+                {{ $t('supportAttachmentsHint', {
+                  size: formatBytes(replyAttachmentSizeLimit), count:
+                    replyAttachmentCountLimit
+                }) }}
+              </span>
+            </div>
+            <ul v-if="reply.attachments.length" class="attachments-list">
+              <li v-for="attachment in reply.attachments" :key="attachment.id" class="attachment-item">
+                <span class="attachment-name">{{ attachment.fileName }}</span>
+                <span class="attachment-size">{{ formatBytes(attachment.size) }}</span>
+                <span class="attachment-type">{{ attachment.type.toUpperCase() }}</span>
+                <span v-if="attachment.uploading" class="attachment-status uploading">
+                  {{ $t('supportAttachmentUploading') }}
+                </span>
+                <span v-else-if="attachment.error" class="attachment-status error">
+                  {{ $t('supportAttachmentFailed') }}
+                </span>
+                <button type="button" class="btn btn-ghost btn-xs attachment-remove"
+                  @click="removeReplyAttachment(attachment.id)">
+                  {{ $t('supportAttachmentRemove') }}
+                </button>
+              </li>
+            </ul>
+            <p v-else class="attachments-empty">{{ $t('supportAttachmentsEmpty') }}</p>
+          </div>
           <div class="reply-options">
             <label class="label cursor-pointer">
               <input type="checkbox" class="checkbox checkbox-sm" v-model="reply.includeLogs" />
@@ -173,6 +291,65 @@
             <button type="button" class="btn btn-outline btn-sm" :disabled="reply.sending" @click="resetReply">
               {{ $t('supportDetailReplyReset') }}
             </button>
+          </div>
+        </section>
+
+        <section class="detail-card conversation-card">
+          <h4>{{ $t('supportDetailConversation') }}</h4>
+          <div v-if="!messages.length" class="empty-cell compact">{{ $t('supportDetailNoMessages') }}</div>
+          <div v-else class="conversation-list">
+            <article v-for="message in messages" :key="message.id" class="conversation-item">
+              <header class="conversation-header">
+                <span class="message-role" :class="roleClass(message.role)">{{ formatRole(message.role) }}</span>
+                <span class="message-time">{{ message.created_at_display }}</span>
+              </header>
+              <div class="conversation-body">{{ message.body }}</div>
+              <pre v-if="message.message_tail" class="conversation-tail">{{ message.message_tail }}</pre>
+              <div v-if="hasMessageAttachments(message)" class="conversation-attachments">
+                <div class="attachments-summary">
+                  {{ $t('supportDetailAttachmentsSummary', { count: getMessageMediaAttachments(message).length }) }}
+                </div>
+                <div class="attachments-grid">
+                  <button v-for="(attachment, index) in getMessageMediaAttachments(message)"
+                    :key="attachment.id || attachment.storage_key || attachment.storageKey || `${message.id || 'msg'}-${index}`"
+                    type="button" class="attachment-card" :aria-label="resolveAttachmentName(attachment, index)"
+                    @click="openAttachmentPreview(message, index)"
+                    @keydown.enter.prevent="openAttachmentPreview(message, index)"
+                    @keydown.space.prevent="openAttachmentPreview(message, index)">
+                    <div class="attachment-thumb" :class="`type-${getAttachmentMediaType(attachment)}`">
+                      <template v-if="isImageAttachment(attachment)">
+                        <img v-if="resolveAttachmentThumbnail(attachment)" :src="resolveAttachmentThumbnail(attachment)"
+                          :alt="resolveAttachmentName(attachment, index)" />
+                        <div v-else-if="attachmentHasPreviewError(attachment)"
+                          class="attachment-thumb-placeholder error">
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor"
+                              d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm0 15a1.5 1.5 0 1 1 1.5-1.5A1.502 1.502 0 0 1 12 17zm1-4h-2V7h2z" />
+                          </svg>
+                        </div>
+                        <div v-else class="attachment-thumb-placeholder">
+                          <span class="loading loading-spinner loading-xs"></span>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <div class="attachment-thumb-placeholder video">
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor"
+                              d="M4 4h11a2 2 0 0 1 2 2v2.382l3.447-1.724A1 1 0 0 1 21 7.553v8.894a1 1 0 0 1-1.553.895L17 15.618V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v12h11V6H4zm15 3.382-3 1.5v2.236l3 1.5V9.382z" />
+                          </svg>
+                        </div>
+                      </template>
+                    </div>
+                    <div class="attachment-meta">
+                      <span class="attachment-name" :title="resolveAttachmentName(attachment, index)">
+                        {{ resolveAttachmentName(attachment, index) }}
+                      </span>
+                      <span class="attachment-type-label">{{ getAttachmentMediaType(attachment) }}</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </article>
           </div>
         </section>
       </div>
@@ -199,7 +376,20 @@
 <script>
 import SupportForm from './SupportForm.vue'
 import { getName, getVersion } from '@tauri-apps/api/app'
+import { open } from '@tauri-apps/api/dialog'
+import { readBinaryFile, readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { getSupportUnreadState, extractTicketKey } from '../../utils/supportNotifications.js'
+
+const MAX_REPLY_ATTACHMENTS = 6
+const MAX_REPLY_ATTACHMENT_SIZE = 50 * 1024 * 1024
+const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'heic']
+const VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm']
+const MEDIA_FILTERS = [
+  {
+    name: 'Images & Videos',
+    extensions: [...IMAGE_EXTENSIONS, ...VIDEO_EXTENSIONS]
+  }
+]
 
 export default {
   name: 'SupportCenter',
@@ -239,14 +429,26 @@ export default {
         preparationTask: null,
         preparationToken: 0,
         preparationError: null,
-        sending: false
+        sending: false,
+        attachments: []
       },
       detailRetryHandle: null,
       highlightTicketNo: null,
       highlightTimerHandle: null,
       closingTicket: false,
       listeners: [],
-      unreadTicketMap: {}
+      unreadTicketMap: {},
+      attachmentPreview: {
+        visible: false,
+        items: [],
+        currentIndex: 0,
+        loading: false,
+        error: null
+      },
+      attachmentPreviewCache: {},
+      attachmentPreviewKeyHandler: null,
+      agentBaseUrl: '',
+      agentBaseUrlPromise: null
     }
   },
   computed: {
@@ -278,6 +480,12 @@ export default {
       const status = this.currentTicket?.status || this.currentTicket?.statusDb
       if (!status) return false
       return String(status).toLowerCase() === 'closed'
+    },
+    replyAttachmentSizeLimit() {
+      return MAX_REPLY_ATTACHMENT_SIZE
+    },
+    replyAttachmentCountLimit() {
+      return MAX_REPLY_ATTACHMENTS
     }
   },
   watch: {
@@ -297,6 +505,7 @@ export default {
   },
   beforeUnmount() {
     this.destroyListeners()
+    this.disposeAttachmentPreview(true)
   },
   methods: {
     async setupUnreadState() {
@@ -308,6 +517,62 @@ export default {
         console.error('support setupUnreadState error', error)
         this.unreadTicketMap = {}
       }
+    },
+    async resolveAgentBaseUrl() {
+      if (this.agentBaseUrl) {
+        return this.agentBaseUrl
+      }
+      if (this.agentBaseUrlPromise) {
+        return this.agentBaseUrlPromise
+      }
+
+      const loader = (async () => {
+        let port = '50809'
+        try {
+          const content = await readTextFile('port.txt', { dir: BaseDirectory.AppData })
+          if (content && content.trim()) {
+            port = content.trim()
+          }
+        } catch (error) {
+          console.warn('support resolveAgentBaseUrl read port failed', error)
+        }
+
+        if (!port || port === '0') {
+          port = '50809'
+        }
+
+        const baseUrl = `http://localhost:${port}`
+        this.agentBaseUrl = baseUrl
+        this.agentBaseUrlPromise = null
+        return baseUrl
+      })()
+
+      this.agentBaseUrlPromise = loader
+      return loader
+    },
+    async buildAttachmentStreamingUrl(params) {
+      const baseUrl = await this.resolveAgentBaseUrl()
+      if (!baseUrl) {
+        return ''
+      }
+
+      const query = new URLSearchParams()
+      if (params && typeof params === 'object') {
+        Object.keys(params).forEach(key => {
+          const value = params[key]
+          if (value === undefined || value === null) {
+            return
+          }
+          const text = String(value).trim()
+          if (!text) {
+            return
+          }
+          query.set(key, text)
+        })
+      }
+
+      const queryString = query.toString()
+      return `${baseUrl}/agent/api/support/download${queryString ? `?${queryString}` : ''}`
     },
     async registerSupportListeners() {
       if (typeof this.$listen !== 'function') {
@@ -576,6 +841,935 @@ export default {
       }
       return String(list)
     },
+    formatBytes(bytes) {
+      if (!Number.isFinite(bytes) || bytes <= 0) {
+        return '0 B'
+      }
+      const units = ['B', 'KB', 'MB', 'GB']
+      const exp = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+      const value = bytes / 1024 ** exp
+      return `${value.toFixed(exp === 0 ? 0 : 1)} ${units[exp]}`
+    },
+    async pickReplyAttachments() {
+      try {
+        if (this.reply.attachments.length >= this.replyAttachmentCountLimit) {
+          await this.notify('warning', this.$t('supportAttachmentLimitReached', { count: this.replyAttachmentCountLimit }))
+          return
+        }
+        const selection = await open({
+          multiple: true,
+          directory: false,
+          filters: MEDIA_FILTERS
+        })
+        const paths = Array.isArray(selection) ? selection : selection ? [selection] : []
+        if (!paths.length) {
+          return
+        }
+        for (const filePath of paths) {
+          if (this.reply.attachments.length >= this.replyAttachmentCountLimit) {
+            await this.notify('warning', this.$t('supportAttachmentLimitReached', { count: this.replyAttachmentCountLimit }))
+            break
+          }
+          await this.addReplyAttachmentFromPath(filePath)
+        }
+      } catch (error) {
+        console.error('pickReplyAttachments error', error)
+        await this.notify('error', this.$t('supportAttachmentSelectFailed'))
+      }
+    },
+    async fetchAttachmentMetadata(path) {
+      const result = {
+        filePath: path,
+        fileName: this.extractFileName(path),
+        fileExtension: null,
+        size: NaN,
+        source: 'unknown'
+      }
+      if (!path) {
+        return result
+      }
+
+      if (this.$service && typeof this.$service.support_file_info === 'function') {
+        try {
+          const response = await this.$service.support_file_info({ file_path: path })
+          const data = response?.data ?? response
+          if (data && typeof data === 'object') {
+            if (typeof data.file_name === 'string' && data.file_name.trim()) {
+              result.fileName = data.file_name.trim()
+            }
+            const size = Number(data.file_size ?? data.size)
+            if (Number.isFinite(size) && size >= 0) {
+              result.size = size
+            }
+            const extension = (data.file_extension ?? data.extension ?? '').toString().trim()
+            if (extension) {
+              result.fileExtension = extension.replace(/^\./, '').toLowerCase()
+            }
+            result.source = 'agent'
+          }
+        } catch (error) {
+          console.warn('support_file_info metadata error', error)
+        }
+      }
+
+      if (!Number.isFinite(result.size) || result.size <= 0) {
+        try {
+          const bytes = await readBinaryFile(path)
+          const size = Number(bytes?.length ?? bytes?.byteLength ?? 0)
+          if (Number.isFinite(size) && size > 0) {
+            result.size = size
+            result.source = result.source === 'agent' ? 'agent-fallback' : 'tauri'
+          }
+        } catch (error) {
+          console.warn('fallback readBinaryFile metadata error', error)
+        }
+      }
+
+      return result
+    },
+    async addReplyAttachmentFromPath(path) {
+      const normalizedPath = typeof path === 'string' ? path : ''
+      if (!normalizedPath) {
+        return
+      }
+      if (this.reply.attachments.some(item => item.path === normalizedPath)) {
+        await this.notify('warning', this.$t('supportAttachmentDuplicate'))
+        return
+      }
+      try {
+        const metadata = await this.fetchAttachmentMetadata(normalizedPath)
+        const size = Number(metadata?.size)
+        if (!Number.isFinite(size) || size <= 0) {
+          await this.notify('warning', this.$t('supportAttachmentInvalid'))
+          return
+        }
+        if (size > this.replyAttachmentSizeLimit) {
+          await this.notify('warning', this.$t('supportAttachmentTooLarge', { size: this.formatBytes(this.replyAttachmentSizeLimit) }))
+          return
+        }
+        let fileName = (metadata?.fileName || '').trim() || this.extractFileName(normalizedPath)
+        const extension = (metadata?.fileExtension || '').toLowerCase()
+        if (extension && !fileName.toLowerCase().endsWith(`.${extension}`)) {
+          fileName = `${fileName}.${extension}`
+        }
+        const contentType = this.guessContentType(fileName)
+        const attachmentType = this.classifyAttachmentType(contentType, fileName)
+        if (attachmentType === 'other') {
+          await this.notify('warning', this.$t('supportAttachmentUnsupported'))
+          return
+        }
+        const attachmentId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `att-${Date.now()}-${Math.random().toString(16).slice(2)}`
+        this.reply.attachments = [
+          ...this.reply.attachments,
+          {
+            id: attachmentId,
+            path: normalizedPath,
+            fileName,
+            size,
+            contentType,
+            type: attachmentType,
+            uploading: false,
+            uploadResult: null,
+            error: null,
+            metadataSource: metadata?.source || 'unknown'
+          }
+        ]
+      } catch (error) {
+        console.error('addReplyAttachmentFromPath error', error)
+        await this.notify('error', this.$t('supportAttachmentReadFailed'))
+      }
+    },
+    removeReplyAttachment(id) {
+      this.reply.attachments = this.reply.attachments.filter(item => item.id !== id)
+    },
+    extractFileName(path) {
+      if (!path) {
+        return 'attachment.bin'
+      }
+      const segments = path.split(/[/\\]/)
+      return segments[segments.length - 1] || 'attachment.bin'
+    },
+    guessContentType(fileName) {
+      if (!fileName) {
+        return 'application/octet-stream'
+      }
+      const ext = fileName.split('.').pop()?.toLowerCase()
+      if (!ext) {
+        return 'application/octet-stream'
+      }
+      if (IMAGE_EXTENSIONS.includes(ext)) {
+        if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg'
+        if (ext === 'png') return 'image/png'
+        if (ext === 'gif') return 'image/gif'
+        if (ext === 'webp') return 'image/webp'
+        if (ext === 'bmp') return 'image/bmp'
+        if (ext === 'heic') return 'image/heic'
+        return `image/${ext}`
+      }
+      if (VIDEO_EXTENSIONS.includes(ext)) {
+        if (ext === 'mp4' || ext === 'm4v') return 'video/mp4'
+        if (ext === 'mov') return 'video/quicktime'
+        if (ext === 'avi') return 'video/x-msvideo'
+        if (ext === 'webm') return 'video/webm'
+        if (ext === 'mkv') return 'video/x-matroska'
+        return `video/${ext}`
+      }
+      return 'application/octet-stream'
+    },
+    classifyAttachmentType(contentType, fileName) {
+      const normalized = (contentType || '').toLowerCase()
+      if (normalized.startsWith('image/')) {
+        return 'image'
+      }
+      if (normalized.startsWith('video/')) {
+        return 'video'
+      }
+      const ext = fileName?.split('.').pop()?.toLowerCase()
+      if (ext && IMAGE_EXTENSIONS.includes(ext)) {
+        return 'image'
+      }
+      if (ext && VIDEO_EXTENSIONS.includes(ext)) {
+        return 'video'
+      }
+      return 'other'
+    },
+    async ensureReplyAttachmentUpload(item, serials) {
+      if (!item) {
+        return null
+      }
+      if (item.uploadResult) {
+        return item.uploadResult
+      }
+      item.uploading = true
+      item.error = null
+      try {
+        const response = await this.$service.support_upload({
+          file_path: item.path,
+          file_name: item.fileName,
+          content_type: item.contentType,
+          file_size: item.size,
+          serials,
+          attachment_meta: {
+            type: item.type,
+            originalName: item.fileName
+          },
+          client_app: this.clientInfoNormalized.app_name,
+          client_version: this.clientInfoNormalized.client_version,
+          skip_cache: true
+        })
+        const attachment = this.parseUploadResponse(response, {
+          fileName: item.fileName,
+          fileSize: item.size,
+          contentType: item.contentType,
+          serials,
+          type: item.type
+        })
+        item.uploadResult = attachment
+        return attachment
+      } catch (error) {
+        item.error = error
+        throw error
+      } finally {
+        item.uploading = false
+      }
+    },
+    async uploadReplyCustomAttachments(serials) {
+      if (!Array.isArray(this.reply.attachments) || !this.reply.attachments.length) {
+        return []
+      }
+      const uploads = []
+      for (const item of this.reply.attachments) {
+        try {
+          const result = await this.ensureReplyAttachmentUpload(item, serials)
+          if (result) {
+            uploads.push(result)
+          }
+        } catch (error) {
+          console.error('uploadReplyCustomAttachments error', error)
+          const message = error?.message || this.$t('supportAttachmentUploadFailed')
+          await this.notify('error', message)
+          throw error
+        }
+      }
+      return uploads
+    },
+    hasMessageAttachments(message) {
+      return this.getMessageMediaAttachments(message).length > 0
+    },
+    getMessageMediaAttachments(message) {
+      if (!Array.isArray(message?.attachments) || !message.attachments.length) {
+        return []
+      }
+      const mediaAttachments = message.attachments.filter(attachment => this.isMediaAttachment(attachment))
+      mediaAttachments.forEach(attachment => this.prepareAttachmentPreview(attachment))
+      return mediaAttachments
+    },
+    isMediaAttachment(attachment) {
+      if (!attachment || typeof attachment !== 'object') {
+        return false
+      }
+      if (attachment.__mediaType) {
+        return attachment.__mediaType === 'image' || attachment.__mediaType === 'video'
+      }
+      const typeHint = this.normalizeMetadataField(
+        attachment.type,
+        attachment.attachment_type,
+        attachment.attachmentType,
+        attachment.category
+      ).toLowerCase()
+      let resolvedType = ''
+      if (typeHint.includes('image')) {
+        resolvedType = 'image'
+      } else if (typeHint.includes('video')) {
+        resolvedType = 'video'
+      }
+      if (!resolvedType) {
+        const contentType = this.normalizeMetadataField(
+          attachment.content_type,
+          attachment.contentType,
+          attachment.mime,
+          attachment.mime_type,
+          attachment.mimeType,
+          attachment.file_type,
+          attachment.fileType
+        )
+        const fileName = this.resolveAttachmentFileName(attachment)
+        const classified = this.classifyAttachmentType(contentType, fileName)
+        if (classified === 'image' || classified === 'video') {
+          resolvedType = classified
+        }
+      }
+      if (resolvedType) {
+        attachment.__mediaType = resolvedType
+      }
+      return resolvedType === 'image' || resolvedType === 'video'
+    },
+    getAttachmentMediaType(attachment) {
+      if (!attachment || typeof attachment !== 'object') {
+        return 'other'
+      }
+      if (attachment.__mediaType) {
+        return attachment.__mediaType
+      }
+      this.isMediaAttachment(attachment)
+      return attachment.__mediaType || 'other'
+    },
+    isImageAttachment(attachment) {
+      return this.getAttachmentMediaType(attachment) === 'image'
+    },
+    isVideoAttachment(attachment) {
+      return this.getAttachmentMediaType(attachment) === 'video'
+    },
+    resolveAttachmentFileName(attachment) {
+      if (!attachment || typeof attachment !== 'object') {
+        return ''
+      }
+      return this.normalizeMetadataField(
+        attachment.file_name,
+        attachment.fileName,
+        attachment.filename,
+        attachment.originalName,
+        attachment.storage_key,
+        attachment.storageKey,
+        attachment.key
+      )
+    },
+    resolveAttachmentName(attachment, index = 0) {
+      const name = this.resolveAttachmentFileName(attachment)
+      if (name) {
+        return name
+      }
+      return this.$t('supportDetailAttachmentDefaultName', { index: index + 1 })
+    },
+    getAttachmentCacheKey(attachment) {
+      if (!attachment || typeof attachment !== 'object') {
+        return ''
+      }
+      const metadata = this.parseMaybeJson(attachment.metadata) ||
+        (attachment.metadata && typeof attachment.metadata === 'object' ? attachment.metadata : null)
+      const storageKey = this.normalizeMetadataField(
+        attachment.storage_key,
+        attachment.storageKey,
+        attachment.key,
+        metadata?.storage_key,
+        metadata?.storageKey,
+        metadata?.key
+      )
+      if (storageKey) {
+        return `storage:${storageKey}`
+      }
+      const attachmentId = this.normalizeMetadataField(
+        attachment.attachment_id,
+        attachment.attachmentId,
+        attachment.id,
+        metadata?.attachment_id,
+        metadata?.attachmentId,
+        metadata?.id
+      )
+      if (attachmentId) {
+        return `id:${attachmentId}`
+      }
+      const fileName = this.resolveAttachmentFileName(attachment)
+      if (fileName) {
+        return `name:${fileName}`
+      }
+      return ''
+    },
+    buildAttachmentDownloadParams(attachment) {
+      if (!attachment || typeof attachment !== 'object') {
+        return null
+      }
+      const metadata = this.parseMaybeJson(attachment.metadata) ||
+        (attachment.metadata && typeof attachment.metadata === 'object' ? attachment.metadata : null)
+      const params = {}
+      const storageKey = this.normalizeMetadataField(
+        attachment.storage_key,
+        attachment.storageKey,
+        attachment.key,
+        metadata?.storage_key,
+        metadata?.storageKey,
+        metadata?.key
+      )
+      if (storageKey) {
+        params.storage_key = storageKey
+      }
+      const attachmentId = this.normalizeMetadataField(
+        attachment.attachment_id,
+        attachment.attachmentId,
+        attachment.id,
+        metadata?.attachment_id,
+        metadata?.attachmentId,
+        metadata?.id
+      )
+      if (attachmentId) {
+        params.attachment_id = attachmentId
+      }
+      const fileName = this.resolveAttachmentFileName(attachment)
+      if (fileName) {
+        params.file_name = fileName
+      }
+      return Object.keys(params).length ? params : null
+    },
+    setPreviewCacheEntry(key, entry) {
+      if (!key) {
+        return entry
+      }
+      this.attachmentPreviewCache = {
+        ...this.attachmentPreviewCache,
+        [key]: entry
+      }
+      return entry
+    },
+    updatePreviewCacheEntry(key, patch) {
+      if (!key) {
+        return null
+      }
+      const existing = this.attachmentPreviewCache[key] || {}
+      const entry = { ...existing, ...patch }
+      return this.setPreviewCacheEntry(key, entry)
+    },
+    ensurePreviewCacheEntry(attachment) {
+      const key = this.getAttachmentCacheKey(attachment)
+      if (!key) {
+        return null
+      }
+      const existing = this.attachmentPreviewCache[key]
+      if (existing) {
+        return existing
+      }
+      const params = this.buildAttachmentDownloadParams(attachment)
+      const mimeType = this.normalizeMetadataField(
+        attachment.content_type,
+        attachment.contentType,
+        attachment.mime,
+        attachment.mime_type,
+        attachment.mimeType,
+        attachment.file_type,
+        attachment.fileType
+      )
+      const entry = {
+        key,
+        params,
+        type: this.getAttachmentMediaType(attachment),
+        fileName: this.resolveAttachmentFileName(attachment),
+        mimeType,
+        blobUrl: '',
+        loaded: false,
+        loading: false,
+        error: null,
+        promise: null,
+        bytesLength: 0,
+        isStreaming: false
+      }
+      return this.setPreviewCacheEntry(key, entry)
+    },
+    prepareAttachmentPreview(attachment) {
+      if (!attachment || typeof attachment !== 'object') {
+        return
+      }
+      if (attachment.__previewPrepared) {
+        return
+      }
+      attachment.__previewPrepared = true
+      const entry = this.ensurePreviewCacheEntry(attachment)
+      if (!entry || !entry.params) {
+        return
+      }
+      if (this.isImageAttachment(attachment) && !entry.loaded && !entry.loading) {
+        this.loadAttachmentPreview(attachment).catch(error => {
+          console.warn('support prepareAttachmentPreview error', error)
+        })
+      }
+    },
+    normalizeBinaryData(data) {
+      if (!data) {
+        return null
+      }
+      if (data instanceof Uint8Array) {
+        return data
+      }
+      if (ArrayBuffer.isView(data)) {
+        return new Uint8Array(data.buffer.slice(0))
+      }
+      if (data instanceof ArrayBuffer) {
+        return new Uint8Array(data)
+      }
+      if (Array.isArray(data)) {
+        return Uint8Array.from(data)
+      }
+      if (typeof data === 'object' && data.type === 'Buffer' && Array.isArray(data.data)) {
+        return Uint8Array.from(data.data)
+      }
+      if (typeof data === 'string') {
+        try {
+          return Uint8Array.from(atob(data), char => char.charCodeAt(0))
+        } catch (error) {
+          console.warn('normalizeBinaryData base64 decode failed', error)
+          return null
+        }
+      }
+      return null
+    },
+    extractResponseHeader(headers, name) {
+      if (!headers) {
+        return ''
+      }
+      try {
+        if (typeof headers.get === 'function') {
+          const value = headers.get(name)
+          if (Array.isArray(value)) {
+            return value[0] || ''
+          }
+          return value || ''
+        }
+      } catch (error) {
+        console.warn('extractResponseHeader get failed', error)
+      }
+      const lower = name.toLowerCase()
+      if (typeof headers === 'object') {
+        const keys = Object.keys(headers)
+        for (const key of keys) {
+          if (key.toLowerCase() === lower) {
+            const value = headers[key]
+            if (Array.isArray(value)) {
+              return value[0] || ''
+            }
+            if (value && typeof value === 'object' && typeof value.value === 'string') {
+              return value.value
+            }
+            return value || ''
+          }
+        }
+      }
+      return ''
+    },
+    extractFilenameFromDisposition(headerValue) {
+      if (!headerValue || typeof headerValue !== 'string') {
+        return ''
+      }
+      const segments = headerValue.split(';')
+      for (const segment of segments) {
+        const trimmed = segment.trim()
+        if (!trimmed) {
+          continue
+        }
+        if (trimmed.toLowerCase().startsWith("filename*=")) {
+          const value = trimmed.split('=')[1] || ''
+          const encoded = value.replace(/^[^']*''/, '')
+          try {
+            return decodeURIComponent(encoded.replace(/^"|"$/g, ''))
+          } catch (error) {
+            console.warn('extractFilenameFromDisposition decode failed', error)
+            return encoded
+          }
+        }
+        if (trimmed.toLowerCase().startsWith('filename=')) {
+          return trimmed.replace(/^filename=/i, '').replace(/^"|"$/g, '')
+        }
+      }
+      return ''
+    },
+    async loadAttachmentPreview(attachment, options = {}) {
+      const { force = false } = options || {}
+      const entry = this.ensurePreviewCacheEntry(attachment)
+      if (!entry) {
+        throw new Error('ATTACHMENT_PREVIEW_MISSING_KEY')
+      }
+      if (entry.loaded && !force) {
+        return entry
+      }
+      if (entry.promise && !force) {
+        return entry.promise
+      }
+      const params = entry.params || this.buildAttachmentDownloadParams(attachment)
+      if (!params || !Object.keys(params).length) {
+        throw new Error('ATTACHMENT_PREVIEW_MISSING_PARAMS')
+      }
+
+      const entryType = entry.type || this.getAttachmentMediaType(attachment)
+      if (entryType === 'video') {
+        const streamingPromise = (async () => {
+          try {
+            this.updatePreviewCacheEntry(entry.key, { loading: true, error: null })
+            const streamUrl = await this.buildAttachmentStreamingUrl(params)
+            if (!streamUrl) {
+              throw new Error('ATTACHMENT_PREVIEW_STREAM_URL_MISSING')
+            }
+            const updated = this.updatePreviewCacheEntry(entry.key, {
+              blobUrl: streamUrl,
+              mimeType: entry.mimeType || 'video/*',
+              fileName: entry.fileName || this.resolveAttachmentFileName(attachment),
+              loaded: true,
+              loading: false,
+              error: null,
+              promise: null,
+              bytesLength: 0,
+              isStreaming: true
+            })
+            return updated
+          } catch (error) {
+            this.updatePreviewCacheEntry(entry.key, {
+              loading: false,
+              loaded: false,
+              promise: null,
+              error: error?.message || String(error),
+              isStreaming: false
+            })
+            throw error
+          }
+        })()
+        this.updatePreviewCacheEntry(entry.key, { promise: streamingPromise, loading: true, error: null })
+        return streamingPromise
+      }
+
+      const downloadPromise = (async () => {
+        try {
+          this.updatePreviewCacheEntry(entry.key, { loading: true, error: null })
+          const response = await this.$service.support_download_attachment(params)
+          const bytes = this.normalizeBinaryData(response?.data)
+          if (!bytes || !bytes.length) {
+            throw new Error('ATTACHMENT_PREVIEW_EMPTY')
+          }
+          const contentTypeHeader = this.extractResponseHeader(response?.headers, 'content-type')
+          const dispositionHeader = this.extractResponseHeader(response?.headers, 'content-disposition')
+          const mimeType = contentTypeHeader || entry.mimeType || (this.isImageAttachment(attachment) ? 'image/*' : 'video/*')
+          const fileName = this.extractFilenameFromDisposition(dispositionHeader) || entry.fileName || this.resolveAttachmentFileName(attachment)
+          if (entry.blobUrl && String(entry.blobUrl).startsWith('blob:')) {
+            try {
+              URL.revokeObjectURL(entry.blobUrl)
+            } catch (error) {
+              console.warn('attachment preview revoke failed', error)
+            }
+          }
+          const blob = new Blob([bytes], { type: mimeType || 'application/octet-stream' })
+          const objectUrl = URL.createObjectURL(blob)
+          const updated = this.updatePreviewCacheEntry(entry.key, {
+            blobUrl: objectUrl,
+            mimeType,
+            fileName,
+            loaded: true,
+            loading: false,
+            error: null,
+            promise: null,
+            bytesLength: bytes.length,
+            isStreaming: false
+          })
+          return updated
+        } catch (error) {
+          this.updatePreviewCacheEntry(entry.key, {
+            loading: false,
+            loaded: false,
+            promise: null,
+            error: error?.message || String(error),
+            isStreaming: false
+          })
+          throw error
+        }
+      })()
+      this.updatePreviewCacheEntry(entry.key, { promise: downloadPromise, loading: true, error: null })
+      return downloadPromise
+    },
+    async ensurePreviewForIndex(index) {
+      const items = Array.isArray(this.attachmentPreview.items) ? this.attachmentPreview.items : []
+      if (!items.length) {
+        return null
+      }
+      const bounded = Math.min(Math.max(index, 0), items.length - 1)
+      const item = items[bounded]
+      if (!item) {
+        return null
+      }
+      const entry = this.ensurePreviewCacheEntry(item.attachment)
+      if (entry && entry.loaded) {
+        this.attachmentPreview.loading = false
+        this.attachmentPreview.error = null
+        return entry
+      }
+      this.attachmentPreview.loading = true
+      this.attachmentPreview.error = null
+      try {
+        const result = await this.loadAttachmentPreview(item.attachment)
+        this.attachmentPreview.loading = false
+        this.attachmentPreview.error = null
+        return result
+      } catch (error) {
+        const message = error?.message || this.$t('supportAttachmentPreviewFailed')
+        this.attachmentPreview.loading = false
+        this.attachmentPreview.error = message
+        return null
+      }
+    },
+    getAttachmentPreviewEntry(attachment) {
+      const key = this.getAttachmentCacheKey(attachment)
+      if (!key) {
+        return null
+      }
+      return this.attachmentPreviewCache[key] || null
+    },
+    resolveAttachmentThumbnail(attachment) {
+      const entry = this.getAttachmentPreviewEntry(attachment)
+      return entry?.blobUrl || ''
+    },
+    getActivePreviewState() {
+      const items = Array.isArray(this.attachmentPreview.items) ? this.attachmentPreview.items : []
+      if (!items.length) {
+        return { item: null, entry: null }
+      }
+      const index = Math.min(Math.max(this.attachmentPreview.currentIndex, 0), items.length - 1)
+      const item = items[index]
+      const entry = item ? this.getAttachmentPreviewEntry(item.attachment) : null
+      return { item, entry }
+    },
+    getActivePreviewUrl() {
+      const { entry } = this.getActivePreviewState()
+      return entry?.blobUrl || ''
+    },
+    getActivePreviewType() {
+      const { item } = this.getActivePreviewState()
+      return item?.type || 'other'
+    },
+    getActivePreviewName() {
+      const { item } = this.getActivePreviewState()
+      return item?.name || ''
+    },
+    attachmentHasPreviewError(attachment) {
+      const entry = this.getAttachmentPreviewEntry(attachment)
+      return Boolean(entry && entry.error)
+    },
+    async openAttachmentPreview(message, index = 0) {
+      const attachments = this.getMessageMediaAttachments(message)
+      if (!attachments.length) {
+        return
+      }
+      const items = attachments.map((attachment, idx) => ({
+        cacheKey: this.getAttachmentCacheKey(attachment) || `inline-${idx}`,
+        attachment,
+        name: this.resolveAttachmentName(attachment, idx),
+        type: this.getAttachmentMediaType(attachment)
+      }))
+      const boundedIndex = Math.min(Math.max(index, 0), items.length - 1)
+      Object.assign(this.attachmentPreview, {
+        visible: true,
+        items,
+        currentIndex: boundedIndex,
+        loading: false,
+        error: null
+      })
+      this.bindAttachmentPreviewKeydown()
+      // Prefer native dialog when available
+      try {
+        const dlg = this.$refs['attachment-preview']
+        if (dlg && typeof dlg.showModal === 'function') {
+          dlg.showModal()
+        }
+      } catch (e) {
+        // ignore
+      }
+      await this.ensurePreviewForIndex(boundedIndex)
+    },
+    async onAttachmentPreviewNavigate(offset) {
+      if (!this.attachmentPreview.visible) {
+        return
+      }
+      const items = Array.isArray(this.attachmentPreview.items) ? this.attachmentPreview.items : []
+      if (!items.length) {
+        return
+      }
+      let nextIndex = this.attachmentPreview.currentIndex + offset
+      if (nextIndex < 0) {
+        nextIndex = items.length - 1
+      } else if (nextIndex >= items.length) {
+        nextIndex = 0
+      }
+      this.attachmentPreview.currentIndex = nextIndex
+      await this.ensurePreviewForIndex(nextIndex)
+    },
+    async showNextAttachment() {
+      await this.onAttachmentPreviewNavigate(1)
+    },
+    async showPreviousAttachment() {
+      await this.onAttachmentPreviewNavigate(-1)
+    },
+    async jumpToAttachment(index) {
+      if (!this.attachmentPreview.visible) {
+        return
+      }
+      const items = Array.isArray(this.attachmentPreview.items) ? this.attachmentPreview.items : []
+      if (!items.length) {
+        return
+      }
+      const bounded = Math.min(Math.max(index, 0), items.length - 1)
+      this.attachmentPreview.currentIndex = bounded
+      await this.ensurePreviewForIndex(bounded)
+    },
+    handleAttachmentPreviewKeydown(event) {
+      if (!this.attachmentPreview.visible) {
+        return
+      }
+      const key = event.key
+      if (key === 'Escape' || key === 'Esc') {
+        event.preventDefault()
+        this.closeAttachmentPreview()
+        return
+      }
+      if (key === 'ArrowRight' || key === 'Right') {
+        event.preventDefault()
+        this.showNextAttachment()
+        return
+      }
+      if (key === 'ArrowLeft' || key === 'Left') {
+        event.preventDefault()
+        this.showPreviousAttachment()
+        return
+      }
+      if (key === 'Home') {
+        event.preventDefault()
+        this.jumpToAttachment(0)
+        return
+      }
+      if (key === 'End') {
+        event.preventDefault()
+        const lastIndex = (this.attachmentPreview.items?.length || 1) - 1
+        this.jumpToAttachment(lastIndex)
+      }
+    },
+    bindAttachmentPreviewKeydown() {
+      if (this.attachmentPreviewKeyHandler) {
+        return
+      }
+      if (typeof window === 'undefined') {
+        return
+      }
+      this.attachmentPreviewKeyHandler = event => this.handleAttachmentPreviewKeydown(event)
+      window.addEventListener('keydown', this.attachmentPreviewKeyHandler)
+    },
+    unbindAttachmentPreviewKeydown() {
+      if (!this.attachmentPreviewKeyHandler) {
+        return
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('keydown', this.attachmentPreviewKeyHandler)
+      }
+      this.attachmentPreviewKeyHandler = null
+    },
+    closeAttachmentPreview() {
+      if (!this.attachmentPreview.visible) {
+        return
+      }
+      // Attempt to close native dialog if used
+      try {
+        const dlg = this.$refs['attachment-preview']
+        if (dlg && typeof dlg.close === 'function') {
+          dlg.close()
+        }
+      } catch (e) {
+        // ignore
+      }
+      this.unbindAttachmentPreviewKeydown()
+      Object.assign(this.attachmentPreview, {
+        visible: false,
+        items: [],
+        currentIndex: 0,
+        loading: false,
+        error: null
+      })
+    },
+
+    onAttachmentDialogClick(event) {
+      // If user clicked on dialog backdrop (the dialog element itself), close it
+      try {
+        const dlg = this.$refs['attachment-preview']
+        if (event.target === dlg) {
+          this.closeAttachmentPreview()
+        }
+      } catch (e) {
+        // ignore
+      }
+    },
+
+    onAttachmentDialogClose(/* event */) {
+      // Ensure state is cleaned when native dialog is closed
+      this.unbindAttachmentPreviewKeydown()
+      this.attachmentPreview.visible = false
+      this.attachmentPreview.items = []
+      this.attachmentPreview.currentIndex = 0
+      this.attachmentPreview.loading = false
+      this.attachmentPreview.error = null
+    },
+    disposeAttachmentPreview(force = false) {
+      this.unbindAttachmentPreviewKeydown()
+      Object.assign(this.attachmentPreview, {
+        visible: false,
+        items: [],
+        currentIndex: 0,
+        loading: false,
+        error: null
+      })
+      // Close native dialog if present
+      try {
+        const dlg = this.$refs['attachment-preview']
+        if (dlg && typeof dlg.close === 'function') {
+          dlg.close()
+        }
+      } catch (e) {
+        // ignore
+      }
+      if (force) {
+        const entries = Object.values(this.attachmentPreviewCache || {})
+        entries.forEach(entry => {
+          if (entry && entry.blobUrl && String(entry.blobUrl).startsWith('blob:')) {
+            try {
+              URL.revokeObjectURL(entry.blobUrl)
+            } catch (error) {
+              console.warn('disposeAttachmentPreview revoke failed', error)
+            }
+          }
+        })
+        this.attachmentPreviewCache = {}
+      }
+    },
     formatConnection(value) {
       if (!value) return '-'
       const normalized = String(value).trim().toUpperCase()
@@ -760,6 +1954,12 @@ export default {
           .map(message => this.decorateMessageEntry(message))
           .filter(Boolean)
         if (list.length) {
+          // Ensure messages are ordered newest first (top to bottom)
+          list.sort((a, b) => {
+            const ta = Number(a?.created_at ?? a?.timestamp ?? 0) || 0
+            const tb = Number(b?.created_at ?? b?.timestamp ?? 0) || 0
+            return tb - ta
+          })
           return list
         }
       }
@@ -1155,6 +2355,7 @@ export default {
       this.reply.includeLogs = false
       this.clearReplyPreparation()
       this.reply.sending = false
+      this.reply.attachments = []
     },
     clearReplyPreparation() {
       this.reply.preparationToken += 1
@@ -1550,8 +2751,14 @@ export default {
         const serialPayload = this.buildReplySerialPayload()
         const serials = this.normalizeSerialList(serialPayload.map(device => device.realSerial))
         let attachments = []
+        if (this.reply.attachments.length) {
+          const customAttachments = await this.uploadReplyCustomAttachments(serials)
+          attachments = attachments.concat(customAttachments)
+        }
+        let logAttachments = []
         if (this.reply.includeLogs && serials.length) {
-          attachments = await this.prepareReplyAttachments(serials)
+          logAttachments = await this.prepareReplyAttachments(serials)
+          attachments = attachments.concat(logAttachments)
         } else if (this.reply.includeLogs && !serials.length) {
           this.reply.includeLogs = false
           this.clearReplyPreparation()
@@ -1570,7 +2777,7 @@ export default {
           ticketId: ticketId ? String(ticketId) : undefined,
           ticketNo: ticketNo ? String(ticketNo) : undefined,
           message,
-          message_tail: attachments.length ? this.reply.messageTail || '' : '',
+          message_tail: logAttachments.length ? this.reply.messageTail || '' : '',
           source: 'app',
           role: 'customer',
           serials: serialPayload,
@@ -1583,6 +2790,7 @@ export default {
         if (this.reply.includeLogs) {
           this.scheduleReplyLogPreparation()
         }
+        this.reply.attachments = []
         await this.loadTicketDetail(this.currentTicket)
       } catch (error) {
         console.error('support submitReply error', error)
@@ -1948,21 +3156,150 @@ export default {
   gap: 6px;
 }
 
-.attachment-item {
+.attachments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.attachment-card {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  text-align: left;
+  color: inherit;
+}
+
+.attachment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+}
+
+.attachment-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.attachment-thumb {
+  position: relative;
+  width: 100%;
+  padding-top: 66%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-base-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.attachment-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.attachment-thumb-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--color-base-content);
+  opacity: 0.7;
+}
+
+.attachment-thumb-placeholder.error {
+  color: var(--color-error, #f87171);
+  opacity: 1;
+}
+
+.attachment-thumb-placeholder.video svg {
+  width: 32px;
+  height: 32px;
+}
+
+.attachment-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.attachment-item {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
   color: var(--color-base-content);
+  padding: 6px 10px;
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  white-space: nowrap;
 }
 
 .attachment-name {
   font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .attachment-size {
   color: var(--color-base-content);
   font-size: 12px;
+  margin-left: 6px;
+  opacity: 0.8;
+
+}
+
+.attachment-type {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-base-content);
+  opacity: 0.8;
+}
+
+.attachment-type-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--color-base-content);
+  opacity: 0.7;
+}
+
+.attachment-status {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.attachment-status.uploading {
+  color: var(--color-primary);
+}
+
+.attachment-status.error {
+  color: var(--color-error, #f87171);
+}
+
+.attachment-remove {
+  margin-left: 4px;
 }
 
 .reply-card {
@@ -1981,8 +3318,152 @@ export default {
   gap: 8px;
 }
 
+.reply-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reply-attachments .attachments-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reply-attachments .attachments-hint {
+  font-size: 12px;
+  color: var(--color-base-content);
+  opacity: 0.9;
+}
+
+.reply-attachments .attachments-empty {
+  font-size: 12px;
+  color: var(--color-base-content);
+  opacity: 0.8;
+}
+
+.reply-attachments .attachments-list {
+  justify-content: flex-start;
+}
+
 .empty-cell.compact {
   padding: 16px;
   font-size: 14px;
+}
+
+:global(.attachment-preview-overlay) {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1200;
+}
+
+:global(.attachment-preview-modal) {
+  width: min(960px, 92vw);
+  max-height: 92vh;
+  background: var(--color-base-100);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
+}
+
+:global(.attachment-preview-header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+:global(.attachment-preview-title) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--color-base-content);
+}
+
+:global(.attachment-preview-name) {
+  font-size: 18px;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+:global(.attachment-preview-count) {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+:global(.preview-close) {
+  background: var(--color-base-200);
+  border: none;
+  color: var(--color-base-content);
+}
+
+:global(.preview-close:hover) {
+  background: var(--color-base-300);
+}
+
+:global(.attachment-preview-body) {
+  flex: 1;
+  background: var(--color-base-200);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+:global(.attachment-preview-body img),
+:global(.attachment-preview-body video) {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+}
+
+:global(.attachment-preview-loading),
+:global(.attachment-preview-error),
+:global(.attachment-preview-empty) {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-base-content);
+  padding: 24px;
+}
+
+:global(.attachment-preview-error) {
+  color: var(--color-error, #f87171);
+}
+
+:global(.attachment-preview-footer) {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+:global(.preview-nav svg) {
+  width: 20px;
+  height: 20px;
+}
+
+:global(.attachment-preview-fade-enter-active),
+:global(.attachment-preview-fade-leave-active) {
+  transition: opacity 0.2s ease;
+}
+
+:global(.attachment-preview-fade-enter-from),
+:global(.attachment-preview-fade-leave-to) {
+  opacity: 0;
 }
 </style>

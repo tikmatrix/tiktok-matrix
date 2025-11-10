@@ -1,5 +1,6 @@
 import request from '../utils/request'
 import api from '../api'
+import { ResponseType } from '@tauri-apps/api/http'
 export function auth({ password }) {
   return request({
     method: 'post',
@@ -956,6 +957,15 @@ export function support_upload(data) {
   })
 }
 
+export async function support_file_info(data) {
+  const response = await request({
+    method: 'post',
+    url: api.support_file_info,
+    data
+  })
+  return normalizeSupportResponse(response)
+}
+
 export async function support_create_ticket(input, options = {}) {
   const payload = input?.payload ? input.payload : input;
   const attachmentsInput = options.attachments ?? input?.attachmentsFiles ?? input?.attachments;
@@ -1070,4 +1080,14 @@ export async function support_update_status(data) {
     data
   });
   return normalizeSupportResponse(response);
+}
+
+export async function support_download_attachment(params) {
+  return request({
+    method: 'get',
+    url: api.support_download,
+    params,
+    responseType: ResponseType.Binary,
+    rawResponse: true
+  })
 }

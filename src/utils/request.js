@@ -102,8 +102,8 @@ const request = async function request(config) {
       message: `url: ${queryUrl}, code: ${response.status}, message: ${response.data}`,
       timeout: 2000
     });
-    return { code: response.status, data: response.data, error: response.data, }
+    return config.rawResponse ? response : { code: response.status, data: response.data, error: response.data }
   }
-  return response.data
+  return config.rawResponse ? response : response.data
 }
 export default request
