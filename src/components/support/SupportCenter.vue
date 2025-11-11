@@ -1809,8 +1809,10 @@ export default {
           if (!ALLOWED_TAGS.includes(tag)) {
             // unwrap unknown element but keep children
             const parent = node.parentNode
-            while (node.firstChild) parent.insertBefore(node.firstChild, node)
+            const children = Array.from(node.childNodes || [])
+            for (const child of children) parent.insertBefore(child, node)
             parent.removeChild(node)
+            for (const child of children) walk(child)
             return
           }
           // sanitize attributes
