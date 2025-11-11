@@ -615,7 +615,7 @@ export default {
                 await open(downloadUrl);
               }
               this.$refs.download_dialog.close();
-              return;
+              // Continue to check library updates and start agent
             }
           } else {
             console.log('No update available');
