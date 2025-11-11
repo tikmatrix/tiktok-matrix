@@ -303,7 +303,7 @@
                 <span class="message-role" :class="roleClass(message.role)">{{ formatRole(message.role) }}</span>
                 <span class="message-time">{{ message.created_at_display }}</span>
               </header>
-              <div class="conversation-body">{{ message.body }}</div>
+              <div class="conversation-body" v-html="renderMessageBody(message.body)"></div>
               <pre v-if="message.message_tail" class="conversation-tail">{{ message.message_tail }}</pre>
               <div v-if="hasMessageAttachments(message)" class="conversation-attachments">
                 <div class="attachments-summary">
@@ -1788,6 +1788,96 @@ export default {
         }
       }
       return null
+    },
+    // Sanitize simple HTML for message bodies.
+    // Allow a small whitelist of tags and only safe attributes for <a>.
+    sanitizeHtml(html) {
+      if (html === null || html === undefined) return ''
+      const ALLOWED_TAGS = ['b', 'strong', 'i', 'em', 'u', 'br', 'p', 'a', 'ul', 'ol', 'li', 'code', 'pre']
+      try {
+        const parser = new DOMParser()
+        const doc = parser.parseFromString(String(html), 'text/html')
+        const walk = node => {
+          if (!node) return
+          const nodeType = node.nodeType
+          if (nodeType === Node.TEXT_NODE) return
+          if (nodeType !== Node.ELEMENT_NODE) {
+            node.remove()
+            return
+          }
+          const tag = node.tagName.toLowerCase()
+          if (!ALLOWED_TAGS.includes(tag)) {
+            // unwrap unknown element but keep children
+            const parent = node.parentNode
+            const children = Array.from(node.childNodes || [])
+            for (const child of children) parent.insertBefore(child, node)
+            parent.removeChild(node)
+            for (const child of children) walk(child)
+            return
+          }
+          // sanitize attributes
+          const attrs = Array.from(node.attributes || [])
+          for (const attr of attrs) {
+            const name = attr.name.toLowerCase()
+            const value = attr.value || ''
+            if (name.startsWith('on')) {
+              node.removeAttribute(attr.name)
+              continue
+            }
+            // disallow style, id, class to avoid injection via css or selectors
+            if (name === 'style' || name === 'id' || name === 'class') {
+              node.removeAttribute(attr.name)
+              continue
+            }
+            if (tag === 'a' && name === 'href') {
+              const url = value.trim()
+              // allow http(s), mailto, tel only
+              if (!/^(https?:|mailto:|tel:)/i.test(url)) {
+                node.removeAttribute('href')
+              } else {
+                // enforce safe target/rel
+                node.setAttribute('target', '_blank')
+                node.setAttribute('rel', 'noopener noreferrer')
+                node.setAttribute('href', url)
+              }
+              continue
+            }
+            // remove any other attributes
+            node.removeAttribute(attr.name)
+          }
+          // recurse children
+          const children = Array.from(node.childNodes || [])
+          for (const child of children) walk(child)
+        }
+
+        const body = doc.body
+        const children = Array.from(body.childNodes)
+        for (const child of children) walk(child)
+        return body.innerHTML
+      } catch (error) {
+        // fallback to escaped text
+        const escaped = String(html)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+        return escaped.replace(/\r?\n/g, '<br>')
+      }
+    },
+
+    renderMessageBody(body) {
+      if (body === null || body === undefined) return ''
+      const str = typeof body === 'string' ? body : String(body)
+      // if contains possible tags, sanitize and render; otherwise escape and convert newlines
+      if (str.includes('<') && str.includes('>')) {
+        return this.sanitizeHtml(str)
+      }
+      const escaped = str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+      return escaped.replace(/\r?\n/g, '<br>')
     },
     toArray(value) {
       if (!value) return []

@@ -70,8 +70,10 @@
                   <span v-else class="text text-error">{{ $t('offline') }}</span>
                 </td>
                 <td>
-                  <span v-if="account.logined == 1" class="text text-success">{{ $t('logined') }}</span>
-                  <span v-else class="text text-error">{{ $t('unlogined') }}</span>
+                  <span v-if="account.logined == 1" class="badge badge-success cursor-pointer"
+                    @click="toggleLoginStatus(account)">{{ $t('logined') }}</span>
+                  <span v-else class="badge badge-error cursor-pointer" @click="toggleLoginStatus(account)">{{
+                    $t('unlogined') }}</span>
                 </td>
                 <td>
                   <span v-if="account.status == 0" class="badge badge-success cursor-pointer"
@@ -85,7 +87,8 @@
                     <div v-for="tag in accountTags[accountTagKey(account)] || []" :key="tag"
                       class="badge badge-primary badge-outline gap-1">
                       {{ tag }}
-                      <button @click="removeTag(accountTagKey(account), tag)" class="btn btn-md btn-circle btn-ghost">×</button>
+                      <button @click="removeTag(accountTagKey(account), tag)"
+                        class="btn btn-md btn-circle btn-ghost">×</button>
                     </div>
                     <div class="dropdown dropdown-hover">
                       <label tabindex="0" class="btn btn-md btn-circle btn-outline">+</label>
@@ -106,8 +109,9 @@
                           <div>
                             <div class="text-md font-semibold mb-1">{{ $t('newTag') }}</div>
                             <div class="join">
-                              <input v-model="newTagInput[accountTagKey(account)]" class="input input-bordered input-md join-item"
-                                :placeholder="$t('enterNewTag')" @keyup.enter="addTag(accountTagKey(account))" />
+                              <input v-model="newTagInput[accountTagKey(account)]"
+                                class="input input-bordered input-md join-item" :placeholder="$t('enterNewTag')"
+                                @keyup.enter="addTag(accountTagKey(account))" />
                               <button class="btn btn-md btn-primary join-item" @click="addTag(accountTagKey(account))">
                                 {{ $t('add') }}
                               </button>
@@ -702,6 +706,15 @@ export default {
       const updatedAccount = {
         ...account,
         status: account.status === 0 ? 1 : 0
+      };
+      await this.$service.update_account(updatedAccount);
+      this.get_accounts();
+    },
+    // 切换登录状态（logined 字段）
+    async toggleLoginStatus(account) {
+      const updatedAccount = {
+        ...account,
+        logined: account.logined === 1 ? 0 : 1
       };
       await this.$service.update_account(updatedAccount);
       this.get_accounts();
