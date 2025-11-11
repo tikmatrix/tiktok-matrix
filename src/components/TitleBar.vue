@@ -276,7 +276,7 @@ import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
 import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
-import { Command } from '@tauri-apps/api/shell'
+import { Command, open } from '@tauri-apps/api/shell'
 import AgentErrorDialog from './AgentErrorDialog.vue';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 import { isFeatureUnlocked } from '../utils/features.js';
@@ -580,21 +580,42 @@ export default {
 
       let platform = await this.getPlatform();
 
-      if (platform === 'windows' && !silent) {
-        // Only check Tauri update on Windows in non-silent mode
+      // Check for Tauri updates (Windows auto-updates, Mac manual download)
+      if (!silent) {
         try {
           const { shouldUpdate, manifest } = await checkUpdate();
           if (shouldUpdate) {
             console.log(
-              `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
+              `Update available ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
             );
-            const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
-            if (yes) {
-              this.check_update_dialog_title = 'Downloading update...';
-              await this.shutdown();
-              await installUpdate();
-              await relaunch();
-              return;
+            
+            if (platform === 'windows') {
+              // Windows: Auto-update via Tauri
+              const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
+              if (yes) {
+                this.check_update_dialog_title = 'Downloading update...';
+                await this.shutdown();
+                await installUpdate();
+                await relaunch();
+                return;
+              }
+            } else {
+              // macOS: Prompt user to download manually
+              const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
+                ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
+                : `${this.whitelabelConfig.officialWebsite}/Download`;
+              
+              const yes = await ask(
+                this.$t('macUpdatePrompt', { version: manifest?.version }),
+                this.$t('macUpdateAvailable')
+              );
+              
+              if (yes) {
+                console.log('Opening download page:', downloadUrl);
+                await open(downloadUrl);
+              }
+              this.$refs.download_dialog.close();
+              // Continue to check library updates and start agent
             }
           } else {
             console.log('No update available');
