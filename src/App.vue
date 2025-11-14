@@ -188,10 +188,10 @@ export default {
       }
       const delay = this.getWsReconnectDelay();
       console.log(`ws reconnect scheduled in ${delay}ms`);
-      this.wsReconnectTimer = setTimeout(() => {
+      this.wsReconnectTimer = setTimeout(async () => {
         this.wsReconnectTimer = null;
         this.wsReconnectAttempts += 1;
-        this.initializeWebSocket();
+        await this.connectAgent();
       }, delay);
     },
 
@@ -301,6 +301,7 @@ export default {
       this.ws.onclose = async (event) => {
         console.log('ws close', event?.code, event?.reason)
         this.ws = null;
+        this.devices = []
         if (this.wsShouldReconnect) {
           this.scheduleWsReconnect();
         }
@@ -399,7 +400,6 @@ export default {
           dir: BaseDirectory.AppData
         });
 
-        console.log('设备信息已成功保存到应用目录');
       } catch (error) {
         console.error('保存设备信息失败:', error);
       }
@@ -514,7 +514,6 @@ export default {
 
         // 获取分发商代码 - 从环境变量读取(编译时注入)
         const distributorCode = await invoke('get_env', { key: 'DISTRIBUTOR_CODE' }) || 'OFFICIAL';
-        console.log('Distributor code:', distributorCode);
 
         // 获取机器ID
         const machineId = await invoke('get_env', { key: 'MACHINE_ID' }) || 'UNKNOWN';
@@ -528,20 +527,14 @@ export default {
         const osArch = await arch();       // 'x86_64', 'aarch64'
         const osFullVersion = `${osType} ${osVersion} (${osArch})`;
 
-        console.log('App version:', appVersion);
-        console.log('OS Info:', osFullVersion);
 
         // 上报安装信息
-        const result = await this.$service.report_distributor_install({
+        await this.$service.report_distributor_install({
           distributor_code: distributorCode,
           app_version: appVersion,
           os_version: osFullVersion,
           machine_id: machineId
         });
-
-        console.log('Distributor report result:', result);
-
-
       } catch (error) {
         console.error('Failed to initialize distributor:', error);
       }
