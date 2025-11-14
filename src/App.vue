@@ -46,6 +46,10 @@ export default {
       groups: [],
       showSidebar: true,
       ws: null,
+      wsUrl: '',
+      wsShouldReconnect: false,
+      wsReconnectAttempts: 0,
+      wsReconnectTimer: null,
       running_devices: [],
       selecedDevices: [],
       listeners: [],
@@ -161,16 +165,86 @@ export default {
         })
       })
     },
-    async connectAgent() {
-      const wsPort = await readTextFile('wssport.txt', { dir: BaseDirectory.AppData });
-      if (wsPort === '0') {
+    normalizeWsUrl(url = '') {
+      return typeof url === 'string' ? url.replace(/\/$/, '') : '';
+    },
+
+    clearWsReconnectTimer() {
+      if (this.wsReconnectTimer) {
+        clearTimeout(this.wsReconnectTimer);
+        this.wsReconnectTimer = null;
+      }
+    },
+
+    getWsReconnectDelay() {
+      const baseDelay = 2000;
+      const maxDelay = 30000;
+      return Math.min(maxDelay, baseDelay * Math.pow(2, this.wsReconnectAttempts));
+    },
+
+    scheduleWsReconnect() {
+      if (!this.wsShouldReconnect || this.wsReconnectTimer) {
         return;
       }
-      const wsUrl = `ws://localhost:${wsPort}`
-      console.log(wsUrl)
-      this.ws = new WebSocket(wsUrl)
+      const delay = this.getWsReconnectDelay();
+      console.log(`ws reconnect scheduled in ${delay}ms`);
+      this.wsReconnectTimer = setTimeout(() => {
+        this.wsReconnectTimer = null;
+        this.wsReconnectAttempts += 1;
+        this.initializeWebSocket();
+      }, delay);
+    },
+
+    cleanupWebSocket(stopReconnect = false) {
+      if (stopReconnect) {
+        this.wsShouldReconnect = false;
+        this.wsReconnectAttempts = 0;
+        this.clearWsReconnectTimer();
+      }
+      if (!this.ws) {
+        return;
+      }
+      try {
+        this.ws.onopen = null;
+        this.ws.onmessage = null;
+        this.ws.onclose = null;
+        this.ws.onerror = null;
+        if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+          this.ws.close();
+        }
+      } catch (error) {
+        console.error('cleanupWebSocket error', error);
+      }
+      this.ws = null;
+    },
+
+    initializeWebSocket() {
+      if (!this.wsUrl) {
+        return;
+      }
+
+      if (this.ws) {
+        const isActive = this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING;
+        const sameUrl = this.normalizeWsUrl(this.ws.url) === this.normalizeWsUrl(this.wsUrl);
+        if (isActive && sameUrl) {
+          console.log('ws already connected or connecting');
+          return;
+        }
+        this.cleanupWebSocket();
+      }
+
+      try {
+        this.ws = new WebSocket(this.wsUrl);
+      } catch (error) {
+        console.error('failed to create websocket', error);
+        this.scheduleWsReconnect();
+        return;
+      }
+
       this.ws.onopen = async () => {
-        console.log('ws open')
+        console.log('ws open');
+        this.wsReconnectAttempts = 0;
+        this.clearWsReconnectTimer();
       }
       this.ws.onmessage = async (e) => {
         // console.log(e.data)
@@ -224,12 +298,33 @@ export default {
           await this.$emiter('heartbeat', {})
         }
       }
-      this.ws.onclose = async () => {
-        console.log('ws close')
+      this.ws.onclose = async (event) => {
+        console.log('ws close', event?.code, event?.reason)
+        this.ws = null;
+        if (this.wsShouldReconnect) {
+          this.scheduleWsReconnect();
+        }
       }
       this.ws.onerror = async (e) => {
-        console.log(e)
+        console.error('ws error', e)
+        if (this.ws && this.ws.readyState !== WebSocket.CLOSING && this.ws.readyState !== WebSocket.CLOSED) {
+          this.ws.close();
+        }
       }
+    },
+
+    async connectAgent() {
+      const wsPort = await readTextFile('wssport.txt', { dir: BaseDirectory.AppData });
+      if (wsPort === '0') {
+        this.cleanupWebSocket(true);
+        return;
+      }
+      this.wsUrl = `ws://localhost:${wsPort}`
+      console.log(this.wsUrl)
+      this.wsShouldReconnect = true;
+      this.wsReconnectAttempts = 0;
+      this.clearWsReconnectTimer();
+      this.initializeWebSocket();
     },
     async getDevices() {
       try {
@@ -537,6 +632,9 @@ export default {
     // 清理自动更新相关资源
     this.removeUserActivityListeners();
     this.stopAutoUpdateTimer();
+
+    // 清理 WebSocket 资源
+    this.cleanupWebSocket(true);
   }
 }
 </script>
