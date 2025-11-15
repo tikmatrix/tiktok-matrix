@@ -29,6 +29,15 @@
               class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
               @mousemove="mouseMoveListener" tabindex="0" @keydown="keyDownListener" @keyup="keyUpListener"></canvas>
+            <img v-if="firstFrameImageUrl && !videoStarted" :src="firstFrameImageUrl"
+              class="absolute top-0 left-0 w-full h-full object-contain pointer-events-none select-none"
+              alt="first frame preview" />
+            <!-- Connecting overlay when first frame is shown but scrcpy is not ready -->
+            <div
+              class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center backdrop-blur-[2px] pointer-events-none"
+              v-if="firstFrameImageUrl && !videoStarted && this.big">
+
+            </div>
             <div @click="$emiter('openDevice', this.device)"
               class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
               <div class="bg-transparent p-2 rounded-md text-center">
@@ -95,6 +104,7 @@ import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
+const FIRST_FRAME_PREFIX = 'FIRST_FRAME_BASE64:';
 export default {
   name: 'Miniremote',
   components: {
@@ -145,15 +155,26 @@ export default {
       frameQueue: [],
       isRenderingFrame: false,
       configBuffer: undefined,
+      firstFrameRendered: false,
+      firstFrameImageUrl: null,
+      videoStarted: false,
       i18n: {
         preparing: '',
         running: '',
-        ready: ''
+        ready: '',
+        loading: '',
+        connecting: ''
       }
     }
   },
   computed: {
     getTaskStatus() {
+      if (this.loading) {
+        return this.i18n.loading
+      }
+      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+        return this.i18n.connecting
+      }
       if (this.device.task_status == -1) {
         return this.i18n.preparing
       }
@@ -175,6 +196,12 @@ export default {
       return 'text-md';
     },
     getTaskStatusColor() {
+      if (this.loading) {
+        return 'status-success'
+      }
+      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+        return 'status-success'
+      }
       if (this.device.task_status == -1) {
         return 'status-warning'
       }
@@ -187,6 +214,12 @@ export default {
       return 'status-warning'
     },
     getTaskStatusTextColor() {
+      if (this.loading) {
+        return 'text-success'
+      }
+      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+        return 'text-success'
+      }
       if (this.device.task_status == -1) {
         return 'text-warning'
       }
@@ -226,13 +259,13 @@ export default {
   },
   watch: {
     scaled(newVal) {
-      // console.log(`scaled: ${newVal}`)
+      // console.debug(`scaled: ${newVal}`)
       if (this.real_width == 0 || this.real_height == 0 || newVal == 0) {
         return
       }
       this.width = this.real_width * newVal
       this.height = this.real_height * newVal
-      // console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
+      // console.debug(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
       this.$emit('sizeChanged', this.width)
     },
     async width(newVal) {
@@ -278,6 +311,9 @@ export default {
       if (!this.big) {
         return
       }
+      if (!this.videoStarted) {
+        return
+      }
       var e = event
       if (e.originalEvent) {
         e = e.originalEvent
@@ -298,7 +334,7 @@ export default {
       await this.$emiter('eventData', data)
     },
     mouseMoveListener(event) {
-      if (this.loading) {
+      if (this.loading || !this.videoStarted) {
         return
       }
       if (!this.touch) {
@@ -317,7 +353,7 @@ export default {
       this.touchSync('u', event)
     },
     mouseLeaveListener(event) {
-      if (this.loading) {
+      if (this.loading || !this.videoStarted) {
         return
       }
       if (!this.touch) {
@@ -327,7 +363,7 @@ export default {
       this.touchSync('u', event)
 
     }, async keyDownListener(event) {
-      if (!this.big) {
+      if (!this.big || !this.videoStarted) {
         return
       }
 
@@ -362,7 +398,7 @@ export default {
         await this.$emiter('eventData', data)
       }
     }, async keyUpListener(event) {
-      if (!this.big) {
+      if (!this.big || !this.videoStarted) {
         return
       }
 
@@ -388,6 +424,85 @@ export default {
           keycode: keyCode
         })
         await this.$emiter('eventData', data)
+      }
+    },
+    base64ToUint8Array(base64Data) {
+      try {
+        const binaryString = window.atob(base64Data)
+        const len = binaryString.length
+        const bytes = new Uint8Array(len)
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i)
+        }
+        return bytes
+      } catch (error) {
+        console.error(`${this.no}-${this.device.serial} convert base64 failed:`, error)
+        return null
+      }
+    },
+    async blobToImageSource(blob) {
+      if ('createImageBitmap' in window) {
+        return await createImageBitmap(blob)
+      }
+      return await new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => {
+          URL.revokeObjectURL(img.src)
+          resolve(img)
+        }
+        img.onerror = err => {
+          URL.revokeObjectURL(img.src)
+          reject(err)
+        }
+        img.src = URL.createObjectURL(blob)
+      })
+    },
+    drawFirstFrameImage(image) {
+      const canvas = this.$refs.canvas
+      if (!canvas) {
+        return
+      }
+      if (!this.canvasCtx) {
+        this.canvasCtx = canvas.getContext('2d')
+      }
+      const width = image.width || image.naturalWidth || this.real_width || this.width
+      const height = image.height || image.naturalHeight || this.real_height || this.height
+      if (!width || !height || !this.canvasCtx) {
+        return
+      }
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width
+        canvas.height = height
+      }
+      if (this.real_width === 0 || this.real_height === 0) {
+        this.real_width = width
+        this.real_height = height
+      }
+      this.canvasCtx.drawImage(image, 0, 0, canvas.width, canvas.height)
+      if (typeof image.close === 'function') {
+        image.close()
+      }
+      this.firstFrameRendered = true
+    },
+    async renderFirstFramePreview(base64Data) {
+      if (this.firstFrameRendered) {
+        return
+      }
+      try {
+        this.firstFrameImageUrl = `data:image/png;base64,${base64Data}`
+        this.videoStarted = false
+        this.loading = false
+        const bytes = this.base64ToUint8Array(base64Data)
+        if (!bytes) {
+          this.firstFrameImageUrl = null
+          return
+        }
+        const blob = new Blob([bytes], { type: 'image/png' })
+        const image = await this.blobToImageSource(blob)
+        this.drawFirstFrameImage(image)
+      } catch (error) {
+        this.firstFrameImageUrl = null
+        console.error(`${this.no}-${this.device.serial} render first frame failed:`, error)
       }
     },
     mapKeyToAndroid(code, key) {
@@ -462,7 +577,7 @@ export default {
       return inputableKeys.includes(event.code)
     },
     mouseDownListener(event) {
-      if (this.loading) {
+      if (this.loading || !this.videoStarted) {
         return
       }
       // 让canvas获得焦点以接收键盘事件
@@ -486,7 +601,7 @@ export default {
             console.error(`${this.no}Error VideoDecoder:`, error, `code: ${error.code}`);
           },
         });
-        // console.log(`${this.no}-${this.device.serial} videoDecoder initialized`)
+        // console.debug(`${this.no}-${this.device.serial} videoDecoder initialized`)
 
 
       } catch (e) {
@@ -510,6 +625,10 @@ export default {
           }
 
           this.canvasCtx.drawImage(frame, 0, 0);
+          if (!this.videoStarted) {
+            this.videoStarted = true
+            this.firstFrameImageUrl = null
+          }
         }
         frame.close(); // 重要：使用完毕后释放资源
       }
@@ -573,7 +692,7 @@ export default {
             codec: codec,
             optimizeForLatency: true,
           });
-          // console.log(`${this.no}-${this.device.serial} configure`)
+          // console.debug(`${this.no}-${this.device.serial} configure`)
           return
         }
 
@@ -584,7 +703,7 @@ export default {
         if (this.videoDecoder.state === 'configured') {
           //check queue length
           if (this.frameQueue.length > 5 && !isIDR) {
-            console.log(`${this.no}-${this.device.serial} frameQueue is full(${this.frameQueue.length}), skip`)
+            console.debug(`${this.no}-${this.device.serial} frameQueue is full(${this.frameQueue.length}), skip`)
             return
           }
           const chunk = new EncodedVideoChunk({
@@ -595,7 +714,7 @@ export default {
           this.videoDecoder.decode(chunk);
         } else {
           if (this.videoDecoder.state === 'closed' && !this.loading) {
-            console.log(`${this.no}-${this.device.serial} videoDecoder is closed, loading`)
+            console.debug(`${this.no}-${this.device.serial} videoDecoder is closed, loading`)
             this.loading = true
           }
         }
@@ -611,7 +730,7 @@ export default {
       this.scrcpy = new WebSocket(wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        // console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onopen`)
+        // console.debug(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onopen`)
         let max_size = this.big ? 1024 : this.screenResolution
         this.scrcpy.send(`${this.device.serial}`)
         // max size
@@ -620,13 +739,20 @@ export default {
         this.scrcpy.send('true')
         // fps
         this.scrcpy.send(this.big ? 30 : 15)
+        // capabilities
+        this.scrcpy.send(JSON.stringify({
+          type: 'capabilities',
+          firstFramePreview: true
+        }))
       }
-      this.scrcpy.onclose = () => {
+      this.scrcpy.onclose = (event) => {
         this.loading = true
-        // console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onclose`)
+        this.videoStarted = false
+        console.log('ws close', event?.code, event?.reason)
       }
       this.scrcpy.onerror = () => {
         this.loading = true
+        this.videoStarted = false
         console.error(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onerror`)
         // 关闭解码器
         if (this.videoDecoder) {
@@ -635,8 +761,17 @@ export default {
         }
       }
       this.scrcpy.onmessage = message => {
-        this.loading = false
+        if (this.message_index >= 2 && typeof message.data === 'string') {
+          if (message.data.startsWith(FIRST_FRAME_PREFIX)) {
+            console.debug(`${this.no}-${this.device.serial} receive first frame preview, time: ${new Date().toISOString()}`)
+            this.renderFirstFramePreview(message.data.slice(FIRST_FRAME_PREFIX.length))
+          } else {
+            console.debug('scrcpy string message ignored', message.data)
+          }
+          return
+        }
         if (this.message_index < 2) {
+          console.debug(`receive init message index: ${this.message_index}, data: ${message.data}, time: ${new Date().toISOString()}`)
           switch (this.message_index) {
             case 0: {
               this.name = message.data;
@@ -653,39 +788,52 @@ export default {
             case 1: {
               if (this.big || this.width != this.default_width) {
                 this.message_index += 1
+                console.debug(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
                 return;
               }
               const [widthStr, heightStr] = message.data.split('x')
               this.real_width = widthStr
               this.real_height = heightStr
               this.scaled = this.height / this.real_height
-              // console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
+              // console.debug(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
 
               break
             }
           }
           this.message_index += 1
+          // Mark scrcpy as ready after handshake completes
+          if (this.message_index >= 2) {
+            console.debug(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
+          }
           return
         }
-
+        this.loading = false
         // 使用WebCodecs处理视频数据
         this.processH264Data(message.data);
       }
     },
     syncDisplay() {
       this.loading = true
+      this.firstFrameRendered = false
+      this.firstFrameImageUrl = null
+      this.videoStarted = false
+      this.message_index = 0
       // 初始化WebCodecs
       this.initializeWebCodecs();
       this.connect();
     },
     closeScrcpy() {
+      this.firstFrameRendered = false
+      this.firstFrameImageUrl = null
+      this.videoStarted = false
+      this.message_index = 0
       if (this.scrcpy) {
         try {
           // 检查连接状态
           if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
             // 发送关闭帧
             this.scrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
-            // console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
+            // console.debug(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
           }
 
           // 清空事件处理器
@@ -693,7 +841,7 @@ export default {
           this.scrcpy.onmessage = null;
           this.scrcpy.onclose = null;
           this.scrcpy.onopen = null;
-          // console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
+          // console.debug(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
 
 
         } catch (error) {
@@ -754,6 +902,8 @@ export default {
     this.i18n.preparing = this.$t('preparing');
     this.i18n.running = this.$t('running');
     this.i18n.ready = this.$t('ready');
+    this.i18n.loading = this.$t('loading');
+    this.i18n.connecting = this.$t('connecting');
     this.big = this.bigSize;
 
     this.listeners.push(await this.$listen('closeDevice', async (e) => {
@@ -815,7 +965,7 @@ export default {
       }
     }))
     this.listeners.push(await this.$listen('refreshDevice', (e) => {
-      console.log('refreshDevice', e.payload)
+      console.debug('refreshDevice', e.payload)
       this.closeScrcpy()
       this.closeDecoder()
       this.syncDisplay()
@@ -838,10 +988,10 @@ export default {
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        console.log(`${this.no}-${this.device.serial} hidden`)
+        console.debug(`${this.no}-${this.device.serial} hidden`)
         this.visible = false
       } else {
-        console.log(`${this.no}-${this.device.serial} visible`)
+        console.debug(`${this.no}-${this.device.serial} visible`)
         this.visible = true
       }
     })

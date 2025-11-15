@@ -56,7 +56,7 @@ const createDefaultWarmupSettings = () => ({
   train_start_time: '',
   min_duration: 10,
   max_duration: 90,
-  train_duration: 300,
+  task_duration: 300,
   topic: '',
   comment: '',
   generate_by_chatgpt: false,
@@ -77,7 +77,7 @@ const createDefaultWarmupSettings = () => ({
 const DEFAULT_WARMUP_SETTINGS_TEMPLATE = createDefaultWarmupSettings();
 
 const WARMUP_SETTING_KEYS = [
-  'auto_train', 'train_start_time', 'min_duration', 'max_duration', 'train_duration',
+  'auto_train', 'train_start_time', 'min_duration', 'max_duration', 'task_duration',
   'topic', 'comment', 'generate_by_chatgpt', 'chatgpt_settings', 'insert_emoji',
   'comment_order', 'floow_probable', 'like_probable', 'collect_probable', 'comment_probable'
 ];
@@ -97,7 +97,7 @@ export default {
     formDataForFields() {
       const minDuration = this.min_duration ?? 10;
       const maxDuration = this.max_duration ?? 90;
-      const trainDuration = this.train_duration || 300;
+      const trainDuration = this.task_duration || 300;
 
       return {
         view_duration: [minDuration, maxDuration],
@@ -124,7 +124,7 @@ export default {
         train_start_time: '',
         min_duration: defaults.min_duration,
         max_duration: defaults.max_duration,
-        train_duration: defaults.train_duration,
+        task_duration: defaults.task_duration,
         topic: '',
         comment: '',
         generate_by_chatgpt: defaults.generate_by_chatgpt,
@@ -255,7 +255,7 @@ export default {
 
     applyGroupOverrides() {
       const overrideKeys = [
-        'auto_train', 'train_start_time', 'min_duration', 'max_duration', 'train_duration',
+        'auto_train', 'train_start_time', 'min_duration', 'max_duration', 'task_duration',
         'topic', 'comment', 'generate_by_chatgpt', 'chatgpt_settings', 'insert_emoji',
         'comment_order', 'floow_probable', 'like_probable', 'collect_probable', 'comment_probable'
       ];
@@ -358,7 +358,7 @@ export default {
 
       // 处理 taskDurationInMinutes
       if (newData.taskDurationInMinutes !== undefined) {
-        this.train_duration = newData.taskDurationInMinutes * 60;
+        this.task_duration = newData.taskDurationInMinutes * 60;
       }
 
       // 处理 chatgpt_settings
