@@ -243,6 +243,7 @@ export default {
 
       this.ws.onopen = async () => {
         console.log('ws open');
+        await this.getDevices();
         this.wsReconnectAttempts = 0;
         this.clearWsReconnectTimer();
       }
@@ -562,7 +563,7 @@ export default {
       await this.initDistributor();
       await this.get_settings()
       await this.get_groups()
-      await this.getDevices();
+
       await this.connectAgent();
       await this.getRunningTasks();
       await this.$emiter('reload_tasks', {})
