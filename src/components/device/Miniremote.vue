@@ -829,24 +829,29 @@ export default {
       this.message_index = 0
       if (this.scrcpy) {
         try {
-          // 检查连接状态
-          if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
-            // 发送关闭帧
+          // Only send close frame if connection is fully open
+          if (this.scrcpy.readyState === WebSocket.OPEN) {
+            // Send close frame
             this.scrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
             // console.debug(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
           }
 
-          // 清空事件处理器
+          // Clear event handlers
           this.scrcpy.onerror = null;
           this.scrcpy.onmessage = null;
           this.scrcpy.onclose = null;
           this.scrcpy.onopen = null;
+
+          // Close the WebSocket connection
+          if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
+            this.scrcpy.close();
+          }
           // console.debug(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
 
 
         } catch (error) {
-          console.error(`关闭 WebSocket 连接时出错: ${error}`);
-          // 确保即使出错也能清理资源
+          console.error(`Error closing WebSocket connection: ${error}`);
+          // Ensure resources are cleaned up even if error occurs
           this.scrcpy = null;
           this.message_index = 0;
         }
