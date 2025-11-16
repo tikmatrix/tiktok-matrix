@@ -483,6 +483,14 @@ export function scan_tcp(data) {
     url: api.scan_tcp
   })
 }
+
+export function scan_tcp_details(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.scan_tcp_details
+  })
+}
 export function stop_task(data) {
   return request({
     method: 'post',
