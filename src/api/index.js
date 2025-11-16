@@ -40,6 +40,7 @@ const api = {
   adb_command: '/agent/api/adb_command',
   script: '/agent/api/script',
   scan_tcp: '/agent/api/tcp_scan',
+  scan_tcp_details: '/agent/api/tcp_scan_details',
   stop_task: '/agent/api/stop_task',
   menus: '/api/menus',
   get_accounts_by_device: '/api/account_by_device',

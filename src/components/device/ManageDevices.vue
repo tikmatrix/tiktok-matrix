@@ -230,8 +230,26 @@
       </div>
       <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
       <input class="input input-bordered input-md w-24 ring" type="number" v-model="port" />
-      <MyButton @click="scan" label="startScan" :showLoading="scaning" icon="fa fa-search" />
-      <span class="label-text ml-2">{{ scanResult }}</span>
+      <div class="flex flex-wrap items-center gap-2 mt-4">
+        <MyButton @click="scan" label="startScan" :showLoading="scaning" icon="fa fa-search" />
+        <span class="label-text">{{ scanResult }}</span>
+      </div>
+      <div class="mt-3 space-y-2" v-if="scanDetails.length">
+        <h5 class="font-bold text-sm">{{ $t('scanDetailsTitle') }}</h5>
+        <div
+          class="max-h-48 overflow-y-auto rounded-xl border border-base-200 bg-base-100/70 divide-y divide-base-200 text-sm">
+          <div v-for="(detail, index) in scanDetails" :key="`${detail.ip}-${index}`" class="px-3 py-2 space-y-1">
+            <div class="flex items-center justify-between gap-3">
+              <span class="font-mono text-base-content/80">{{ detail.ip }}</span>
+              <span :class="scanDetailStatusClass(detail)">{{ scanDetailStatusLabel(detail) }}</span>
+            </div>
+            <span class="text-xs text-base-content/60 break-all" :title="detail.message">{{ detail.message }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 text-sm text-base-content/70" v-else-if="scanSummary">
+        {{ $t('scanNoDevices') }}
+      </div>
     </div>
     <form method="dialog" class="modal-backdrop">
       <button>close</button>
@@ -365,6 +383,8 @@ export default {
       proxy_port: 8080,
       scaning: false,
       scanResult: '',
+      scanSummary: null,
+      scanDetails: [],
       groups: [],
       currentDevice: null,
       cardMinWidth: 150,
@@ -826,22 +846,63 @@ export default {
 
     async scan() {
       this.scaning = true
-      await Promise.all([
-        setItem('ip_1', this.ip_1),
-        setItem('ip_2', this.ip_2),
-        setItem('ip_3', this.ip_3),
-        setItem('ip_4', this.ip_4),
-        setItem('ip_5', this.ip_5),
-        setItem('scan_port', this.port)
-      ])
-      this.$service.scan_tcp({
-        start_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_4}`,
-        end_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_5}`,
-        port: Number(this.port)
-      }).then((res) => {
+      this.scanResult = ''
+      this.scanSummary = null
+      this.scanDetails = []
+      try {
+        await Promise.all([
+          setItem('ip_1', this.ip_1),
+          setItem('ip_2', this.ip_2),
+          setItem('ip_3', this.ip_3),
+          setItem('ip_4', this.ip_4),
+          setItem('ip_5', this.ip_5),
+          setItem('scan_port', this.port)
+        ])
+        const payload = {
+          start_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_4}`,
+          end_ip: `${this.ip_1}.${this.ip_2}.${this.ip_3}.${this.ip_5}`,
+          port: Number(this.port)
+        }
+
+        let summary
+        try {
+          const res = await this.$service.scan_tcp_details(payload)
+          summary = res?.data || res || {}
+        } catch (err) {
+          console.warn('scan_tcp_details unavailable, fallback to legacy api', err)
+          const legacyRes = await this.$service.scan_tcp(payload)
+          const legacyCount = Number(legacyRes?.data ?? legacyRes ?? 0) || 0
+          summary = {
+            total: legacyCount,
+            success: legacyCount,
+            failed: 0,
+            details: []
+          }
+        }
+        const successCount = summary?.success ?? 0
+        const failedCount = summary?.failed ?? 0
+        const successText = this.$t('scanSuccessCount', { count: successCount })
+        const failedText = this.$t('scanFailureCount', { count: failedCount })
+        this.scanSummary = summary
+        this.scanResult = `${successText} · ${failedText}`
+        this.scanDetails = Array.isArray(summary.details) ? summary.details : []
+      } catch (error) {
+        console.error('TCP scan failed:', error)
+        this.scanResult = this.$t('scanFailedGeneric')
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('scanFailedGeneric'),
+          timeout: 3000
+        })
+      } finally {
         this.scaning = false
-        this.scanResult = `${res.data} ${this.$t('deviceFound')}`
-      })
+      }
+    },
+    scanDetailStatusClass(detail) {
+      return detail?.success ? 'text-success font-semibold' : 'text-error font-semibold'
+    },
+    scanDetailStatusLabel(detail) {
+      return detail?.success ? this.$t('scanStatusConnected') : this.$t('scanStatusFailed')
     },
     async update_settings() {
       await this.$service.update_settings(this.settings)
