@@ -113,6 +113,13 @@ export default {
             await this.$listen('STRIPE_PAYMENT_CANCEL', async (e) => {
                 console.log('STRIPE_PAYMENT_CANCEL:', e);
             });
+
+            await this.$listen('ORDER_PAYMENT_STATUS', async (e) => {
+                const payload = e?.payload || {};
+                if (typeof this.handlePaymentStatusEvent === 'function') {
+                    await this.handlePaymentStatusEvent(payload);
+                }
+            });
         }
     }
 };

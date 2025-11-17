@@ -261,6 +261,8 @@ export default {
           await this.$emiter('STRIPE_PAYMENT_SUCCESS', {})
         } else if (json.action === 'stripe_payment_cancel') {
           await this.$emiter('STRIPE_PAYMENT_CANCEL', {})
+        } else if (json.action === 'order_payment_status') {
+          await this.$emiter('ORDER_PAYMENT_STATUS', json.data || {})
         } else if (json.action === 'task_status') {
           let serial = json.serial
           let status = json.status

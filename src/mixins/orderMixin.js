@@ -29,7 +29,7 @@ export default {
             }
         },
 
-        async getOrder(refresh_status = false) {
+        async getOrder() {
             if (!this.license.mid) {
                 return;
             }
@@ -42,17 +42,6 @@ export default {
                     this.order = null;
                 } else {
                     console.log('get order:', res.data);
-
-                    if (refresh_status) {
-                        if (JSON.parse(res.data).status === 1) {
-                            await this.$emiter('LICENSE', { reload: true });
-                            await this.paymentSuccess();
-                            await message(this.$t('paymentSuccess'));
-                            return;
-                        }
-                        return;
-                    }
-
                     await this.showOrder(res.data);
                 }
             } catch (err) {
@@ -66,48 +55,52 @@ export default {
         },
 
         async showOrder(order) {
-            // 解析JSON
-            this.order = JSON.parse(order);
-            console.log('showOrder:', this.order);
+            const parsedOrder = JSON.parse(order);
+            this.orderPaymentHandled = false;
+            console.log('showOrder:', parsedOrder);
 
-            if (this.order.status !== 0) {
+            if (parsedOrder.status !== 0) {
                 console.log('order status is not 0');
+                this.order = null;
                 return;
             }
-
-            console.log('start to get qrcode');
 
             if (this.interval) {
                 clearInterval(this.interval);
             }
 
-            this.order.qrcode = await QRCode.toDataURL(this.order.to_address);
+            let qrCodeData = '';
+            if (parsedOrder.to_address) {
+                try {
+                    qrCodeData = await QRCode.toDataURL(parsedOrder.to_address);
+                } catch (error) {
+                    console.error('generate qrcode error:', error);
+                }
+            }
+            parsedOrder.qrcode = qrCodeData;
 
-            const expireAt = this.parseExpireAt(this.order.expire_at);
+            this.order = parsedOrder;
+
+            const expireAt = this.parseExpireAt(parsedOrder.expire_at);
             if (Number.isNaN(expireAt)) {
-                console.warn(`Invalid expire_at received: ${this.order.expire_at}`);
+                console.warn(`Invalid expire_at received: ${parsedOrder.expire_at}`);
                 this.remainingTime = 0;
                 return;
             }
 
             const now = new Date().getTime();
             this.remainingTime = Math.floor((expireAt - now) / 1000);
-            this.refreshTime = 10;
-
-            this.interval = setInterval(async () => {
+            this.interval = setInterval(() => {
                 if (this.remainingTime > 0) {
-                    this.remainingTime--;
-                    this.refreshTime--;
-
-                    if (this.refreshTime === 0) {
-                        console.log('refresh order status');
-                        await this.getOrder(true);
-                        this.refreshTime = 10;
-                    }
-                } else {
-                    clearInterval(this.interval);
-                    this.order = null;
+                    this.remainingTime = Math.max(this.remainingTime - 1, 0);
+                    return;
                 }
+
+                this.remainingTime = 0;
+                clearInterval(this.interval);
+                this.interval = null;
+                this.order = null;
+                this.orderPaymentHandled = false;
             }, 1000);
         },
 
@@ -117,7 +110,10 @@ export default {
                 console.log(`close_order: ${JSON.stringify(res)}`);
 
                 clearInterval(this.interval);
+                this.interval = null;
                 this.order = null;
+                this.orderPaymentHandled = false;
+                this.remainingTime = 0;
             } catch (err) {
                 console.error('close_order error:', err);
                 await this.$emiter('NOTIFY', {
@@ -126,6 +122,46 @@ export default {
                     timeout: 2000
                 });
             }
+        },
+
+        async handlePaymentStatusEvent(event = {}) {
+            if (typeof this.orderPaymentHandled !== 'boolean') {
+                this.orderPaymentHandled = false;
+            }
+            const rawStatus = event?.status;
+            const normalizedStatus = typeof rawStatus === 'string'
+                ? rawStatus.toLowerCase()
+                : rawStatus;
+            const isPaid = normalizedStatus === 1 || normalizedStatus === '1'
+                || normalizedStatus === 'paid'
+                || normalizedStatus === 'success'
+                || normalizedStatus === 'completed';
+
+            if (!isPaid) {
+                return;
+            }
+
+            if (this.orderPaymentHandled) {
+                return;
+            }
+
+            this.orderPaymentHandled = true;
+
+            if (this.interval) {
+                clearInterval(this.interval);
+                this.interval = null;
+            }
+
+            this.order = null;
+            this.remainingTime = 0;
+
+            await this.$emiter('LICENSE', { reload: true });
+
+            if (typeof this.paymentSuccess === 'function') {
+                await this.paymentSuccess();
+            }
+
+            await message(this.$t('paymentSuccess'));
         },
 
         parseExpireAt(expireAt) {
