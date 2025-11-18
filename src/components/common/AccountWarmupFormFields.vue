@@ -156,7 +156,7 @@
                             <label class="label">
                                 <span class="label-text font-medium">{{ $t('model') }}</span>
                             </label>
-                            <input type="text" class="input input-bordered w-full" placeholder="gpt-3.5-turbo"
+                            <input type="text" class="input input-bordered w-full" placeholder="gpt-4o-mini"
                                 v-model="localFormData.chatgpt_settings.model" />
                         </div>
 

@@ -73,7 +73,7 @@ const accountWarmupMixin = accountWarmupSettings.createVueMixin(
     chatgpt_settings: {
       url: 'https://api.openai.com/v1/chat/completions',
       api_key: '',
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       system_prompt: 'Generate a casual, relevant comment for this TikTok post. Keep it under 50 characters, use emojis, and make it sound natural and engaging.'
     }
   },
