@@ -142,9 +142,7 @@
             <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
             {{ $t('supportDetailCloseTicket') }}
           </button>
-          <button class="btn btn-primary btn-sm" @click="openForm">
-            {{ $t('supportCreateTicketButton') }}
-          </button>
+
         </div>
       </div>
 
@@ -391,6 +389,12 @@ const MEDIA_FILTERS = [
   }
 ]
 
+const SUPPORT_CACHE_PREFIX = 'supportCenter'
+const TICKET_LIST_CACHE_PREFIX = `${SUPPORT_CACHE_PREFIX}:tickets`
+const TICKET_DETAIL_CACHE_PREFIX = `${SUPPORT_CACHE_PREFIX}:detail`
+const TICKET_LIST_CACHE_TTL = 5 * 60 * 1000 // 5 分钟
+const TICKET_DETAIL_CACHE_TTL = 10 * 60 * 1000 // 10 分钟
+
 export default {
   name: 'SupportCenter',
   components: { SupportForm },
@@ -448,7 +452,9 @@ export default {
       attachmentPreviewCache: {},
       attachmentPreviewKeyHandler: null,
       agentBaseUrl: '',
-      agentBaseUrlPromise: null
+      agentBaseUrlPromise: null,
+      lastTicketListCacheKey: null,
+      lastTicketDetailCacheKey: null
     }
   },
   computed: {
@@ -607,6 +613,117 @@ export default {
       })
       this.listeners = []
     },
+    getCacheStorage() {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          return window.localStorage
+        }
+      } catch (error) {
+        console.warn('support cache storage unavailable', error)
+      }
+      return null
+    },
+    readCacheEntry(key, ttl) {
+      if (!key) {
+        return null
+      }
+      const storage = this.getCacheStorage()
+      if (!storage) {
+        return null
+      }
+      try {
+        const raw = storage.getItem(key)
+        if (!raw) {
+          return null
+        }
+        const parsed = JSON.parse(raw)
+        const timestamp = Number(parsed?.timestamp) || 0
+        if (ttl && timestamp && Date.now() - timestamp > ttl) {
+          storage.removeItem(key)
+          return null
+        }
+        return parsed?.value ?? null
+      } catch (error) {
+        console.warn('support cache read failed', { key, error })
+        try {
+          storage.removeItem(key)
+        } catch (_) {
+          /* ignore */
+        }
+        return null
+      }
+    },
+    writeCacheEntry(key, value) {
+      if (!key) {
+        return
+      }
+      const storage = this.getCacheStorage()
+      if (!storage) {
+        return
+      }
+      if (value === undefined) {
+        try {
+          storage.removeItem(key)
+        } catch (error) {
+          console.warn('support cache remove failed', { key, error })
+        }
+        return
+      }
+      try {
+        storage.setItem(
+          key,
+          JSON.stringify({
+            timestamp: Date.now(),
+            value
+          })
+        )
+      } catch (error) {
+        console.warn('support cache write failed', { key, error })
+      }
+    },
+    buildTicketListCacheKey(page = this.page, pageSize = this.pageSize) {
+      return `${TICKET_LIST_CACHE_PREFIX}:${page}:${pageSize}`
+    },
+    readTicketListCache(page = this.page, pageSize = this.pageSize) {
+      const key = this.buildTicketListCacheKey(page, pageSize)
+      return {
+        key,
+        payload: this.readCacheEntry(key, TICKET_LIST_CACHE_TTL)
+      }
+    },
+    writeTicketListCache(data, page = this.page, pageSize = this.pageSize) {
+      const key = this.buildTicketListCacheKey(page, pageSize)
+      this.writeCacheEntry(key, data)
+      return key
+    },
+    buildTicketDetailCacheKey(params = {}) {
+      const ticketNo = (params.ticket_no || params.ticketNo || '').toString().trim()
+      const ticketId = (params.id || params.ticket_id || params.ticketId || params.ticketID || '').toString().trim()
+      const identifier = ticketNo || ticketId
+      if (!identifier) {
+        return null
+      }
+      const suffix = ticketNo && ticketId ? `${ticketNo}:${ticketId}` : identifier
+      return `${TICKET_DETAIL_CACHE_PREFIX}:${suffix}`
+    },
+    readTicketDetailCache(params = {}) {
+      const key = this.buildTicketDetailCacheKey(params)
+      if (!key) {
+        return { key: null, payload: null }
+      }
+      return {
+        key,
+        payload: this.readCacheEntry(key, TICKET_DETAIL_CACHE_TTL)
+      }
+    },
+    writeTicketDetailCache(params = {}, detail) {
+      const key = this.buildTicketDetailCacheKey(params)
+      if (!key) {
+        return null
+      }
+      this.writeCacheEntry(key, detail)
+      return key
+    },
     applyUnreadFlags() {
       if (!Array.isArray(this.tickets)) {
         return
@@ -672,23 +789,58 @@ export default {
         this.clientInfo = {}
       }
     },
+    normalizeTicketListPayload(response) {
+      const payload = response?.data ?? response
+      const data = payload?.data ?? payload ?? {}
+      const items = Array.isArray(data.items) ? data.items : []
+      const total = Number(data.total ?? payload?.total ?? items.length) || 0
+      const page = Number(data.page ?? payload?.page ?? this.page) || this.page
+      const limit = Number(data.limit ?? payload?.limit ?? this.pageSize) || this.pageSize
+      return { items, total, page, limit }
+    },
+    applyTicketListPayload(payload, options = {}) {
+      if (!payload) {
+        this.tickets = []
+        this.total = 0
+      } else {
+        this.tickets = Array.isArray(payload.items) ? payload.items : []
+        this.total = Number(payload.total) || 0
+        if (Number.isFinite(payload.page) && payload.page >= 1) {
+          this.page = payload.page
+        }
+        if (Number.isFinite(payload.limit) && payload.limit > 0) {
+          this.pageSize = payload.limit
+        }
+      }
+      if (options.cacheKey) {
+        this.lastTicketListCacheKey = options.cacheKey
+      }
+      this.applyUnreadFlags()
+    },
     async fetchTickets() {
-      this.loading = true
+      const { key: cacheKey, payload: cachedPayload } = this.readTicketListCache()
+      const shouldHydrateCache = Boolean(cachedPayload) && this.lastTicketListCacheKey !== cacheKey
+      if (shouldHydrateCache) {
+        this.applyTicketListPayload(cachedPayload, { cacheKey })
+      }
+      this.loading = !shouldHydrateCache
       try {
         const res = await this.$service.support_fetch_tickets({
           page: this.page,
           limit: this.pageSize
         })
-        const payload = res?.data || res
-        const data = payload?.data || payload
-        this.tickets = data?.items || []
-        this.total = data?.total || 0
+        const normalized = this.normalizeTicketListPayload(res)
+        const appliedKey = this.writeTicketListCache(normalized, normalized.page, normalized.limit)
+        this.applyTicketListPayload(normalized, { cacheKey: appliedKey })
       } catch (error) {
         console.error('support fetchTickets error', error)
-        this.tickets = []
-        this.total = 0
+        if (!shouldHydrateCache) {
+          this.tickets = []
+          this.total = 0
+          this.applyUnreadFlags()
+          this.lastTicketListCacheKey = null
+        }
       } finally {
-        this.applyUnreadFlags()
         this.loading = false
       }
     },
@@ -2266,63 +2418,89 @@ export default {
       }
       return normalized
     },
+    applyTicketDetailPayload(detail, options = {}) {
+      if (!detail || typeof detail !== 'object') {
+        return
+      }
+      const fallbackTicket = options.fallbackTicket || this.currentTicket || {}
+      const ticketData = detail.ticket || fallbackTicket || {}
+      if (ticketData && typeof ticketData === 'object') {
+        this.currentTicket = { ...ticketData }
+      }
+      this.ticketDetail = detail
+      const parsedTicketMetadata = this.parseMaybeJson(ticketData?.metadata)
+      const parsedDetailMetadata = this.parseMaybeJson(detail.metadata)
+      this.metadata = parsedTicketMetadata || parsedDetailMetadata || {}
+      this.devicesDetail = this.normalizeDetailDevices(detail)
+      this.messages = this.normalizeDetailMessages(detail)
+      if (options.cacheKey) {
+        this.lastTicketDetailCacheKey = options.cacheKey
+      }
+      if (this.reply.includeLogs) {
+        this.clearReplyPreparation()
+        this.scheduleReplyLogPreparation()
+      }
+      let serials = this.detailDevices.map(device => device.real_serial).filter(Boolean)
+      if (!serials.length) {
+        serials = this.toArray(this.metadata?.devices)
+          .map(device => device?.real_serial || device?.realSerial)
+          .filter(Boolean)
+      }
+      if (serials.length && typeof this.$emiter === 'function') {
+        this.$emiter('selecedDevices', [...new Set(serials.map(value => String(value)))])
+      }
+    },
     async loadTicketDetail(ticket) {
       if (!ticket) return
-      this.detailLoading = true
+      const params = {}
+      const ticketId =
+        ticket.id ||
+        ticket.ticket_id ||
+        ticket.ticketId ||
+        ticket.ticketID ||
+        ticket.ticket?.id
+      const ticketNo =
+        ticket.ticket_no ||
+        ticket.ticketNo ||
+        ticket.ticketNO ||
+        ticket.ticket_number ||
+        ticket.ticket?.ticket_no
+
+      if (ticketNo) {
+        params.ticket_no = String(ticketNo)
+      }
+      if (ticketId) {
+        params.id = String(ticketId)
+      }
+
+      if (!params.ticket_no && !params.id) {
+        console.warn('support loadTicketDetail missing identifiers', ticket)
+        await this.notify('error', this.$t('supportDetailMissingIdentifier'))
+        this.detailLoading = false
+        return
+      }
+
+      const { key: cacheKey, payload: cachedDetail } = this.readTicketDetailCache(params)
+      const shouldHydrateCache = Boolean(cachedDetail) && this.lastTicketDetailCacheKey !== cacheKey
+      if (shouldHydrateCache) {
+        this.applyTicketDetailPayload(cachedDetail, { cacheKey, fallbackTicket: ticket })
+      }
+      this.detailLoading = !shouldHydrateCache
       try {
-        const params = {}
-        const ticketId =
-          ticket.id ||
-          ticket.ticket_id ||
-          ticket.ticketId ||
-          ticket.ticketID ||
-          ticket.ticket?.id
-        const ticketNo =
-          ticket.ticket_no ||
-          ticket.ticketNo ||
-          ticket.ticketNO ||
-          ticket.ticket_number ||
-          ticket.ticket?.ticket_no
-
-        if (ticketNo) {
-          params.ticket_no = String(ticketNo)
-        }
-        if (ticketId) {
-          params.id = String(ticketId)
-        }
-
-        if (!params.ticket_no && !params.id) {
-          console.warn('support loadTicketDetail missing identifiers', ticket)
-          await this.notify('error', this.$t('supportDetailMissingIdentifier'))
-          this.detailLoading = false
-          return
-        }
         const res = await this.$service.support_ticket_detail(params)
         const detail = res?.data || res || {}
-        const ticketData = detail.ticket || ticket
-        this.currentTicket = ticketData
-        this.ticketDetail = detail
-        const parsedTicketMetadata = this.parseMaybeJson(ticketData?.metadata)
-        const parsedDetailMetadata = this.parseMaybeJson(detail.metadata)
-        this.metadata = parsedTicketMetadata || parsedDetailMetadata || {}
-        this.devicesDetail = this.normalizeDetailDevices(detail)
-        this.messages = this.normalizeDetailMessages(detail)
-        if (this.reply.includeLogs) {
-          this.clearReplyPreparation()
-          this.scheduleReplyLogPreparation()
-        }
-        let serials = this.detailDevices.map(device => device.real_serial).filter(Boolean)
-        if (!serials.length) {
-          serials = this.toArray(this.metadata?.devices)
-            .map(device => device?.real_serial || device?.realSerial)
-            .filter(Boolean)
-        }
-        if (serials.length && typeof this.$emiter === 'function') {
-          this.$emiter('selecedDevices', [...new Set(serials.map(value => String(value)))])
-        }
+        const appliedKey = this.writeTicketDetailCache(params, detail) || cacheKey
+        this.applyTicketDetailPayload(detail, { cacheKey: appliedKey, fallbackTicket: ticket })
       } catch (error) {
         console.error('support loadTicketDetail error', error)
         this.notify('error', this.$t('supportDetailLoadFailed'))
+        if (!shouldHydrateCache) {
+          this.ticketDetail = null
+          this.metadata = {}
+          this.devicesDetail = []
+          this.messages = []
+          this.lastTicketDetailCacheKey = null
+        }
       } finally {
         this.detailLoading = false
       }
@@ -2378,6 +2556,7 @@ export default {
       this.metadata = {}
       this.devicesDetail = []
       this.messages = []
+      this.lastTicketDetailCacheKey = null
       if (this.highlightTimerHandle) {
         clearTimeout(this.highlightTimerHandle)
         this.highlightTimerHandle = null
