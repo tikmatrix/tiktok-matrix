@@ -14,6 +14,7 @@ const MESSAGE_EVENT: &str = "agent://ws/message";
 #[derive(Default)]
 pub struct AgentWsCommandState {
     sender: tokio::sync::Mutex<Option<mpsc::Sender<String>>>,
+    current_status: tokio::sync::Mutex<Value>,
 }
 
 impl AgentWsCommandState {
@@ -22,18 +23,37 @@ impl AgentWsCommandState {
         *guard = sender;
     }
 
+    pub async fn set_status(&self, status: Value) {
+        let mut guard = self.current_status.lock().await;
+        *guard = status;
+    }
+
+    pub async fn get_status(&self) -> Value {
+        let guard = self.current_status.lock().await;
+        guard.clone()
+    }
+
     pub async fn send(&self, payload: Value) -> Result<()> {
         let text = serde_json::to_string(&payload)?;
+        log::info!("Sending ws message: {}", text);
         let sender = {
             let guard = self.sender.lock().await;
             guard.clone()
         };
         match sender {
-            Some(tx) => tx
-                .send(text)
-                .await
-                .map_err(|err| anyhow!("agent ws send failed: {}", err))?,
-            None => return Err(anyhow!("agent ws bridge not connected")),
+            Some(tx) => match tx.send(text).await {
+                Ok(_) => {
+                    log::info!("agent ws send succeeded");
+                }
+                Err(err) => {
+                    log::info!("agent ws send failed: {:?}", err);
+                    return Err(anyhow!("agent ws send failed: {}", err));
+                }
+            },
+            None => {
+                log::info!("agent ws bridge not connected");
+                return Err(anyhow!("agent ws bridge not connected"));
+            }
         }
         Ok(())
     }
@@ -137,7 +157,7 @@ impl AgentWsBridge {
         }
 
         self.update_command_sender(None).await;
-
+        log::info!("agent ws disconnected");
         self.emit_status("disconnected", Some(disconnect_payload));
         Ok(())
     }
@@ -150,6 +170,7 @@ impl AgentWsBridge {
     }
 
     async fn handle_text_message(&self, text: &str) {
+        log::info!("agent ws received message: {}", text);
         let payload: Value = serde_json::from_str(text).unwrap_or_else(|_| {
             json!({
                 "raw": text,
@@ -171,9 +192,17 @@ impl AgentWsBridge {
             "timestamp": Utc::now().timestamp_millis(),
             "extra": extra
         });
-        if let Err(err) = self.app.emit_all(STATUS_EVENT, payload) {
+        if let Err(err) = self.app.emit_all(STATUS_EVENT, payload.clone()) {
             log::error!("failed to emit agent ws status event: {:?}", err);
         }
+        // Update stored status
+        let app = self.app.clone();
+        tauri::async_runtime::spawn(async move {
+            match app.try_state::<AgentWsCommandState>() {
+                Some(state) => state.set_status(payload).await,
+                None => log::warn!("AgentWsCommandState not registered"),
+            }
+        });
     }
 
     async fn wait_for_ws_url(&self) -> Result<String> {

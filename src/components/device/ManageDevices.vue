@@ -360,6 +360,10 @@ export default {
       type: Object,
       required: true
     },
+    groups: {
+      type: Array,
+      required: true
+    },
   },
   components: {
     MyButton,
@@ -385,7 +389,6 @@ export default {
       scanResult: '',
       scanSummary: null,
       scanDetails: [],
-      groups: [],
       currentDevice: null,
       cardMinWidth: 150,
       licenseData: {},

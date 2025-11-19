@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-screen w-screen bg-base-200 text-base-content overflow-hidden">
-    <TitleBar :supportUnreadCount="supportUnreadCount" />
+    <TitleBar :supportUnreadCount="supportUnreadCount" :wsStatus="wsStatus" />
     <div class="flex flex-row items-stretch gap-3 mt-12 h-[calc(100vh-3rem)] w-full px-3 overflow-hidden">
       <Sidebar :devices="devices" :settings="settings" :groups="groups" :selecedDevices="selecedDevices"
         v-if="showSidebar" />
       <div class="flex-1 h-full overflow-hidden">
-        <ManageDevices :devices="devices" :settings="settings" />
+        <ManageDevices :devices="devices" :settings="settings" :groups="groups" />
       </div>
     </div>
     <AppDialog :devices="devices" :settings="settings" :selecedDevices="selecedDevices" />
@@ -55,6 +55,12 @@ export default {
       lastUserActivity: Date.now(),
       autoUpdateTimer: null,
       userActivityEvents: ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'],
+      wsStatus: {
+        status: 'initial',
+        timestamp: Date.now(),
+        extra: null,
+        raw: null
+      }
     }
   },
 
@@ -160,8 +166,7 @@ export default {
       }
     },
 
-    async requestDevices(source = 'manual', options = {}) {
-      const { fallbackOnError = true, extra = {} } = options || {};
+    async requestDevices(source = 'manual', extra = {}) {
       const payload = {
         action: 'device.fetch',
         data: {
@@ -173,8 +178,24 @@ export default {
         await invoke('agent_ws_send', { payload });
       } catch (error) {
         console.error('requestDevices via WS failed:', error);
-        if (fallbackOnError) {
-          await this.fetchDevicesViaHttp({ source: `fallback:${source}` });
+      }
+    },
+
+    async updateWsStatus(status = 'unknown', payload = {}) {
+      const nextStatus = status || 'unknown';
+      const timestamp = payload?.timestamp ?? Date.now();
+      const extra = payload?.extra ?? null;
+      this.wsStatus = {
+        status: nextStatus,
+        timestamp,
+        extra,
+        raw: payload || null
+      };
+      if (typeof this.$emiter === 'function') {
+        try {
+          await this.$emiter('wsStatusChanged', { ...this.wsStatus });
+        } catch (error) {
+          console.error('emit wsStatusChanged error', error);
         }
       }
     },
@@ -202,16 +223,30 @@ export default {
     },
     async setupAgentBridgeListeners() {
       try {
+        // 先尝试获取当前状态
+        try {
+          const currentStatus = await invoke('agent_ws_get_status');
+          if (currentStatus && typeof currentStatus === 'object' && currentStatus.status) {
+            console.log('Retrieved current WS status:', currentStatus);
+            await this.updateWsStatus(currentStatus.status, currentStatus);
+          } else {
+            // 如果没有有效状态，设置为 connecting
+            await this.updateWsStatus('connecting');
+          }
+        } catch (err) {
+          console.warn('Failed to get current WS status, setting to connecting:', err);
+          await this.updateWsStatus('connecting');
+        }
+
         this.listeners.push(await this.$listen('agent://ws/status', async (event) => {
           const payload = event?.payload || {};
-          const status = payload.status;
+          const status = payload.status || 'unknown';
+          await this.updateWsStatus(status, payload);
           if (status === 'connected') {
-            await this.requestDevices('ws-status-connected', { fallbackOnError: true });
-            await this.$emiter('heartbeat', { source: 'ws-status' });
+            await this.requestDevices('ws-status-connected');
           }
           if (status === 'error') {
             console.warn('Agent WS reported error', payload?.extra);
-            await this.fetchDevicesViaHttp({ source: 'ws-status-error' });
           }
         }));
         this.listeners.push(await this.$listen('agent://ws/message', async (event) => {
@@ -227,12 +262,7 @@ export default {
       if (!json || typeof json !== 'object') {
         return;
       }
-      if (json.action === 'reload_devices') {
-        const data = json.data;
-        if (data) {
-          await this.requestDevices('agent-action:reload_devices', { fallbackOnError: true });
-        }
-      } else if (json.action === 'device_snapshot') {
+      if (json.action === 'device_snapshot') {
         const snapshot = json.data || {};
         const devices = Array.isArray(snapshot.devices) ? snapshot.devices : [];
         await this.applyDeviceSnapshot(devices, {
@@ -286,24 +316,12 @@ export default {
         await this.handleSupportMarkRead(ticketNos)
       } else if (json.action === 'support_mark_all_read') {
         await this.handleSupportMarkAllRead()
-      } else if (json.action === 'heartbeat') {
-        await this.$emiter('heartbeat', {})
       } else {
         await this.emitGenericAgentEvent(json)
       }
     },
     async getDevices() {
-      return this.fetchDevicesViaHttp({ source: 'legacy-http-call' });
-    },
-
-    async fetchDevicesViaHttp(meta = {}) {
-      try {
-        const res = await this.$service.get_devices();
-        const newDevices = Array.isArray(res.data) ? res.data : [];
-        await this.applyDeviceSnapshot(newDevices, { source: meta.source || 'http' });
-      } catch (error) {
-        console.error('获取设备列表失败 (HTTP fallback):', error);
-      }
+      return this.requestDevices('manual');
     },
 
     async applyDeviceSnapshot(newDevices = [], meta = {}) {
@@ -539,7 +557,7 @@ export default {
       await this.initDistributor();
       await this.get_settings()
       await this.get_groups()
-      await this.requestDevices('event:agent_started', { fallbackOnError: true });
+      await this.requestDevices('event:agent_started');
 
       await this.getRunningTasks();
       await this.$emiter('reload_tasks', {})
@@ -548,7 +566,7 @@ export default {
       this.startAutoUpdateTimer();
     }));
     this.listeners.push(await this.$listen('reload_devices', async () => {
-      await this.requestDevices('event:reload_devices', { fallbackOnError: true });
+      await this.requestDevices('event:reload_devices');
     }));
     // 监听重新加载运行任务事件
     this.listeners.push(await this.$listen('reload_running_tasks', async () => {

@@ -25,6 +25,13 @@
     <div class="flex-1"></div>
     <!-- 右侧：功能按钮和控制按钮 -->
     <div class="flex items-center gap-2">
+      <!-- WebSocket 状态指示器 - 优化版 -->
+      <div
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 whitespace-nowrap"
+        :class="wsStatusMeta.containerClass" :title="wsStatusMeta.tooltip">
+        <span class="w-2 h-2 rounded-full flex-shrink-0 animate-pulse" :class="wsStatusMeta.dotClass"></span>
+        <span class="leading-none">{{ wsStatusMeta.label }}</span>
+      </div>
       <LicenseLifecycle :is-loading="isLoadingLicense" :licenseData="licenseData" @open-license="showLicenseDialog" />
       <!-- 侧边栏切换 -->
       <label class="swap swap-rotate" :title="$t('toggleSidebar')">
@@ -295,6 +302,14 @@ export default {
     supportUnreadCount: {
       type: Number,
       default: 0
+    },
+    wsStatus: {
+      type: Object,
+      default: () => ({
+        status: 'unknown',
+        timestamp: Date.now(),
+        extra: null
+      })
     }
   },
   data() {
@@ -368,6 +383,64 @@ export default {
         return flag;
       }
       return true;
+    },
+    wsStatusMeta() {
+      const status = (this.wsStatus?.status || 'unknown').toLowerCase();
+      const map = {
+        connected: {
+          label: 'Connected',
+          containerClass: 'border-success/50 text-success bg-success/15 hover:bg-success/25',
+          dotClass: 'bg-success shadow-sm shadow-success/50'
+        },
+        connecting: {
+          label: 'Connecting',
+          containerClass: 'border-info/50 text-info bg-info/15 hover:bg-info/25',
+          dotClass: 'bg-info shadow-sm shadow-info/50'
+        },
+        initial: {
+          label: 'Starting',
+          containerClass: 'border-info/50 text-info bg-info/15 hover:bg-info/25',
+          dotClass: 'bg-info shadow-sm shadow-info/50'
+        },
+        error: {
+          label: 'Error',
+          containerClass: 'border-error/50 text-error bg-error/15 hover:bg-error/25',
+          dotClass: 'bg-error shadow-sm shadow-error/50'
+        },
+        disconnected: {
+          label: 'Offline',
+          containerClass: 'border-warning/50 text-warning bg-warning/15 hover:bg-warning/25',
+          dotClass: 'bg-warning shadow-sm shadow-warning/50'
+        },
+        unknown: {
+          label: 'Unknown',
+          containerClass: 'border-base-300 text-base-content/70 bg-base-300/30 hover:bg-base-300/40',
+          dotClass: 'bg-base-content/50'
+        }
+      };
+      const meta = map[status] || map.unknown;
+      const tooltipParts = [`Status: ${status}`];
+      if (this.wsStatus?.extra?.url) {
+        tooltipParts.push(`URL: ${this.wsStatus.extra.url}`);
+      }
+      if (this.wsStatus?.extra?.reason) {
+        tooltipParts.push(`Reason: ${this.wsStatus.extra.reason}`);
+      }
+      if (this.wsStatus?.extra?.error) {
+        tooltipParts.push(`Error: ${this.wsStatus.extra.error}`);
+      }
+      if (this.wsStatus?.timestamp) {
+        try {
+          tooltipParts.push(`Updated: ${new Date(this.wsStatus.timestamp).toLocaleTimeString()}`);
+        } catch (error) {
+          // ignore date formatting issues
+        }
+      }
+      const tooltip = tooltipParts.join('\n');
+      return {
+        ...meta,
+        tooltip
+      };
     }
   },
   async created() {
@@ -588,7 +661,7 @@ export default {
             console.log(
               `Update available ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
             );
-            
+
             if (platform === 'windows') {
               // Windows: Auto-update via Tauri
               const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
@@ -604,12 +677,12 @@ export default {
               const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
                 ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
                 : `${this.whitelabelConfig.officialWebsite}/Download`;
-              
+
               const yes = await ask(
                 this.$t('macUpdatePrompt', { version: manifest?.version }),
                 this.$t('macUpdateAvailable')
               );
-              
+
               if (yes) {
                 console.log('Opening download page:', downloadUrl);
                 await open(downloadUrl);

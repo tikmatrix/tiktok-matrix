@@ -18,12 +18,7 @@ export function tiktok_query(data) {
   })
 }
 
-export function get_devices() {
-  return request({
-    method: 'get',
-    url: api.device
-  })
-}
+
 
 
 export function get_materials_byused({ used }) {

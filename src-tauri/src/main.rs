@@ -114,6 +114,13 @@ async fn agent_ws_send(
         .await
         .map_err(|err| err.to_string())
 }
+
+#[tauri::command]
+async fn agent_ws_get_status(
+    bridge_state: State<'_, AgentWsCommandState>,
+) -> Result<Value, String> {
+    Ok(bridge_state.get_status().await)
+}
 #[tauri::command]
 fn set_env(key: String, value: String) {
     std::env::set_var(key.clone(), value.clone());
@@ -467,6 +474,7 @@ fn main() -> std::io::Result<()> {
         .invoke_handler(tauri::generate_handler![
             get_distributor_code,
             agent_ws_send,
+            agent_ws_get_status,
             grant_permission,
             kill_process,
             open_dir,
