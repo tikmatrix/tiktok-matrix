@@ -12,29 +12,21 @@ export default {
             event.target.disabled = true;
 
             try {
-                const res = await this.$service.activate_license({
-                    'license_code': this.license.license_code,
-                });
+                const license = await this.$service.ws_activate_license(this.license.license_code);
+                console.log(`ws_activate_license: ${JSON.stringify(license)}`);
 
-                console.log(`activate_license: ${JSON.stringify(res)}`);
-
-                if (res.code === 0) {
-                    const license = JSON.parse(res.data);
-                    if (license.leftdays > 0) {
-                        await this.$emiter('LICENSE', { reload: true });
-                        this.paymentSuccess();
-                        await message(this.$t('activateSuccess'));
-                    } else {
-                        await message(this.$t('invalidLicense'));
-                    }
+                if (license.leftdays > 0) {
+                    await this.$emiter('LICENSE', { reload: true });
+                    this.paymentSuccess();
+                    await message(this.$t('activateSuccess'));
                 } else {
-                    await message(res.data);
+                    await message(this.$t('invalidLicense'));
                 }
             } catch (err) {
                 console.error('activate license error:', err);
                 await this.$emiter('NOTIFY', {
                     type: 'error',
-                    message: this.$t('activateLicenseErrorMessage'),
+                    message: err.message || this.$t('activateLicenseErrorMessage'),
                     timeout: 2000
                 });
             } finally {
