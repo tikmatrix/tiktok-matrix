@@ -1,4 +1,4 @@
-import { sendWsMessage } from '@/utils/wsRequest'
+import { sendWsMessage } from './wsRequest'
 
 /**
  * Get license information via WebSocket

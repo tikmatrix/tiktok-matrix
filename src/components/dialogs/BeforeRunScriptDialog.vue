@@ -179,9 +179,9 @@ export default {
     },
     async fetchLicenseLimit() {
       try {
-        const res = await this.$service.get_license_concurrency_limit()
-        if (res && res.code === 0 && typeof res.data !== 'undefined') {
-          this.licenseLimit = Number(res.data)
+        const limit = await this.$service.ws_get_license_concurrency_limit()
+        if (typeof limit !== 'undefined') {
+          this.licenseLimit = Number(limit)
         }
       } catch (error) {
         console.warn('Failed to load license concurrency limit', error)
