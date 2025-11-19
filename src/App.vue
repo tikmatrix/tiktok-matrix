@@ -20,7 +20,7 @@ import Sidebar from './components/Sidebar.vue'
 import AppDialog from './AppDialog.vue'
 import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
-import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs'
+import { writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs'
 import { getItem } from './utils/persistentStorage.js';
 import {
   getSupportUnreadState,
@@ -45,11 +45,6 @@ export default {
       settings: {},
       groups: [],
       showSidebar: true,
-      ws: null,
-      wsUrl: '',
-      wsShouldReconnect: false,
-      wsReconnectAttempts: 0,
-      wsReconnectTimer: null,
       running_devices: [],
       selecedDevices: [],
       listeners: [],
@@ -185,172 +180,89 @@ export default {
         })
       })
     },
-    normalizeWsUrl(url = '') {
-      return typeof url === 'string' ? url.replace(/\/$/, '') : '';
-    },
-
-    clearWsReconnectTimer() {
-      if (this.wsReconnectTimer) {
-        clearTimeout(this.wsReconnectTimer);
-        this.wsReconnectTimer = null;
-      }
-    },
-
-    getWsReconnectDelay() {
-      const baseDelay = 2000;
-      const maxDelay = 30000;
-      return Math.min(maxDelay, baseDelay * Math.pow(2, this.wsReconnectAttempts));
-    },
-
-    scheduleWsReconnect() {
-      if (!this.wsShouldReconnect || this.wsReconnectTimer) {
-        return;
-      }
-      const delay = this.getWsReconnectDelay();
-      console.log(`ws reconnect scheduled in ${delay}ms`);
-      this.wsReconnectTimer = setTimeout(async () => {
-        this.wsReconnectTimer = null;
-        this.wsReconnectAttempts += 1;
-        await this.connectAgent();
-      }, delay);
-    },
-
-    cleanupWebSocket(stopReconnect = false) {
-      if (stopReconnect) {
-        this.wsShouldReconnect = false;
-        this.wsReconnectAttempts = 0;
-        this.clearWsReconnectTimer();
-      }
-      if (!this.ws) {
-        return;
-      }
+    async setupAgentBridgeListeners() {
       try {
-        this.ws.onopen = null;
-        this.ws.onmessage = null;
-        this.ws.onclose = null;
-        this.ws.onerror = null;
-        if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
-          this.ws.close();
-        }
-      } catch (error) {
-        console.error('cleanupWebSocket error', error);
-      }
-      this.ws = null;
-    },
-
-    initializeWebSocket() {
-      if (!this.wsUrl) {
-        return;
-      }
-
-      if (this.ws) {
-        const isActive = this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING;
-        const sameUrl = this.normalizeWsUrl(this.ws.url) === this.normalizeWsUrl(this.wsUrl);
-        if (isActive && sameUrl) {
-          console.log('ws already connected or connecting');
-          return;
-        }
-        this.cleanupWebSocket();
-      }
-
-      try {
-        this.ws = new WebSocket(this.wsUrl);
-      } catch (error) {
-        console.error('failed to create websocket', error);
-        this.scheduleWsReconnect();
-        return;
-      }
-
-      this.ws.onopen = async () => {
-        console.log('ws open');
-        await this.getDevices();
-        this.wsReconnectAttempts = 0;
-        this.clearWsReconnectTimer();
-      }
-      this.ws.onmessage = async (e) => {
-        // console.log(e.data)
-        const json = JSON.parse(e.data)
-        if (json.action === 'reload_devices') {
-          let data = json.data
-          if (data) {
-            this.getDevices()
+        this.listeners.push(await this.$listen('agent://ws/status', async (event) => {
+          const payload = event?.payload || {};
+          const status = payload.status;
+          if (status === 'connected') {
+            await this.getDevices();
+            await this.$emiter('heartbeat', { source: 'ws-status' });
           }
-        } else if (json.action === 'reload_license') {
-          await this.$emiter('LICENSE', { reload: true })
-        } else if (json.action === 'stripe_payment_success') {
-          await this.$emiter('STRIPE_PAYMENT_SUCCESS', {})
-        } else if (json.action === 'stripe_payment_cancel') {
-          await this.$emiter('STRIPE_PAYMENT_CANCEL', {})
-        } else if (json.action === 'order_payment_status') {
-          await this.$emiter('ORDER_PAYMENT_STATUS', json.data || {})
-        } else if (json.action === 'task_status') {
-          let serial = json.serial
-          let status = json.status
-          if (status === 1) {
-            // 避免重复插入导致数组无限增长
-            if (!this.running_devices.includes(serial)) {
-              this.running_devices.push(serial)
-            }
-          } else if (this.running_devices.length) {
-            // 移除所有相关条目，防止残留重复数据
-            this.running_devices = this.running_devices.filter(item => item !== serial)
+          if (status === 'error') {
+            console.warn('Agent WS reported error', payload?.extra);
           }
-          this.devices.forEach(device => {
-            if (device.real_serial === serial) {
-              device.task_status = status
-            }
-          })
-          await this.$emiter('reload_tasks', {})
-        } else if (json.action === 'agent_status') {
-          let serial = json.serial
-          let status = json.status
-          this.devices.forEach(device => {
-            if (device.real_serial === serial) {
-              if (status === -1) {
-                device.task_status = -1
-              } else if (status === 0 && device.task_status !== 1) {
-                //task is not running
-                device.task_status = 0
-              }
-            }
-          })
-        } else if (json.action === 'support_ticket_updates') {
-          const updates = Array.isArray(json.tickets) ? json.tickets : []
-          await this.handleSupportUpdates(updates)
-        } else if (json.action === 'heartbeat') {
-          await this.$emiter('heartbeat', {})
-        } else {
-          await this.emitGenericAgentEvent(json)
-        }
-      }
-      this.ws.onclose = async (event) => {
-        console.log('ws close', event?.code, event?.reason)
-        this.ws = null;
-        this.devices = []
-        if (this.wsShouldReconnect) {
-          this.scheduleWsReconnect();
-        }
-      }
-      this.ws.onerror = async (e) => {
-        console.error('ws error', e)
-        if (this.ws && this.ws.readyState !== WebSocket.CLOSING && this.ws.readyState !== WebSocket.CLOSED) {
-          this.ws.close();
-        }
+        }));
+        this.listeners.push(await this.$listen('agent://ws/message', async (event) => {
+          const payload = event?.payload;
+          await this.handleAgentMessage(payload);
+        }));
+      } catch (error) {
+        console.error('setupAgentBridgeListeners error', error);
       }
     },
 
-    async connectAgent() {
-      const wsPort = await readTextFile('wssport.txt', { dir: BaseDirectory.AppData });
-      if (wsPort === '0') {
-        this.cleanupWebSocket(true);
+    async handleAgentMessage(json) {
+      if (!json || typeof json !== 'object') {
         return;
       }
-      this.wsUrl = `ws://localhost:${wsPort}`
-      console.log(this.wsUrl)
-      this.wsShouldReconnect = true;
-      this.wsReconnectAttempts = 0;
-      this.clearWsReconnectTimer();
-      this.initializeWebSocket();
+      if (json.action === 'reload_devices') {
+        const data = json.data;
+        if (data) {
+          this.getDevices();
+        }
+      } else if (json.action === 'reload_license') {
+        await this.$emiter('LICENSE', { reload: true })
+      } else if (json.action === 'stripe_payment_success') {
+        await this.$emiter('STRIPE_PAYMENT_SUCCESS', {})
+      } else if (json.action === 'stripe_payment_cancel') {
+        await this.$emiter('STRIPE_PAYMENT_CANCEL', {})
+      } else if (json.action === 'order_payment_status') {
+        await this.$emiter('ORDER_PAYMENT_STATUS', json.data || {})
+      } else if (json.action === 'task_status') {
+        let serial = json.serial
+        let status = json.status
+        if (status === 1) {
+          // 避免重复插入导致数组无限增长
+          if (!this.running_devices.includes(serial)) {
+            this.running_devices.push(serial)
+          }
+        } else if (this.running_devices.length) {
+          // 移除所有相关条目，防止残留重复数据
+          this.running_devices = this.running_devices.filter(item => item !== serial)
+        }
+        this.devices.forEach(device => {
+          if (device.real_serial === serial) {
+            device.task_status = status
+          }
+        })
+        await this.$emiter('reload_tasks', {})
+      } else if (json.action === 'agent_status') {
+        let serial = json.serial
+        let status = json.status
+        this.devices.forEach(device => {
+          if (device.real_serial === serial) {
+            if (status === -1) {
+              device.task_status = -1
+            } else if (status === 0 && device.task_status !== 1) {
+              //task is not running
+              device.task_status = 0
+            }
+          }
+        })
+      } else if (json.action === 'support_ticket_updates') {
+        const updates = Array.isArray(json.tickets) ? json.tickets : []
+        await this.handleSupportUpdates(updates)
+      } else if (json.action === 'support_mark_read') {
+        const ticketNos = Array.isArray(json.ticketNos) ? json.ticketNos : []
+        await this.handleSupportMarkRead(ticketNos)
+      } else if (json.action === 'support_mark_all_read') {
+        await this.handleSupportMarkAllRead()
+      } else if (json.action === 'heartbeat') {
+        await this.$emiter('heartbeat', {})
+      } else {
+        await this.emitGenericAgentEvent(json)
+      }
     },
     async getDevices() {
       try {
@@ -573,6 +485,7 @@ export default {
     this.disableMenu();
 
     await this.initializeSupportUnread();
+    await this.setupAgentBridgeListeners();
 
 
 
@@ -588,7 +501,6 @@ export default {
       await this.get_settings()
       await this.get_groups()
 
-      await this.connectAgent();
       await this.getRunningTasks();
       await this.$emiter('reload_tasks', {})
 
@@ -650,9 +562,6 @@ export default {
     // 清理自动更新相关资源
     this.removeUserActivityListeners();
     this.stopAutoUpdateTimer();
-
-    // 清理 WebSocket 资源
-    this.cleanupWebSocket(true);
   }
 }
 </script>

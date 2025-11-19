@@ -25,6 +25,8 @@ use tauri::{
 };
 use zip::read::ZipArchive;
 mod init_log;
+use crate::agent_ws_bridge::AgentWsBridge;
+mod agent_ws_bridge;
 
 /**
  * 读取分发商标识
@@ -478,7 +480,7 @@ fn main() -> std::io::Result<()> {
 
             // 读取并记录分发商代码
             let app_handle = app.handle();
-            match get_distributor_code(app_handle) {
+            match get_distributor_code(app_handle.clone()) {
                 Ok(code) => {
                     log::info!("✅ Distributor Code: {}", code);
                     std::env::set_var("DISTRIBUTOR_CODE", &code);
@@ -507,6 +509,8 @@ fn main() -> std::io::Result<()> {
             std::fs::write(format!("{}/port.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wssport.txt", work_dir), "0")?;
+            let agent_ws_port_file = app_data_dir.join("wssport.txt");
+            AgentWsBridge::spawn(app_handle, agent_ws_port_file);
             Ok(())
         })
         .on_page_load(|_window, _payload| {
