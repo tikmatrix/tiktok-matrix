@@ -15,14 +15,6 @@
         </label>
 
       </div>
-      <template v-if="uniqueGroupNames.length > 0">
-        <select v-model="searchGroup" class="select select-bordered max-w-md ml-2 select-md">
-          <option value="">{{ $t('allGroups') }}</option>
-          <option v-for="item in uniqueGroupNames" :key="item.group_name" :value="item.group_name">
-            {{ item.group_name }}
-          </option>
-        </select>
-      </template>
       <MyButton icon="fa fa-refresh" @click="$emit('refresh')" label="refresh" v-if="showRefBtn" />
       <slot name="buttons"></slot>
     </div>

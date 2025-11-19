@@ -61,6 +61,10 @@
 import Countup from './Countup.vue'
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
+import * as taskWsService from '../service/taskWebSocketService';
+import * as settingsWsService from '../service/settingsWebSocketService';
+import wsConnectionState from '../utils/wsConnectionState';
+
 export default {
     name: 'Tasks',
     props: ['settings'],
@@ -73,7 +77,8 @@ export default {
             taskCounts: {},
             autoRetry: false,
             maxRetryCount: 3,
-            isCountingTasks: false
+            isCountingTasks: false,
+            wsConnected: false
         }
     },
     watch: {
@@ -109,9 +114,25 @@ export default {
         this.loadMaxRetryCount();
     },
     methods: {
+        async waitForWsConnection() {
+            if (this.wsConnected) {
+                return;
+            }
+            try {
+                console.log('[Tasks.vue] Waiting for WebSocket connection...');
+                await wsConnectionState.waitForConnection();
+                this.wsConnected = true;
+                console.log('[Tasks.vue] WebSocket connection established');
+            } catch (error) {
+                console.error('[Tasks.vue] Failed to wait for WebSocket connection:', error);
+                throw error;
+            }
+        },
         async loadMaxRetryCount() {
             try {
-                const res = await this.$service.get_settings();
+                await this.waitForWsConnection();
+                // 使用 WebSocket 获取设置
+                const res = await settingsWsService.ws_get_settings();
                 if (res && res.data && res.data.max_retry_count) {
                     this.maxRetryCount = res.data.max_retry_count;
                 }
@@ -121,7 +142,9 @@ export default {
         },
         async updateMaxRetryCount() {
             try {
-                await this.$service.update_settings({
+                await this.waitForWsConnection();
+                // 使用 WebSocket 更新设置
+                await settingsWsService.ws_update_settings({
                     max_retry_count: this.maxRetryCount
                 });
                 await this.$emiter('NOTIFY', {
@@ -138,15 +161,24 @@ export default {
                 });
             }
         },
-        countTasks() {
+        async countTasks() {
             // 如果正在执行,则忽略新的请求
             if (this.isCountingTasks) {
                 console.log('countTasks is already running, skipping...');
                 return;
             }
 
+            // Check if WebSocket is connected, if not, wait
+            try {
+                await this.waitForWsConnection();
+            } catch (error) {
+                console.error('countTasks aborted: WebSocket not connected');
+                return;
+            }
+
             this.isCountingTasks = true;
-            this.$service.count_task_by_status().then((res) => {
+            // 使用 WebSocket 获取任务统计
+            taskWsService.ws_count_task_by_status().then((res) => {
                 const counts = {};
                 let needRetryAll = false;
                 for (let item of res.data) {
@@ -157,8 +189,8 @@ export default {
                 }
                 this.taskCounts = counts;
                 if (needRetryAll) {
-                    this.$service
-                        .retry_all_failed_tasks()
+                    // 使用 WebSocket 重试所有失败任务
+                    taskWsService.ws_retry_all_failed_tasks()
                         .then(() => {
                             console.log('retry_all_failed_tasks');
                             this.countTasks();
@@ -176,7 +208,14 @@ export default {
         }
     },
     async mounted() {
-        this.countTasks();
+        // Wait for WebSocket connection before loading initial data
+        try {
+            await this.waitForWsConnection();
+            this.countTasks();
+        } catch (error) {
+            console.error('[Tasks.vue] Failed to initialize:', error);
+        }
+
         await this.$listen('reload_tasks', async () => {
             this.countTasks();
         });

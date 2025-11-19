@@ -96,27 +96,6 @@ export function delete_account({ id }) {
   })
 }
 
-export function get_tasks() {
-  return request({
-    method: 'get',
-    url: api.task
-  })
-}
-export function delete_task({ id }) {
-  return request({
-    method: 'delete',
-    url: api.task,
-    params: { id }
-  })
-}
-export function update_task(data) {
-  return request({
-    method: 'put',
-    url: api.task,
-    data
-  })
-}
-
 
 export function init(data) {
   return request({
@@ -233,25 +212,7 @@ export function delete_watcher({ id }) {
   })
 }
 
-export function get_settings() {
-  return request({
-    method: 'get',
-    url: api.settings
-  })
-}
-export function update_settings(settings) {
-  return request({
-    method: 'put',
-    url: api.settings,
-    data: settings
-  })
-}
-export function get_running_tasks() {
-  return request({
-    method: 'get',
-    url: api.running_task,
-  })
-}
+
 export function get_license() {
   return request({
     method: 'get',
@@ -321,13 +282,6 @@ export function count_account_by_group_id({ group_id }) {
     params: { group_id }
   })
 }
-export function retry_all_failed_tasks() {
-  return request({
-    method: 'get',
-    url: api.retry_all_failed_tasks
-  })
-}
-
 
 export function read_clipboard({ serial }) {
   return request({
@@ -344,12 +298,7 @@ export function delete_all_materials(params) {
     params: params
   })
 }
-export function delete_all_tasks() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_tasks
-  })
-}
+
 export function delete_all_accounts() {
   return request({
     method: 'delete',

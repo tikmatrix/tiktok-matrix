@@ -96,6 +96,8 @@
 <script>
 import MyButton from '../Button.vue'
 import Pagination from '../Pagination.vue'
+import * as taskWsService from '../../service/taskWebSocketService'
+import * as settingsWsService from '../../service/settingsWebSocketService'
 
 export default {
   name: 'app',
@@ -130,12 +132,13 @@ export default {
   methods: {
     async loadMaxRetryCount() {
       try {
-        const res = await this.$service.get_settings();
+        // 使用 WebSocket 获取设置
+        const res = await settingsWsService.ws_get_settings()
         if (res && res.data && res.data.max_retry_count) {
-          this.maxRetryCount = res.data.max_retry_count;
+          this.maxRetryCount = res.data.max_retry_count
         }
       } catch (error) {
-        console.error('Failed to load max retry count:', error);
+        console.error('Failed to load max retry count:', error)
       }
     },
     getTaskArg(args, key) {
@@ -156,12 +159,18 @@ export default {
     async confirmClearAll() {
       // 关闭确认对话框
       this.$refs.clear_all_confirm_dialog.close()
-      // 执行清空操作
-      this.$service
-        .delete_all_tasks()
-        .then(() => {
-          this.get_tasks()
+      // 执行清空操作 - 使用 WebSocket
+      try {
+        await taskWsService.ws_delete_all_tasks()
+        this.get_tasks()
+      } catch (error) {
+        console.error('Failed to clear all tasks:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: error.message || 'Failed to clear all tasks',
+          timeout: 2000
         })
+      }
     },
 
     async show_device(serial) {
@@ -170,21 +179,22 @@ export default {
     },
     async get_tasks() {
       this.currentTask = null
-      this.$service
-        .get_tasks()
-        .then(async (res) => {
-          this.tasks = res.data
-          this.tasks.forEach(task => {
-            task.device_index = this.devices.find(device => device.serial === task.serial || device.real_serial === task.serial)?.key
-          })
-          await this.$emiter('reload_tasks', {})
-        }).catch(async (err) => {
-          await this.$emiter('NOTIFY', {
-            type: 'error',
-            message: err.message,
-            timeout: 2000
-          })
+      // 使用 WebSocket 获取任务列表
+      try {
+        const res = await taskWsService.ws_get_tasks()
+        this.tasks = res.data
+        this.tasks.forEach(task => {
+          task.device_index = this.devices.find(device => device.serial === task.serial || device.real_serial === task.serial)?.key
         })
+        await this.$emiter('reload_tasks', {})
+      } catch (err) {
+        console.error('Failed to get tasks:', err)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: err.message || 'Failed to load tasks',
+          timeout: 2000
+        })
+      }
     },
     canRetry(task) {
       const retryCount = task?.retry_count ?? 0
@@ -206,66 +216,84 @@ export default {
         })
         return
       }
-      this.$service
-        .update_task({
+      // 使用 WebSocket 更新任务
+      try {
+        const res = await taskWsService.ws_update_task({
           id: task.id,
           status: 0,
           serial: task.serial
         })
-        .then(async (res) => {
-          if (!res || res.code !== 0) {
-            const message = res?.data || this.$t('retryFailed')
-            await this.$emiter('NOTIFY', {
-              type: 'error',
-              message,
-              timeout: 2500
-            })
-            return
-          }
+        if (!res || res.code !== 0) {
+          const message = res?.data || this.$t('retryFailed')
           await this.$emiter('NOTIFY', {
-            type: 'success',
-            message: this.$t('retryQueued'),
-            timeout: 2000
+            type: 'error',
+            message,
+            timeout: 2500
           })
-          this.get_tasks()
+          return
+        }
+        await this.$emiter('NOTIFY', {
+          type: 'success',
+          message: this.$t('retryQueued'),
+          timeout: 2000
         })
+        this.get_tasks()
+      } catch (error) {
+        console.error('Failed to retry task:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: error.message || this.$t('retryFailed'),
+          timeout: 2500
+        })
+      }
     },
     async deleteTask(task) {
-      this.$service
-        .delete_task({
-          id: task.id
+      // 使用 WebSocket 删除任务
+      try {
+        await taskWsService.ws_delete_task({ id: task.id })
+        this.get_tasks()
+      } catch (error) {
+        console.error('Failed to delete task:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: error.message || 'Failed to delete task',
+          timeout: 2000
         })
-        .then(res => {
-          console.log(res)
-          this.get_tasks()
-        })
+      }
     },
 
     async retry_all_failed() {
-      this.$service
-        .retry_all_failed_tasks()
-        .then(async (res) => {
-          if (!res || res.code !== 0) {
-            const message = res?.data || this.$t('retryAllFailedMessage')
-            await this.$emiter('NOTIFY', {
-              type: 'error',
-              message,
-              timeout: 2500
-            })
-            return
-          }
-          const resetCount = res.data || 0
-          const notifyType = resetCount > 0 ? 'success' : 'info'
-          const notifyMessage = resetCount > 0
-            ? this.$t('retryAllQueued', { count: resetCount })
-            : this.$t('retryAllLimitReached', { count: this.maxRetryCount })
+      // 使用 WebSocket 重试所有失败任务
+      try {
+        const res = await taskWsService.ws_retry_all_failed_tasks()
+        if (!res || res.code !== 0) {
+          const message = res?.data || this.$t('retryAllFailedMessage')
           await this.$emiter('NOTIFY', {
-            type: notifyType,
-            message: notifyMessage,
+            type: 'error',
+            message,
             timeout: 2500
           })
-          this.get_tasks()
+          return
+        }
+        const resetCount = res.data || 0
+        const notifyType = resetCount > 0 ? 'success' : 'info'
+        const notifyMessage = resetCount > 0
+          ? this.$t('retryAllQueued', { count: resetCount })
+          : this.$t('retryAllLimitReached', { count: this.maxRetryCount })
+        await this.$emiter('NOTIFY', {
+          type: notifyType,
+          message: notifyMessage,
+          timeout: 2500
         })
+        this.get_tasks()
+      } catch (error) {
+        console.error('Failed to retry all failed tasks:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: error.message || this.$t('retryAllFailedMessage'),
+          timeout: 2500
+        })
+      }
     }
   },
   async mounted() {

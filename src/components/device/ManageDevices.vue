@@ -347,6 +347,7 @@ import { writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
+import * as settingsWsService from '../../service/settingsWebSocketService';
 
 
 export default {
@@ -908,9 +909,14 @@ export default {
       return detail?.success ? this.$t('scanStatusConnected') : this.$t('scanStatusFailed')
     },
     async update_settings() {
-      await this.$service.update_settings(this.settings)
-      //reload settings
-      await this.$emiter('reload_settings', {})
+      // 使用 WebSocket 更新设置
+      try {
+        await settingsWsService.ws_update_settings(this.settings)
+        //reload settings
+        await this.$emiter('reload_settings', {})
+      } catch (error) {
+        console.error('Failed to update settings:', error)
+      }
     },
     sizeChanged(cardWidth) {
       this.cardMinWidth = cardWidth

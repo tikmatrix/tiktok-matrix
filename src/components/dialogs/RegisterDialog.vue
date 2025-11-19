@@ -22,6 +22,8 @@
 
 </template>
 <script>
+import * as settingsWsService from '../../service/settingsWebSocketService'
+
 export default {
   name: 'RegisterDialog',
   components: {
@@ -60,19 +62,30 @@ export default {
         ...this.settings,
         ...this.localSettings
       }
-      await this.$service.update_settings(updatedSettings)
-      this.$emit('update:settings', updatedSettings)
-      //reload settings
-      await this.$emiter('reload_settings', {})
-      await this.$emiter('run_now_by_account', {
-        name: 'register',
-        args: {
-          count: 1,
-          enable_multi_account,
-          rotate_proxy
-        }
-      })
-      return true;
+      // 使用 WebSocket 更新设置
+      try {
+        await settingsWsService.ws_update_settings(updatedSettings)
+        this.$emit('update:settings', updatedSettings)
+        //reload settings
+        await this.$emiter('reload_settings', {})
+        await this.$emiter('run_now_by_account', {
+          name: 'register',
+          args: {
+            count: 1,
+            enable_multi_account,
+            rotate_proxy
+          }
+        })
+        return true
+      } catch (error) {
+        console.error('Failed to update settings:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: 'Failed to update settings',
+          timeout: 2000
+        })
+        return false
+      }
     },
 
   },

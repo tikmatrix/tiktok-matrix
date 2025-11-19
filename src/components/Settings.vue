@@ -3,7 +3,7 @@
     <!-- 应用配置 -->
     <div class="mb-8">
       <h3 class="text-lg font-semibold text-base-content mb-4 border-l-4 border-primary pl-3">{{ $t('appConfiguration')
-        }}</h3>
+      }}</h3>
       <div class="space-y-4">
         <!-- TikTok包名选择 -->
         <div class="flex items-center justify-between py-3 border-b border-base-200"
@@ -141,6 +141,7 @@ import { appDataDir } from '@tauri-apps/api/path';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
 import { getUnlockedFeatures, unlockFeature as unlockFeatureFlag } from '@/utils/features.js';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
+import * as settingsWsService from '../service/settingsWebSocketService';
 
 export default {
   name: 'Settings',
@@ -205,12 +206,16 @@ export default {
     },
     async update_settings() {
       if (!this.hasLoadedSettings) {
-        return;
+        return
       }
-      await this.$service.update_settings(this.localSettings)
-      //reload settings
-      await this.$emiter('reload_settings', {})
-
+      // 使用 WebSocket 更新设置
+      try {
+        await settingsWsService.ws_update_settings(this.localSettings)
+        //reload settings
+        await this.$emiter('reload_settings', {})
+      } catch (error) {
+        console.error('Failed to update settings:', error)
+      }
     },
     async unlockFeature() {      // 激活码与功能映射，可扩展
       const featureMap = {

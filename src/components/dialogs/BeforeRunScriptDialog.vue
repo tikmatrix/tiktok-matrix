@@ -98,7 +98,8 @@ import MassCommentDialog from './MassCommentDialog.vue'
 import BoostLivesDialog from './BoostLivesDialog.vue'
 import SwitchAccountDialog from './SwitchAccountDialog.vue'
 import SuperMarketingDialog from './SuperMarketingDialog.vue'
-import { beforeRunScriptSettings } from '@/utils/settingsManager';
+import { beforeRunScriptSettings } from '@/utils/settingsManager'
+import * as settingsWsService from '../../service/settingsWebSocketService'
 
 const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
   {
@@ -167,9 +168,14 @@ export default {
   },
   methods: {
     async update_settings() {
-      await this.$service.update_settings(this.settings)
-      //reload settings
-      await this.$emiter('reload_settings', {})
+      // 使用 WebSocket 更新设置
+      try {
+        await settingsWsService.ws_update_settings(this.settings)
+        //reload settings
+        await this.$emiter('reload_settings', {})
+      } catch (error) {
+        console.error('Failed to update settings:', error)
+      }
     },
     async fetchLicenseLimit() {
       try {

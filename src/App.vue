@@ -30,6 +30,9 @@ import {
   markAllSupportTicketsRead,
   extractTicketKey
 } from './utils/supportNotifications.js';
+import * as settingsWsService from './service/settingsWebSocketService';
+import * as taskWsService from './service/taskWebSocketService';
+import wsConnectionState from './utils/wsConnectionState';
 
 export default {
   name: 'app',
@@ -191,6 +194,12 @@ export default {
         extra,
         raw: payload || null
       };
+
+      // Update global WebSocket connection state
+      const isConnected = nextStatus === 'connected';
+      wsConnectionState.setConnected(isConnected);
+      console.log(`[App.vue] WebSocket status updated: ${nextStatus}, connected: ${isConnected}`);
+
       if (typeof this.$emiter === 'function') {
         try {
           await this.$emiter('wsStatusChanged', { ...this.wsStatus });
@@ -201,9 +210,13 @@ export default {
     },
 
     async get_settings() {
-      const res = await this.$service.get_settings();
-      this.settings = res.data
-
+      // 使用 WebSocket 获取设置
+      try {
+        const res = await settingsWsService.ws_get_settings()
+        this.settings = res.data
+      } catch (error) {
+        console.error('Failed to get settings:', error)
+      }
     },
 
     async get_groups() {
@@ -213,13 +226,17 @@ export default {
       })
     },
     async getRunningTasks() {
-      this.$service.get_running_tasks().then(res => {
+      // 使用 WebSocket 获取运行中的任务
+      try {
+        const res = await taskWsService.ws_get_running_tasks()
         let running_tasks = res.data
         let running_serials = running_tasks.map(task => task.serial)
         this.devices.forEach(device => {
           device.task_status = running_serials.includes(device.real_serial) ? 1 : 0
         })
-      })
+      } catch (error) {
+        console.error('Failed to get running tasks:', error)
+      }
     },
     async setupAgentBridgeListeners() {
       try {
