@@ -32,6 +32,8 @@ import {
 } from './utils/supportNotifications.js';
 import * as settingsWsService from './service/settingsWebSocketService';
 import * as taskWsService from './service/taskWebSocketService';
+import * as groupWsService from './service/groupWebSocketService';
+import * as deviceWsService from './service/deviceWebSocketService';
 import wsConnectionState from './utils/wsConnectionState';
 
 export default {
@@ -170,17 +172,11 @@ export default {
     },
 
     async requestDevices(source = 'manual', extra = {}) {
-      const payload = {
-        action: 'device.fetch',
-        data: {
-          source,
-          ...extra
-        }
-      };
       try {
-        await invoke('agent_ws_send', { payload });
+        console.log('[App] Requesting devices via WebSocket service')
+        await deviceWsService.ws_list_devices(source, extra)
       } catch (error) {
-        console.error('requestDevices via WS failed:', error);
+        console.error('[App] Request devices failed:', error)
       }
     },
 
@@ -220,10 +216,12 @@ export default {
     },
 
     async get_groups() {
-      this.$service.get_groups().then(async res => {
+      try {
+        const res = await groupWsService.ws_get_groups()
         this.groups = res.data
-
-      })
+      } catch (error) {
+        console.error('Failed to get groups:', error)
+      }
     },
     async getRunningTasks() {
       // 使用 WebSocket 获取运行中的任务

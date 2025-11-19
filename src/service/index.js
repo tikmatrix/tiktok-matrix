@@ -1,6 +1,9 @@
 import request from '../utils/request'
 import api from '../api'
 import { ResponseType } from '@tauri-apps/api/http'
+
+
+
 export function auth({ password }) {
   return request({
     method: 'post',
@@ -18,32 +21,6 @@ export function tiktok_query(data) {
   })
 }
 
-
-
-
-export function get_materials_byused({ used }) {
-  return request({
-    method: 'get',
-    url: api.material,
-    params: { used }
-  })
-}
-export function get_materials({ group_id }) {
-  return request({
-    method: 'get',
-    url: api.material,
-    params: { group_id }
-  })
-}
-export function get_material_count({ used, group_id }) {
-  return request({
-    method: 'get',
-    url: api.material_count,
-    params: { used, group_id }
-  })
-}
-
-
 export function upload_videos(data) {
   return request({
     method: 'post',
@@ -60,43 +37,6 @@ export function upload_video(data) {
   })
 }
 
-export function delete_material({ id }) {
-  return request({
-    method: 'delete',
-    url: api.material,
-    params: { id }
-  })
-}
-export function get_accounts() {
-  return request({
-    method: 'get',
-    url: api.account
-  })
-}
-
-export function add_account(account) {
-  return request({
-    method: 'post',
-    url: api.account,
-    data: account
-  })
-}
-export function update_account(account) {
-  return request({
-    method: 'put',
-    url: api.account,
-    data: account
-  })
-}
-export function delete_account({ id }) {
-  return request({
-    method: 'delete',
-    url: api.account,
-    params: { id }
-  })
-}
-
-
 export function init(data) {
   return request({
     method: 'post',
@@ -111,35 +51,6 @@ export function index({ serial, index }) {
     params: { serial, index }
   })
 }
-export function get_groups() {
-  return request({
-    method: 'get',
-    url: api.group
-  })
-}
-export function add_group(group) {
-  return request({
-    method: 'post',
-    url: api.group,
-    data: group
-  })
-}
-export function update_group(group) {
-  return request({
-    method: 'put',
-    url: api.group,
-    data: group
-  })
-}
-export function delete_group({ id }) {
-  return request({
-    method: 'delete',
-    url: api.group,
-    params: { id }
-  })
-}
-
-
 
 export function get_group_config_file({ group_id, script_name }) {
   return request({
@@ -156,62 +67,6 @@ export function save_group_config_file({ group_id, script_name, settings }) {
     data: { group_id, script_name, settings }
   })
 }
-export function get_musics() {
-  return request({
-    method: 'get',
-    url: api.music
-  })
-}
-export function add_music({ release_name, artist_name }) {
-  return request({
-    method: 'post',
-    url: api.music,
-    data: { release_name, artist_name }
-  })
-}
-export function update_music({ id, release_name, artist_name }) {
-  return request({
-    method: 'put',
-    url: api.music,
-    data: { id, release_name, artist_name }
-  })
-}
-export function delete_music({ id }) {
-  return request({
-    method: 'delete',
-    url: api.music,
-    params: { id }
-  })
-}
-
-export function get_watchers() {
-  return request({
-    method: 'get',
-    url: api.watcher
-  })
-}
-export function add_watcher({ name, conditions, action, status }) {
-  return request({
-    method: 'post',
-    url: api.watcher,
-    data: { name, conditions, action, status }
-  })
-}
-export function update_watcher({ id, name, conditions, action, status }) {
-  return request({
-    method: 'put',
-    url: api.watcher,
-    data: { id, name, conditions, action, status }
-  })
-}
-export function delete_watcher({ id }) {
-  return request({
-    method: 'delete',
-    url: api.watcher,
-    params: { id }
-  })
-}
-
 
 export function get_license() {
   return request({
@@ -263,12 +118,6 @@ export function count_task_by_status() {
   })
 }
 
-export function count_online_device() {
-  return request({
-    method: 'get',
-    url: api.count_online_device
-  })
-}
 export function count_all_account() {
   return request({
     method: 'get',
@@ -291,20 +140,7 @@ export function read_clipboard({ serial }) {
   })
 }
 
-export function delete_all_materials(params) {
-  return request({
-    method: 'delete',
-    url: api.delete_all_materials,
-    params: params
-  })
-}
 
-export function delete_all_accounts() {
-  return request({
-    method: 'delete',
-    url: api.delete_all_accounts
-  })
-}
 
 export function test_proxy_rotation(data) {
   return request({
@@ -449,20 +285,7 @@ export function get_menus() {
   })
 }
 
-export function get_accounts_by_device({ device }) {
-  return request({
-    method: 'get',
-    params: { device },
-    url: api.get_accounts_by_device
-  })
-}
-export function get_group_by_id({ id }) {
-  return request({
-    method: 'get',
-    params: { id },
-    url: api.get_group_by_id
-  })
-}
+
 export function move_to_group(data) {
   return request({
     method: 'post',
@@ -518,14 +341,6 @@ export function reset_all_index(data) {
     url: api.reset_all_index
   })
 }
-export function update_material(data) {
-  return request({
-    method: 'put',
-    data,
-    url: api.material
-  })
-}
-
 
 export function clear_gallery(data) {
   return request({

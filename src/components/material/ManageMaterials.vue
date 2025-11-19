@@ -278,6 +278,9 @@ import Pagination from '../Pagination.vue'
 import { open } from '@tauri-apps/api/dialog';
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
+import * as groupWsService from '@/service/groupWebSocketService';
+import * as materialWsService from '@/service/materialWebSocketService';
+
 export default {
   name: 'app',
   components: {
@@ -512,8 +515,8 @@ export default {
       // 关闭确认对话框
       this.$refs.clear_all_confirm_dialog.close()
       // 执行清空操作
-      this.$service
-        .delete_all_materials({
+      materialWsService
+        .ws_delete_all_materials({
           group_id: this.group.id
         })
         .then(() => {
@@ -528,7 +531,7 @@ export default {
     async get_materials() {
       try {
         // 获取所有素材列表
-        const all_materials = await this.$service.get_materials({
+        const all_materials = await materialWsService.ws_get_materials({
           group_id: this.group.id
         });
         // 获取带标签的素材列表
@@ -561,8 +564,8 @@ export default {
       this.$refs.detail_modal.showModal()
     },
     delete_material(material) {
-      this.$service
-        .delete_material({
+      materialWsService
+        .ws_delete_material({
           id: material.id
         })
         .then(() => {
@@ -573,8 +576,8 @@ export default {
         })
     },
     update_material(material) {
-      this.$service
-        .update_material({
+      materialWsService
+        .ws_update_material({
           id: material.id,
           no: material.no,
           name: material.name,
@@ -641,9 +644,12 @@ export default {
         })
     },
     async get_groups() {
-      this.$service.get_groups().then(async res => {
+      try {
+        const res = await groupWsService.ws_get_groups()
         this.groups = res.data
-      })
+      } catch (error) {
+        console.error('Failed to get groups:', error)
+      }
     },
     get_group_name(group_id) {
       const group = this.groups.find(group => group.id === group_id);
