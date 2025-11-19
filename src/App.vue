@@ -89,6 +89,26 @@ export default {
       await this.$emiter('supportUnreadChanged', payload);
     },
 
+    async emitGenericAgentEvent(message = {}) {
+      if (typeof this.$emiter !== 'function') {
+        return;
+      }
+      const action = typeof message === 'object' ? message?.action : null;
+      if (!action) {
+        return;
+      }
+      const payload = {
+        action,
+        data: message?.data ?? null,
+        raw: message
+      };
+      try {
+        await this.$emiter('agentEvent', payload);
+      } catch (error) {
+        console.error('emitGenericAgentEvent error', error);
+      }
+    },
+
     async handleSupportUpdates(updates = []) {
       try {
         const result = await mergeSupportUpdates(updates);
@@ -261,6 +281,8 @@ export default {
           await this.$emiter('STRIPE_PAYMENT_SUCCESS', {})
         } else if (json.action === 'stripe_payment_cancel') {
           await this.$emiter('STRIPE_PAYMENT_CANCEL', {})
+        } else if (json.action === 'order_payment_status') {
+          await this.$emiter('ORDER_PAYMENT_STATUS', json.data || {})
         } else if (json.action === 'task_status') {
           let serial = json.serial
           let status = json.status
@@ -297,6 +319,8 @@ export default {
           await this.handleSupportUpdates(updates)
         } else if (json.action === 'heartbeat') {
           await this.$emiter('heartbeat', {})
+        } else {
+          await this.emitGenericAgentEvent(json)
         }
       }
       this.ws.onclose = async (event) => {

@@ -76,7 +76,7 @@ const postMixin = postSettings.createVueMixin(
     chatgpt_settings: {
       url: 'https://api.openai.com/v1/chat/completions',
       api_key: '',
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       system_prompt: 'Generate a casual, engaging TikTok caption for this video. Keep it under 150 characters, use relevant hashtags, and make it trendy.'
     },
     // 添加素材相关字段

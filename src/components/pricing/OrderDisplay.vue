@@ -29,9 +29,6 @@
 
             <!-- 支付提示 -->
             <PaymentTips :network="order.network" :amount="order.amount" />
-
-            <!-- 进度条 -->
-            <RefreshProgress :refresh-time="refreshTime" />
         </div>
     </div>
 </template>
@@ -41,7 +38,6 @@ import CountdownTimer from './CountdownTimer.vue'
 import QRCodeDisplay from './QRCodeDisplay.vue'
 import PaymentAddress from './PaymentAddress.vue'
 import PaymentTips from './PaymentTips.vue'
-import RefreshProgress from './RefreshProgress.vue'
 
 export default {
     name: 'OrderDisplay',
@@ -49,8 +45,7 @@ export default {
         CountdownTimer,
         QRCodeDisplay,
         PaymentAddress,
-        PaymentTips,
-        RefreshProgress
+        PaymentTips
     },
     props: {
         order: {
@@ -58,10 +53,6 @@ export default {
             required: true
         },
         remainingTime: {
-            type: Number,
-            required: true
-        },
-        refreshTime: {
             type: Number,
             required: true
         }

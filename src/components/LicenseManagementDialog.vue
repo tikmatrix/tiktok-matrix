@@ -22,8 +22,7 @@
 
                     <!-- 订单显示区域 -->
                     <OrderDisplay v-if="whitelabelConfig.enablePay && order && order.status == 0" :order="order"
-                        :remaining-time="remainingTime" :refresh-time="refreshTime" @close-order="closeOrder"
-                        @copy-text="copyText" />
+                        :remaining-time="remainingTime" @close-order="closeOrder" @copy-text="copyText" />
 
                     <!-- 定价表 -->
                     <PricingTable
@@ -94,11 +93,11 @@ export default {
             remainingTime: 0,
             order: null,
             interval: null,
-            refreshTime: 10,
             agreePolicy: false,
             currentLocale: 'en',
             priceTableInfo: null,
             whitelabelConfig: cloneDefaultWhiteLabelConfig(),
+            orderPaymentHandled: false,
         };
     },
     watch: {
@@ -140,12 +139,15 @@ export default {
             this.currentLocale = storedLocale ? storedLocale.replace(/"/g, '') : 'en';
             await this.getStripePriceTableInfo();
             this.$refs.license_management_dialog.showModal();
+            this.orderPaymentHandled = false;
             await this.getOrder();
         },
 
         async close() {
             clearInterval(this.interval);
+            this.interval = null;
             this.order = null;
+            this.orderPaymentHandled = false;
             this.$refs.license_management_dialog.close();
         }
     }
