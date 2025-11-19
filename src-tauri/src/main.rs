@@ -19,13 +19,14 @@ use std::os::windows::process::CommandExt;
 use futures_util::stream::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tauri::{
     http::header::{ACCEPT, USER_AGENT},
-    AppHandle, Manager,
+    AppHandle, Manager, State,
 };
 use zip::read::ZipArchive;
 mod init_log;
-use crate::agent_ws_bridge::AgentWsBridge;
+use crate::agent_ws_bridge::{AgentWsBridge, AgentWsCommandState};
 mod agent_ws_bridge;
 
 /**
@@ -100,6 +101,18 @@ fn setup_env(working_dir: &str, version: String) {
         std::env::set_var("RUST_BACKTRACE", "1");
         std::env::set_var("LOG_LEVEL", "info");
     }
+}
+
+#[tauri::command]
+async fn agent_ws_send(
+    payload: Value,
+    bridge_state: State<'_, AgentWsCommandState>,
+) -> Result<(), String> {
+    log::info!("agent_ws_send payload: {:?}", payload);
+    bridge_state
+        .send(payload)
+        .await
+        .map_err(|err| err.to_string())
 }
 #[tauri::command]
 fn set_env(key: String, value: String) {
@@ -450,8 +463,10 @@ fn open_adb_terminal(dir: String) {
 
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
+        .manage(AgentWsCommandState::default())
         .invoke_handler(tauri::generate_handler![
             get_distributor_code,
+            agent_ws_send,
             grant_permission,
             kill_process,
             open_dir,

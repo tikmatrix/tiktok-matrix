@@ -21,6 +21,7 @@ import AppDialog from './AppDialog.vue'
 import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
 import { writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs'
+import { invoke } from '@tauri-apps/api/tauri'
 import { getItem } from './utils/persistentStorage.js';
 import {
   getSupportUnreadState,
@@ -159,6 +160,25 @@ export default {
       }
     },
 
+    async requestDevices(source = 'manual', options = {}) {
+      const { fallbackOnError = true, extra = {} } = options || {};
+      const payload = {
+        action: 'device.fetch',
+        data: {
+          source,
+          ...extra
+        }
+      };
+      try {
+        await invoke('agent_ws_send', { payload });
+      } catch (error) {
+        console.error('requestDevices via WS failed:', error);
+        if (fallbackOnError) {
+          await this.fetchDevicesViaHttp({ source: `fallback:${source}` });
+        }
+      }
+    },
+
     async get_settings() {
       const res = await this.$service.get_settings();
       this.settings = res.data
@@ -186,11 +206,12 @@ export default {
           const payload = event?.payload || {};
           const status = payload.status;
           if (status === 'connected') {
-            await this.getDevices();
+            await this.requestDevices('ws-status-connected', { fallbackOnError: true });
             await this.$emiter('heartbeat', { source: 'ws-status' });
           }
           if (status === 'error') {
             console.warn('Agent WS reported error', payload?.extra);
+            await this.fetchDevicesViaHttp({ source: 'ws-status-error' });
           }
         }));
         this.listeners.push(await this.$listen('agent://ws/message', async (event) => {
@@ -209,8 +230,15 @@ export default {
       if (json.action === 'reload_devices') {
         const data = json.data;
         if (data) {
-          this.getDevices();
+          await this.requestDevices('agent-action:reload_devices', { fallbackOnError: true });
         }
+      } else if (json.action === 'device_snapshot') {
+        const snapshot = json.data || {};
+        const devices = Array.isArray(snapshot.devices) ? snapshot.devices : [];
+        await this.applyDeviceSnapshot(devices, {
+          source: snapshot.source || 'ws',
+          generatedAt: snapshot.generated_at || Date.now(),
+        });
       } else if (json.action === 'reload_license') {
         await this.$emiter('LICENSE', { reload: true })
       } else if (json.action === 'stripe_payment_success') {
@@ -265,25 +293,35 @@ export default {
       }
     },
     async getDevices() {
+      return this.fetchDevicesViaHttp({ source: 'legacy-http-call' });
+    },
+
+    async fetchDevicesViaHttp(meta = {}) {
       try {
         const res = await this.$service.get_devices();
         const newDevices = Array.isArray(res.data) ? res.data : [];
+        await this.applyDeviceSnapshot(newDevices, { source: meta.source || 'http' });
+      } catch (error) {
+        console.error('获取设备列表失败 (HTTP fallback):', error);
+      }
+    },
+
+    async applyDeviceSnapshot(newDevices = [], meta = {}) {
+      try {
+        const normalizedDevices = Array.isArray(newDevices) ? newDevices : [];
         const currentDevices = this.devices;
 
-        // 找出需要删除的设备
         const devicesToRemove = currentDevices.filter(current =>
-          !newDevices.some(newDevice => newDevice.real_serial === current.real_serial)
+          !normalizedDevices.some(newDevice => newDevice.real_serial === current.real_serial)
         );
 
-        // 找出需要添加或更新的设备
-        const devicesToAddOrUpdate = newDevices.filter(newDevice => {
+        const devicesToAddOrUpdate = normalizedDevices.filter(newDevice => {
           const existingDevice = currentDevices.find(current =>
             current.real_serial === newDevice.real_serial
           );
           return !existingDevice || JSON.stringify(existingDevice) !== JSON.stringify(newDevice);
         });
 
-        // 删除不存在的设备
         devicesToRemove.forEach(device => {
           const index = currentDevices.findIndex(d => d.real_serial === device.real_serial);
           if (index !== -1) {
@@ -291,7 +329,6 @@ export default {
           }
         });
 
-        // 添加或更新设备
         for (const newDevice of devicesToAddOrUpdate) {
           const existingIndex = currentDevices.findIndex(d => d.real_serial === newDevice.real_serial);
           if (existingIndex === -1) {
@@ -299,28 +336,31 @@ export default {
             newDevice.sort = Number(storedSort ?? '0');
             currentDevices.push(newDevice);
           } else {
-            // 更新现有设备
             Object.assign(currentDevices[existingIndex], newDevice);
           }
         }
 
-        // 创建新的排序后的数组
         const sortedDevices = [...currentDevices].sort((a, b) => {
           return a.sort - b.sort || a.group_id - b.group_id || a.serial.localeCompare(b.serial);
         });
 
-        // 使用Vue的响应式方法更新数组
         this.devices.splice(0, this.devices.length, ...sortedDevices);
 
-        // 更新key
         this.devices.forEach((device, index) => {
           device.key = index + 1;
         });
 
-        // 保存设备信息到文件
-        this.saveDevicesInfo();
+        await this.saveDevicesInfo();
+
+        if (typeof this.$emiter === 'function') {
+          await this.$emiter('devicesUpdated', {
+            source: meta.source || 'snapshot',
+            total: this.devices.length,
+            generatedAt: meta.generatedAt || Date.now()
+          });
+        }
       } catch (error) {
-        console.error('获取设备列表失败:', error);
+        console.error('applyDeviceSnapshot error:', error);
       }
     },
 
@@ -445,7 +485,6 @@ export default {
       try {
 
         // 动态导入 Tauri API
-        const { invoke } = await import('@tauri-apps/api/tauri');
         const { getVersion } = await import('@tauri-apps/api/app');
         const { type, version, arch } = await import('@tauri-apps/api/os');
 
@@ -500,6 +539,7 @@ export default {
       await this.initDistributor();
       await this.get_settings()
       await this.get_groups()
+      await this.requestDevices('event:agent_started', { fallbackOnError: true });
 
       await this.getRunningTasks();
       await this.$emiter('reload_tasks', {})
@@ -508,7 +548,7 @@ export default {
       this.startAutoUpdateTimer();
     }));
     this.listeners.push(await this.$listen('reload_devices', async () => {
-      await this.getDevices();
+      await this.requestDevices('event:reload_devices', { fallbackOnError: true });
     }));
     // 监听重新加载运行任务事件
     this.listeners.push(await this.$listen('reload_running_tasks', async () => {

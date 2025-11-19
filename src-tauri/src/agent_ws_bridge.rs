@@ -1,15 +1,43 @@
 use std::{path::PathBuf, time::Duration};
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use chrono::Utc;
-use futures_util::StreamExt;
+use futures_util::{SinkExt, StreamExt};
 use serde_json::{json, Value};
 use tauri::{AppHandle, Manager};
-use tokio::{fs, time::sleep};
+use tokio::{fs, sync::mpsc, time::sleep};
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 
 const STATUS_EVENT: &str = "agent://ws/status";
 const MESSAGE_EVENT: &str = "agent://ws/message";
+
+#[derive(Default)]
+pub struct AgentWsCommandState {
+    sender: tokio::sync::Mutex<Option<mpsc::Sender<String>>>,
+}
+
+impl AgentWsCommandState {
+    pub async fn set_sender(&self, sender: Option<mpsc::Sender<String>>) {
+        let mut guard = self.sender.lock().await;
+        *guard = sender;
+    }
+
+    pub async fn send(&self, payload: Value) -> Result<()> {
+        let text = serde_json::to_string(&payload)?;
+        let sender = {
+            let guard = self.sender.lock().await;
+            guard.clone()
+        };
+        match sender {
+            Some(tx) => tx
+                .send(text)
+                .await
+                .map_err(|err| anyhow!("agent ws send failed: {}", err))?,
+            None => return Err(anyhow!("agent ws bridge not connected")),
+        }
+        Ok(())
+    }
+}
 
 pub struct AgentWsBridge {
     app: AppHandle,
@@ -43,43 +71,82 @@ impl AgentWsBridge {
             .await
             .with_context(|| format!("failed to connect to agent ws: {}", ws_url))?;
 
+        let (mut write, mut read) = ws_stream.split();
+        let (command_tx, mut command_rx) = mpsc::channel::<String>(64);
+        self.update_command_sender(Some(command_tx.clone())).await;
+
         self.emit_status("connected", Some(json!({ "url": ws_url })));
         log::info!("connected to agent ws: {}", ws_url);
-        let (_write, mut read) = ws_stream.split();
 
-        while let Some(message) = read.next().await {
-            match message {
-                Ok(Message::Text(text)) => self.handle_text_message(&text).await,
-                Ok(Message::Binary(binary)) => {
-                    log::debug!("agent ws binary message ({} bytes) ignored", binary.len());
+        let mut disconnect_payload = json!({ "graceful": false });
+
+        loop {
+            tokio::select! {
+                maybe_msg = read.next() => {
+                    match maybe_msg {
+                        Some(Ok(Message::Text(text))) => self.handle_text_message(&text).await,
+                        Some(Ok(Message::Binary(binary))) => {
+                            log::debug!("agent ws binary message ({} bytes) ignored", binary.len());
+                        }
+                        Some(Ok(Message::Ping(_))) | Some(Ok(Message::Pong(_))) => {}
+                        Some(Ok(Message::Frame(_))) => {}
+                        Some(Ok(Message::Close(frame))) => {
+                            let reason = frame
+                                .map(|f| f.reason.to_string())
+                                .unwrap_or_else(|| "remote closed".to_string());
+                            disconnect_payload = json!({ "reason": reason, "graceful": true });
+                            break;
+                        }
+                        Some(Err(err)) => {
+                            log::warn!("agent ws receive error: {:?}", err);
+                            self.emit_status("error", Some(json!({ "error": err.to_string() })));
+                            disconnect_payload = json!({
+                                "graceful": false,
+                                "reason": err.to_string(),
+                                "phase": "receive"
+                            });
+                            break;
+                        }
+                        None => {
+                            disconnect_payload = json!({ "reason": "remote closed", "graceful": false });
+                            break;
+                        }
+                    }
                 }
-                Ok(Message::Ping(_)) | Ok(Message::Pong(_)) => {
-                    // no-op
-                }
-                Ok(Message::Frame(_)) => {
-                    // reserved for internal use, ignore
-                }
-                Ok(Message::Close(frame)) => {
-                    let reason = frame
-                        .map(|f| f.reason.to_string())
-                        .unwrap_or_else(|| "remote closed".to_string());
-                    self.emit_status(
-                        "disconnected",
-                        Some(json!({ "reason": reason, "graceful": true })),
-                    );
-                    break;
-                }
-                Err(err) => {
-                    log::warn!("agent ws receive error: {:?}", err);
-                    self.emit_status("error", Some(json!({ "error": err.to_string() })));
-                    break;
+                maybe_command = command_rx.recv() => {
+                    match maybe_command {
+                        Some(text) => {
+                            if let Err(err) = write.send(Message::Text(text)).await {
+                                log::warn!("agent ws send error: {:?}", err);
+                                self.emit_status("error", Some(json!({ "error": err.to_string(), "phase": "send" })));
+                                disconnect_payload = json!({
+                                    "graceful": false,
+                                    "reason": err.to_string(),
+                                    "phase": "send"
+                                });
+                                break;
+                            }
+                        }
+                        None => {
+                            log::debug!("agent ws command channel closed");
+                            break;
+                        }
+                    }
                 }
             }
         }
 
-        // ensure we notify listeners if loop exits without close frame
-        self.emit_status("disconnected", Some(json!({ "graceful": false })));
+        self.update_command_sender(None).await;
+
+        self.emit_status("disconnected", Some(disconnect_payload));
         Ok(())
+    }
+
+    async fn update_command_sender(&self, sender: Option<mpsc::Sender<String>>) {
+        match self.app.try_state::<AgentWsCommandState>() {
+            Some(state) => state.set_sender(sender).await,
+            None => log::warn!("AgentWsCommandState not registered"),
+        }
     }
 
     async fn handle_text_message(&self, text: &str) {
