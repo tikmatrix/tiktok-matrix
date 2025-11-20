@@ -34,6 +34,7 @@ import * as settingsWsService from './service/settingsWebSocketService';
 import * as taskWsService from './service/taskWebSocketService';
 import * as groupWsService from './service/groupWebSocketService';
 import * as deviceWsService from './service/deviceWebSocketService';
+import * as utilsWsService from './service/utilsWebSocketService';
 import wsConnectionState from './utils/wsConnectionState';
 
 export default {
@@ -477,7 +478,7 @@ export default {
 
 
         // 上报安装信息
-        await this.$service.report_distributor_install({
+        await utilsWsService.ws_report_distributor_install({
           distributor_code: distributorCode,
           app_version: appVersion,
           os_version: osFullVersion,

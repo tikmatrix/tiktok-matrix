@@ -57,7 +57,6 @@ const api = {
   clear_follow_records: '/api/follow_record/clear',
   open_tiktok: '/api/open_tiktok',
   stop_tiktok: '/api/stop_tiktok',
-  report_distributor_install: '/api/report_distributor_install',
   support_logs: '/agent/api/support/logs',
   support_upload: '/agent/api/support/upload',
   support_file_info: '/agent/api/support/file-info',
