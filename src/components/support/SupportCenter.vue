@@ -138,7 +138,7 @@
             <span v-if="detailLoading" class="loading loading-spinner loading-xs mr-1"></span>
             {{ $t('supportDetailRefresh') }}
           </button>
-          <button class="btn btn-error btn-sm" :disabled="closingTicket || isTicketClosed" @click="closeTicket">
+          <button class="btn btn-error btn-sm" :disabled="closingTicket || isTicketClosed" @click="showCloseTicketConfirmation">
             <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
             {{ $t('supportDetailCloseTicket') }}
           </button>
@@ -303,6 +303,7 @@
               </header>
               <div class="conversation-body" v-html="renderMessageBody(message.body)"></div>
               <pre v-if="message.message_tail" class="conversation-tail">{{ message.message_tail }}</pre>
+              <p v-if="message.message_tail" class="conversation-tail-note">{{ $t('supportLogNote') }}</p>
               <div v-if="hasMessageAttachments(message)" class="conversation-attachments">
                 <div class="attachments-summary">
                   {{ $t('supportDetailAttachmentsSummary', { count: getMessageMediaAttachments(message).length }) }}
@@ -368,6 +369,31 @@
       <SupportForm :devices="devices" :seleced-devices="selecedDevices" :client-info="clientInfo"
         @submitted="handleFormSubmitted" @cancel="backToList" @update:selected="updateSelection" />
     </div>
+
+    <!-- Close Ticket Confirmation Modal -->
+    <teleport to="body">
+      <transition name="modal-fade">
+        <div v-if="showCloseConfirmation" class="modal-overlay" @click.self="cancelCloseTicket">
+          <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="close-ticket-title">
+            <div class="modal-header">
+              <h3 id="close-ticket-title" class="modal-title">{{ $t('supportDetailCloseConfirmTitle') }}</h3>
+            </div>
+            <div class="modal-body">
+              <p>{{ $t('supportDetailCloseConfirm') }}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline btn-sm" @click="cancelCloseTicket">
+                {{ $t('supportDetailCloseConfirmCancel') }}
+              </button>
+              <button type="button" class="btn btn-error btn-sm" :disabled="closingTicket" @click="confirmCloseTicket">
+                <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
+                {{ $t('supportDetailCloseConfirmButton') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </teleport>
   </div>
 </template>
 
@@ -454,7 +480,8 @@ export default {
       agentBaseUrl: '',
       agentBaseUrlPromise: null,
       lastTicketListCacheKey: null,
-      lastTicketDetailCacheKey: null
+      lastTicketDetailCacheKey: null,
+      showCloseConfirmation: false
     }
   },
   computed: {
@@ -2511,6 +2538,19 @@ export default {
       if (!this.currentTicket) return
       await this.loadTicketDetail(this.currentTicket)
     },
+    showCloseTicketConfirmation() {
+      if (!this.currentTicket || this.closingTicket || this.isTicketClosed) {
+        return
+      }
+      this.showCloseConfirmation = true
+    },
+    cancelCloseTicket() {
+      this.showCloseConfirmation = false
+    },
+    async confirmCloseTicket() {
+      await this.closeTicket()
+      this.showCloseConfirmation = false
+    },
     async closeTicket() {
       if (!this.currentTicket || this.closingTicket) {
         return
@@ -3419,6 +3459,14 @@ export default {
   overflow-y: auto;
 }
 
+.conversation-tail-note {
+  font-size: 12px;
+  color: var(--color-base-content);
+  opacity: 0.7;
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
 .conversation-attachments {
   display: flex;
   flex-direction: column;
@@ -3734,5 +3782,77 @@ export default {
 :global(.attachment-preview-fade-enter-from),
 :global(.attachment-preview-fade-leave-to) {
   opacity: 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1300;
+  padding: 20px;
+}
+
+.modal-dialog {
+  background: var(--color-base-100);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-base-content);
+}
+
+.modal-body {
+  color: var(--color-base-content);
+}
+
+.modal-body p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .modal-dialog,
+.modal-fade-leave-active .modal-dialog {
+  transition: transform 0.2s ease;
+}
+
+.modal-fade-enter-from .modal-dialog,
+.modal-fade-leave-to .modal-dialog {
+  transform: scale(0.95);
 }
 </style>
