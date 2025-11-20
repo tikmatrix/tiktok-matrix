@@ -2,6 +2,7 @@
 import { message } from '@tauri-apps/api/dialog';
 import confetti from 'canvas-confetti';
 import Bluebird from 'bluebird';
+import * as licenseWsService from '../service/licenseWebSocketService';
 
 confetti.Promise = Bluebird;
 
@@ -12,7 +13,7 @@ export default {
             event.target.disabled = true;
 
             try {
-                const license = await this.$service.ws_activate_license(this.license.license_code);
+                const license = await licenseWsService.ws_activate_license(this.license.license_code);
                 console.log(`ws_activate_license: ${JSON.stringify(license)}`);
 
                 if (license.leftdays > 0) {

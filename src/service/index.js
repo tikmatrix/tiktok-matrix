@@ -858,20 +858,3 @@ export async function support_download_attachment(params) {
     rawResponse: true
   })
 }
-
-// Export WebSocket-based license and order API functions
-export {
-  ws_get_license,
-  ws_activate_license,
-  ws_migrate_license,
-  ws_validate_license_migration,
-  ws_get_license_concurrency_limit,
-  ws_create_order,
-  ws_get_order,
-  ws_close_order,
-  ws_get_stripe_checkout_url,
-  ws_get_stripe_portal_url,
-  ws_get_stripe_price_table_info,
-  ws_get_alipay_checkout_url,
-  ws_tiktok_query
-} from './licenseWebSocketService'

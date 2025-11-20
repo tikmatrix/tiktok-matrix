@@ -1,6 +1,7 @@
 // 订单相关的业务逻辑混入
 import QRCode from 'qrcode';
 import { message } from '@tauri-apps/api/dialog';
+import * as licenseWsService from '../service/licenseWebSocketService';
 
 export default {
     methods: {
@@ -10,7 +11,7 @@ export default {
             }
 
             try {
-                const priceTableInfo = await this.$service.ws_get_stripe_price_table_info();
+                const priceTableInfo = await licenseWsService.ws_get_stripe_price_table_info();
                 console.log('get stripe price table info:', priceTableInfo);
                 this.priceTableInfo = priceTableInfo;
             } catch (err) {
@@ -29,7 +30,7 @@ export default {
             }
 
             try {
-                const orderData = await this.$service.ws_get_order();
+                const orderData = await licenseWsService.ws_get_order();
                 console.log('get order:', orderData);
                 await this.showOrder(JSON.stringify(orderData));
             } catch (err) {
@@ -91,7 +92,7 @@ export default {
 
         async closeOrder() {
             try {
-                await this.$service.ws_close_order();
+                await licenseWsService.ws_close_order();
                 console.log('close_order: success');
 
                 clearInterval(this.interval);

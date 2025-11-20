@@ -289,6 +289,7 @@ import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whi
 import { isFeatureUnlocked } from '../utils/features.js';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
 import LicenseLifecycle from './LicenseLifecycle.vue';
+import * as licenseWsService from '../service/licenseWebSocketService';
 
 export default {
   name: 'TitleBar',
@@ -619,7 +620,7 @@ export default {
     async loadLicense() {
       this.isLoadingLicense = true;
       try {
-        const licenseData = await this.$service.ws_get_license();
+        const licenseData = await licenseWsService.ws_get_license();
         this.licenseData = licenseData;
         await this.$emiter('LICENSE_STATUS_CHANGED', this.licenseData);
       } catch (error) {

@@ -2,6 +2,7 @@
 import { writeText } from '@tauri-apps/api/clipboard';
 import { message } from '@tauri-apps/api/dialog';
 import { open } from '@tauri-apps/api/shell';
+import * as licenseWsService from '../service/licenseWebSocketService';
 
 export default {
     methods: {
@@ -14,7 +15,7 @@ export default {
             this.$refs.loadingDialogs.showCreateOrderLoadingDialog();
 
             try {
-                const checkoutUrl = await this.$service.ws_get_stripe_checkout_url({
+                const checkoutUrl = await licenseWsService.ws_get_stripe_checkout_url({
                     price_id: priceId,
                     plan_interval: planInterval
                 });
@@ -41,7 +42,7 @@ export default {
             this.$refs.loadingDialogs.showCreateOrderLoadingDialog();
 
             try {
-                const checkoutUrl = await this.$service.ws_get_alipay_checkout_url({
+                const checkoutUrl = await licenseWsService.ws_get_alipay_checkout_url({
                     plan_id: planId,
                     plan_interval: planInterval
                 });
@@ -61,7 +62,7 @@ export default {
 
         async createOrder(price, planId, planInterval, network) {
             this.$refs.loadingDialogs.showCreateOrderLoadingDialog(); try {
-                const orderData = await this.$service.ws_create_order({
+                const orderData = await licenseWsService.ws_create_order({
                     network: network,
                     amount: price,
                     plan_id: planId,
@@ -84,7 +85,7 @@ export default {
             try {
                 this.$refs.loadingDialogs.showManageSubscriptionLoadingDialog();
 
-                const portalUrl = await this.$service.ws_get_stripe_portal_url();
+                const portalUrl = await licenseWsService.ws_get_stripe_portal_url();
                 console.log('portalUrl:', portalUrl);
                 await open(portalUrl);
             } catch (error) {

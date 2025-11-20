@@ -198,6 +198,7 @@ import * as XLSX from 'xlsx'
 import { writeBinaryFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { invoke } from "@tauri-apps/api/tauri"
 import { getJsonItem, setJsonItem, getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
+import * as licenseWsService from '../../service/licenseWebSocketService';
 
 export default {
     name: 'AccountAnalytics',
@@ -294,7 +295,7 @@ export default {
                     setTimeout(() => reject(new Error('Request timeout')), TIMEOUT_MS);
                 });
 
-                const requestPromise = this.$service.ws_tiktok_query(account.username);
+                const requestPromise = licenseWsService.ws_tiktok_query(account.username);
 
                 const res = await Promise.race([requestPromise, timeoutPromise]);
 

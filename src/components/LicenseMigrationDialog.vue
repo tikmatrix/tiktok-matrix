@@ -144,6 +144,7 @@
 <script>
 import { writeText } from '@tauri-apps/api/clipboard';
 import { message, confirm } from '@tauri-apps/api/dialog';
+import * as licenseWsService from '../service/licenseWebSocketService';
 
 export default {
     name: 'LicenseMigrationDialog',
@@ -238,7 +239,7 @@ export default {
 
             try {
                 // 调用后端API验证目标机器ID和当前许可证
-                const result = await this.$service.ws_validate_license_migration(this.targetMachineId);
+                const result = await licenseWsService.ws_validate_license_migration(this.targetMachineId);
                 console.log('Validate response:', result);
                 console.log('Validation valid:', result.valid);
                 this.machineIdValidationResult = {
@@ -281,7 +282,7 @@ export default {
 
             try {                // 调用后端API进行license迁移
                 // 当前机器ID通过请求头传递，只需要传递目标机器ID
-                const result = await this.$service.ws_migrate_license(this.targetMachineId);
+                const result = await licenseWsService.ws_migrate_license(this.targetMachineId);
                 await message(this.$t('migrationSuccess'));
                 this.close();
 
