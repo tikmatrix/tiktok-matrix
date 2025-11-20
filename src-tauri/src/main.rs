@@ -28,6 +28,9 @@ use zip::read::ZipArchive;
 mod init_log;
 use crate::agent_ws_bridge::{AgentWsBridge, AgentWsCommandState};
 mod agent_ws_bridge;
+mod update_manager;
+mod agent_manager;
+use std::sync::Arc;
 
 /**
  * 读取分发商标识
@@ -130,6 +133,49 @@ fn set_env(key: String, value: String) {
 fn get_env(key: String) -> String {
     std::env::var(key.clone()).unwrap_or_default()
 }
+
+// Commands for UpdateManager
+#[tauri::command]
+async fn update_manager_set_user_activity(
+    update_manager: State<'_, Arc<update_manager::UpdateManager>>,
+) -> Result<(), String> {
+    update_manager.update_user_activity();
+    Ok(())
+}
+
+#[tauri::command]
+async fn update_manager_set_running_tasks(
+    update_manager: State<'_, Arc<update_manager::UpdateManager>>,
+    has_tasks: bool,
+) -> Result<(), String> {
+    update_manager.set_has_running_tasks(has_tasks);
+    Ok(())
+}
+
+#[tauri::command]
+async fn update_manager_set_auto_update_enabled(
+    update_manager: State<'_, Arc<update_manager::UpdateManager>>,
+    enabled: bool,
+) -> Result<(), String> {
+    update_manager.set_auto_update_enabled(enabled);
+    Ok(())
+}
+
+// Commands for AgentManager
+#[tauri::command]
+async fn agent_manager_restart(
+    agent_manager: State<'_, Arc<agent_manager::AgentManager>>,
+) -> Result<(), String> {
+    agent_manager.restart_agent().await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn agent_manager_is_running(
+    agent_manager: State<'_, Arc<agent_manager::AgentManager>>,
+) -> Result<bool, String> {
+    Ok(agent_manager.is_agent_running())
+}
+
 
 // 通用的设置文件读取函数
 #[tauri::command]
@@ -484,6 +530,11 @@ fn main() -> std::io::Result<()> {
             is_agent_running,
             set_env,
             get_env,
+            update_manager_set_user_activity,
+            update_manager_set_running_tasks,
+            update_manager_set_auto_update_enabled,
+            agent_manager_restart,
+            agent_manager_is_running,
             read_settings_file_generic,
             write_settings_file_generic,
             read_settings_file,
@@ -532,8 +583,40 @@ fn main() -> std::io::Result<()> {
             std::fs::write(format!("{}/port.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wssport.txt", work_dir), "0")?;
+            
+            let app_handle_clone = app_handle.clone();
             let agent_ws_port_file = app_data_dir.join("wssport.txt");
-            AgentWsBridge::spawn(app_handle, agent_ws_port_file);
+            AgentWsBridge::spawn(app_handle.clone(), agent_ws_port_file);
+            
+            // Initialize and spawn UpdateManager
+            let update_manager = Arc::new(update_manager::UpdateManager::new(app_handle.clone()));
+            app.manage(Arc::clone(&update_manager));
+            
+            // Initialize and spawn AgentManager
+            let agent_manager = Arc::new(agent_manager::AgentManager::new(app_handle.clone()));
+            app.manage(Arc::clone(&agent_manager));
+            
+            // Spawn background tasks
+            let update_manager_clone = Arc::clone(&update_manager);
+            let agent_manager_clone = Arc::clone(&agent_manager);
+            tauri::async_runtime::spawn(async move {
+                // First check for updates
+                log::info!("[Main] Performing initial update check");
+                if let Err(e) = update_manager_clone.check_initial_update().await {
+                    log::error!("[Main] Initial update check failed: {:?}", e);
+                }
+                
+                // Then start the agent
+                log::info!("[Main] Starting agent after update check");
+                agent_manager_clone.spawn_startup_agent();
+                
+                // Start health monitor
+                agent_manager_clone.spawn_health_monitor();
+                
+                // Start periodic updater
+                update_manager_clone.spawn_periodic_updater();
+            });
+            
             Ok(())
         })
         .on_page_load(|_window, _payload| {
