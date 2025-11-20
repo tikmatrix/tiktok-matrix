@@ -38,7 +38,11 @@
         <label class="form-label">{{ $t('supportContactEmail') }}</label>
         <div class="input-wrapper">
           <input v-model="form.email" type="email" class="input input-bordered w-full"
-            :placeholder="$t('supportContactEmailPlaceholder')" />
+            :class="{ 'input-error': emailError }"
+            :placeholder="$t('supportContactEmailPlaceholder')"
+            @blur="validateEmail" />
+          <p v-if="emailError" class="text-error text-sm mt-1">{{ emailError }}</p>
+          <p v-else-if="form.email" class="text-sm mt-1 opacity-70">{{ $t('supportContactEmailRemembered') }}</p>
         </div>
       </div>
 
@@ -99,6 +103,9 @@
             </div>
             <p class="selection-hint">
               {{ $t('supportDeviceSelectionHint', { count: deviceSelectionLimit }) }}
+            </p>
+            <p class="selection-hint hint-emphasis">
+              {{ $t('supportDeviceSelectionLogUploadHint') }}
             </p>
           </div>
         </div>
@@ -162,6 +169,7 @@ const MEDIA_FILTERS = [
     extensions: [...IMAGE_EXTENSIONS, ...VIDEO_EXTENSIONS]
   }
 ]
+const SUPPORT_EMAIL_STORAGE_KEY = 'tikmatrix_support_email'
 
 export default {
   name: 'SupportForm',
@@ -187,6 +195,7 @@ export default {
         priority: 'p3',
         email: ''
       },
+      emailError: '',
       selectedSerials: [],
       messageTail: '',
       submitting: false,
@@ -228,6 +237,7 @@ export default {
   },
   mounted() {
     this.resetSubject()
+    this.loadSavedEmail()
     if (this.selectedSerials.length) {
       this.scheduleLogPreparation()
     }
@@ -266,6 +276,43 @@ export default {
       const today = new Date().toISOString().slice(0, 10)
       this.form.subject = `${this.$t('supportSubjectDefault')} ${today}`
     },
+    loadSavedEmail() {
+      try {
+        const savedEmail = localStorage.getItem(SUPPORT_EMAIL_STORAGE_KEY)
+        if (savedEmail && this.isValidEmail(savedEmail)) {
+          this.form.email = savedEmail
+        }
+      } catch (error) {
+        console.warn('Failed to load saved email', error)
+      }
+    },
+    saveEmail() {
+      try {
+        if (this.form.email && this.isValidEmail(this.form.email)) {
+          localStorage.setItem(SUPPORT_EMAIL_STORAGE_KEY, this.form.email)
+        }
+      } catch (error) {
+        console.warn('Failed to save email', error)
+      }
+    },
+    isValidEmail(email) {
+      if (!email || typeof email !== 'string') {
+        return false
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      return emailRegex.test(email.trim())
+    },
+    validateEmail() {
+      this.emailError = ''
+      if (this.form.email) {
+        const trimmedEmail = this.form.email.trim()
+        if (trimmedEmail && !this.isValidEmail(trimmedEmail)) {
+          this.emailError = this.$t('supportContactEmailInvalid')
+        } else if (trimmedEmail) {
+          this.saveEmail()
+        }
+      }
+    },
     resetForm() {
       this.form = {
         subject: '',
@@ -273,7 +320,9 @@ export default {
         priority: 'p3',
         email: ''
       }
+      this.emailError = ''
       this.resetSubject()
+      this.loadSavedEmail()
       this.clearLogPreparation()
       const initialSelection = Array.isArray(this.selecedDevices) ? [...this.selecedDevices] : []
       this.selectedSerials = this.sanitizeSelection(initialSelection, { silent: true })
@@ -1094,6 +1143,14 @@ export default {
         await this.notify('warning', this.$t('supportValidationMessage'))
         return
       }
+      // Validate email if provided
+      if (this.form.email && this.form.email.trim()) {
+        this.validateEmail()
+        if (this.emailError) {
+          await this.notify('warning', this.emailError)
+          return
+        }
+      }
       this.submitting = true
       try {
         const serialPayload = this.buildSerialPayload()
@@ -1122,6 +1179,10 @@ export default {
         }
         const response = await this.$service.support_create_ticket(payload)
         const createdTicket = response?.data || response
+        // Save email on successful submission
+        if (this.form.email && this.form.email.trim()) {
+          this.saveEmail()
+        }
         await this.notify('success', this.$t('supportSubmitSuccess'))
         this.$emit('submitted', createdTicket)
         this.submittedTicket = null
@@ -1232,6 +1293,20 @@ export default {
   font-size: 12px;
   color: var(--color-base-content);
   opacity: 0.8;
+}
+
+.hint-emphasis {
+  font-weight: 500;
+  color: var(--color-primary);
+  opacity: 1;
+}
+
+.input-error {
+  border-color: var(--color-error, #f87171);
+}
+
+.text-error {
+  color: var(--color-error, #f87171);
 }
 
 .form-row {
