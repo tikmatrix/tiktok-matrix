@@ -1,6 +1,5 @@
 // 支付相关的业务逻辑混入
 import { writeText } from '@tauri-apps/api/clipboard';
-import { message } from '@tauri-apps/api/dialog';
 import { open } from '@tauri-apps/api/shell';
 import * as licenseWsService from '../service/licenseWebSocketService';
 

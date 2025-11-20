@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
@@ -76,14 +78,14 @@ impl UpdateManager {
             .as_millis() as u64;
         let last_activity = self.last_user_activity.load(Ordering::Relaxed);
         let idle_duration_ms = now.saturating_sub(last_activity);
-        
+
         // Use different thresholds for debug vs release
         let threshold_ms = if cfg!(debug_assertions) {
             1 * 60 * 1000 // 1 minute for debug
         } else {
             IDLE_THRESHOLD_MINUTES * 60 * 1000
         };
-        
+
         idle_duration_ms > threshold_ms
     }
 
@@ -92,32 +94,32 @@ impl UpdateManager {
         tauri::async_runtime::spawn(async move {
             // Wait a bit after startup before starting the periodic updater
             sleep(Duration::from_secs(30)).await;
-            
+
             let interval_duration = if cfg!(debug_assertions) {
                 Duration::from_secs(60) // 1 minute for debug
             } else {
                 Duration::from_secs(UPDATE_CHECK_INTERVAL_MINUTES * 60)
             };
-            
+
             let mut ticker = interval(interval_duration);
             loop {
                 ticker.tick().await;
-                
+
                 if !manager.auto_update_enabled.load(Ordering::Relaxed) {
                     log::info!("[UpdateManager] Auto-update is disabled, skipping check");
                     continue;
                 }
-                
+
                 if manager.has_running_tasks.load(Ordering::Relaxed) {
                     log::info!("[UpdateManager] Has running tasks, skipping auto-update");
                     continue;
                 }
-                
+
                 if !manager.is_system_idle() {
                     log::info!("[UpdateManager] System not idle, skipping auto-update");
                     continue;
                 }
-                
+
                 log::info!("[UpdateManager] Triggering periodic update check");
                 if let Err(e) = manager.check_and_update_libs(true).await {
                     log::error!("[UpdateManager] Periodic update check failed: {:?}", e);
@@ -131,72 +133,99 @@ impl UpdateManager {
         self.check_and_update_libs(false).await
     }
 
+    pub async fn run_manual_update(&self, silent: bool) -> Result<()> {
+        log::info!(
+            "[UpdateManager] Manual update triggered (silent={})",
+            silent
+        );
+        self.check_and_update_libs(silent).await
+    }
+
     async fn check_and_update_libs(&self, silent: bool) -> Result<()> {
         if !silent {
             self.emit_update_status("checking", "Checking for updates...");
         }
-        
+
         let platform = self.get_platform().await;
         let app_name = std::env::var("MATRIX_APP_NAME").unwrap_or_else(|_| "TikMatrix".to_string());
-        
-        let client = Client::builder()
-            .timeout(Duration::from_secs(10))
-            .build()?;
-        
-        let url = format!("{}?time={}", CHECK_LIBS_URL, chrono::Utc::now().timestamp_millis());
+
+        let client = Client::builder().timeout(Duration::from_secs(10)).build()?;
+
+        let url = format!(
+            "{}?time={}",
+            CHECK_LIBS_URL,
+            chrono::Utc::now().timestamp_millis()
+        );
         let response = client
             .get(&url)
             .header("User-Agent", platform)
             .header("X-App-Id", app_name)
             .send()
             .await?;
-        
+
         if !response.status().is_success() {
             return Err(anyhow!("Failed to check libs: HTTP {}", response.status()));
         }
-        
+
         let check_libs_response: CheckLibsResponse = response.json().await?;
-        
+
         if check_libs_response.code != 20000 {
-            return Err(anyhow!("Invalid response code: {}", check_libs_response.code));
+            return Err(anyhow!(
+                "Invalid response code: {}",
+                check_libs_response.code
+            ));
         }
-        
+
         let libs = check_libs_response.data.libs;
         log::info!("[UpdateManager] Found {} libs to check", libs.len());
-        
+
         for lib in libs {
             if let Err(e) = self.check_and_update_single_lib(&lib, silent).await {
                 log::error!("[UpdateManager] Failed to update {}: {:?}", lib.name, e);
             }
         }
-        
+
         if !silent {
             self.emit_update_status("completed", "Update check completed");
         }
-        
+
         Ok(())
     }
 
     async fn check_and_update_single_lib(&self, lib: &LibInfo, silent: bool) -> Result<()> {
-        log::info!("[UpdateManager] Checking lib: {} version {}", lib.name, lib.version);
-        
+        log::info!(
+            "[UpdateManager] Checking lib: {} version {}",
+            lib.name,
+            lib.version
+        );
+
         if !silent {
             self.emit_update_status("downloading", &format!("Checking {} update...", lib.name));
         }
-        
-        let app_data_dir = self.app.path_resolver().app_data_dir()
+
+        let app_data_dir = self
+            .app
+            .path_resolver()
+            .app_data_dir()
             .ok_or_else(|| anyhow!("Failed to get app data dir"))?;
-        
+
         let storage_key = self.get_lib_storage_key(&lib.name);
         let stored_version = self.get_stored_version(&storage_key).await?;
-        
-        log::debug!("[UpdateManager] Lib {} - local: {}, remote: {}", lib.name, stored_version, lib.version);
-        
+
+        log::debug!(
+            "[UpdateManager] Lib {} - local: {}, remote: {}",
+            lib.name,
+            stored_version,
+            lib.version
+        );
+
         // Check if update is needed
         if stored_version == lib.version {
-            let needs_file_check = matches!(lib.name.as_str(), 
-                "platform-tools" | "PaddleOCR" | "agent" | "script");
-            
+            let needs_file_check = matches!(
+                lib.name.as_str(),
+                "platform-tools" | "PaddleOCR" | "agent" | "script"
+            );
+
             if needs_file_check {
                 if self.check_lib_files_exist(&lib.name, &app_data_dir).await {
                     log::info!("[UpdateManager] Lib {} is up to date", lib.name);
@@ -207,64 +236,88 @@ impl UpdateManager {
                 return Ok(());
             }
         }
-        
+
         // Download and install the lib
-        log::info!("[UpdateManager] Downloading {} from {}", lib.name, lib.download_url);
-        self.download_and_install_lib(lib, &app_data_dir, silent).await?;
-        
+        log::info!(
+            "[UpdateManager] Downloading {} from {}",
+            lib.name,
+            lib.download_url
+        );
+        self.download_and_install_lib(lib, &app_data_dir, silent)
+            .await?;
+
         // Update stored version
         self.set_stored_version(&storage_key, &lib.version).await?;
-        
+
         Ok(())
     }
 
-    async fn download_and_install_lib(&self, lib: &LibInfo, app_data_dir: &PathBuf, silent: bool) -> Result<()> {
+    async fn download_and_install_lib(
+        &self,
+        lib: &LibInfo,
+        app_data_dir: &PathBuf,
+        silent: bool,
+    ) -> Result<()> {
         let tmp_dir = app_data_dir.join("tmp");
         tokio::fs::create_dir_all(&tmp_dir).await?;
-        
-        let file_name = lib.download_url.split('/').last()
+
+        let file_name = lib
+            .download_url
+            .split('/')
+            .last()
             .ok_or_else(|| anyhow!("Invalid download URL"))?;
         let download_path = tmp_dir.join(file_name);
-        
+
         // Download file
         if !silent {
             self.emit_update_status("downloading", &format!("Downloading {}...", lib.name));
         }
-        
+
         let download_url = if lib.download_url.contains('?') {
             format!("{}&v={}", lib.download_url, lib.version)
         } else {
             format!("{}?v={}", lib.download_url, lib.version)
         };
-        
+
         // Use the existing Tauri command to download
         let download_path_str = download_path.to_string_lossy().to_string();
-        self.app.emit_all("update_manager_download", serde_json::json!({
-            "url": download_url,
-            "path": download_path_str,
-            "lib_name": lib.name,
-        }))?;
-        
+        self.app.emit_all(
+            "update_manager_download",
+            serde_json::json!({
+                "url": download_url,
+                "path": download_path_str,
+                "lib_name": lib.name,
+            }),
+        )?;
+
         // For now, we'll do a simple download here
         let client = Client::new();
         let response = client.get(&download_url).send().await?;
         let bytes = response.bytes().await?;
         tokio::fs::write(&download_path, bytes).await?;
-        
+
         // Install the lib based on type
-        self.install_lib(lib, &download_path, app_data_dir, silent).await?;
-        
+        self.install_lib(lib, &download_path, app_data_dir, silent)
+            .await?;
+
         Ok(())
     }
 
-    async fn install_lib(&self, lib: &LibInfo, download_path: &PathBuf, app_data_dir: &PathBuf, _silent: bool) -> Result<()> {
+    async fn install_lib(
+        &self,
+        lib: &LibInfo,
+        download_path: &PathBuf,
+        app_data_dir: &PathBuf,
+        _silent: bool,
+    ) -> Result<()> {
         match lib.name.as_str() {
             "platform-tools" => {
                 log::info!("[UpdateManager] Installing platform-tools");
                 self.kill_process("adb").await;
                 sleep(Duration::from_secs(3)).await;
                 self.unzip_file(download_path, app_data_dir).await?;
-                self.grant_permission_if_needed("platform-tools/adb", app_data_dir).await;
+                self.grant_permission_if_needed("platform-tools/adb", app_data_dir)
+                    .await;
             }
             "PaddleOCR" => {
                 log::info!("[UpdateManager] Installing PaddleOCR");
@@ -289,7 +342,8 @@ impl UpdateManager {
                 tokio::fs::create_dir_all(&bin_dir).await?;
                 let dest = bin_dir.join(download_path.file_name().unwrap());
                 tokio::fs::copy(download_path, dest).await?;
-                self.grant_permission_if_needed(&format!("bin/{}", lib.name), app_data_dir).await;
+                self.grant_permission_if_needed(&format!("bin/{}", lib.name), app_data_dir)
+                    .await;
             }
             _ => {
                 log::warn!("[UpdateManager] Unknown lib type: {}", lib.name);
@@ -302,19 +356,19 @@ impl UpdateManager {
         use std::fs::File;
         use std::io::BufReader;
         use zip::read::ZipArchive;
-        
+
         let zip_path = zip_path.clone();
         let dest_dir = dest_dir.clone();
-        
+
         // Run the blocking I/O in a separate thread
         tokio::task::spawn_blocking(move || -> Result<()> {
             let file = File::open(&zip_path)?;
             let mut archive = ZipArchive::new(BufReader::new(file))?;
-            
+
             for i in 0..archive.len() {
                 let mut file = archive.by_index(i)?;
                 let outpath = dest_dir.join(file.name());
-                
+
                 if file.name().ends_with('/') {
                     std::fs::create_dir_all(&outpath)?;
                 } else {
@@ -325,10 +379,11 @@ impl UpdateManager {
                     std::io::copy(&mut file, &mut outfile)?;
                 }
             }
-            
+
             Ok(())
-        }).await??;
-        
+        })
+        .await??;
+
         Ok(())
     }
 
@@ -341,13 +396,11 @@ impl UpdateManager {
                 .creation_flags(0x08000000)
                 .status();
         }
-        
+
         #[cfg(target_os = "macos")]
         {
             use std::process::Command;
-            let _ = Command::new("pkill")
-                .args(&["-f", name])
-                .status();
+            let _ = Command::new("pkill").args(&["-f", name]).status();
         }
     }
 
@@ -361,7 +414,7 @@ impl UpdateManager {
                 .status();
             log::info!("[UpdateManager] Granted permission to {}", relative_path);
         }
-        
+
         #[cfg(not(target_os = "macos"))]
         {
             let _ = (relative_path, app_data_dir);
@@ -398,6 +451,29 @@ impl UpdateManager {
                 let file = app_data_dir.join("bin/script.exe");
                 file.exists()
             }
+            "apk" | "test-apk" | "scrcpy" => {
+                let bin_dir = app_data_dir.join("bin");
+                if !bin_dir.exists() {
+                    return false;
+                }
+
+                match tokio::fs::read_dir(&bin_dir).await {
+                    Ok(mut dir) => {
+                        while let Ok(Some(entry)) = dir.next_entry().await {
+                            let name = entry.file_name();
+                            if name
+                                .to_string_lossy()
+                                .to_ascii_lowercase()
+                                .contains(&lib_name.to_ascii_lowercase())
+                            {
+                                return true;
+                            }
+                        }
+                        false
+                    }
+                    Err(_) => false,
+                }
+            }
             _ => true,
         }
     }
@@ -407,11 +483,14 @@ impl UpdateManager {
     }
 
     async fn get_stored_version(&self, key: &str) -> Result<String> {
-        let app_data_dir = self.app.path_resolver().app_data_dir()
+        let app_data_dir = self
+            .app
+            .path_resolver()
+            .app_data_dir()
             .ok_or_else(|| anyhow!("Failed to get app data dir"))?;
         let data_dir = app_data_dir.join("data");
         tokio::fs::create_dir_all(&data_dir).await?;
-        
+
         let version_file = data_dir.join(format!("{}_version.txt", key));
         match tokio::fs::read_to_string(&version_file).await {
             Ok(content) => Ok(content.trim().to_string()),
@@ -420,11 +499,14 @@ impl UpdateManager {
     }
 
     async fn set_stored_version(&self, key: &str, version: &str) -> Result<()> {
-        let app_data_dir = self.app.path_resolver().app_data_dir()
+        let app_data_dir = self
+            .app
+            .path_resolver()
+            .app_data_dir()
             .ok_or_else(|| anyhow!("Failed to get app data dir"))?;
         let data_dir = app_data_dir.join("data");
         tokio::fs::create_dir_all(&data_dir).await?;
-        
+
         let version_file = data_dir.join(format!("{}_version.txt", key));
         tokio::fs::write(&version_file, version).await?;
         Ok(())
@@ -433,7 +515,7 @@ impl UpdateManager {
     async fn get_platform(&self) -> String {
         #[cfg(target_os = "windows")]
         return "windows".to_string();
-        
+
         #[cfg(target_os = "macos")]
         {
             use std::process::Command;
@@ -446,16 +528,19 @@ impl UpdateManager {
             }
             "mac-intel".to_string()
         }
-        
+
         #[cfg(not(any(target_os = "windows", target_os = "macos")))]
         "linux".to_string()
     }
 
     fn emit_update_status(&self, status: &str, message: &str) {
-        let _ = self.app.emit_all("update_manager_status", serde_json::json!({
-            "status": status,
-            "message": message,
-            "timestamp": chrono::Utc::now().timestamp_millis(),
-        }));
+        let _ = self.app.emit_all(
+            "update_manager_status",
+            serde_json::json!({
+                "status": status,
+                "message": message,
+                "timestamp": chrono::Utc::now().timestamp_millis(),
+            }),
+        );
     }
 }

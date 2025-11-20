@@ -1,4 +1,7 @@
-use std::{path::PathBuf, time::Duration};
+use std::{
+    path::PathBuf,
+    time::{Duration, Instant},
+};
 
 use anyhow::{anyhow, Context, Result};
 use chrono::Utc;
@@ -10,6 +13,7 @@ use tokio_tungstenite::{connect_async, tungstenite::Message};
 
 const STATUS_EVENT: &str = "agent://ws/status";
 const MESSAGE_EVENT: &str = "agent://ws/message";
+const PORT_WAIT_TIMEOUT_SECONDS: u64 = 30;
 
 #[derive(Default)]
 pub struct AgentWsCommandState {
@@ -75,7 +79,10 @@ impl AgentWsBridge {
     async fn run(mut self) {
         loop {
             if let Err(err) = self.connect_once().await {
-                log::warn!("agent ws bridge cycle finished with error: {:?}", err);
+                log::warn!(
+                    "agent ws bridge cycle finished with error: {}",
+                    err.to_string()
+                );
                 self.emit_status("error", Some(json!({ "error": err.to_string() })));
                 sleep(Duration::from_secs(2)).await;
             }
@@ -206,6 +213,7 @@ impl AgentWsBridge {
     }
 
     async fn wait_for_ws_url(&self) -> Result<String> {
+        let start = Instant::now();
         loop {
             match self.try_build_ws_url().await {
                 Ok(Some(url)) => return Ok(url),
@@ -213,6 +221,12 @@ impl AgentWsBridge {
                 Err(err) => {
                     log::debug!("failed to read ws port: {:?}", err);
                 }
+            }
+            if start.elapsed() >= Duration::from_secs(PORT_WAIT_TIMEOUT_SECONDS) {
+                return Err(anyhow!(
+                    "Timed out waiting for agent websocket port after {} seconds",
+                    PORT_WAIT_TIMEOUT_SECONDS
+                ));
             }
             sleep(Duration::from_secs(1)).await;
         }

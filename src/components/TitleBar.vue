@@ -7,7 +7,7 @@
       <span class="text-2xl text-base-content font-bold" v-if="whitelabelConfig.showAppNameInTitle">{{
         whitelabelConfig.appName }}</span>
       <!-- 检查更新按钮 -->
-      <button @click="check_update(true)"
+      <button @click="check_update()"
         class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">
         <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
         <span>v{{ version }}</span>
@@ -265,26 +265,22 @@
   </dialog>
 
   <!-- Agent错误弹窗 -->
-  <AgentErrorDialog ref="agentErrorDialog" :process-name="agentProcessName" :error-type="agentErrorType" />
 </template>
 
 <script>
 import { appWindow } from '@tauri-apps/api/window';
 import { getAll } from '@tauri-apps/api/window';
-import { ask, message } from '@tauri-apps/api/dialog';
+import { ask } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
-import { readTextFile, writeTextFile, exists, copyFile } from '@tauri-apps/api/fs';
+import { writeTextFile } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
 import { getVersion, getName } from '@tauri-apps/api/app';
 import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
-import { fetch, ResponseType } from '@tauri-apps/api/http';
-import { appDataDir } from '@tauri-apps/api/path';
 import { os } from '@tauri-apps/api';
 import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
-import { Command, open } from '@tauri-apps/api/shell'
-import AgentErrorDialog from './AgentErrorDialog.vue';
+import { open } from '@tauri-apps/api/shell'
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 import { isFeatureUnlocked } from '../utils/features.js';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
@@ -296,7 +292,6 @@ export default {
   components: {
     LicenseManagementDialog,
     WhiteLabelDialog,
-    AgentErrorDialog,
     LicenseLifecycle
   },
   props: {
@@ -330,11 +325,8 @@ export default {
       },
       check_update_dialog_title: '',
       isLoadingLicense: true,
-      agentProcessName: '',
-      agentErrorType: 'port',
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       isWhiteLabelUnlocked: false,
-      checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=0', // changeme
     }
   },
   watch: {
@@ -478,119 +470,6 @@ export default {
     isLicensed() {
       return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active == 1;
     },
-    async startAgent(silent = false) {
-      const showDialog = !silent;
-      const closeDialog = () => {
-        if (showDialog && this.$refs.download_dialog?.open) {
-          this.$refs.download_dialog.close();
-        }
-      };
-
-      try {
-        if (showDialog) {
-          this.$refs.download_dialog.showModal();
-          this.check_update_dialog_title = 'Checking agent...';
-        }
-
-        let pname = await invoke("is_agent_running");
-        console.log('agent_running:', pname)
-        if (pname === '') {
-          console.log('agent is not running')
-          if (showDialog) {
-            this.check_update_dialog_title = 'Starting agent...';
-          }
-          const osType = await os.type();
-          const agentFilename = osType === 'Darwin' ? 'agent' : 'agent.exe';
-          let agent_exists = await exists(`bin/${agentFilename}`, { dir: BaseDirectory.AppData })
-          if (!agent_exists) {
-            console.log(`${agentFilename} not found`)
-            closeDialog();
-            if (showDialog) {
-              this.agentErrorType = 'notfound';
-              this.$refs.agentErrorDialog.show();
-            } else {
-              await this.$emiter('NOTIFY', {
-                type: 'error',
-                message: this.$t('agentNotFound'),
-                timeout: 4000
-              });
-            }
-            return;
-          }
-          const command = new Command('start-agent', [])
-          command.on('close', data => {
-            console.log(`command exit: ${JSON.stringify(data)}`)
-          });
-          const child = await command.spawn();
-          console.log('pid:', child.pid);
-          await writeTextFile('agent.pid', `${child.pid}`, { dir: BaseDirectory.AppData });
-        } else {
-          console.log('50809 port is used, process name:', pname)
-          closeDialog();
-          if (pname === 'agent.exe' || pname === 'agent') {
-            // it's ok
-            await this.$emiter('agent_started', {})
-            return;
-          }
-          if (showDialog) {
-            this.agentProcessName = pname;
-            this.agentErrorType = 'port';
-            this.$refs.agentErrorDialog.show();
-          } else {
-            await this.$emiter('NOTIFY', {
-              type: 'info',
-              message: this.$t('agentPortOccupied', { process: pname }),
-              timeout: 3000
-            });
-          }
-        }
-      } catch (e) {
-        closeDialog();
-        const errorMessage = e instanceof Error ? e.message : String(e);
-        if (showDialog) {
-          this.agentErrorType = 'start';
-          this.$refs.agentErrorDialog.show();
-        } else {
-          console.error('Silent agent start error:', errorMessage);
-          await this.$emiter('NOTIFY', {
-            type: 'error',
-            message: this.$t('agentStartTimeout'),
-            timeout: 4000
-          });
-        }
-        return;
-      }
-
-      console.log('waiting for agent startup')
-      for (let i = 0; i < 10; i++) {
-        await new Promise(r => setTimeout(r, 1000));
-        const port = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-        if (port > 0) {
-          console.log('agent started')
-          await this.$emiter('agent_started', {})
-          if (!showDialog) {
-            await this.$emiter('NOTIFY', {
-              type: 'success',
-              message: this.$t('agentRestarted'),
-              timeout: 3000
-            });
-          }
-          closeDialog();
-          return;
-        }
-      }
-      closeDialog();
-      if (showDialog) {
-        this.agentErrorType = 'timeout';
-        this.$refs.agentErrorDialog.show();
-      } else {
-        await this.$emiter('NOTIFY', {
-          type: 'error',
-          message: this.$t('agentStartTimeout'),
-          timeout: 4000
-        });
-      }
-    },
     async minimizeWindow() {
       appWindow.minimize();
     },
@@ -633,222 +512,70 @@ export default {
         this.isLoadingLicense = false;
       }
     },
-    async check_update(force = false, silent = false) {
-      const skipUpdateCheck = sessionStorage.getItem('skipUpdateCheck');
-      if (skipUpdateCheck && !force) {
-        await this.startAgent();
-        return;
-      }
+    async check_update(silent = false) {
+
       if (!silent) {
-        this.check_update_dialog_title = 'Checking update...';
+        this.check_update_dialog_title = this.$t('checkingUpdate') || 'Checking update...';
         this.$refs.download_dialog.showModal();
       }
 
-      let platform = await this.getPlatform();
-
-      // Check for Tauri updates (Windows auto-updates, Mac manual download)
-      if (!silent) {
-        try {
-          const { shouldUpdate, manifest } = await checkUpdate();
-          if (shouldUpdate) {
-            console.log(
-              `Update available ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
-            );
-
-            if (platform === 'windows') {
-              // Windows: Auto-update via Tauri
-              const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
-              if (yes) {
-                this.check_update_dialog_title = 'Downloading update...';
-                await this.shutdown();
-                await installUpdate();
-                await relaunch();
-                return;
-              }
-            } else {
-              // macOS: Prompt user to download manually
-              const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
-                ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
-                : `${this.whitelabelConfig.officialWebsite}/Download`;
-
-              const yes = await ask(
-                this.$t('macUpdatePrompt', { version: manifest?.version }),
-                this.$t('macUpdateAvailable')
-              );
-
-              if (yes) {
-                console.log('Opening download page:', downloadUrl);
-                await open(downloadUrl);
-              }
-              this.$refs.download_dialog.close();
-              // Continue to check library updates and start agent
-            }
-          } else {
-            console.log('No update available');
-          }
-        } catch (e) {
-          console.error('Update check failed:', e);
-          this.$emiter('NOTIFY', {
-            type: 'error',
-            message: this.$t('updateCheckFailed'),
-            timeout: 4000
-          });
-          this.$refs.download_dialog.close();
-          return;
-        }
-      }
-
       try {
-        let response = await fetch(`${this.checkLibsUrl}&time=${new Date().getTime()}`, {
-          method: 'GET',
-          timeout: 10,
-          responseType: ResponseType.JSON,
-          headers: {
-            'User-Agent': platform,
-            'X-App-Id': this.name
-          }
-        });
-        if (response?.ok && response?.data?.code === 20000) {
-          const libs = response.data.data.libs;
-          let agentUpdated = false;
-          let scriptUpdated = false;
-
-          for (const lib of libs) {
-            if (lib.name === 'platform-tools') {
-              await this.download_and_update_lib(lib, 'platform-tools');
-            } else if (lib.name === 'PaddleOCR') {
-              await this.download_and_update_lib(lib, 'PaddleOCR');
-            } else if (lib.name === 'apk') {
-              await this.download_and_update_lib(lib, 'apk');
-            } else if (lib.name === 'test-apk') {
-              await this.download_and_update_lib(lib, 'test-apk');
-            } else if (lib.name === 'scrcpy') {
-              await this.download_and_update_lib(lib, 'scrcpy');
-            } else if (lib.name === 'script') {
-              const updated = await this.download_and_update_lib(lib, 'script');
-              if (updated) scriptUpdated = true;
-            } else if (lib.name === 'agent') {
-              const updated = await this.download_and_update_lib(lib, 'agent');
-              if (updated) agentUpdated = true;
-            }
-          }
-          if (!force || agentUpdated || scriptUpdated) {
-            await this.startAgent();
-          }
-
-          // Set flag to true to avoid repetitive checks, It will be cleared when UI is restarted
-          sessionStorage.setItem('skipUpdateCheck', 'true');
-          this.$refs.download_dialog.close();
-        } else {
-          console.error('Fetch libs update failed:', response);
-          this.$emiter('NOTIFY', {
-            type: 'error',
-            message: this.$t('updateCheckFailed'),
-            timeout: 4000
-          });
-          this.$refs.download_dialog.close();
+        if (!silent) {
+          await this.checkAppBinaryUpdate();
         }
-      } catch (e) {
-        console.error('Fetch libs update failed:', e);
-        this.$emiter('NOTIFY', {
+
+        await invoke('update_manager_check_now', { silent });
+
+        if (!silent) {
+          await this.$emiter('NOTIFY', {
+            type: 'success',
+            message: this.$t('updateCheckCompleted'),
+            timeout: 3000
+          });
+        }
+      } catch (error) {
+        console.error('Manual update failed:', error);
+        await this.$emiter('NOTIFY', {
           type: 'error',
           message: this.$t('updateCheckFailed'),
           timeout: 4000
         });
-        this.$refs.download_dialog.close();
-      }
-
-
-    },
-
-    async download_and_update_lib(lib, localStorageKey) {
-      try {
-        let updated = false;
-        this.check_update_dialog_title = `Checking ${lib.name} update...`;
-        const storedVersion = await getItem(localStorageKey);
-        let localversion = this.sanitizeVersion(storedVersion) || '0';
-        let url = lib.downloadUrl;
-        let work_path = await appDataDir();
-        let name = url.split('/').pop();
-        let path = work_path + 'tmp/' + name;
-        let downloaded = await exists('tmp/' + name, { dir: BaseDirectory.AppData });
-        console.log(`check_file_update: ${lib.name} localversion: ${localversion} remoteVersion: ${lib.version}`);
-
-        if (!downloaded || localversion !== lib.version) {
-          console.log(`downloading ${lib.name} from ${url} to ${path}`);
-          await invoke('download_file_with_version', {
-            url,
-            path,
-            version: lib.version
-          }).catch(async (e) => {
-            console.error(e);
-            await message('Download Error', { title: 'Error', type: 'error' });
-            return;
-          });
-          updated = true;
-        } else {
-          console.log(`${lib.name} no need to update`);
-          this.check_update_dialog_title = `${lib.name} is up to date`;
+      } finally {
+        if (!silent && this.$refs.download_dialog?.open) {
+          this.$refs.download_dialog.close();
         }
-
-        await setItem(localStorageKey, lib.version);
-
-        let result = updated;
-        if (lib.name === 'platform-tools') {
-          const osType = await os.type();
-          const adbFileName = osType === 'Darwin' ? 'adb' : 'adb.exe';
-          let adb_exists = await exists(`platform-tools/${adbFileName}`, { dir: BaseDirectory.AppData });
-          if (updated || !adb_exists) {
-            this.check_update_dialog_title = 'Uziping platform-tools.zip';
-            await invoke("kill_process", { name: "adb" });
-            await new Promise(r => setTimeout(r, 3000));
-            await invoke("unzip_file", { zipPath: path, destDir: work_path });
-            await invoke("grant_permission", { path: "platform-tools/adb" });
-          }
-        } else if (lib.name === 'PaddleOCR') {
-          const osType = await os.type();
-          const paddleFileName = osType === 'Darwin' ? 'PaddleOCR-json' : 'PaddleOCR-json.exe';
-          let paddle_exists = await exists(`PaddleOCR-json/${paddleFileName}`, { dir: BaseDirectory.AppData });
-          if (updated || !paddle_exists) {
-            this.check_update_dialog_title = 'Uziping PaddleOCR-json.zip';
-            await invoke("kill_process", { name: "PaddleOCR-json" });
-            await invoke("unzip_file", { zipPath: path, destDir: work_path });
-          } else {
-            this.check_update_dialog_title = 'PaddleOCR-json is exists';
-          }
-        } else if (lib.name === 'apk' || lib.name === 'test-apk' || lib.name === 'scrcpy') {
-          if (updated) {
-            await copyFile(path, path.replace('tmp', 'bin'));
-            if (lib.name === 'apk' || lib.name === 'test-apk') {
-              await invoke("set_env", { key: "agent_version", value: lib.version });
-            }
-          }
-        } else if (lib.name === 'script' || lib.name === 'agent') {
-          if (updated) {
-            await invoke("kill_process", { name: lib.name });
-            await new Promise(r => setTimeout(r, 3000));
-            await copyFile(path, path.replace('tmp', 'bin'));
-            await invoke("grant_permission", { path: `bin/${lib.name}` });
-          }
-        }
-        return result;
-      } catch (e) {
-        console.error(e);
-        await this.$emiter('NOTIFY', {
-          type: 'error',
-          message: `Download and Update Lib Error: ${e.message}`,
-          timeout: 2000
-        });
-        return false;
       }
     },
 
-    sanitizeVersion(version) {
-      console.log('sanitizeVersion', version);
-      if (version === undefined || version === null) {
-        return '';
+    async checkAppBinaryUpdate() {
+      const platform = await this.getPlatform();
+      const { shouldUpdate, manifest } = await checkUpdate();
+      if (!shouldUpdate) {
+        return;
       }
-      return String(version).replace(/"/g, '').trim();
+
+      if (platform === 'windows') {
+        const yes = await ask(`${manifest?.body || ''}`, this.$t('updateConfirm'));
+        if (yes) {
+          this.check_update_dialog_title = this.$t('downloadingUpdate') || 'Downloading update...';
+          await this.shutdown();
+          await installUpdate();
+          await relaunch();
+        }
+      } else {
+        const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
+          ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
+          : `${this.whitelabelConfig.officialWebsite}/Download`;
+
+        const yes = await ask(
+          this.$t('macUpdatePrompt', { version: manifest?.version }),
+          this.$t('macUpdateAvailable')
+        );
+
+        if (yes) {
+          await open(downloadUrl);
+        }
+      }
     },
 
     openWhiteLabelDialog() {
@@ -876,21 +603,6 @@ export default {
         }
       }
       return platform;
-    },
-
-
-
-    getLibStorageKey(libName) {
-      const libKeyMap = {
-        'platform-tools': 'platform-tools',
-        'PaddleOCR': 'PaddleOCR',
-        'apk': 'apk',
-        'test-apk': 'test-apk',
-        'scrcpy': 'scrcpy',
-        'script': 'script',
-        'agent': 'agent',
-      };
-      return libKeyMap[libName] || libName;
     },
   },
   async mounted() {
@@ -959,3 +671,4 @@ export default {
     // The backend now handles automatic checks on startup and periodically
   }
 }
+</script>

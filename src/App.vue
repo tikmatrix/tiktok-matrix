@@ -61,7 +61,8 @@ export default {
         timestamp: Date.now(),
         extra: null,
         raw: null
-      }
+      },
+      userActivityCleanup: null
     }
   },
 
@@ -440,10 +441,10 @@ export default {
       try {
         const hasTask = this.hasRunningTasks();
         await invoke('update_manager_set_running_tasks', { hasTasks: hasTask });
-        
+
         if (this.settings.auto_update_enabled !== undefined) {
-          await invoke('update_manager_set_auto_update_enabled', { 
-            enabled: this.settings.auto_update_enabled 
+          await invoke('update_manager_set_auto_update_enabled', {
+            enabled: this.settings.auto_update_enabled
           });
         }
       } catch (error) {
@@ -570,6 +571,11 @@ export default {
     userActivityEvents.forEach(event => {
       document.addEventListener(event, onUserActivity, { passive: true });
     });
+    this.userActivityCleanup = () => {
+      userActivityEvents.forEach(event => {
+        document.removeEventListener(event, onUserActivity, { passive: true });
+      });
+    };
 
 
   },
@@ -580,6 +586,10 @@ export default {
       }
     })
     this.listeners = []
+    if (typeof this.userActivityCleanup === 'function') {
+      this.userActivityCleanup()
+      this.userActivityCleanup = null
+    }
   }
 }
 </script>

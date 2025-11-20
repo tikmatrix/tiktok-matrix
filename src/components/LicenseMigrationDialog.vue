@@ -282,7 +282,7 @@ export default {
 
             try {                // 调用后端API进行license迁移
                 // 当前机器ID通过请求头传递，只需要传递目标机器ID
-                const result = await licenseWsService.ws_migrate_license(this.targetMachineId);
+                await licenseWsService.ws_migrate_license(this.targetMachineId);
                 await message(this.$t('migrationSuccess'));
                 this.close();
 
