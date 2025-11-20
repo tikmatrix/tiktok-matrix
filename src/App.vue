@@ -56,10 +56,6 @@ export default {
       listeners: [],
       supportUnreadMap: {},
       supportUnreadCount: 0,
-      // 自动更新相关
-      lastUserActivity: Date.now(),
-      autoUpdateTimer: null,
-      userActivityEvents: ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'],
       wsStatus: {
         status: 'initial',
         timestamp: Date.now(),
@@ -434,90 +430,24 @@ export default {
       document.addEventListener('contextmenu', event => event.preventDefault());
     },
 
-    // 自动更新相关方法
-    setupUserActivityListeners() {
-      this.userActivityEvents.forEach(event => {
-        document.addEventListener(event, this.onUserActivity, { passive: true });
-      });
-    },
-
-    removeUserActivityListeners() {
-      this.userActivityEvents.forEach(event => {
-        document.removeEventListener(event, this.onUserActivity);
-      });
-    },
-
-    onUserActivity() {
-      this.lastUserActivity = Date.now();
-    },
-
     hasRunningTasks() {
       return this.running_devices.length > 0 ||
         this.devices.some(device => device.task_status === 1);
     },
 
-    isSystemIdle() {
-      let idleThreshold = 5 * 60 * 1000; // 5分钟无用户活动
-      //如果是dev环境，改为1分钟
-      const isDev = import.meta.env.DEV;
-      if (isDev) {
-        console.log("current is dev environment, set idle threshold to 1 minute")
-        idleThreshold = 1 * 60 * 1000;
-      }
-      return (Date.now() - this.lastUserActivity) > idleThreshold;
-    },
-
-    async triggerAutoUpdate() {
-      console.log('执行自动更新检查...');
+    async updateBackendState() {
+      // Update the backend about running tasks and auto-update settings
       try {
-        // 通过事件通知 TitleBar 执行静默更新
-        await this.$emiter('AUTO_UPDATE_TRIGGER');
+        const hasTask = this.hasRunningTasks();
+        await invoke('update_manager_set_running_tasks', { hasTasks: hasTask });
+        
+        if (this.settings.auto_update_enabled !== undefined) {
+          await invoke('update_manager_set_auto_update_enabled', { 
+            enabled: this.settings.auto_update_enabled 
+          });
+        }
       } catch (error) {
-        console.error('自动更新失败:', error);
-      }
-    },
-
-    startAutoUpdateTimer() {
-      if (this.autoUpdateTimer) {
-        clearInterval(this.autoUpdateTimer);
-      }
-
-      if (!this.settings.auto_update_enabled) {
-        console.log('自动更新未启用，跳过启动定时器');
-        return;
-      }
-
-      let interval = 10 * 60 * 1000; // 固定10分钟间隔
-      //如果是dev环境，间隔改为1分钟
-      const isDev = import.meta.env.DEV;
-      if (isDev) {
-        console.log("current is dev environment, set auto update interval to 1 minute")
-        interval = 1 * 60 * 1000;
-      }
-      console.log(`启动自动更新定时器，间隔: ${interval / 1000 / 60} 分钟`);
-
-      this.autoUpdateTimer = setInterval(() => {
-        // 检查是否有正在运行的任务
-        if (this.hasRunningTasks()) {
-          console.log('有正在运行的任务，跳过自动更新');
-          return;
-        }
-
-        // 检查系统是否空闲
-        if (!this.isSystemIdle()) {
-          console.log('用户最近有活动，跳过自动更新');
-          return;
-        }
-
-        console.log('系统空闲且无运行任务，触发自动更新');
-        this.triggerAutoUpdate();
-      }, interval);
-    },
-
-    stopAutoUpdateTimer() {
-      if (this.autoUpdateTimer) {
-        clearInterval(this.autoUpdateTimer);
-        this.autoUpdateTimer = null;
+        console.error('Failed to update backend state:', error);
       }
     },
 
@@ -585,8 +515,8 @@ export default {
       await this.getRunningTasks();
       await this.$emiter('reload_tasks', {})
 
-      // 启动自动更新定时器
-      this.startAutoUpdateTimer();
+      // Update backend state
+      await this.updateBackendState();
     }));
     this.listeners.push(await this.$listen('reload_devices', async () => {
       await this.requestDevices('event:reload_devices');
@@ -594,6 +524,7 @@ export default {
     // 监听重新加载运行任务事件
     this.listeners.push(await this.$listen('reload_running_tasks', async () => {
       await this.getRunningTasks();
+      await this.updateBackendState();
     }));
 
     // 监听侧边栏变化事件
@@ -611,8 +542,8 @@ export default {
     //reload_settings
     this.listeners.push(await this.$listen('reload_settings', async () => {
       await this.get_settings()
-      // 重新启动自动更新定时器（设置可能已更改）
-      this.startAutoUpdateTimer();
+      // Update backend with new settings
+      await this.updateBackendState();
     }))
 
     this.listeners.push(await this.$listen('supportMarkRead', async (e) => {
@@ -627,8 +558,18 @@ export default {
       await this.handleSupportMarkAllRead()
     }))
 
-    // 设置用户活动监听
-    this.setupUserActivityListeners();
+    // Setup user activity tracking for backend
+    const userActivityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
+    const onUserActivity = async () => {
+      try {
+        await invoke('update_manager_set_user_activity');
+      } catch (error) {
+        // Silently ignore errors
+      }
+    };
+    userActivityEvents.forEach(event => {
+      document.addEventListener(event, onUserActivity, { passive: true });
+    });
 
 
   },
@@ -639,10 +580,6 @@ export default {
       }
     })
     this.listeners = []
-
-    // 清理自动更新相关资源
-    this.removeUserActivityListeners();
-    this.stopAutoUpdateTimer();
   }
 }
 </script>
