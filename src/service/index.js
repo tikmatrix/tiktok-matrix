@@ -3,16 +3,6 @@ import api from '../api'
 import { ResponseType } from '@tauri-apps/api/http'
 
 
-
-export function auth({ password }) {
-  return request({
-    method: 'post',
-    url: api.auth,
-    data: {
-      password
-    }
-  })
-}
 export function tiktok_query(data) {
   return request({
     method: 'post',
@@ -68,70 +58,6 @@ export function save_group_config_file({ group_id, script_name, settings }) {
   })
 }
 
-export function get_license() {
-  return request({
-    method: 'get',
-    url: api.get_license,
-    params: {}
-  })
-}
-export function get_license_concurrency_limit() {
-  return request({
-    method: 'get',
-    url: api.get_license_concurrency_limit
-  })
-}
-export function create_order(data) {
-  return request({
-    method: 'post',
-    url: api.create_order,
-    data: data
-  })
-}
-export function get_order() {
-  return request({
-    method: 'post',
-    url: api.get_order,
-    data: {}
-  })
-}
-export function close_order() {
-  return request({
-    method: 'post',
-    url: api.close_order,
-    data: {}
-  })
-}
-export function activate_license(data) {
-  return request({
-    method: 'post',
-    url: api.activate_license,
-    data: data
-  })
-}
-
-
-export function count_task_by_status() {
-  return request({
-    method: 'get',
-    url: api.count_task_by_status
-  })
-}
-
-export function count_all_account() {
-  return request({
-    method: 'get',
-    url: api.count_all_account
-  })
-}
-export function count_account_by_group_id({ group_id }) {
-  return request({
-    method: 'get',
-    url: api.count_account_by_group_id,
-    params: { group_id }
-  })
-}
-
 export function read_clipboard({ serial }) {
   return request({
     method: 'get',
@@ -151,13 +77,6 @@ export function test_proxy_rotation(data) {
 }
 
 
-export function get_ip({ serial }) {
-  return request({
-    method: 'get',
-    url: api.get_ip,
-    params: { serial }
-  })
-}
 
 export function get_analytics() {
   return request({
@@ -558,22 +477,6 @@ export function stop_tiktok(data) {
   return request({
     method: 'post',
     url: api.stop_tiktok,
-    data
-  })
-}
-
-export function validate_license_migration(data) {
-  return request({
-    method: 'post',
-    url: api.validate_license_migration,
-    data
-  })
-}
-
-export function migrate_license(data) {
-  return request({
-    method: 'post',
-    url: api.migrate_license,
     data
   })
 }
