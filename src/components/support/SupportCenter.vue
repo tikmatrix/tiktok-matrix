@@ -138,7 +138,8 @@
             <span v-if="detailLoading" class="loading loading-spinner loading-xs mr-1"></span>
             {{ $t('supportDetailRefresh') }}
           </button>
-          <button class="btn btn-error btn-sm" :disabled="closingTicket || isTicketClosed" @click="showCloseTicketConfirmation">
+          <button class="btn btn-error btn-sm" :disabled="closingTicket || isTicketClosed"
+            @click="showCloseTicketConfirmation">
             <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
             {{ $t('supportDetailCloseTicket') }}
           </button>
@@ -371,29 +372,28 @@
     </div>
 
     <!-- Close Ticket Confirmation Modal -->
-    <teleport to="body">
-      <transition name="modal-fade">
-        <div v-if="showCloseConfirmation" class="modal-overlay" @click.self="cancelCloseTicket">
-          <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="close-ticket-title">
-            <div class="modal-header">
-              <h3 id="close-ticket-title" class="modal-title">{{ $t('supportDetailCloseConfirmTitle') }}</h3>
-            </div>
-            <div class="modal-body">
-              <p>{{ $t('supportDetailCloseConfirm') }}</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-outline btn-sm" @click="cancelCloseTicket">
-                {{ $t('supportDetailCloseConfirmCancel') }}
-              </button>
-              <button type="button" class="btn btn-error btn-sm" :disabled="closingTicket" @click="confirmCloseTicket">
-                <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
-                {{ $t('supportDetailCloseConfirmButton') }}
-              </button>
-            </div>
-          </div>
+    <dialog ref="close_ticket_confirm_dialog" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg text-warning">
+          <i class="fa fa-exclamation-triangle mr-2"></i>{{ $t('supportDetailCloseConfirmTitle') }}
+        </h3>
+        <div class="py-4">
+          <p class="text-lg mb-2">{{ $t('supportDetailCloseConfirm') }}</p>
         </div>
-      </transition>
-    </teleport>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost mr-2">{{ $t('supportDetailCloseConfirmCancel') }}</button>
+          </form>
+          <button class="btn btn-error" :disabled="closingTicket" @click="confirmCloseTicket">
+            <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
+            {{ $t('supportDetailCloseConfirmButton') }}
+          </button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
   </div>
 </template>
 
@@ -481,7 +481,7 @@ export default {
       agentBaseUrlPromise: null,
       lastTicketListCacheKey: null,
       lastTicketDetailCacheKey: null,
-      showCloseConfirmation: false
+      // close-ticket confirmation is handled by <dialog ref="close_ticket_confirm_dialog">
     }
   },
   computed: {
@@ -2542,14 +2542,30 @@ export default {
       if (!this.currentTicket || this.closingTicket || this.isTicketClosed) {
         return
       }
-      this.showCloseConfirmation = true
+      const dlg = this.$refs.close_ticket_confirm_dialog
+      if (dlg && typeof dlg.showModal === 'function') {
+        try {
+          dlg.showModal()
+        } catch (err) {
+          // some webviews may not support showModal; fallback to marking closing state
+          console.warn('showCloseTicketConfirmation: dialog showModal failed', err)
+        }
+      } else {
+        console.warn('close_ticket_confirm_dialog ref not found')
+      }
     },
     cancelCloseTicket() {
-      this.showCloseConfirmation = false
+      const dlg = this.$refs.close_ticket_confirm_dialog
+      if (dlg && typeof dlg.close === 'function') {
+        dlg.close()
+      }
     },
     async confirmCloseTicket() {
+      const dlg = this.$refs.close_ticket_confirm_dialog
+      if (dlg && typeof dlg.close === 'function') {
+        try { dlg.close() } catch (err) { /* ignore */ }
+      }
       await this.closeTicket()
-      this.showCloseConfirmation = false
     },
     async closeTicket() {
       if (!this.currentTicket || this.closingTicket) {
