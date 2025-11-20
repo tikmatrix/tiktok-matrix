@@ -7,6 +7,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 use tauri::{AppHandle, Manager};
+use tokio::net::TcpStream;
 use tokio::time::sleep;
 
 const AGENT_PORT: u16 = 50809;
@@ -209,9 +210,15 @@ impl AgentManager {
     }
 
     async fn check_agent_port(&self) -> bool {
-        match TcpListener::bind(("127.0.0.1", AGENT_PORT)) {
-            Ok(_) => false, // Port is free, agent not running
-            Err(_) => true, // Port is in use, likely agent is running
+        // Try to connect to the port to see if agent is listening
+        // This is the correct way to check if a service is running on a port
+        match tokio::time::timeout(
+            Duration::from_millis(500),
+            TcpStream::connect(("127.0.0.1", AGENT_PORT))
+        ).await {
+            Ok(Ok(_)) => true, // Successfully connected, agent is running
+            Ok(Err(_)) => false, // Connection refused, agent not running
+            Err(_) => false, // Timeout, agent not running
         }
     }
 
