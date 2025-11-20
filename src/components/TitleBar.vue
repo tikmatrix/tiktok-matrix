@@ -933,11 +933,29 @@ export default {
       this.isWhiteLabelUnlocked = await isFeatureUnlocked('whiteLabel');
     });
 
-    await this.$listen('AUTO_UPDATE_TRIGGER', async () => {
-      await this.check_update(true, true);
+    // Listen to update manager status
+    await this.$listen('update_manager_status', async (e) => {
+      const payload = e.payload;
+      console.log('[TitleBar] Update manager status:', payload);
+      if (payload.status === 'checking' || payload.status === 'downloading') {
+        this.check_update_dialog_title = payload.message;
+      }
     });
 
-    this.check_update();
+    // Listen to agent manager status
+    await this.$listen('agent_manager_status', async (e) => {
+      const payload = e.payload;
+      console.log('[TitleBar] Agent manager status:', payload);
+      if (payload.status === 'error' && payload.message) {
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: payload.message,
+          timeout: 4000
+        });
+      }
+    });
+
+    // Check for manual updates when the user clicks the version button
+    // The backend now handles automatic checks on startup and periodically
   }
 }
-</script>
