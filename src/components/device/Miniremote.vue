@@ -158,6 +158,8 @@ export default {
       firstFrameRendered: false,
       firstFrameImageUrl: null,
       videoStarted: false,
+      isUpdatingDimensions: false,
+      lastEmittedWidth: 150,
       i18n: {
         preparing: '',
         running: '',
@@ -255,6 +257,7 @@ export default {
     this.default_height = height;
     this.width = width;
     this.height = height;
+    this.lastEmittedWidth = width;
     this.screenResolution = resolution;
   },
   watch: {
@@ -263,16 +266,39 @@ export default {
       if (this.real_width == 0 || this.real_height == 0 || newVal == 0) {
         return
       }
+      // Prevent circular updates
+      if (this.isUpdatingDimensions) {
+        return
+      }
+      this.isUpdatingDimensions = true
       this.width = this.real_width * newVal
       this.height = this.real_height * newVal
       // console.debug(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
-      this.$emit('sizeChanged', this.width)
+      
+      // Only emit if width changed significantly (more than 1px to avoid floating point noise)
+      if (Math.abs(this.width - this.lastEmittedWidth) > 1) {
+        this.lastEmittedWidth = this.width
+        this.$emit('sizeChanged', this.width)
+      }
+      this.isUpdatingDimensions = false
     },
     async width(newVal) {
+      // Prevent circular updates
+      if (this.isUpdatingDimensions) {
+        return
+      }
       await setItem('deviceWidth', newVal)
-      this.$emit('sizeChanged', newVal)
+      // Only emit if width changed significantly
+      if (Math.abs(newVal - this.lastEmittedWidth) > 1) {
+        this.lastEmittedWidth = newVal
+        this.$emit('sizeChanged', newVal)
+      }
     },
     async height(newVal) {
+      // Prevent circular updates during dimension updates
+      if (this.isUpdatingDimensions) {
+        return
+      }
       await setItem('deviceHeight', newVal)
     }
   },
