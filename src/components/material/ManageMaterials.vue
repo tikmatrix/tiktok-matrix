@@ -280,6 +280,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import * as groupWsService from '@/service/groupWebSocketService';
 import * as materialWsService from '@/service/materialWebSocketService';
+import * as accountWsService from '@/service/accountWebSocketService';
 
 export default {
   name: 'app',
@@ -637,11 +638,12 @@ export default {
       ).length;
     },
     async get_accounts() {
-      this.$service
-        .get_accounts()
-        .then(res => {
-          this.accounts = res.data
-        })
+      try {
+        const res = await accountWsService.ws_get_accounts()
+        this.accounts = res.data
+      } catch (error) {
+        console.error('Failed to get accounts:', error)
+      }
     },
     async get_groups() {
       try {

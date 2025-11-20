@@ -1,4 +1,4 @@
-import { sendWsMessage } from '@/utils/wsRequest'
+import { sendWsMessage } from './wsRequest'
 
 /**
  * Get list of devices via WebSocket

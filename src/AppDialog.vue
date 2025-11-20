@@ -36,6 +36,7 @@ import ManageTasks from './components/tasks/ManageTasks.vue'
 import BeforeRunScriptDialog from './components/dialogs/BeforeRunScriptDialog.vue'
 import AccountWarmupSettings from './components/groups/AccountWarmupSettings.vue'
 import SupportCenter from './components/support/SupportCenter.vue'
+import * as accountWsService from '@/service/accountWebSocketService';
 export default {
   name: 'appDialog',
   props: {
@@ -74,7 +75,7 @@ export default {
     async loadAccounts() {
       try {
         console.log('Loading accounts...');
-        const res = await this.$service.get_accounts();
+        const res = await accountWsService.ws_get_accounts();
         this.accounts = res.data || [];
         console.log('Accounts loaded:', this.accounts.length);
       } catch (error) {

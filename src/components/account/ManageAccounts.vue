@@ -170,6 +170,7 @@ import { open, message } from '@tauri-apps/api/dialog'
 import { readBinaryFile } from '@tauri-apps/api/fs';
 import { getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
+import * as accountWsService from '@/service/accountWebSocketService';
 
 export default {
   name: 'app',
@@ -277,7 +278,7 @@ export default {
     },
     batchDisable() {
       const promises = this.filteredAccounts.map(account => {
-        return this.$service.update_account({
+        return accountWsService.ws_update_account({
           ...account,
           status: 1
         }).then(async () => {
@@ -286,6 +287,8 @@ export default {
             message: `${this.$t('disabled')} ${account.username}`,
             timeout: 1000
           })
+        }).catch(error => {
+          console.error('Failed to disable account:', error)
         })
       })
 
@@ -296,7 +299,7 @@ export default {
     },
     batchEnable() {
       const promises = this.filteredAccounts.map(account => {
-        return this.$service.update_account({
+        return accountWsService.ws_update_account({
           ...account,
           status: 0
         }).then(async () => {
@@ -305,6 +308,8 @@ export default {
             message: `${this.$t('enabled')} ${account.username}`,
             timeout: 1000
           })
+        }).catch(error => {
+          console.error('Failed to enable account:', error)
         })
       })
 
@@ -315,7 +320,7 @@ export default {
     },
     batchDelete() {
       const promises = this.filteredAccounts.map(account => {
-        return this.$service.delete_account({
+        return accountWsService.ws_delete_account({
           id: account.id
         }).then(async () => {
           await this.$emiter('NOTIFY', {
@@ -323,6 +328,8 @@ export default {
             message: `${this.$t('deleted')} ${account.username}`,
             timeout: 1000
           })
+        }).catch(error => {
+          console.error('Failed to delete account:', error)
         })
       })
 
@@ -408,14 +415,14 @@ export default {
             delete payload.tag
 
             if (payload.id) {
-              const response = await this.$service.update_account(payload)
+              const response = await accountWsService.ws_update_account(payload)
               const accountKey = payload.username || response?.username || response?.data?.username
               if (hasTagField) {
                 const fallbackKey = accountKey || (payload.id != null ? String(payload.id) : null)
                 await this.applyTagsToAccount(fallbackKey, tags)
               }
             } else {
-              const response = await this.$service.add_account(payload)
+              const response = await accountWsService.ws_add_account(payload)
               const accountKey = payload.username || response?.username || response?.data?.username
               const accountId = response?.id || response?.data?.id
               if (hasTagField && accountKey) {
@@ -646,17 +653,21 @@ export default {
 
     async get_accounts() {
       this.currentAccount = null
-      const res = await this.$service.get_accounts()
-      this.accounts = res.data
-      await this.normalizeAccountTags()
-      await this.applyPendingTags()
-      this.accounts.forEach(account => {
-        account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
-        // 添加tags字段用于搜索
-        account.tags = (this.accountTags[this.accountTagKey(account)] || []).join(' ')
-      })
-      //sort by device_index asc
-      this.accounts.sort((a, b) => a.device_index - b.device_index)
+      try {
+        const res = await accountWsService.ws_get_accounts()
+        this.accounts = res.data
+        await this.normalizeAccountTags()
+        await this.applyPendingTags()
+        this.accounts.forEach(account => {
+          account.device_index = this.devices.find(device => device.serial === account.device || device.real_serial === account.device)?.key
+          // 添加tags字段用于搜索
+          account.tags = (this.accountTags[this.accountTagKey(account)] || []).join(' ')
+        })
+        //sort by device_index asc
+        this.accounts.sort((a, b) => a.device_index - b.device_index)
+      } catch (error) {
+        console.error('Failed to get accounts:', error)
+      }
     },
     async add_account() {
       this.currentAccount = {
@@ -670,12 +681,13 @@ export default {
       this.$refs.edit_dialog.showModal()
     },
     async addAccount(account) {
-      this.$service
-        .add_account(account)
-        .then(() => {
-          this.get_accounts()
-          this.$refs.edit_dialog.close()
-        })
+      try {
+        await accountWsService.ws_add_account(account)
+        this.get_accounts()
+        this.$refs.edit_dialog.close()
+      } catch (error) {
+        console.error('Failed to add account:', error)
+      }
     },
     async editAccount(account) {
       this.currentAccount = account
@@ -686,38 +698,46 @@ export default {
       })
     },
     async updateAccount(account) {
-      this.$service
-        .update_account(account)
-        .then(() => {
-          this.get_accounts()
-          this.$refs.edit_dialog.close()
-        })
+      try {
+        await accountWsService.ws_update_account(account)
+        this.get_accounts()
+        this.$refs.edit_dialog.close()
+      } catch (error) {
+        console.error('Failed to update account:', error)
+      }
     },
     async deleteAccount(account) {
-      this.$service
-        .delete_account({
-          id: account.id
-        })
-        .then(() => {
-          this.get_accounts()
-        })
+      try {
+        await accountWsService.ws_delete_account({ id: account.id })
+        this.get_accounts()
+      } catch (error) {
+        console.error('Failed to delete account:', error)
+      }
     },
     async toggleStatus(account) {
-      const updatedAccount = {
-        ...account,
-        status: account.status === 0 ? 1 : 0
-      };
-      await this.$service.update_account(updatedAccount);
-      this.get_accounts();
+      try {
+        const updatedAccount = {
+          ...account,
+          status: account.status === 0 ? 1 : 0
+        };
+        await accountWsService.ws_update_account(updatedAccount);
+        this.get_accounts();
+      } catch (error) {
+        console.error('Failed to toggle status:', error)
+      }
     },
     // 切换登录状态（logined 字段）
     async toggleLoginStatus(account) {
-      const updatedAccount = {
-        ...account,
-        logined: account.logined === 1 ? 0 : 1
-      };
-      await this.$service.update_account(updatedAccount);
-      this.get_accounts();
+      try {
+        const updatedAccount = {
+          ...account,
+          logined: account.logined === 1 ? 0 : 1
+        };
+        await accountWsService.ws_update_account(updatedAccount);
+        this.get_accounts();
+      } catch (error) {
+        console.error('Failed to toggle login status:', error)
+      }
     },
     // 清空所有标签
     async clearAllTags() {
