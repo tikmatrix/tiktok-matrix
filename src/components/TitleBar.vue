@@ -667,8 +667,6 @@ export default {
       }
     });
 
-    // Check for manual updates when the user clicks the version button
-    // The backend now handles automatic checks on startup and periodically
   }
 }
 </script>
