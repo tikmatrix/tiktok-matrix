@@ -174,9 +174,17 @@ export default {
     async requestDevices(source = 'manual', extra = {}) {
       try {
         console.log('[App] Requesting devices via WebSocket service')
-        await deviceWsService.ws_list_devices(source, extra)
+        const result = await deviceWsService.ws_list_devices(source, extra)
+        // If the server returned device list in response (device.list.response),
+        // apply the snapshot directly. Otherwise, we expect a broadcast
+        // 'device_snapshot' to be received and handled elsewhere.
+        if (Array.isArray(result)) {
+          await this.applyDeviceSnapshot(result, { source, generatedAt: Date.now() })
+        }
+        return result
       } catch (error) {
         console.error('[App] Request devices failed:', error)
+        return null
       }
     },
 

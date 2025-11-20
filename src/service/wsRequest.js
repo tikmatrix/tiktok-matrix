@@ -10,9 +10,10 @@ import wsConnectionState from '../utils/wsConnectionState'
  * @param {string} action - Action name understood by the agent, e.g. "task.list".
  * @param {any} [data=null] - Optional payload sent with the action.
  * @param {number} [timeout=10000] - Milliseconds to wait before rejecting the request.
+ * @param {string} [expectedAction] - Optional response action name to listen for. Default is `${action}.response`.
  * @returns {Promise<any>} Resolves with the raw response payload from the agent.
  */
-export async function sendWsMessage(action, data = null, timeout = 10000) {
+export async function sendWsMessage(action, data = null, timeout = 10000, expectedAction = undefined) {
     // Wait for WebSocket connection before sending message
     try {
         await wsConnectionState.waitForConnection(timeout)
@@ -24,7 +25,11 @@ export async function sendWsMessage(action, data = null, timeout = 10000) {
         payload.data = data
     }
 
-    const expectedAction = `${action}.response`
+    // Allow caller to override expected response action when server returns a
+    // different action name (e.g. device.list -> device_snapshot)
+    if (!expectedAction) {
+        expectedAction = `${action}.response`
+    }
 
     return new Promise((resolve, reject) => {
         let unlisten

@@ -14,6 +14,12 @@ export async function ws_list_devices(source = 'manual', extra = {}) {
             ...extra
         })
         console.log('[DeviceWS] List devices response:', response)
+        // Server responds with a 'device_snapshot' payload whose data contains
+        // an object with a `devices` array. Maintain backward compatibility by
+        // extracting the array if present, otherwise return raw data.
+        if (response && response.data && Array.isArray(response.data.devices)) {
+            return response.data.devices
+        }
         return response.data
     } catch (error) {
         console.error('[DeviceWS] Failed to list devices:', error)
