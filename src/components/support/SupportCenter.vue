@@ -303,6 +303,7 @@
               </header>
               <div class="conversation-body" v-html="renderMessageBody(message.body)"></div>
               <pre v-if="message.message_tail" class="conversation-tail">{{ message.message_tail }}</pre>
+              <p v-if="message.message_tail" class="conversation-tail-note">{{ $t('supportLogNote') }}</p>
               <div v-if="hasMessageAttachments(message)" class="conversation-attachments">
                 <div class="attachments-summary">
                   {{ $t('supportDetailAttachmentsSummary', { count: getMessageMediaAttachments(message).length }) }}
@@ -3456,6 +3457,14 @@ export default {
   color: var(--color-base-content);
   max-height: 160px;
   overflow-y: auto;
+}
+
+.conversation-tail-note {
+  font-size: 12px;
+  color: var(--color-base-content);
+  opacity: 0.7;
+  margin: 4px 0 0;
+  font-style: italic;
 }
 
 .conversation-attachments {

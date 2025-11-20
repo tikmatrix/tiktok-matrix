@@ -1163,7 +1163,7 @@ export default {
             console.error('submitSupport ensureLogsAttachment error', error)
           }
         }
-        const messageBody = `${this.form.description}\n\n${this.$t('supportLogNote')}`
+        const messageBody = this.form.description
         const mediaAttachments = await this.uploadCustomAttachments(normalizedSerials)
         const payload = {
           subject: this.form.subject,
