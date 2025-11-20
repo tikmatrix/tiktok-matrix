@@ -584,7 +584,6 @@ fn main() -> std::io::Result<()> {
             std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wssport.txt", work_dir), "0")?;
             
-            let app_handle_clone = app_handle.clone();
             let agent_ws_port_file = app_data_dir.join("wssport.txt");
             AgentWsBridge::spawn(app_handle.clone(), agent_ws_port_file);
             
