@@ -1,6 +1,7 @@
 // 订单相关的业务逻辑混入
 import QRCode from 'qrcode';
 import { message } from '@tauri-apps/api/dialog';
+import * as licenseWsService from '../service/licenseWebSocketService';
 
 export default {
     methods: {
@@ -10,20 +11,14 @@ export default {
             }
 
             try {
-                const res = await this.$service.get_stripe_price_table_info();
-
-                if (res.code !== 0) {
-                    console.log('get stripe price table info failed:', res.data);
-                    this.order = null;
-                } else {
-                    console.log('get stripe price table info:', res.data);
-                    this.priceTableInfo = JSON.parse(res.data);
-                }
+                const priceTableInfo = await licenseWsService.ws_get_stripe_price_table_info();
+                console.log('get stripe price table info:', priceTableInfo);
+                this.priceTableInfo = priceTableInfo;
             } catch (err) {
-                console.error('get_stripe_price_table_info error:', err);
+                console.error('ws_get_stripe_price_table_info error:', err);
                 await this.$emiter('NOTIFY', {
                     type: 'error',
-                    message: this.$t('getStripePriceTableInfoErrorMessage'),
+                    message: err.message || this.$t('getStripePriceTableInfoErrorMessage'),
                     timeout: 2000
                 });
             }
@@ -35,22 +30,13 @@ export default {
             }
 
             try {
-                const res = await this.$service.get_order();
-
-                if (res.code !== 0) {
-                    console.log('get order failed:', res.data);
-                    this.order = null;
-                } else {
-                    console.log('get order:', res.data);
-                    await this.showOrder(res.data);
-                }
+                const orderData = await licenseWsService.ws_get_order();
+                console.log('get order:', orderData);
+                await this.showOrder(JSON.stringify(orderData));
             } catch (err) {
-                console.error('get_order error:', err);
-                await this.$emiter('NOTIFY', {
-                    type: 'error',
-                    message: this.$t('getOrderErrorMessage'),
-                    timeout: 2000
-                });
+                console.error('ws_get_order error:', err);
+                console.log('get order failed, setting order to null');
+                this.order = null;
             }
         },
 
@@ -106,8 +92,8 @@ export default {
 
         async closeOrder() {
             try {
-                const res = await this.$service.close_order({});
-                console.log(`close_order: ${JSON.stringify(res)}`);
+                await licenseWsService.ws_close_order();
+                console.log('close_order: success');
 
                 clearInterval(this.interval);
                 this.interval = null;
@@ -115,10 +101,10 @@ export default {
                 this.orderPaymentHandled = false;
                 this.remainingTime = 0;
             } catch (err) {
-                console.error('close_order error:', err);
+                console.error('ws_close_order error:', err);
                 await this.$emiter('NOTIFY', {
                     type: 'error',
-                    message: this.$t('closeOrderErrorMessage'),
+                    message: err.message || this.$t('closeOrderErrorMessage'),
                     timeout: 2000
                 });
             }

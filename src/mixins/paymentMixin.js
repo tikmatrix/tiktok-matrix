@@ -2,6 +2,7 @@
 import { writeText } from '@tauri-apps/api/clipboard';
 import { message } from '@tauri-apps/api/dialog';
 import { open } from '@tauri-apps/api/shell';
+import * as licenseWsService from '../service/licenseWebSocketService';
 
 export default {
     methods: {
@@ -14,24 +15,17 @@ export default {
             this.$refs.loadingDialogs.showCreateOrderLoadingDialog();
 
             try {
-                const res = await this.$service.get_stripe_checkout_url({
+                const checkoutUrl = await licenseWsService.ws_get_stripe_checkout_url({
                     price_id: priceId,
                     plan_interval: planInterval
-                }); if (res.code !== 0) {
-                    await this.$emiter('NOTIFY', {
-                        type: 'error',
-                        message: res.data,
-                        timeout: 2000
-                    });
-                } else {
-                    console.log('get_stripe_checkout_url:', res.data);
-                    await open(JSON.parse(res.data));
-                }
+                });
+                console.log('ws_get_stripe_checkout_url:', checkoutUrl);
+                await open(checkoutUrl);
             } catch (err) {
-                console.error('get_stripe_checkout_url error:', err);
+                console.error('ws_get_stripe_checkout_url error:', err);
                 await this.$emiter('NOTIFY', {
                     type: 'error',
-                    message: this.$t('getStripeCheckoutUrlErrorMessage'),
+                    message: err.message || this.$t('getStripeCheckoutUrlErrorMessage'),
                     timeout: 2000
                 });
             } finally {
@@ -48,26 +42,17 @@ export default {
             this.$refs.loadingDialogs.showCreateOrderLoadingDialog();
 
             try {
-                const res = await this.$service.get_alipay_checkout_url({
+                const checkoutUrl = await licenseWsService.ws_get_alipay_checkout_url({
                     plan_id: planId,
                     plan_interval: planInterval
                 });
-
-                if (res.code !== 0) {
-                    await this.$emiter('NOTIFY', {
-                        type: 'error',
-                        message: res.data,
-                        timeout: 2000
-                    });
-                } else {
-                    console.log('get_alipay_checkout_url:', res.data);
-                    await open(JSON.parse(res.data));
-                }
+                console.log('ws_get_alipay_checkout_url:', checkoutUrl);
+                await open(checkoutUrl);
             } catch (err) {
-                console.error('get_alipay_checkout_url error:', err);
+                console.error('ws_get_alipay_checkout_url error:', err);
                 await this.$emiter('NOTIFY', {
                     type: 'error',
-                    message: this.$t('getAlipayCheckoutUrlErrorMessage'),
+                    message: err.message || this.$t('getAlipayCheckoutUrlErrorMessage'),
                     timeout: 2000
                 });
             } finally {
@@ -77,21 +62,18 @@ export default {
 
         async createOrder(price, planId, planInterval, network) {
             this.$refs.loadingDialogs.showCreateOrderLoadingDialog(); try {
-                const res = await this.$service.create_order({
+                const orderData = await licenseWsService.ws_create_order({
                     network: network,
                     amount: price,
                     plan_id: planId,
                     plan_interval: planInterval
-                }); if (res.code !== 0) {
-                    await message(res.data);
-                } else {
-                    await this.showOrder(res.data);
-                }
+                });
+                await this.showOrder(JSON.stringify(orderData));
             } catch (err) {
-                console.error('create_order error:', err);
+                console.error('ws_create_order error:', err);
                 await this.$emiter('NOTIFY', {
                     type: 'error',
-                    message: this.$t('createOrderErrorMessage'),
+                    message: err.message || this.$t('createOrderErrorMessage'),
                     timeout: 2000
                 });
             } finally {
@@ -103,23 +85,13 @@ export default {
             try {
                 this.$refs.loadingDialogs.showManageSubscriptionLoadingDialog();
 
-                const res = await this.$service.get_stripe_portal_url();
-
-                if (res.code === 0) {
-                    const portalUrl = JSON.parse(res.data);
-                    console.log('portalUrl:', portalUrl);
-                    await open(portalUrl);
-                } else {
-                    await this.$emiter('NOTIFY', {
-                        type: 'error',
-                        message: res.data,
-                        timeout: 2000
-                    });
-                }
+                const portalUrl = await licenseWsService.ws_get_stripe_portal_url();
+                console.log('portalUrl:', portalUrl);
+                await open(portalUrl);
             } catch (error) {
                 await this.$emiter('NOTIFY', {
                     type: 'error',
-                    message: this.$t('manageSubscriptionErrorMessage'),
+                    message: error.message || this.$t('manageSubscriptionErrorMessage'),
                     timeout: 2000
                 });
             } finally {

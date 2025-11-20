@@ -198,6 +198,7 @@ import * as XLSX from 'xlsx'
 import { writeBinaryFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { invoke } from "@tauri-apps/api/tauri"
 import { getJsonItem, setJsonItem, getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
+import * as licenseWsService from '../../service/licenseWebSocketService';
 
 export default {
     name: 'AccountAnalytics',
@@ -294,48 +295,41 @@ export default {
                     setTimeout(() => reject(new Error('Request timeout')), TIMEOUT_MS);
                 });
 
-                const requestPromise = this.$service.tiktok_query({ username: account.username });
+                const requestPromise = licenseWsService.ws_tiktok_query(account.username);
 
                 const res = await Promise.race([requestPromise, timeoutPromise]);
 
-                if (res.code === 0) {
-                    try {
-                        const tiktokData = JSON.parse(res.data);
-                        const { profile, stats } = tiktokData;
+                // WebSocket response returns data directly, parse if it's a string
+                const tiktokData = typeof res === 'string' ? JSON.parse(res) : res;
+                const { profile, stats } = tiktokData;
 
-                        const tiktokCache = await getJsonItem('tiktokDataCache', {});
-                        tiktokCache[account.username] = {
-                            data: tiktokData,
-                            timestamp: new Date().getTime()
-                        };
-                        await setJsonItem('tiktokDataCache', tiktokCache);
+                const tiktokCache = await getJsonItem('tiktokDataCache', {});
+                tiktokCache[account.username] = {
+                    data: tiktokData,
+                    timestamp: new Date().getTime()
+                };
+                await setJsonItem('tiktokDataCache', tiktokCache);
 
-                        this.tikTokData[account.id] = {
-                            nickname: profile?.Nickname || '-',
-                            country: profile?.Country || '-',
-                            followers: stats?.Followers || '-',
-                            following: stats?.Following || '-',
-                            hearts: stats?.Hearts || '-',
-                            videos: stats?.Videos || '-',
-                            friends: stats?.Friends || '-',
-                            userId: profile?.['User ID'] || '-',
-                            createdAt: profile?.['Account Created'] || '-'
-                        };
+                this.tikTokData[account.id] = {
+                    nickname: profile?.Nickname || '-',
+                    country: profile?.Country || '-',
+                    followers: stats?.Followers || '-',
+                    following: stats?.Following || '-',
+                    hearts: stats?.Hearts || '-',
+                    videos: stats?.Videos || '-',
+                    friends: stats?.Friends || '-',
+                    userId: profile?.['User ID'] || '-',
+                    createdAt: profile?.['Account Created'] || '-'
+                };
 
-                        // 使用 nextTick 确保 DOM 已更新
-                        this.$nextTick(() => {
-                            if (this.$el) this.$forceUpdate();
-                        });
+                // 使用 nextTick 确保 DOM 已更新
+                this.$nextTick(() => {
+                    if (this.$el) this.$forceUpdate();
+                });
 
-                        console.log(`✅ Success: ${account.username} (${retryCount > 0 ? `retry ${retryCount}` : 'first attempt'})`);
+                console.log(`✅ Success: ${account.username} (${retryCount > 0 ? `retry ${retryCount}` : 'first attempt'})`);
 
-                        return { success: true, account };
-                    } catch (e) {
-                        throw new Error(`${this.$t('parseError')}: ${e.message}`);
-                    }
-                } else {
-                    throw new Error(res.message || this.$t('syncFailed'));
-                }
+                return { success: true, account };
             } catch (err) {
                 console.error(`❌ Error for ${account.username} (attempt ${retryCount + 1}/${MAX_RETRIES + 1}):`, err.message);
 

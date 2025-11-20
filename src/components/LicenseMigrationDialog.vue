@@ -144,6 +144,7 @@
 <script>
 import { writeText } from '@tauri-apps/api/clipboard';
 import { message, confirm } from '@tauri-apps/api/dialog';
+import * as licenseWsService from '../service/licenseWebSocketService';
 
 export default {
     name: 'LicenseMigrationDialog',
@@ -238,35 +239,21 @@ export default {
 
             try {
                 // 调用后端API验证目标机器ID和当前许可证
-                const response = await this.$service.validate_license_migration({
-                    target_machine_id: this.targetMachineId
-                });
-                console.log('Validate response:', response);
-                if (response.code === 0) {
-                    // 解析返回的JSON数据
-                    const result = JSON.parse(response.data);
-                    console.log('Validation result:', result);
-                    console.log('Validation valid:', result.valid);
-                    this.machineIdValidationResult = {
-                        valid: result.valid,
-                        message: result.valid
-                            ? this.$t('migrationValidationSuccess')
-                            : (result.message || this.$t('migrationValidationFailed')),
-                        licenseInfo: result.license_info
-                    };
-                } else {
-                    const result = JSON.parse(response.data);
-                    this.machineIdValidationResult = {
-                        valid: false,
-                        message: result.message || this.$t('validateMachineIdFailed')
-                    };
-                }
-
+                const result = await licenseWsService.ws_validate_license_migration(this.targetMachineId);
+                console.log('Validate response:', result);
+                console.log('Validation valid:', result.valid);
+                this.machineIdValidationResult = {
+                    valid: result.valid,
+                    message: result.valid
+                        ? this.$t('migrationValidationSuccess')
+                        : (result.message || this.$t('migrationValidationFailed')),
+                    licenseInfo: result.license_info
+                };
             } catch (error) {
                 console.error('Validate machine ID error:', error);
                 this.machineIdValidationResult = {
                     valid: false,
-                    message: this.$t('validateMachineIdFailed')
+                    message: error.message || this.$t('validateMachineIdFailed')
                 };
             } finally {
                 this.isValidating = false;
@@ -295,27 +282,18 @@ export default {
 
             try {                // 调用后端API进行license迁移
                 // 当前机器ID通过请求头传递，只需要传递目标机器ID
-                const response = await this.$service.migrate_license({
-                    target_machine_id: this.targetMachineId
-                });
+                const result = await licenseWsService.ws_migrate_license(this.targetMachineId);
+                await message(this.$t('migrationSuccess'));
+                this.close();
 
-                if (response.code === 0) {
-                    await message(this.$t('migrationSuccess'));
-                    this.close();
+                // 重新加载license信息
+                await this.$emiter('LICENSE', { reload: true });
 
-                    // 重新加载license信息
-                    await this.$emiter('LICENSE', { reload: true });
-
-                    // 通知父组件迁移完成
-                    this.$emit('migrationCompleted');
-
-                } else {
-                    await message(this.$t('migrationFailed') + ': ' + response.data);
-                }
-
+                // 通知父组件迁移完成
+                this.$emit('migrationCompleted');
             } catch (error) {
                 console.error('Migration error:', error);
-                await message(this.$t('migrationError'));
+                await message(this.$t('migrationError') + ': ' + (error.message || error));
             } finally {
                 this.isMigrating = false;
             }

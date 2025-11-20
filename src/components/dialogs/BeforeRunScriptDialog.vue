@@ -100,6 +100,7 @@ import SwitchAccountDialog from './SwitchAccountDialog.vue'
 import SuperMarketingDialog from './SuperMarketingDialog.vue'
 import { beforeRunScriptSettings } from '@/utils/settingsManager'
 import * as settingsWsService from '../../service/settingsWebSocketService'
+import * as licenseWsService from '../../service/licenseWebSocketService';
 
 const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
   {
@@ -179,9 +180,9 @@ export default {
     },
     async fetchLicenseLimit() {
       try {
-        const res = await this.$service.get_license_concurrency_limit()
-        if (res && res.code === 0 && typeof res.data !== 'undefined') {
-          this.licenseLimit = Number(res.data)
+        const limit = await licenseWsService.ws_get_license_concurrency_limit()
+        if (typeof limit !== 'undefined') {
+          this.licenseLimit = Number(limit)
         }
       } catch (error) {
         console.warn('Failed to load license concurrency limit', error)
