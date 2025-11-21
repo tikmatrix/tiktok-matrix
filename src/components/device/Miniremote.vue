@@ -34,8 +34,8 @@
           v-if="firstFrameImageUrl && !videoStarted && this.big">
 
         </div>
-        <div @click="$emiter('openDevice', this.device)"
-          class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
+        <div @click="!operating && $emiter('openDevice', this.device)"
+          class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" :class="{ 'pointer-events-none': operating }" v-if="!big">
           <div class="bg-transparent p-2 rounded-md text-center">
             <div :class="['status animate-bounce', getTaskStatusColor]"></div>
             <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
@@ -54,10 +54,10 @@
           <font-awesome-icon icon="fa-solid fa-hourglass-end" class="w-24 h-24 text-primary rotate" />
           <span class="text-primary font-bold">{{ $t('loading') }}</span>
         </div>
-        <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
+        <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300/80 backdrop-blur-sm z-10"
           v-if="operating">
-          <font-awesome-icon icon="fa fa-hand-pointer" class="w-24 h-24 text-primary" />
-          <span class="text-primary font-bold">{{ $t('operating') }}</span>
+          <font-awesome-icon icon="fa fa-hand-pointer" class="w-24 h-24 text-primary animate-pulse" />
+          <span class="text-primary font-bold text-lg">{{ $t('operating') }}</span>
         </div>
       </div>
       <div v-if="big" class="relative flex-shrink-0">
@@ -245,22 +245,25 @@ export default {
         // For docked mode, let grid layout control the size
         if (this.bigSize) {
           // Standard mode: Calculate appropriate dimensions for floating window
+          // Target height is 60% of viewport height
+          const viewportHeight = window.innerHeight;
+          const targetHeight = Math.round(viewportHeight * 0.6);
+          
           const deviceWidth = this.real_width || this.DEFAULT_DEVICE_WIDTH;
           const deviceHeight = this.real_height || this.DEFAULT_DEVICE_HEIGHT;
 
           // Validate dimensions to prevent division by zero
           if (deviceWidth <= 0 || deviceHeight <= 0) {
             console.warn('Invalid device dimensions, using defaults');
-            return `width: ${this.STANDARD_MODE_TARGET_WIDTH}px; height: ${Math.round(this.STANDARD_MODE_TARGET_WIDTH * (this.DEFAULT_DEVICE_HEIGHT / this.DEFAULT_DEVICE_WIDTH))}px;`;
+            const defaultAspectRatio = this.DEFAULT_DEVICE_HEIGHT / this.DEFAULT_DEVICE_WIDTH;
+            const defaultWidth = Math.round(targetHeight / defaultAspectRatio);
+            return `width: ${defaultWidth}px; height: ${targetHeight}px;`;
           }
 
           const aspectRatio = deviceHeight / deviceWidth;
+          const calculatedWidth = Math.round(targetHeight / aspectRatio);
 
-          // Set a reasonable display size (larger than small screen)
-          const targetWidth = this.STANDARD_MODE_TARGET_WIDTH;
-          const calculatedHeight = Math.round(targetWidth * aspectRatio);
-
-          return `width: ${targetWidth}px; height: ${calculatedHeight}px;`;
+          return `width: ${calculatedWidth}px; height: ${targetHeight}px;`;
         }
         // Docked mode: Use flex-1 to fill remaining space after Top Bar
         return undefined;
@@ -966,6 +969,10 @@ export default {
           }
           this.big = false;
           this.operating = false;
+        } else if (this.operating) {
+          // Reload small screen after big screen closes
+          this.operating = false;
+          this.syncDisplay();
         }
       } else {
         // docked mode: close the specific device
