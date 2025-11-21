@@ -3,7 +3,6 @@
     <div class="intro">
       <h2 class="title">{{ $t('supportFormTitle') }}</h2>
       <p class="description">{{ $t('supportFormDescription') }}</p>
-      <p class="description note">{{ $t('supportLogNote') }}</p>
     </div>
 
     <form class="support-form-body" @submit.prevent>
@@ -37,8 +36,12 @@
       <div class="form-row">
         <label class="form-label">{{ $t('supportContactEmail') }}</label>
         <div class="input-wrapper">
-          <input v-model="form.email" type="email" class="input input-bordered w-full"
-            :placeholder="$t('supportContactEmailPlaceholder')" />
+          <input v-model="form.email" type="email"
+            :class="['input input-bordered w-full', { 'input-error': emailError }]"
+            :placeholder="$t('supportContactEmailPlaceholder')" @blur="validateEmail" />
+          <!-- inline validation / hint -->
+          <p v-if="emailError" class="text-sm text-error">{{ emailError }}</p>
+          <p v-else class="text-sm text-base-content">{{ $t('supportContactEmailHint') }}</p>
         </div>
       </div>
 
@@ -187,6 +190,7 @@ export default {
         priority: 'p3',
         email: ''
       },
+      emailError: '',
       selectedSerials: [],
       messageTail: '',
       submitting: false,
@@ -260,6 +264,22 @@ export default {
       } else {
         const logger = type === 'error' ? console.error : type === 'warning' ? console.warn : console.log
         logger(message)
+      }
+    },
+    // simple email format check
+    isValidEmail(value) {
+      if (!value || typeof value !== 'string') return false
+      const trimmed = value.trim()
+      // basic RFC-like email regex (practical for form validation)
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
+    },
+    validateEmail() {
+      this.emailError = ''
+      if (this.form.email) {
+        const v = this.form.email.trim()
+        if (v && !this.isValidEmail(v)) {
+          this.emailError = this.$t('supportContactEmailInvalid')
+        }
       }
     },
     resetSubject() {
@@ -1094,6 +1114,11 @@ export default {
         await this.notify('warning', this.$t('supportValidationMessage'))
         return
       }
+      // validate email format if provided
+      if (this.form.email && !this.isValidEmail(this.form.email)) {
+        await this.notify('warning', this.$t('supportContactEmailInvalid'))
+        return
+      }
       this.submitting = true
       try {
         const serialPayload = this.buildSerialPayload()
@@ -1106,7 +1131,7 @@ export default {
             console.error('submitSupport ensureLogsAttachment error', error)
           }
         }
-        const messageBody = `${this.form.description}\n\n${this.$t('supportLogNote')}`
+        const messageBody = this.form.description
         const mediaAttachments = await this.uploadCustomAttachments(normalizedSerials)
         const payload = {
           subject: this.form.subject,

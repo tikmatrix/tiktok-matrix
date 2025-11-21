@@ -134,15 +134,7 @@
           <span class="detail-header-title">{{ currentTicket?.subject || '-' }}</span>
         </div>
         <div class="detail-header-actions">
-          <button class="btn btn-outline btn-sm" :disabled="detailLoading" @click="refreshDetail">
-            <span v-if="detailLoading" class="loading loading-spinner loading-xs mr-1"></span>
-            {{ $t('supportDetailRefresh') }}
-          </button>
-          <button class="btn btn-error btn-sm" :disabled="closingTicket || isTicketClosed" @click="closeTicket">
-            <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
-            {{ $t('supportDetailCloseTicket') }}
-          </button>
-
+          <!-- Buttons moved to reply-actions (to the right of the Clear button) -->
         </div>
       </div>
 
@@ -288,6 +280,17 @@
             </button>
             <button type="button" class="btn btn-outline btn-sm" :disabled="reply.sending" @click="resetReply">
               {{ $t('supportDetailReplyReset') }}
+            </button>
+
+            <!-- Moved from detail header: Refresh and Close buttons placed to the right of Clear -->
+            <button type="button" class="btn btn-outline btn-sm ml-2" :disabled="detailLoading" @click="refreshDetail">
+              <span v-if="detailLoading" class="loading loading-spinner loading-xs mr-1"></span>
+              {{ $t('supportDetailRefresh') }}
+            </button>
+            <button type="button" class="btn btn-error btn-sm ml-2" :disabled="closingTicket || isTicketClosed"
+              @click="closeTicket">
+              <span v-if="closingTicket" class="loading loading-spinner loading-xs mr-1"></span>
+              {{ $t('supportDetailCloseTicket') }}
             </button>
           </div>
         </section>

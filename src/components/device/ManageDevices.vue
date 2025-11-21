@@ -63,7 +63,7 @@
                   <span class="text-md font-medium whitespace-nowrap">{{ $t('screenSize') }}</span>
                   <div class="join">
                     <button class="btn btn-md join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
-                      @click="$emiter('screenScaled', { action: 'minus' })">
+                      @click="handleScale('minus')">
                       <font-awesome-icon icon="fa-solid fa-minus" class="h-3 w-3" />
                     </button>
                     <div
@@ -71,7 +71,7 @@
                       {{ screenSizeDisplay }}
                     </div>
                     <button class="btn btn-md join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
-                      @click="$emiter('screenScaled', { action: 'plus' })">
+                      @click="handleScale('plus')">
                       <font-awesome-icon icon="fa-solid fa-plus" class="h-3 w-3" />
                     </button>
                   </div>
@@ -348,6 +348,9 @@ import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
 
+const GRID_CARD_WIDTH_KEY = 'gridCardWidth';
+const LEGACY_CARD_WIDTH_KEY = 'deviceWidth';
+
 
 export default {
   name: 'devices',
@@ -373,6 +376,7 @@ export default {
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       listMode: false,
       mydevices: [],
+      deviceWidthMap: {},
       ip_1: 192,
       ip_2: 168,
       ip_3: 1,
@@ -440,7 +444,8 @@ export default {
       scanPort,
       storedProxyHost,
       storedProxyPort,
-      storedDeviceWidth,
+      storedGridCardWidth,
+      storedLegacyDeviceWidth,
       storedShowKeyboardTip
     ] = await Promise.all([
       getWhiteLabelConfig(),
@@ -453,7 +458,8 @@ export default {
       getItem('scan_port'),
       getItem('proxy_host'),
       getItem('proxy_port'),
-      getItem('deviceWidth'),
+      getItem(GRID_CARD_WIDTH_KEY),
+      getItem(LEGACY_CARD_WIDTH_KEY),
       getItem('showKeyboardTip')
     ]);
 
@@ -487,10 +493,12 @@ export default {
       this.proxy_port = parseNumber(storedProxyPort, 8080);
     }
 
-    const widthParsed = parseNumber(storedDeviceWidth, 150);
+    const widthParsed = parseNumber(storedGridCardWidth ?? storedLegacyDeviceWidth, 150);
     if (widthParsed > 0) {
       this.cardMinWidth = widthParsed;
     }
+
+    this.deviceWidthMap = { '__default__': this.cardMinWidth }
 
     if (storedShowKeyboardTip !== null) {
       this.showKeyboardTip = storedShowKeyboardTip !== 'false';
@@ -610,6 +618,28 @@ export default {
       this.mydevices.forEach(device => {
         this.decorateDevice(device, groupNameMap)
       })
+
+      const validSerials = new Set([
+        '__default__',
+        ...this.mydevices.map(device => this.getDeviceSerial(device) || '__default__')
+      ])
+      let mapChanged = false
+      const nextWidthMap = {}
+      Object.entries(this.deviceWidthMap || {}).forEach(([key, value]) => {
+        if (validSerials.has(key)) {
+          nextWidthMap[key] = value
+        } else {
+          mapChanged = true
+        }
+      })
+      if (mapChanged) {
+        this.deviceWidthMap = nextWidthMap
+        const nextWidth = this.calculateGridCardWidth()
+        if (Math.abs(nextWidth - this.cardMinWidth) > 0.5) {
+          this.cardMinWidth = nextWidth
+          this.persistCardMinWidth(nextWidth)
+        }
+      }
     },
     openProxyRotationDialog(device) {
       const serial = this.getDeviceSerial(device)
@@ -909,8 +939,74 @@ export default {
       //reload settings
       await this.$emiter('reload_settings', {})
     },
-    sizeChanged(cardWidth) {
-      this.cardMinWidth = cardWidth
+    handleScale(action) {
+      const factor = action === 'plus' ? 1.1 : action === 'minus' ? 0.9 : 1
+      if (factor === 1) {
+        return
+      }
+      const MIN_WIDTH = 80
+      const nextWidth = Math.max(MIN_WIDTH, Math.round(this.cardMinWidth * factor))
+
+      if (Math.abs(nextWidth - this.cardMinWidth) > 0.5) {
+        this.cardMinWidth = nextWidth
+        this.deviceWidthMap = {
+          ...this.deviceWidthMap,
+          '__default__': nextWidth
+        }
+        this.persistCardMinWidth(nextWidth)
+      }
+
+      this.$emiter('screenScaled', { action })
+    },
+    sizeChanged(payload) {
+      const { width, deviceSerial } = this.normaliseSizeChangedPayload(payload)
+      if (!Number.isFinite(width) || width <= 0) {
+        return
+      }
+
+      const serialKey = deviceSerial || '__default__'
+      const currentWidth = this.deviceWidthMap[serialKey]
+      if (currentWidth === width) {
+        return
+      }
+
+      this.deviceWidthMap = {
+        ...this.deviceWidthMap,
+        [serialKey]: width
+      }
+
+      const nextWidth = this.calculateGridCardWidth()
+      if (nextWidth > 0 && Math.abs(nextWidth - this.cardMinWidth) > 0.5) {
+        this.cardMinWidth = nextWidth
+        this.persistCardMinWidth(nextWidth)
+        console.log('Device card min width stabilised to:', this.cardMinWidth)
+      }
+    },
+    normaliseSizeChangedPayload(payload) {
+      if (typeof payload === 'number') {
+        return { width: payload, deviceSerial: null }
+      }
+      if (payload && typeof payload === 'object') {
+        const width = Number(payload.width)
+        const deviceSerial = payload.deviceSerial || payload.serial || null
+        return { width, deviceSerial }
+      }
+      const fallbackWidth = Number(payload)
+      return { width: fallbackWidth, deviceSerial: null }
+    },
+    calculateGridCardWidth() {
+      const values = Object.values(this.deviceWidthMap || {}).map(value => Number(value)).filter(value => Number.isFinite(value) && value > 0)
+      if (values.length === 0) {
+        return this.cardMinWidth
+      }
+      return Math.max(...values)
+    },
+    async persistCardMinWidth(value) {
+      try {
+        await setItem(GRID_CARD_WIDTH_KEY, value)
+      } catch (error) {
+        console.warn('Failed to persist grid card width:', error)
+      }
     },
     async showLicenseDialog() {
       await this.$emiter('LICENSE', { show: true });

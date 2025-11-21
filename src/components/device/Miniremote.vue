@@ -103,8 +103,12 @@ import RightBars from './RightBars.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem, getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
 const FIRST_FRAME_PREFIX = 'FIRST_FRAME_BASE64:';
+const DEVICE_SIZE_STORAGE_PREFIX = 'deviceSize:';
+const LEGACY_WIDTH_KEY = 'deviceWidth';
+const LEGACY_HEIGHT_KEY = 'deviceHeight';
+const LEGACY_RESOLUTION_KEY = 'screenResolution';
 export default {
   name: 'Miniremote',
   components: {
@@ -136,6 +140,7 @@ export default {
       rotation: 0,
       videoDecoder: null,
       scrcpy: null,
+      deviceSizeKey: null,
       loading: true,
       operating: false,
       input_dialog_title: '',
@@ -172,7 +177,7 @@ export default {
       if (this.loading) {
         return this.i18n.loading
       }
-      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+      if (this.firstFrameImageUrl && !this.videoStarted) {
         return this.i18n.connecting
       }
       if (this.device.task_status == -1) {
@@ -199,7 +204,7 @@ export default {
       if (this.loading) {
         return 'status-success'
       }
-      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+      if (this.firstFrameImageUrl && !this.videoStarted) {
         return 'status-success'
       }
       if (this.device.task_status == -1) {
@@ -217,7 +222,7 @@ export default {
       if (this.loading) {
         return 'text-success'
       }
-      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+      if (this.firstFrameImageUrl && !this.videoStarted) {
         return 'text-success'
       }
       if (this.device.task_status == -1) {
@@ -233,24 +238,8 @@ export default {
     }
   },
   async created() {
-    const [storedWidth, storedHeight, storedResolution] = await Promise.all([
-      getItem('deviceWidth'),
-      getItem('deviceHeight'),
-      getItem('screenResolution')
-    ]);
-
-    const parseNumber = (value, fallback) => {
-      if (value === null || value === undefined) {
-        return fallback;
-      }
-      const parsed = Number(String(value).replace(/"/g, ''));
-      return Number.isFinite(parsed) ? parsed : fallback;
-    };
-
-    const width = parseNumber(storedWidth, this.default_width);
-    const height = parseNumber(storedHeight, this.default_height);
-    const resolution = parseNumber(storedResolution, this.screenResolution);
-
+    this.deviceSizeKey = this.buildDeviceSizeKey();
+    const { width, height, resolution } = await this.loadInitialDimensions();
     this.default_width = width;
     this.default_height = height;
     this.width = width;
@@ -259,24 +248,103 @@ export default {
   },
   watch: {
     scaled(newVal) {
-      // console.debug(`scaled: ${newVal}`)
+      console.log(`scaled: ${newVal}`)
       if (this.real_width == 0 || this.real_height == 0 || newVal == 0) {
         return
       }
       this.width = this.real_width * newVal
       this.height = this.real_height * newVal
-      // console.debug(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
+      console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
       this.$emit('sizeChanged', this.width)
     },
-    async width(newVal) {
-      await setItem('deviceWidth', newVal)
-      this.$emit('sizeChanged', newVal)
+    width(newVal) {
+      this.persistDeviceSize({ width: newVal }).catch(error => {
+        console.warn('Persist width failed:', error)
+      })
+      console.log(`width changed: ${newVal}`)
+      this.$emit('sizeChanged', {
+        width: newVal,
+        deviceSerial: this.device?.real_serial || this.device?.serial || null
+      })
     },
-    async height(newVal) {
-      await setItem('deviceHeight', newVal)
+    height(newVal) {
+      this.persistDeviceSize({ height: newVal }).catch(error => {
+        console.warn('Persist height failed:', error)
+      })
     }
   },
   methods: {
+    getDeviceIdentifier() {
+      return this.device?.real_serial || this.device?.serial || null;
+    },
+    buildDeviceSizeKey() {
+      const identifier = this.getDeviceIdentifier();
+      return identifier ? `${DEVICE_SIZE_STORAGE_PREFIX}${identifier}` : null;
+    },
+    async loadInitialDimensions() {
+      const parseNumber = (value, fallback) => {
+        if (value === null || value === undefined) {
+          return fallback;
+        }
+        const normalized = Number(String(value).replace(/"/g, ''));
+        return Number.isFinite(normalized) ? normalized : fallback;
+      };
+
+      if (this.deviceSizeKey) {
+        const storedSize = await getJsonItem(this.deviceSizeKey);
+        if (storedSize && typeof storedSize === 'object') {
+          return {
+            width: parseNumber(storedSize.width, this.default_width),
+            height: parseNumber(storedSize.height, this.default_height),
+            resolution: parseNumber(storedSize.screenResolution, this.screenResolution)
+          };
+        }
+      }
+
+      const [legacyWidth, legacyHeight, legacyResolution] = await Promise.all([
+        getItem(LEGACY_WIDTH_KEY),
+        getItem(LEGACY_HEIGHT_KEY),
+        getItem(LEGACY_RESOLUTION_KEY)
+      ]);
+
+      const width = parseNumber(legacyWidth, this.default_width);
+      const height = parseNumber(legacyHeight, this.default_height);
+      const resolution = parseNumber(legacyResolution, this.screenResolution);
+
+      if (this.deviceSizeKey) {
+        await this.persistDeviceSize({
+          width,
+          height,
+          screenResolution: resolution
+        });
+      }
+
+      return { width, height, resolution };
+    },
+    async persistDeviceSize(overrides = {}) {
+      if (!this.deviceSizeKey) {
+        return;
+      }
+
+      const coerceNumber = (value, fallback) => {
+        if (value === null || value === undefined) {
+          return fallback;
+        }
+        const next = Number(value);
+        return Number.isFinite(next) ? next : fallback;
+      };
+
+      const payload = {
+        width: coerceNumber(overrides.width ?? this.width, this.default_width),
+        height: coerceNumber(overrides.height ?? this.height, this.default_height),
+        scaled: coerceNumber(overrides.scaled ?? this.scaled, this.scaled || 1),
+        real_width: coerceNumber(overrides.real_width ?? this.real_width, this.real_width || 0),
+        real_height: coerceNumber(overrides.real_height ?? this.real_height, this.real_height || 0),
+        screenResolution: coerceNumber(overrides.screenResolution ?? this.screenResolution, this.screenResolution)
+      };
+
+      await setJsonItem(this.deviceSizeKey, payload);
+    },
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -601,7 +669,7 @@ export default {
             console.error(`${this.no}Error VideoDecoder:`, error, `code: ${error.code}`);
           },
         });
-        // console.debug(`${this.no}-${this.device.serial} videoDecoder initialized`)
+        console.log(`${this.no}-${this.device.serial} videoDecoder initialized`)
 
 
       } catch (e) {
@@ -692,7 +760,7 @@ export default {
             codec: codec,
             optimizeForLatency: true,
           });
-          // console.debug(`${this.no}-${this.device.serial} configure`)
+          console.log(`${this.no}-${this.device.serial} configure`)
           return
         }
 
@@ -703,7 +771,7 @@ export default {
         if (this.videoDecoder.state === 'configured') {
           //check queue length
           if (this.frameQueue.length > 5 && !isIDR) {
-            console.debug(`${this.no}-${this.device.serial} frameQueue is full(${this.frameQueue.length}), skip`)
+            console.log(`${this.no}-${this.device.serial} frameQueue is full(${this.frameQueue.length}), skip`)
             return
           }
           const chunk = new EncodedVideoChunk({
@@ -714,7 +782,7 @@ export default {
           this.videoDecoder.decode(chunk);
         } else {
           if (this.videoDecoder.state === 'closed' && !this.loading) {
-            console.debug(`${this.no}-${this.device.serial} videoDecoder is closed, loading`)
+            console.log(`${this.no}-${this.device.serial} videoDecoder is closed, loading`)
             this.loading = true
           }
         }
@@ -730,7 +798,7 @@ export default {
       this.scrcpy = new WebSocket(wsUrl)
       this.scrcpy.binaryType = 'arraybuffer'
       this.scrcpy.onopen = () => {
-        // console.debug(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onopen`)
+        console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onopen`)
         let max_size = this.big ? 1024 : this.screenResolution
         this.scrcpy.send(`${this.device.serial}`)
         // max size
@@ -760,18 +828,18 @@ export default {
           this.videoDecoder = null;
         }
       }
-      this.scrcpy.onmessage = message => {
+      this.scrcpy.onmessage = async message => {
         if (this.message_index >= 2 && typeof message.data === 'string') {
           if (message.data.startsWith(FIRST_FRAME_PREFIX)) {
-            console.debug(`${this.no}-${this.device.serial} receive first frame preview, time: ${new Date().toISOString()}`)
+            console.log(`${this.no}-${this.device.serial} receive first frame preview, time: ${new Date().toISOString()}`)
             this.renderFirstFramePreview(message.data.slice(FIRST_FRAME_PREFIX.length))
           } else {
-            console.debug('scrcpy string message ignored', message.data)
+            console.log('scrcpy string message ignored', message.data)
           }
           return
         }
         if (this.message_index < 2) {
-          console.debug(`receive init message index: ${this.message_index}, data: ${message.data}, time: ${new Date().toISOString()}`)
+          console.log(`receive init message index: ${this.message_index}, data: ${message.data}, time: ${new Date().toISOString()}`)
           switch (this.message_index) {
             case 0: {
               this.name = message.data;
@@ -788,22 +856,32 @@ export default {
             case 1: {
               if (this.big || this.width != this.default_width) {
                 this.message_index += 1
-                console.debug(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
+                console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
                 return;
               }
               const [widthStr, heightStr] = message.data.split('x')
-              this.real_width = widthStr
-              this.real_height = heightStr
-              this.scaled = this.height / this.real_height
-              // console.debug(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
-
+              const parsedWidth = Number(widthStr)
+              const parsedHeight = Number(heightStr)
+              if (Number.isFinite(parsedWidth) && Number.isFinite(parsedHeight) && parsedHeight !== 0) {
+                this.real_width = parsedWidth
+                this.real_height = parsedHeight
+                this.scaled = this.height / this.real_height
+                console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
+                await this.persistDeviceSize({
+                  real_width: this.real_width,
+                  real_height: this.real_height,
+                  scaled: this.scaled
+                })
+              } else {
+                console.warn(`${this.no}-${this.device.serial} received invalid resolution info: ${message.data}`)
+              }
               break
             }
           }
           this.message_index += 1
           // Mark scrcpy as ready after handshake completes
           if (this.message_index >= 2) {
-            console.debug(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
+            console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
           }
           return
         }
@@ -833,7 +911,7 @@ export default {
           if (this.scrcpy.readyState === WebSocket.OPEN) {
             // Send close frame
             this.scrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
-            // console.debug(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
+            console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
           }
 
           // Clear event handlers
@@ -846,7 +924,7 @@ export default {
           if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
             this.scrcpy.close();
           }
-          // console.debug(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
+          console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
 
 
         } catch (error) {
@@ -970,7 +1048,7 @@ export default {
       }
     }))
     this.listeners.push(await this.$listen('refreshDevice', (e) => {
-      console.debug('refreshDevice', e.payload)
+      console.log('refreshDevice', e.payload)
       this.closeScrcpy()
       this.closeDecoder()
       this.syncDisplay()
@@ -984,8 +1062,9 @@ export default {
         this.height = this.height * 0.9
       }
     }))
-    this.listeners.push(await this.$listen('screenResolution', (e) => {
+    this.listeners.push(await this.$listen('screenResolution', async (e) => {
       this.screenResolution = e.payload.resolution;
+      await this.persistDeviceSize({ screenResolution: this.screenResolution });
       this.closeScrcpy();
       this.closeDecoder();
       this.syncDisplay();
@@ -993,10 +1072,10 @@ export default {
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        console.debug(`${this.no}-${this.device.serial} hidden`)
+        console.log(`${this.no}-${this.device.serial} hidden`)
         this.visible = false
       } else {
-        console.debug(`${this.no}-${this.device.serial} visible`)
+        console.log(`${this.no}-${this.device.serial} visible`)
         this.visible = true
       }
     })
