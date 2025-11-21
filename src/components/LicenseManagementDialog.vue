@@ -134,7 +134,7 @@ export default {
     },
     methods: {
         async show() {
-            await this.$emiter('LICENSE', { reload: true });
+            await this.$emiter('reload_license', { reload: true });
             const storedLocale = await getItem('locale');
             this.currentLocale = storedLocale ? storedLocale.replace(/"/g, '') : 'en';
             await this.getStripePriceTableInfo();

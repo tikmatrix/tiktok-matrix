@@ -287,7 +287,7 @@ export default {
                 this.close();
 
                 // 重新加载license信息
-                await this.$emiter('LICENSE', { reload: true });
+                await this.$emiter('reload_license', { reload: true });
 
                 // 通知父组件迁移完成
                 this.$emit('migrationCompleted');

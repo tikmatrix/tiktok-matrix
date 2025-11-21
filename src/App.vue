@@ -250,7 +250,7 @@ export default {
           if (currentStatus && typeof currentStatus === 'object' && currentStatus.status) {
             console.log('Retrieved current WS status:', currentStatus);
             await this.updateWsStatus(currentStatus.status, currentStatus);
-            
+
             // If already connected on startup/refresh, initialize data immediately
             if (currentStatus.status === 'connected') {
               await this.initializeAppData('ws-already-connected');
@@ -297,7 +297,7 @@ export default {
           generatedAt: snapshot.generated_at || Date.now(),
         });
       } else if (json.action === 'reload_license') {
-        await this.$emiter('LICENSE', { reload: true })
+        await this.$emiter('reload_license', { reload: true })
       } else if (json.action === 'stripe_payment_success') {
         await this.$emiter('STRIPE_PAYMENT_SUCCESS', {})
       } else if (json.action === 'stripe_payment_cancel') {
@@ -463,24 +463,23 @@ export default {
     async initializeAppData(source = 'init') {
       try {
         console.log(`[App] Initializing app data from source: ${source}`);
-        
         // Initialize distributor binding
         await this.initDistributor();
-        
+
         // Load settings and groups
         await this.get_settings();
         await this.get_groups();
-        
+
         // Request devices
         await this.requestDevices(source);
-        
+
         // Load running tasks and update their status on devices
         await this.getRunningTasks();
         await this.$emiter('reload_tasks', {});
-        
+
         // Update backend state
         await this.updateBackendState();
-        
+
         console.log('[App] App data initialization completed');
       } catch (error) {
         console.error('[App] Failed to initialize app data:', error);

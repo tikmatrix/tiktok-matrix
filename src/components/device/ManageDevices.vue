@@ -920,7 +920,7 @@ export default {
       }
     },
     async showLicenseDialog() {
-      await this.$emiter('LICENSE', { show: true });
+      await this.$emiter('reload_license', { show: true });
     },
     handleCloseDebugDialog() {
       this.showDebugDialog = false

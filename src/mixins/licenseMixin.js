@@ -17,7 +17,7 @@ export default {
                 console.log(`ws_activate_license: ${JSON.stringify(license)}`);
 
                 if (license.leftdays > 0) {
-                    await this.$emiter('LICENSE', { reload: true });
+                    await this.$emiter('reload_license', { reload: true });
                     this.paymentSuccess();
                     await message(this.$t('activateSuccess'));
                 } else {
@@ -98,7 +98,7 @@ export default {
         async setupEventListeners() {
             await this.$listen('STRIPE_PAYMENT_SUCCESS', async (e) => {
                 console.log('STRIPE_PAYMENT_SUCCESS:', e);
-                await this.$emiter('LICENSE', { reload: true });
+                await this.$emiter('reload_license', { reload: true });
                 await this.paymentSuccess();
                 await message(this.$t('paymentSuccess'));
             });

@@ -609,7 +609,7 @@ export default {
     // Version & Name
     this.version = await getVersion();
     this.name = await getName();
-
+    await this.loadLicense();
     // Language
     this.$i18n.locale = this.currentLocale;
     console.log('currentLocale:', this.currentLocale);
@@ -631,7 +631,7 @@ export default {
       };
     });
 
-    await this.$listen("LICENSE", async (e) => {
+    await this.$listen("reload_license", async (e) => {
       if (e.payload.reload) await this.loadLicense();
       if (e.payload.show) this.showLicenseDialog();
     });

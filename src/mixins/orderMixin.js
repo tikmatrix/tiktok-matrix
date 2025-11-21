@@ -141,7 +141,7 @@ export default {
             this.order = null;
             this.remainingTime = 0;
 
-            await this.$emiter('LICENSE', { reload: true });
+            await this.$emiter('reload_license', { reload: true });
 
             if (typeof this.paymentSuccess === 'function') {
                 await this.paymentSuccess();
