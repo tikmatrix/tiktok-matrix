@@ -1,10 +1,10 @@
 <template>
   <div
-    class="flex flex-col justify-start z-30 bg-base-200/90 backdrop-blur-md shadow-lg rounded-r-xl absolute top-0 left-full ml-2 border border-l-0 border-base-300 group min-w-[2.5rem] max-w-[2.5rem] hover:max-w-md transition-all duration-300 ease-in-out overflow-hidden">
+    class="flex flex-col justify-start h-full bg-base-200/90 backdrop-blur-md shadow-lg rounded-r-xl border border-l-0 border-base-300 group min-w-[2.5rem] max-w-[2.5rem] hover:max-w-md transition-all duration-300 ease-in-out overflow-hidden relative">
 
     <!-- 展开指示器 -->
     <div
-      class="absolute right-0 top-4 transform translate-x-full bg-primary text-primary-content p-1 rounded-r-md shadow-md opacity-75 group-hover:opacity-100 transition-all duration-300">
+      class="absolute right-0 top-4 transform translate-x-full bg-primary text-primary-content p-1 rounded-r-md shadow-md opacity-75 group-hover:opacity-100 transition-all duration-300 z-10">
       <font-awesome-icon icon="fa-solid fa-chevron-right"
         class="h-3 w-3 group-hover:rotate-180 transition-transform duration-300" />
     </div>

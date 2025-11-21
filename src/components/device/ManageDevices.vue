@@ -171,8 +171,11 @@
                 </div>
               </div>
               <div :style="gridStyle" v-else class="grid auto-rows-fr gap-4">
-                <Miniremote :device="device" :key="device.real_serial" :no="device.key"
-                  v-for="device in slotProps.items" />
+                <div
+                  :class="[isDeviceBigScreen(device) ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-hidden']"
+                  v-for="device in slotProps.items" :key="device.real_serial">
+                  <Miniremote :device="device" :key="device.real_serial" :no="device.key" />
+                </div>
               </div>
             </div>
           </template>
@@ -395,6 +398,8 @@ export default {
       cardMinWidth: 150,
       licenseData: {},
       showKeyboardTip: true,
+      deviceBigScreenStates: {}, // Track which devices are in big screen mode
+      currentBigScreenMode: 'standard', // Track current big screen mode
       // Debug Dialog
       showDebugDialog: false,
       debugDevice: null,
@@ -446,7 +451,8 @@ export default {
       storedProxyHost,
       storedProxyPort,
       storedDeviceWidth,
-      storedShowKeyboardTip
+      storedShowKeyboardTip,
+      storedBigScreen
     ] = await Promise.all([
       getWhiteLabelConfig(),
       getItem('listMode'),
@@ -459,7 +465,8 @@ export default {
       getItem('proxy_host'),
       getItem('proxy_port'),
       getItem('deviceWidth'),
-      getItem('showKeyboardTip')
+      getItem('showKeyboardTip'),
+      getItem('bigScreen')
     ]);
 
     const parseNumber = (value, fallback) => {
@@ -500,10 +507,21 @@ export default {
     if (storedShowKeyboardTip !== null) {
       this.showKeyboardTip = storedShowKeyboardTip !== 'false';
     }
+
+    // Initialize current big screen mode
+    this.currentBigScreenMode = storedBigScreen || 'standard';
   },
   methods: {
     setDisplayMode(mode) {
       this.listMode = mode === 'list';
+    },
+    isDeviceBigScreen(device) {
+      // Only apply big screen layout in docked mode
+      if (this.currentBigScreenMode !== 'docked') {
+        return false
+      }
+      const serial = this.getDeviceSerial(device)
+      return this.deviceBigScreenStates[serial] === true
     },
     async copyText(text) {
       await writeText(text)
@@ -927,13 +945,13 @@ export default {
       this.debugDevice = null
     },
     minusCardMinWidth() {
-      if (this.cardMinWidth > 100) {
+      if (this.cardMinWidth > 50) {
         this.cardMinWidth -= 10
         setItem('deviceWidth', this.cardMinWidth)
       }
     },
     plusCardMinWidth() {
-      if (this.cardMinWidth < 500) {
+      if (this.cardMinWidth < 300) {
         this.cardMinWidth += 10
         setItem('deviceWidth', this.cardMinWidth)
       }
@@ -1015,6 +1033,22 @@ export default {
       }
     });
 
+    // 监听设备大屏状态变化
+    await this.$listen('deviceBigScreenChanged', async (e) => {
+      const { serial, real_serial, big } = e.payload
+      const deviceSerial = real_serial || serial
+      if (deviceSerial) {
+        this.deviceBigScreenStates = {
+          ...this.deviceBigScreenStates,
+          [deviceSerial]: big
+        }
+      }
+    });
+
+    // 监听大屏模式切换
+    await this.$listen('bigScreenModeChanged', async (e) => {
+      this.currentBigScreenMode = e.payload.mode || 'standard'
+    });
   },
 }
 </script>

@@ -179,6 +179,8 @@ export default {
     bigScreen: {
       async handler(newVal) {
         await setItem('bigScreen', newVal)
+        // Notify other components about big screen mode change
+        await this.$emiter('bigScreenModeChanged', { mode: newVal })
       },
       deep: false
     }

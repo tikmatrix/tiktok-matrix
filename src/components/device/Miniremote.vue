@@ -1,75 +1,73 @@
 <template>
-  <div
-    :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-hidden']">
-    <div class="flex justify-center items-center w-full h-full">
-      <div class="flex flex-col w-full h-full">
-        <div class="flex flex-row drag bg-base-300 p-2" v-if="big">
-          <div class="flex flex-1 items-center gap-2">
-            <div class="flex-1 flex items-center gap-2">
-              <span class="font-bold bg-secondary px-3 py-1 rounded-lg text-secondary-content">
-                {{ no }}
-              </span>
-              <div :class="['status animate-bounce', getTaskStatusColor]"></div>
-              <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
-                {{ getTaskStatus }}
-              </span>
-            </div>
-
-          </div>
-          <button class="btn btn-ghost btn-md hover:text-error" @click="$emiter('closeDevice', this.device)">
-            <font-awesome-icon icon="fa fa-times" class="h-6 w-6" />
-          </button>
-        </div>
-
-        <div class="flex flex-row flex-1 relative overflow-hidden" :style="containerStyle">
-          <div class="relative flex-1 object-fill w-full" :style="innerContainerStyle">
-            <canvas
-              class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
-              ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
-              @mousemove="mouseMoveListener" tabindex="0" @keydown="keyDownListener" @keyup="keyUpListener"></canvas>
-            <img v-if="firstFrameImageUrl && !videoStarted" :src="firstFrameImageUrl"
-              class="absolute top-0 left-0 w-full h-full object-contain pointer-events-none select-none"
-              alt="first frame preview" />
-            <!-- Connecting overlay when first frame is shown but scrcpy is not ready -->
-            <div
-              class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center backdrop-blur-[2px] pointer-events-none"
-              v-if="firstFrameImageUrl && !videoStarted && this.big">
-
-            </div>
-            <div @click="$emiter('openDevice', this.device)"
-              class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
-              <div class="bg-transparent p-2 rounded-md text-center">
-                <div :class="['status animate-bounce', getTaskStatusColor]"></div>
-                <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
-                  {{ getTaskStatus }}
-                </span>
-                <div class="font-bold text-info text-md">
-                  {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
-                </div>
-                <div class="text-info font-bold text-md">
-                  {{ name }}
-                </div>
-              </div>
-            </div>
-            <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
-              v-if="loading">
-              <font-awesome-icon icon="fa-solid fa-hourglass-end" class="w-24 h-24 text-primary rotate" />
-              <span class="text-primary font-bold">{{ $t('loading') }}</span>
-            </div>
-            <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
-              v-if="operating">
-              <font-awesome-icon icon="fa fa-hand-pointer" class="w-24 h-24 text-primary" />
-              <span class="text-primary font-bold">{{ $t('operating') }}</span>
-            </div>
-          </div>
-          <RightBars v-if="big" :serial="device.serial" :real_serial="device.real_serial" />
+  <div class="flex flex-col  w-full h-full">
+    <!--Top Bar-->
+    <div class="flex flex-row drag bg-base-300 p-2" v-if="big">
+      <div class="flex flex-1 items-center gap-2">
+        <div class="flex-1 flex items-center gap-2">
+          <span class="font-bold bg-secondary px-3 py-1 rounded-lg text-secondary-content">
+            {{ no }}
+          </span>
+          <div :class="['status animate-bounce', getTaskStatusColor]"></div>
+          <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
+            {{ getTaskStatus }}
+          </span>
         </div>
 
       </div>
+      <button class="btn btn-ghost btn-md hover:text-error" @click="$emiter('closeDevice', this.device)">
+        <font-awesome-icon icon="fa fa-times" class="h-6 w-6" />
+      </button>
     </div>
 
+    <div class="flex flex-row" :class="{ 'flex-1': big && !bigSize }" :style="containerStyle">
+      <div class="relative flex-1" :style="innerContainerStyle">
+        <canvas
+          class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+          ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
+          @mousemove="mouseMoveListener" tabindex="0" @keydown="keyDownListener" @keyup="keyUpListener"></canvas>
+        <img v-if="firstFrameImageUrl && !videoStarted" :src="firstFrameImageUrl"
+          class="absolute top-0 left-0 w-full h-full object-contain pointer-events-none select-none"
+          alt="first frame preview" />
+        <!-- Connecting overlay when first frame is shown but scrcpy is not ready -->
+        <div
+          class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center backdrop-blur-[2px] pointer-events-none"
+          v-if="firstFrameImageUrl && !videoStarted && this.big">
+
+        </div>
+        <div @click="$emiter('openDevice', this.device)"
+          class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
+          <div class="bg-transparent p-2 rounded-md text-center">
+            <div :class="['status animate-bounce', getTaskStatusColor]"></div>
+            <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
+              {{ getTaskStatus }}
+            </span>
+            <div class="font-bold text-info text-md">
+              {{ no }} - {{ device.connect_type == 0 ? 'USB' : 'TCP' }}
+            </div>
+            <div class="text-info font-bold text-md">
+              {{ name }}
+            </div>
+          </div>
+        </div>
+        <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
+          v-if="loading">
+          <font-awesome-icon icon="fa-solid fa-hourglass-end" class="w-24 h-24 text-primary rotate" />
+          <span class="text-primary font-bold">{{ $t('loading') }}</span>
+        </div>
+        <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-base-300"
+          v-if="operating">
+          <font-awesome-icon icon="fa fa-hand-pointer" class="w-24 h-24 text-primary" />
+          <span class="text-primary font-bold">{{ $t('operating') }}</span>
+        </div>
+      </div>
+      <div v-if="big" class="relative flex-shrink-0">
+        <RightBars :serial="device.serial" :real_serial="device.real_serial" />
+      </div>
+    </div>
 
   </div>
+
+
 
 </template>
 
@@ -101,7 +99,7 @@ import RightBars from './RightBars.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem } from '@/utils/persistentStorage.js';
 const FIRST_FRAME_PREFIX = 'FIRST_FRAME_BASE64:';
 export default {
   name: 'Miniremote',
@@ -240,6 +238,7 @@ export default {
 
     // Computed styles for container sizing
     containerStyle() {
+
       if (this.big) {
         // bigSize prop is true only for standard mode (floating window)
         // For standard mode, provide explicit dimensions
@@ -248,22 +247,22 @@ export default {
           // Standard mode: Calculate appropriate dimensions for floating window
           const deviceWidth = this.real_width || this.DEFAULT_DEVICE_WIDTH;
           const deviceHeight = this.real_height || this.DEFAULT_DEVICE_HEIGHT;
-          
+
           // Validate dimensions to prevent division by zero
           if (deviceWidth <= 0 || deviceHeight <= 0) {
             console.warn('Invalid device dimensions, using defaults');
             return `width: ${this.STANDARD_MODE_TARGET_WIDTH}px; height: ${Math.round(this.STANDARD_MODE_TARGET_WIDTH * (this.DEFAULT_DEVICE_HEIGHT / this.DEFAULT_DEVICE_WIDTH))}px;`;
           }
-          
+
           const aspectRatio = deviceHeight / deviceWidth;
-          
+
           // Set a reasonable display size (larger than small screen)
           const targetWidth = this.STANDARD_MODE_TARGET_WIDTH;
           const calculatedHeight = Math.round(targetWidth * aspectRatio);
-          
+
           return `width: ${targetWidth}px; height: ${calculatedHeight}px;`;
         }
-        // Docked mode: Let it fill the grid cells naturally
+        // Docked mode: Use flex-1 to fill remaining space after Top Bar
         return undefined;
       }
       return undefined;
@@ -278,30 +277,7 @@ export default {
     }
   },
   async created() {
-    const [storedWidth, storedHeight, storedResolution] = await Promise.all([
-      getItem('deviceWidth'),
-      getItem('deviceHeight'),
-      getItem('screenResolution')
-    ]);
 
-    const parseNumber = (value, fallback) => {
-      if (value === null || value === undefined) {
-        return fallback;
-      }
-      const parsed = Number(String(value).replace(/"/g, ''));
-      return Number.isFinite(parsed) ? parsed : fallback;
-    };
-
-    const width = parseNumber(storedWidth, this.default_width);
-    const height = parseNumber(storedHeight, this.default_height);
-    const resolution = parseNumber(storedResolution, this.screenResolution);
-
-    this.default_width = width;
-    this.default_height = height;
-    this.width = width;
-    this.height = height;
-    this.lastEmittedWidth = width;
-    this.screenResolution = resolution;
   },
   watch: {
     scaled(newVal) {
@@ -323,23 +299,13 @@ export default {
       }
       this.isUpdatingDimensions = false
     },
-    async width(newVal) {
-      // Prevent circular updates
-      if (this.isUpdatingDimensions) {
-        return
-      }
-      await setItem('deviceWidth', newVal)
-      // Only emit if width changed significantly
-      if (Math.abs(newVal - this.lastEmittedWidth) > 1) {
-        this.lastEmittedWidth = newVal
-      }
-    },
-    async height(newVal) {
-      // Prevent circular updates during dimension updates
-      if (this.isUpdatingDimensions) {
-        return
-      }
-      await setItem('deviceHeight', newVal)
+    big(newVal) {
+      // Notify parent component about big screen state change
+      this.$emiter('deviceBigScreenChanged', {
+        serial: this.device.serial,
+        real_serial: this.device.real_serial,
+        big: newVal
+      })
     }
   },
   methods: {
@@ -977,53 +943,87 @@ export default {
     this.i18n.connecting = this.$t('connecting');
     this.big = this.bigSize;
 
+    // Emit initial big screen state
+    if (this.big) {
+      await this.$emiter('deviceBigScreenChanged', {
+        serial: this.device.serial,
+        real_serial: this.device.real_serial,
+        big: this.big
+      })
+    }
+
     this.listeners.push(await this.$listen('closeDevice', async (e) => {
-      if (this.big) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
-        if (bigScreen === 'standard') {
+      const bigScreen = await getItem('bigScreen') || 'standard'
+
+      if (bigScreen === 'standard') {
+        // standard mode: close the floating window
+        if (this.big) {
           this.closeScrcpy();
           this.closeDecoder();
           // 清除焦点
           if (this.$refs.canvas) {
             this.$refs.canvas.blur();
           }
-          return;
+          this.big = false;
+          this.operating = false;
         }
-      }
-      if (e.payload.serial === this.device.serial) {
-        this.closeScrcpy();
-        this.closeDecoder();
-        this.big = false;
-        this.operating = false
-        // 清除焦点
-        if (this.$refs.canvas) {
-          this.$refs.canvas.blur();
+      } else {
+        // docked mode: close the specific device
+        if (e.payload && e.payload.serial === this.device.serial) {
+          this.closeScrcpy();
+          this.closeDecoder();
+          this.big = false;
+          this.operating = false
+          // 清除焦点
+          if (this.$refs.canvas) {
+            this.$refs.canvas.blur();
+          }
+          this.syncDisplay();
         }
-        this.syncDisplay();
       }
     }))
     this.listeners.push(await this.$listen('openDevice', async (e) => {
+      const bigScreen = await getItem('bigScreen') || 'standard'
+
       if (e.payload.serial === this.device.serial) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
           this.operating = true
           return
         }
-        this.closeScrcpy();
-        this.closeDecoder();
-        this.big = true;
-        this.syncDisplay();
-      }
-      if (e.payload.serial !== this.device.serial && this.operating) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
-        if (bigScreen === 'standard') {
+        // docked mode: toggle or ensure open
+        if (this.big) {
+          // Already open, just refresh
           this.closeScrcpy();
           this.closeDecoder();
-          this.big = false;
-          this.operating = false
           this.syncDisplay();
+        } else {
+          // Open it
+          this.closeScrcpy();
+          this.closeDecoder();
+          this.big = true;
+          this.syncDisplay();
+        }
+      } else {
+        // Different device clicked
+        if (bigScreen === 'standard') {
+          // standard mode: close if operating
+          if (this.operating) {
+            this.closeScrcpy();
+            this.closeDecoder();
+            this.big = false;
+            this.operating = false
+            this.syncDisplay();
+          }
+        } else {
+          // docked mode: close if big
+          if (this.big) {
+            this.closeScrcpy();
+            this.closeDecoder();
+            this.big = false;
+            this.syncDisplay();
+          }
         }
       }
     }))
