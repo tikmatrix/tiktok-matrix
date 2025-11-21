@@ -127,8 +127,14 @@ export default {
   },
   data() {
     return {
+      // Display size constants
       default_width: 150,
       default_height: 300,
+      // Default device dimensions (portrait phone)
+      DEFAULT_DEVICE_WIDTH: 1080,
+      DEFAULT_DEVICE_HEIGHT: 1920,
+      // Standard mode big screen target width
+      STANDARD_MODE_TARGET_WIDTH: 450,
       big: false,
       visible: true,
       rotation: 0,
@@ -240,13 +246,19 @@ export default {
         // For docked mode, let grid layout control the size
         if (this.bigSize) {
           // Standard mode: Calculate appropriate dimensions for floating window
-          const deviceWidth = this.real_width || 1080;
-          const deviceHeight = this.real_height || 1920;
+          const deviceWidth = this.real_width || this.DEFAULT_DEVICE_WIDTH;
+          const deviceHeight = this.real_height || this.DEFAULT_DEVICE_HEIGHT;
+          
+          // Validate dimensions to prevent division by zero
+          if (deviceWidth <= 0 || deviceHeight <= 0) {
+            console.warn('Invalid device dimensions, using defaults');
+            return `width: ${this.STANDARD_MODE_TARGET_WIDTH}px; height: ${Math.round(this.STANDARD_MODE_TARGET_WIDTH * (this.DEFAULT_DEVICE_HEIGHT / this.DEFAULT_DEVICE_WIDTH))}px;`;
+          }
+          
           const aspectRatio = deviceHeight / deviceWidth;
           
           // Set a reasonable display size (larger than small screen)
-          // Target width around 400-500px for good visibility
-          const targetWidth = 450;
+          const targetWidth = this.STANDARD_MODE_TARGET_WIDTH;
           const calculatedHeight = Math.round(targetWidth * aspectRatio);
           
           return `width: ${targetWidth}px; height: ${calculatedHeight}px;`;
