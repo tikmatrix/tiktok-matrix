@@ -651,6 +651,15 @@ export default {
       console.log('[TitleBar] Update manager status:', payload);
       if (payload.status === 'checking' || payload.status === 'downloading') {
         this.check_update_dialog_title = payload.message;
+        // Show dialog if not already open
+        if (this.$refs.download_dialog && !this.$refs.download_dialog.open) {
+          this.$refs.download_dialog.showModal();
+        }
+      } else if (payload.status === 'completed') {
+        // Close dialog when update check is completed
+        if (this.$refs.download_dialog && this.$refs.download_dialog.open) {
+          this.$refs.download_dialog.close();
+        }
       }
     });
 
