@@ -22,9 +22,9 @@
         </div>
 
         <div class="flex flex-row flex-1 relative overflow-hidden"
-          :style="big ? `width:${2 * width}px;height:${2 * height}px` : undefined">
+          :style="containerStyle">
           <div class="relative flex-1 object-fill w-full"
-            :style="big ? `width:${2 * width}px;height:${2 * height}px` : 'aspect-ratio: 9/16'">
+            :style="innerContainerStyle">
             <canvas
               class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
@@ -232,6 +232,21 @@ export default {
         return 'text-info'
       }
       return 'text-warning'
+    },
+    
+    // Computed styles for container sizing
+    containerStyle() {
+      if (this.big) {
+        return `width:${2 * this.width}px;height:${2 * this.height}px`;
+      }
+      return undefined;
+    },
+    
+    innerContainerStyle() {
+      if (this.big) {
+        return `width:${2 * this.width}px;height:${2 * this.height}px`;
+      }
+      return 'aspect-ratio: 9/16';
     }
   },
   async created() {

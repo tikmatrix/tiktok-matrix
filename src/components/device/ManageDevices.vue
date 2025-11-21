@@ -938,8 +938,9 @@ export default {
       return Math.round(this.cardMinWidth || 0);
     },
     gridStyle() {
-      // Calculate grid cell height based on cardMinWidth to maintain 9:16 aspect ratio
-      const aspectRatio = 16 / 9; // height / width for portrait mode
+      // Calculate grid cell height to maintain 9:16 (portrait) aspect ratio
+      // For a portrait phone, height is typically 16/9 times the width
+      const aspectRatio = 16 / 9; // height / width ratio for portrait mode
       const cellHeight = Math.round(this.cardMinWidth * aspectRatio);
       
       // 当元素数量<=5个时，限制最大宽度而不是占满整行
