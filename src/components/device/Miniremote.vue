@@ -1,8 +1,8 @@
 <template>
   <div
-    :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-visible']">
-    <div class="flex justify-center items-center">
-      <div class="flex flex-col">
+    :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-hidden']">
+    <div class="flex justify-center items-center w-full h-full">
+      <div class="flex flex-col w-full h-full">
         <div class="flex flex-row drag bg-base-300 p-2" v-if="big">
           <div class="flex flex-1 items-center gap-2">
             <div class="flex-1 flex items-center gap-2">
@@ -21,10 +21,10 @@
           </button>
         </div>
 
-        <div class="flex flex-row flex-1 relative overflow-visible"
-          :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
-          <div class="relative flex-1 object-fill"
-            :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
+        <div class="flex flex-row flex-1 relative overflow-hidden"
+          :style="containerStyle">
+          <div class="relative flex-1 object-fill w-full"
+            :style="innerContainerStyle">
             <canvas
               class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
@@ -232,6 +232,21 @@ export default {
         return 'text-info'
       }
       return 'text-warning'
+    },
+    
+    // Computed styles for container sizing
+    containerStyle() {
+      if (this.big) {
+        return `width:${2 * this.width}px;height:${2 * this.height}px`;
+      }
+      return undefined;
+    },
+    
+    innerContainerStyle() {
+      if (this.big) {
+        return `width:${2 * this.width}px;height:${2 * this.height}px`;
+      }
+      return 'aspect-ratio: 9/16';
     }
   },
   async created() {

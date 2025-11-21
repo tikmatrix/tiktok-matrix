@@ -938,13 +938,18 @@ export default {
       return Math.round(this.cardMinWidth || 0);
     },
     gridStyle() {
+      // Calculate grid cell height to maintain 9:16 (portrait) aspect ratio
+      // For a portrait phone, height is typically 16/9 times the width
+      const aspectRatio = 16 / 9; // height / width ratio for portrait mode
+      const cellHeight = Math.round(this.cardMinWidth * aspectRatio);
+      
       // 当元素数量<=5个时，限制最大宽度而不是占满整行
       if (this.mydevices.length <= 5) {
         return {
           display: 'grid',
           gridTemplateColumns: `repeat(${this.mydevices.length}, minmax(${this.cardMinWidth}px, auto))`,
+          gridAutoRows: `${cellHeight}px`,
           justifyContent: 'flex-start',
-          autoRows: 'auto',
           gap: '1rem',
           flex: 1
         }
@@ -953,7 +958,7 @@ export default {
       return {
         display: 'grid',
         gridTemplateColumns: `repeat(auto-fit, minmax(${this.cardMinWidth}px, 1fr))`,
-        autoRows: 'auto',
+        gridAutoRows: `${cellHeight}px`,
         gap: '1.25rem',
         flex: 1
       }
