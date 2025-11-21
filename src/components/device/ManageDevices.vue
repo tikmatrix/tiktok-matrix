@@ -1002,9 +1002,12 @@ export default {
       // Target height is 60% of viewport
       const targetHeight = Math.round(viewportHeight * 0.6);
       
-      // Assume device aspect ratio (portrait phone typically 9:16)
-      // Width = Height * (9/16)
-      const targetWidth = Math.round(targetHeight * (9 / 16));
+      // Try to use actual device dimensions if available, otherwise use default portrait ratio
+      let aspectRatio = 16 / 9; // Default portrait phone aspect ratio (height/width)
+      
+      // The actual dimensions will be calculated in Miniremote.vue's containerStyle
+      // Here we just need a reasonable estimate for initial positioning
+      const targetWidth = Math.round(targetHeight / aspectRatio);
       
       // Center horizontally, position 10% from top
       const x = Math.round((viewportWidth - targetWidth) / 2);
