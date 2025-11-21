@@ -348,6 +348,7 @@ import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 import { getItem, setItem } from '@/utils/persistentStorage.js';
 import * as settingsWsService from '../../service/settingsWebSocketService';
+import * as deviceControlWsService from '../../service/deviceControlWebSocketService';
 
 
 export default {
@@ -870,11 +871,11 @@ export default {
 
         let summary
         try {
-          const res = await this.$service.scan_tcp_details(payload)
+          const res = await deviceControlWsService.ws_scan_tcp_details(payload)
           summary = res?.data || res || {}
         } catch (err) {
           console.warn('scan_tcp_details unavailable, fallback to legacy api', err)
-          const legacyRes = await this.$service.scan_tcp(payload)
+          const legacyRes = await deviceControlWsService.ws_scan_tcp(payload)
           const legacyCount = Number(legacyRes?.data ?? legacyRes ?? 0) || 0
           summary = {
             total: legacyCount,
