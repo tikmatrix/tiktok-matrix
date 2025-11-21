@@ -235,14 +235,26 @@ export default {
     // Computed styles for container sizing
     containerStyle() {
       if (this.big) {
-        return `width:${2 * this.width}px;height:${2 * this.height}px`;
+        // For big screen, calculate appropriate dimensions
+        // Use real device dimensions if available, otherwise use defaults
+        const deviceWidth = this.real_width || 1080;
+        const deviceHeight = this.real_height || 1920;
+        const aspectRatio = deviceHeight / deviceWidth;
+        
+        // Set a reasonable display size (larger than small screen)
+        // Target width around 400-500px for good visibility
+        const targetWidth = 450;
+        const calculatedHeight = Math.round(targetWidth * aspectRatio);
+        
+        return `width: ${targetWidth}px; height: ${calculatedHeight}px;`;
       }
       return undefined;
     },
 
     innerContainerStyle() {
       if (this.big) {
-        return `width:${2 * this.width}px;height:${2 * this.height}px`;
+        // For big screen, maintain exact dimensions to match container
+        return 'width: 100%; height: 100%;';
       }
       return 'aspect-ratio: 9/16';
     }
