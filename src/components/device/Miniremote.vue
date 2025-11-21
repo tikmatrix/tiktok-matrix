@@ -34,8 +34,8 @@
           v-if="firstFrameImageUrl && !videoStarted && this.big">
 
         </div>
-        <div @click="$emiter('openDevice', this.device)"
-          class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
+        <div @click="!operating && $emiter('openDevice', this.device)"
+          class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" :class="{ 'pointer-events-none': operating }" v-if="!big">
           <div class="bg-transparent p-2 rounded-md text-center">
             <div :class="['status animate-bounce', getTaskStatusColor]"></div>
             <span class="px-2 py-0.5 rounded-md font-bold" :class="[getTaskStatusTextColor, getScaledFontSize]">
