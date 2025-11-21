@@ -3,7 +3,6 @@
     <div class="intro">
       <h2 class="title">{{ $t('supportFormTitle') }}</h2>
       <p class="description">{{ $t('supportFormDescription') }}</p>
-      <p class="description note">{{ $t('supportLogNote') }}</p>
     </div>
 
     <form class="support-form-body" @submit.prevent>
@@ -1106,7 +1105,7 @@ export default {
             console.error('submitSupport ensureLogsAttachment error', error)
           }
         }
-        const messageBody = `${this.form.description}\n\n${this.$t('supportLogNote')}`
+        const messageBody = this.form.description
         const mediaAttachments = await this.uploadCustomAttachments(normalizedSerials)
         const payload = {
           subject: this.form.subject,

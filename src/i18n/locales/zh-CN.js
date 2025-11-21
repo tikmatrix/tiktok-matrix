@@ -1161,7 +1161,6 @@
   supportValidationMessage: '请填写主题和问题描述。',
   supportSubmitSuccess: '工单提交成功。',
   supportSubmitFailed: '工单提交失败。',
-  supportLogNote: '支持日志包仅包含每份日志最近 200 行（预览如上）。',
   supportSummaryOpen: '进行中',
   supportSummaryToday: '今日新增',
   supportSummaryTotal: '全部工单',
