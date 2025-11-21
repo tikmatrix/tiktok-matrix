@@ -28,7 +28,14 @@ export async function sendWsMessage(action, data = null, timeout = 10000, expect
     // Allow caller to override expected response action when server returns a
     // different action name (e.g. device.list -> device_snapshot)
     if (!expectedAction) {
-        expectedAction = `${action}.response`
+        // Some script-related actions are handled by the generic script execution
+        // handler on the agent which returns 'script.execute.response' regardless
+        // of the original action name (e.g. 'script.message_now' -> 'script.execute.response').
+        if (action && typeof action === 'string' && action.startsWith('script.')) {
+            expectedAction = 'script.execute.response'
+        } else {
+            expectedAction = `${action}.response`
+        }
     }
 
     return new Promise((resolve, reject) => {

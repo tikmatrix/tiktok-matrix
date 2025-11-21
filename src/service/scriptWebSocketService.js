@@ -39,7 +39,7 @@ export async function ws_stop_task(data) {
  */
 export async function ws_run_now_by_account(data) {
     try {
-        const response = await sendWsMessage('script.run_now_by_account', data)
+        const response = await sendWsMessage('script.run_now_by_account', data, 60000, 'script.execute.response')
         return { success: response.success, data: response.data }
     } catch (error) {
         console.error('ws_run_now_by_account error:', error)
@@ -53,7 +53,7 @@ export async function ws_run_now_by_account(data) {
  */
 export async function ws_message_now(data) {
     try {
-        const response = await sendWsMessage('script.message_now', data)
+        const response = await sendWsMessage('script.message_now', data, 60000, 'script.execute.response')
         return { success: response.success, data: response.data }
     } catch (error) {
         console.error('ws_message_now error:', error)
@@ -67,7 +67,7 @@ export async function ws_message_now(data) {
  */
 export async function ws_comment_now(data) {
     try {
-        const response = await sendWsMessage('script.comment_now', data)
+        const response = await sendWsMessage('script.comment_now', data, 60000, 'script.execute.response')
         return { success: response.success, data: response.data }
     } catch (error) {
         console.error('ws_comment_now error:', error)
@@ -81,7 +81,7 @@ export async function ws_comment_now(data) {
  */
 export async function ws_follow_now(data) {
     try {
-        const response = await sendWsMessage('script.follow_now', data)
+        const response = await sendWsMessage('script.follow_now', data, 60000, 'script.execute.response')
         return { success: response.success, data: response.data }
     } catch (error) {
         console.error('ws_follow_now error:', error)
@@ -95,7 +95,7 @@ export async function ws_follow_now(data) {
  */
 export async function ws_scrape_now(data) {
     try {
-        const response = await sendWsMessage('script.scrape_now', data)
+        const response = await sendWsMessage('script.scrape_now', data, 60000, 'script.execute.response')
         return { success: response.success, data: response.data }
     } catch (error) {
         console.error('ws_scrape_now error:', error)
@@ -109,10 +109,12 @@ export async function ws_scrape_now(data) {
  */
 export async function ws_super_marketing_run_now(data) {
     try {
-        const response = await sendWsMessage('script.super_marketing_run_now', data)
+        // This action can perform heavy processing (task planning / allocation).
+        // Use a generous timeout to avoid transient WS timeouts. 60s is a reasonable default.
+        const response = await sendWsMessage('script.super_marketing_run_now', data, 60000, 'script.execute.response')
         return { success: response.success, data: response.data }
     } catch (error) {
-        console.error('ws_super_marketing_run_now error:', error)
+        console.error('ws_super_marketing_run_now error:', error, 'action: script.super_marketing_run_now', 'data:', data)
         throw error
     }
 }

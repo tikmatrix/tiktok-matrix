@@ -93,9 +93,9 @@
                             <div class="flex flex-wrap gap-2">
                                 <span>{{ $t('datasetInserted', { count: activeDatasetSummary.inserted }) }}</span>
                                 <span>{{ $t('datasetDuplicates', { count: activeDatasetSummary.duplicates })
-                                    }}</span>
+                                }}</span>
                                 <span>{{ $t('datasetSkipped', { count: activeDatasetSummary.skipped_empty })
-                                    }}</span>
+                                }}</span>
                                 <span>{{ $t('datasetRemoved', { count: activeDatasetSummary.removed }) }}</span>
                                 <span>{{ $t('datasetTruncated', { count: activeDatasetSummary.truncated }) }}</span>
                             </div>
@@ -595,7 +595,7 @@
 
                             <div class="flex items-center gap-2">
                                 <button class="btn btn-md btn-primary" @click="testChatGPT">{{ $t('testChatGPT')
-                                    }}</button>
+                                }}</button>
                                 <span :class="testResultStyle" class="text-md">{{ testResult }}</span>
                             </div>
                         </div>
@@ -702,6 +702,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { readTextFile } from '@tauri-apps/api/fs';
 import { superMarketingSettings } from '@/utils/settingsManager';
 import VueSlider from "vue-3-slider-component";
+import * as scriptWsService from '../../service/scriptWebSocketService';
 
 const DATASET_KEYS = ['usernames', 'post_links'];
 const DEFAULT_DATASET_PAGE_SIZE = 50;
@@ -1830,7 +1831,7 @@ export default {
 
             // Call the dedicated super_marketing API and mirror Sidebar's behavior
             try {
-                const res = await this.$service.super_marketing_run_now({
+                const res = await scriptWsService.ws_super_marketing_run_now({
                     serials: selecedDevices,
                     script_name: 'super_marketing',
                     script_args: JSON.stringify(scriptArgs),
