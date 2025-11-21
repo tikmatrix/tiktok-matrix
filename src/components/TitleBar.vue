@@ -651,6 +651,23 @@ export default {
       console.log('[TitleBar] Update manager status:', payload);
       if (payload.status === 'checking' || payload.status === 'downloading') {
         this.check_update_dialog_title = payload.message;
+        // Show dialog if not already open
+        if (this.$refs.download_dialog && !this.$refs.download_dialog.open) {
+          this.$refs.download_dialog.showModal();
+        }
+      } else if (payload.status === 'completed' || payload.status === 'error') {
+        // Close dialog when update check is completed or failed
+        if (this.$refs.download_dialog && this.$refs.download_dialog.open) {
+          this.$refs.download_dialog.close();
+        }
+        // Show error notification if update failed
+        if (payload.status === 'error') {
+          await this.$emiter('NOTIFY', {
+            type: 'error',
+            message: payload.message || this.$t('updateCheckFailed'),
+            timeout: 4000
+          });
+        }
       }
     });
 

@@ -146,50 +146,62 @@ impl UpdateManager {
             self.emit_update_status("checking", "Checking for updates...");
         }
 
-        let platform = self.get_platform().await;
-        let app_name = std::env::var("MATRIX_APP_NAME").unwrap_or_else(|_| "TikMatrix".to_string());
+        let result = async {
+            let platform = self.get_platform().await;
+            let app_name = std::env::var("MATRIX_APP_NAME").unwrap_or_else(|_| "TikMatrix".to_string());
 
-        let client = Client::builder().timeout(Duration::from_secs(10)).build()?;
+            let client = Client::builder().timeout(Duration::from_secs(10)).build()?;
 
-        let url = format!(
-            "{}?time={}",
-            CHECK_LIBS_URL,
-            chrono::Utc::now().timestamp_millis()
-        );
-        let response = client
-            .get(&url)
-            .header("User-Agent", platform)
-            .header("X-App-Id", app_name)
-            .send()
-            .await?;
+            let url = format!(
+                "{}?time={}",
+                CHECK_LIBS_URL,
+                chrono::Utc::now().timestamp_millis()
+            );
+            let response = client
+                .get(&url)
+                .header("User-Agent", platform)
+                .header("X-App-Id", app_name)
+                .send()
+                .await?;
 
-        if !response.status().is_success() {
-            return Err(anyhow!("Failed to check libs: HTTP {}", response.status()));
-        }
+            if !response.status().is_success() {
+                return Err(anyhow!("Failed to check libs: HTTP {}", response.status()));
+            }
 
-        let check_libs_response: CheckLibsResponse = response.json().await?;
+            let check_libs_response: CheckLibsResponse = response.json().await?;
 
-        if check_libs_response.code != 20000 {
-            return Err(anyhow!(
-                "Invalid response code: {}",
-                check_libs_response.code
-            ));
-        }
+            if check_libs_response.code != 20000 {
+                return Err(anyhow!(
+                    "Invalid response code: {}",
+                    check_libs_response.code
+                ));
+            }
 
-        let libs = check_libs_response.data.libs;
-        log::info!("[UpdateManager] Found {} libs to check", libs.len());
+            let libs = check_libs_response.data.libs;
+            log::info!("[UpdateManager] Found {} libs to check", libs.len());
 
-        for lib in libs {
-            if let Err(e) = self.check_and_update_single_lib(&lib, silent).await {
-                log::error!("[UpdateManager] Failed to update {}: {:?}", lib.name, e);
+            for lib in libs {
+                if let Err(e) = self.check_and_update_single_lib(&lib, silent).await {
+                    log::error!("[UpdateManager] Failed to update {}: {:?}", lib.name, e);
+                }
+            }
+
+            Ok(())
+        }.await;
+
+        // Always emit completed status if not silent, regardless of success or failure
+        if !silent {
+            match &result {
+                Ok(_) => {
+                    self.emit_update_status("completed", "Update check completed");
+                }
+                Err(e) => {
+                    self.emit_update_status("error", &format!("Update check failed: {}", e));
+                }
             }
         }
 
-        if !silent {
-            self.emit_update_status("completed", "Update check completed");
-        }
-
-        Ok(())
+        result
     }
 
     async fn check_and_update_single_lib(&self, lib: &LibInfo, silent: bool) -> Result<()> {
