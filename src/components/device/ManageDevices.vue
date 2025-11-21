@@ -63,7 +63,7 @@
                   <span class="text-md font-medium whitespace-nowrap">{{ $t('screenSize') }}</span>
                   <div class="join">
                     <button class="btn btn-md join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
-                      @click="$emiter('screenScaled', { action: 'minus' })">
+                      @click="minusCardMinWidth">
                       <font-awesome-icon icon="fa-solid fa-minus" class="h-3 w-3" />
                     </button>
                     <div
@@ -71,7 +71,7 @@
                       {{ screenSizeDisplay }}
                     </div>
                     <button class="btn btn-md join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
-                      @click="$emiter('screenScaled', { action: 'plus' })">
+                      @click="plusCardMinWidth">
                       <font-awesome-icon icon="fa-solid fa-plus" class="h-3 w-3" />
                     </button>
                   </div>
@@ -172,7 +172,7 @@
               </div>
               <div :style="gridStyle" v-else class="grid auto-rows-fr gap-4">
                 <Miniremote :device="device" :key="device.real_serial" :no="device.key"
-                  v-for="device in slotProps.items" @sizeChanged="sizeChanged" />
+                  v-for="device in slotProps.items" />
               </div>
             </div>
           </template>
@@ -919,9 +919,6 @@ export default {
         console.error('Failed to update settings:', error)
       }
     },
-    sizeChanged(cardWidth) {
-      this.cardMinWidth = cardWidth
-    },
     async showLicenseDialog() {
       await this.$emiter('LICENSE', { show: true });
     },
@@ -929,6 +926,18 @@ export default {
       this.showDebugDialog = false
       this.debugDevice = null
     },
+    minusCardMinWidth() {
+      if (this.cardMinWidth > 100) {
+        this.cardMinWidth -= 10
+        setItem('deviceWidth', this.cardMinWidth)
+      }
+    },
+    plusCardMinWidth() {
+      if (this.cardMinWidth < 500) {
+        this.cardMinWidth += 10
+        setItem('deviceWidth', this.cardMinWidth)
+      }
+    }
   },
   computed: {
     isLicensed() {
@@ -942,7 +951,7 @@ export default {
       // For a portrait phone, height is typically 16/9 times the width
       const aspectRatio = 16 / 9; // height / width ratio for portrait mode
       const cellHeight = Math.round(this.cardMinWidth * aspectRatio);
-      
+
       // 当元素数量<=5个时，限制最大宽度而不是占满整行
       if (this.mydevices.length <= 5) {
         return {

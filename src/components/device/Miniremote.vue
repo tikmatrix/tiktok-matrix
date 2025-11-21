@@ -21,10 +21,8 @@
           </button>
         </div>
 
-        <div class="flex flex-row flex-1 relative overflow-hidden"
-          :style="containerStyle">
-          <div class="relative flex-1 object-fill w-full"
-            :style="innerContainerStyle">
+        <div class="flex flex-row flex-1 relative overflow-hidden" :style="containerStyle">
+          <div class="relative flex-1 object-fill w-full" :style="innerContainerStyle">
             <canvas
               class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
@@ -233,7 +231,7 @@ export default {
       }
       return 'text-warning'
     },
-    
+
     // Computed styles for container sizing
     containerStyle() {
       if (this.big) {
@@ -241,7 +239,7 @@ export default {
       }
       return undefined;
     },
-    
+
     innerContainerStyle() {
       if (this.big) {
         return `width:${2 * this.width}px;height:${2 * this.height}px`;
@@ -288,12 +286,10 @@ export default {
       this.isUpdatingDimensions = true
       this.width = this.real_width * newVal
       this.height = this.real_height * newVal
-      // console.debug(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
-      
+
       // Only emit if width changed significantly (more than 1px to avoid floating point noise)
       if (Math.abs(this.width - this.lastEmittedWidth) > 1) {
         this.lastEmittedWidth = this.width
-        this.$emit('sizeChanged', this.width)
       }
       this.isUpdatingDimensions = false
     },
@@ -306,7 +302,6 @@ export default {
       // Only emit if width changed significantly
       if (Math.abs(newVal - this.lastEmittedWidth) > 1) {
         this.lastEmittedWidth = newVal
-        this.$emit('sizeChanged', newVal)
       }
     },
     async height(newVal) {
