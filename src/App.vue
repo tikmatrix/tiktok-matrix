@@ -250,6 +250,11 @@ export default {
           if (currentStatus && typeof currentStatus === 'object' && currentStatus.status) {
             console.log('Retrieved current WS status:', currentStatus);
             await this.updateWsStatus(currentStatus.status, currentStatus);
+            
+            // If already connected on startup/refresh, initialize data immediately
+            if (currentStatus.status === 'connected') {
+              await this.initializeAppData('ws-already-connected');
+            }
           } else {
             // 如果没有有效状态，设置为 connecting
             await this.updateWsStatus('connecting');
@@ -264,7 +269,8 @@ export default {
           const status = payload.status || 'unknown';
           await this.updateWsStatus(status, payload);
           if (status === 'connected') {
-            await this.requestDevices('ws-status-connected');
+            // When connection is established, initialize all app data
+            await this.initializeAppData('ws-status-connected');
           }
           if (status === 'error') {
             console.warn('Agent WS reported error', payload?.extra);
@@ -453,6 +459,34 @@ export default {
       }
     },
 
+    // Initialize all application data (settings, groups, devices, tasks)
+    async initializeAppData(source = 'init') {
+      try {
+        console.log(`[App] Initializing app data from source: ${source}`);
+        
+        // Initialize distributor binding
+        await this.initDistributor();
+        
+        // Load settings and groups
+        await this.get_settings();
+        await this.get_groups();
+        
+        // Request devices
+        await this.requestDevices(source);
+        
+        // Load running tasks and update their status on devices
+        await this.getRunningTasks();
+        await this.$emiter('reload_tasks', {});
+        
+        // Update backend state
+        await this.updateBackendState();
+        
+        console.log('[App] App data initialization completed');
+      } catch (error) {
+        console.error('[App] Failed to initialize app data:', error);
+      }
+    },
+
     // 初始化分发商绑定
     async initDistributor() {
       try {
@@ -508,17 +542,10 @@ export default {
         message: this.$t('agentStarted'),
         timeout: 2000
       });
-      // 初始化分发商绑定
-      await this.initDistributor();
-      await this.get_settings()
-      await this.get_groups()
-      await this.requestDevices('event:agent_started');
-
-      await this.getRunningTasks();
-      await this.$emiter('reload_tasks', {})
-
-      // Update backend state
-      await this.updateBackendState();
+      // Initialize all app data when agent starts
+      // Note: This may be called during initial startup, but also handles
+      // cases where agent restarts while the UI is open
+      await this.initializeAppData('event:agent_started');
     }));
     this.listeners.push(await this.$listen('reload_devices', async () => {
       await this.requestDevices('event:reload_devices');
