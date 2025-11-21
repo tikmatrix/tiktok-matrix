@@ -1133,7 +1133,7 @@
   supportAttachmentReadFailed: '读取所选文件失败',
   supportAttachmentUploadFailed: '附件上传失败',
   supportDeviceSelection: '受影响的设备',
-  supportDeviceSelectionHint: '最多选择 {count} 台受影响的设备；如果是相同问题，可以不选任何设备。',
+  supportDeviceSelectionHint: '如果有超过 {count} 台设备出现相同问题，请选择其中任意一台；选择设备后我们才能帮您分析任务日志。',
   supportDeviceSelectionOptional: '未选择设备（可选）',
   supportDeviceLimitWarning: '最多只能选择 {count} 台设备。',
   supportSelectAllDevices: '选择最多 {count} 台',

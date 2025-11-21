@@ -1134,7 +1134,7 @@
   supportAttachmentReadFailed: 'Failed to read the selected file',
   supportAttachmentUploadFailed: 'Attachment upload failed',
   supportDeviceSelection: 'Affected Devices',
-  supportDeviceSelectionHint: 'You can select up to {count} affected devices. If it is the same issue everywhere, you can leave this empty.',
+  supportDeviceSelectionHint: 'If the same issue affects more than {count} devices, please select any one of them; we need a selected device to analyze the task logs.',
   supportDeviceSelectionOptional: 'No device selected (optional)',
   supportDeviceLimitWarning: 'You can select up to {count} devices.',
   supportSelectAllDevices: 'Select up to {count}',

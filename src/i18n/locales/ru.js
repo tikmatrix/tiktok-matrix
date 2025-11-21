@@ -1134,7 +1134,7 @@
   supportAttachmentReadFailed: 'Не удалось прочитать выбранный файл',
   supportAttachmentUploadFailed: 'Не удалось загрузить вложение',
   supportDeviceSelection: 'Затронутые устройства',
-  supportDeviceSelectionHint: 'Вы можете выбрать до {count} затронутых устройств. Если проблема одинаковая, можно ничего не выбирать.',
+  supportDeviceSelectionHint: 'Если одна и та же проблема наблюдается более чем на {count} устройствах, выберите любое из них; после выбора устройства мы сможем проанализировать журналы задач.',
   supportDeviceSelectionOptional: 'Устройства не выбраны (необязательно)',
   supportDeviceLimitWarning: 'Можно выбрать не более {count} устройств.',
   supportSelectAllDevices: 'Выбрать до {count}',
