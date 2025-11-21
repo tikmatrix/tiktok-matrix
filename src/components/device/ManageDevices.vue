@@ -213,8 +213,8 @@
     </div>
   </div>
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
-    :z="20" drag-handle=".drag"
-    class="bg-base-100 fixed top-32 right-32 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
+    :z="20" drag-handle=".drag" :x="floatingWindowPosition.x" :y="floatingWindowPosition.y"
+    class="bg-base-100 fixed border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
     <Miniremote :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
@@ -992,6 +992,25 @@ export default {
     },
     canClearProxyRotation() {
       return !!this.proxyRotationForm.device_serial && !!this.proxyRotationMap[this.proxyRotationForm.device_serial]
+    },
+    floatingWindowPosition() {
+      // Calculate position for standard mode floating window
+      // Position it centered horizontally and slightly from top
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Target height is 60% of viewport
+      const targetHeight = Math.round(viewportHeight * 0.6);
+      
+      // Assume device aspect ratio (portrait phone typically 9:16)
+      // Width = Height * (9/16)
+      const targetWidth = Math.round(targetHeight * (9 / 16));
+      
+      // Center horizontally, position 10% from top
+      const x = Math.round((viewportWidth - targetWidth) / 2);
+      const y = Math.round(viewportHeight * 0.1);
+      
+      return { x, y };
     }
   },
   async mounted() {
