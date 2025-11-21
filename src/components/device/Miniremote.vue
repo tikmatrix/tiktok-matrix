@@ -177,7 +177,7 @@ export default {
       if (this.loading) {
         return this.i18n.loading
       }
-      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+      if (this.firstFrameImageUrl && !this.videoStarted) {
         return this.i18n.connecting
       }
       if (this.device.task_status == -1) {
@@ -204,7 +204,7 @@ export default {
       if (this.loading) {
         return 'status-success'
       }
-      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+      if (this.firstFrameImageUrl && !this.videoStarted) {
         return 'status-success'
       }
       if (this.device.task_status == -1) {
@@ -222,7 +222,7 @@ export default {
       if (this.loading) {
         return 'text-success'
       }
-      if (this.firstFrameImageUrl && !this.videoStarted && this.big) {
+      if (this.firstFrameImageUrl && !this.videoStarted) {
         return 'text-success'
       }
       if (this.device.task_status == -1) {
