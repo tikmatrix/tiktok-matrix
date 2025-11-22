@@ -50,6 +50,9 @@ export default {
       wsShouldReconnect: false,
       wsReconnectAttempts: 0,
       wsReconnectTimer: null,
+      wsMaxRetries: 10, // Maximum retry attempts before giving up
+      wsConnectionTimeout: 10000, // 10 seconds connection timeout
+      wsConnectionTimer: null,
       running_devices: [],
       selecedDevices: [],
       listeners: [],
@@ -196,18 +199,37 @@ export default {
       }
     },
 
+    clearWsConnectionTimer() {
+      if (this.wsConnectionTimer) {
+        clearTimeout(this.wsConnectionTimer);
+        this.wsConnectionTimer = null;
+      }
+    },
+
     getWsReconnectDelay() {
+      // Exponential backoff with jitter: base * 2^attempts + random jitter
       const baseDelay = 2000;
       const maxDelay = 30000;
-      return Math.min(maxDelay, baseDelay * Math.pow(2, this.wsReconnectAttempts));
+      const exponentialDelay = baseDelay * Math.pow(2, this.wsReconnectAttempts);
+      const jitter = Math.random() * 1000; // Add up to 1 second random jitter
+      return Math.min(maxDelay, exponentialDelay + jitter);
     },
 
     scheduleWsReconnect() {
       if (!this.wsShouldReconnect || this.wsReconnectTimer) {
         return;
       }
+
+      // Check if max retries exceeded
+      if (this.wsReconnectAttempts >= this.wsMaxRetries) {
+        console.error(`WebSocket max retries (${this.wsMaxRetries}) exceeded, stopping reconnection attempts`);
+        this.wsShouldReconnect = false;
+        this.wsReconnectAttempts = 0;
+        return;
+      }
+
       const delay = this.getWsReconnectDelay();
-      console.log(`ws reconnect scheduled in ${delay}ms`);
+      console.log(`WebSocket reconnect scheduled in ${delay}ms (attempt ${this.wsReconnectAttempts + 1}/${this.wsMaxRetries})`);
       this.wsReconnectTimer = setTimeout(async () => {
         this.wsReconnectTimer = null;
         this.wsReconnectAttempts += 1;
@@ -221,6 +243,7 @@ export default {
         this.wsReconnectAttempts = 0;
         this.clearWsReconnectTimer();
       }
+      this.clearWsConnectionTimer();
       if (!this.ws) {
         return;
       }
@@ -247,22 +270,32 @@ export default {
         const isActive = this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING;
         const sameUrl = this.normalizeWsUrl(this.ws.url) === this.normalizeWsUrl(this.wsUrl);
         if (isActive && sameUrl) {
-          console.log('ws already connected or connecting');
+          console.log('WebSocket already connected or connecting');
           return;
         }
         this.cleanupWebSocket();
       }
 
       try {
+        console.log('Creating WebSocket connection to', this.wsUrl);
         this.ws = new WebSocket(this.wsUrl);
+
+        // Set connection timeout
+        this.wsConnectionTimer = setTimeout(() => {
+          if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+            console.warn('WebSocket connection timeout, closing connection');
+            this.ws.close();
+          }
+        }, this.wsConnectionTimeout);
       } catch (error) {
-        console.error('failed to create websocket', error);
+        console.error('Failed to create WebSocket', error);
         this.scheduleWsReconnect();
         return;
       }
 
       this.ws.onopen = async () => {
-        console.log('ws open');
+        console.log('WebSocket connection opened successfully');
+        this.clearWsConnectionTimer();
         await this.getDevices();
         this.wsReconnectAttempts = 0;
         this.clearWsReconnectTimer();
@@ -324,7 +357,8 @@ export default {
         }
       }
       this.ws.onclose = async (event) => {
-        console.log('ws close', event?.code, event?.reason)
+        console.log('WebSocket closed', event?.code, event?.reason);
+        this.clearWsConnectionTimer();
         this.ws = null;
         this.devices = []
         if (this.wsShouldReconnect) {
@@ -332,7 +366,8 @@ export default {
         }
       }
       this.ws.onerror = async (e) => {
-        console.error('ws error', e)
+        console.error('WebSocket error', e);
+        this.clearWsConnectionTimer();
         if (this.ws && this.ws.readyState !== WebSocket.CLOSING && this.ws.readyState !== WebSocket.CLOSED) {
           this.ws.close();
         }
@@ -351,6 +386,37 @@ export default {
       this.wsReconnectAttempts = 0;
       this.clearWsReconnectTimer();
       this.initializeWebSocket();
+    },
+
+    setupNetworkMonitoring() {
+      // Monitor online/offline events for better reconnection handling
+      this.handleOnline = async () => {
+        console.log('Network connection restored, attempting to reconnect WebSocket');
+        if (this.wsShouldReconnect && (!this.ws || this.ws.readyState !== WebSocket.OPEN)) {
+          // Reset retry counter on network restoration
+          this.wsReconnectAttempts = 0;
+          this.clearWsReconnectTimer();
+          await this.connectAgent();
+        }
+      };
+
+      this.handleOffline = () => {
+        console.log('Network connection lost');
+      };
+
+      window.addEventListener('online', this.handleOnline);
+      window.addEventListener('offline', this.handleOffline);
+    },
+
+    cleanupNetworkMonitoring() {
+      if (this.handleOnline) {
+        window.removeEventListener('online', this.handleOnline);
+        this.handleOnline = null;
+      }
+      if (this.handleOffline) {
+        window.removeEventListener('offline', this.handleOffline);
+        this.handleOffline = null;
+      }
     },
     async getDevices() {
       try {
@@ -495,11 +561,11 @@ export default {
       }
 
       let interval = 10 * 60 * 1000; // 固定10分钟间隔
-      //如果是dev环境，间隔改为1分钟
+      //如果是dev环境，间隔改为3分钟
       const isDev = import.meta.env.DEV;
       if (isDev) {
-        console.log("current is dev environment, set auto update interval to 1 minute")
-        interval = 1 * 60 * 1000;
+        console.log("current is dev environment, set auto update interval to 3 minutes")
+        interval = 3 * 60 * 1000;
       }
       console.log(`启动自动更新定时器，间隔: ${interval / 1000 / 60} 分钟`);
 
@@ -574,7 +640,8 @@ export default {
 
     await this.initializeSupportUnread();
 
-
+    // Setup network status monitoring
+    this.setupNetworkMonitoring();
 
     // 监听代理启动事件
     this.listeners.push(await this.$listen('agent_started', async () => {
@@ -646,6 +713,9 @@ export default {
       }
     })
     this.listeners = []
+
+    // Cleanup network monitoring
+    this.cleanupNetworkMonitoring();
 
     // 清理自动更新相关资源
     this.removeUserActivityListeners();

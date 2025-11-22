@@ -327,7 +327,7 @@ export default {
       agentErrorType: 'port',
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       isWhiteLabelUnlocked: false,
-      checkLibsUrl: 'https://api.tikmatrix.com/front-api/check_libs?beta=0', // changeme
+      checkLibsUrl: import.meta.env.DEV ? 'http://localhost:8787/front-api/check_libs?beta=0' : 'https://api.tikmatrix.com/front-api/check_libs?beta=0', // changeme
     }
   },
   watch: {
