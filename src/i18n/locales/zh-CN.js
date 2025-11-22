@@ -1,4 +1,5 @@
 ﻿export default {
+  updateCheckFailed: '更新检查失败，请检查您的网络连接。',
   minimize: '最小化',
   maxPostsToProcessHelp: '限制每次运行要处理的帖子数量，设置为 0 表示处理所有已配置的帖子。',
   maxRetryCount: '最大重试次数',

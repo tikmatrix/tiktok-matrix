@@ -1,4 +1,5 @@
 ﻿export default {
+  updateCheckFailed: 'Update check failed, Please check your network connection.',
   minimize: 'Minimize',
   maxPostsToProcessHelp: 'Limit how many posts are processed per run. Set to 0 to process all configured posts.',
   maxRetryCount: 'Max Retry Count',
