@@ -994,6 +994,7 @@
   trial: '试用',
   trialDescription: '免费试用7天，所有功能可用！随时可取消。',
   tutorial: '教程',
+  support: '支持',
   ultraResolution: '超清分辨率',
   unFollow: '取消关注',
   unFollowAll: '全部取消关注',

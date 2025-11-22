@@ -995,6 +995,7 @@
   trial: 'Trial',
   trialDescription: 'Free trial for 7 days, All features Available! Cancel anytime.',
   tutorial: 'Tutorial',
+  support: 'Support',
   ultraResolution: 'Ultra',
   unFollow: 'UnFollow',
   unFollowAll: 'Unfollow All',

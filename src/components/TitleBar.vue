@@ -23,6 +23,27 @@
 
     <!-- 中间：灵活空间 -->
     <div class="flex-1"></div>
+
+    <!-- 帮助区域 - 与系统控制分开 -->
+    <div class="flex items-center gap-3 mr-4 pr-4 border-r-2 border-base-300/60">
+      <!-- 支持工单入口 - Enhanced with text label and visual styling -->
+      <button v-if="showSupportEntry" @click="openSupportDialog" :class="[
+        'relative flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 font-medium',
+        'border-2 hover:shadow-lg',
+        hasSupportUnread
+          ? 'border-error/40 bg-error/10 hover:bg-error/20 hover:border-error text-error'
+          : 'border-primary/30 bg-gradient-to-r from-primary/5 to-secondary/5 hover:border-primary hover:from-primary/10 hover:to-secondary/10 text-base-content'
+      ]" :title="$t('supportEntryTitle')">
+        <font-awesome-icon icon="fa-solid fa-headset"
+          :class="['h-5 w-5 transition-colors', hasSupportUnread ? 'text-error animate-pulse' : '']" />
+        <span class="text-sm">{{ $t('support') }}</span>
+        <span v-if="hasSupportUnread"
+          class="ml-1 px-2 py-0.5 rounded-full bg-error text-error-content text-xs font-bold shadow-md">
+          {{ supportBadgeText }}
+        </span>
+      </button>
+    </div>
+
     <!-- 右侧：功能按钮和控制按钮 -->
     <div class="flex items-center gap-2">
       <LicenseLifecycle :is-loading="isLoadingLicense" :licenseData="licenseData" @open-license="showLicenseDialog" />
@@ -166,18 +187,6 @@
         class="p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary"
         :title="$t('whitelabelSettings')">
         <font-awesome-icon icon="fa-solid fa-palette" class="h-6 w-6 text-base-content" />
-      </button>
-      <!-- 支持工单入口 -->
-      <button v-if="showSupportEntry" @click="openSupportDialog" :class="[
-        'relative p-1 rounded cursor-pointer transition-colors duration-150 bg-transparent hover:bg-base-200/80 hover:text-primary dark:hover:bg-base-300/60 dark:hover:text-primary',
-        hasSupportUnread ? 'text-error' : 'text-base-content'
-      ]" :title="$t('supportEntryTitle')">
-        <font-awesome-icon icon="fa-solid fa-headset"
-          :class="['h-6 w-6 transition-colors', hasSupportUnread ? 'text-error' : 'text-base-content']" />
-        <span v-if="hasSupportUnread"
-          class="absolute -top-1.5 -right-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-error px-1 text-xs font-semibold text-error-content shadow-lg">
-          {{ supportBadgeText }}
-        </span>
       </button>
       <!-- 全局设置 -->
       <button @click="$emiter('showDialog', { name: 'tiktokSettings' })"
@@ -588,7 +597,7 @@ export default {
             console.log(
               `Update available ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
             );
-            
+
             if (platform === 'windows') {
               // Windows: Auto-update via Tauri
               const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
@@ -604,12 +613,12 @@ export default {
               const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
                 ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
                 : `${this.whitelabelConfig.officialWebsite}/Download`;
-              
+
               const yes = await ask(
                 this.$t('macUpdatePrompt', { version: manifest?.version }),
                 this.$t('macUpdateAvailable')
               );
-              
+
               if (yes) {
                 console.log('Opening download page:', downloadUrl);
                 await open(downloadUrl);
