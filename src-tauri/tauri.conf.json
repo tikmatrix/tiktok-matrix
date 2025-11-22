@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "TikMatrix",
-    "version": "2.9.11"
+    "version": "2.9.12"
   },
   "tauri": {
     "allowlist": {
@@ -111,6 +111,7 @@
         "request": true,
         "scope": [
           "http://localhost:50809/*/*",
+          "http://localhost:8787/*/*",
           "https://api.tikmatrix.com/*/*"
         ]
       }

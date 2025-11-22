@@ -232,9 +232,9 @@ export default {
   },
   mounted() {
     this.resetSubject()
-    if (this.selectedSerials.length) {
-      this.scheduleLogPreparation()
-    }
+    // Always schedule log preparation on mount, even with no devices selected
+    // This ensures app/agent logs and data directory are prepared
+    this.scheduleLogPreparation()
   },
   watch: {
     selecedDevices: {
@@ -599,11 +599,8 @@ export default {
       return fallbackIndex !== -1 ? fallbackIndex + 1 : serial
     },
     handleSelectedSerialsChanged(newSerials) {
+      // Always prepare logs even when no devices are selected (for app/agent logs)
       const normalized = this.normalizeSerialList(newSerials)
-      if (!normalized.length) {
-        this.clearLogPreparation()
-        return
-      }
       if (!this.areSameSerialSet(normalized, this.lastPreparedSerials)) {
         this.clearLogPreparation()
       }
@@ -679,14 +676,12 @@ export default {
       return unique
     },
     scheduleLogPreparation(serialsOverride) {
+      // Always allow scheduling even with empty serials to upload app/agent logs
       const serials = this.normalizeSerialList(
         Array.isArray(serialsOverride) && serialsOverride.length
           ? serialsOverride
           : this.selectedSerials
       )
-      if (!serials.length) {
-        return
-      }
       const hasPreparedForSerials = this.areSameSerialSet(serials, this.lastPreparedSerials)
       if (
         (this.preparedAttachment && hasPreparedForSerials) ||
@@ -700,10 +695,8 @@ export default {
       this.startLogPreparation(serials)
     },
     startLogPreparation(serials) {
+      // Always allow log preparation even with empty serials
       const normalizedSerials = this.normalizeSerialList(serials)
-      if (!normalizedSerials.length) {
-        return null
-      }
       this.logPreparationToken += 1
       const currentToken = this.logPreparationToken
       const task = (async () => {
@@ -892,10 +885,8 @@ export default {
       })
     },
     async ensureLogsAttachment(serialsOverride) {
+      // Always allow log preparation even with empty serials to upload app/agent logs and data directory
       const serials = this.normalizeSerialList(serialsOverride || this.selectedSerials)
-      if (!serials.length) {
-        return null
-      }
       const isPreparedForSerials = () => this.areSameSerialSet(serials, this.lastPreparedSerials)
 
       if (!isPreparedForSerials()) {
@@ -1123,13 +1114,12 @@ export default {
       try {
         const serialPayload = this.buildSerialPayload()
         const normalizedSerials = this.normalizeSerialList(this.selectedSerials)
+        // Always try to upload logs attachment, even with empty serials (for app/agent logs)
         let attachment = null
-        if (normalizedSerials.length) {
-          try {
-            attachment = await this.ensureLogsAttachment(normalizedSerials)
-          } catch (error) {
-            console.error('submitSupport ensureLogsAttachment error', error)
-          }
+        try {
+          attachment = await this.ensureLogsAttachment(normalizedSerials)
+        } catch (error) {
+          console.error('submitSupport ensureLogsAttachment error', error)
         }
         const messageBody = this.form.description
         const mediaAttachments = await this.uploadCustomAttachments(normalizedSerials)
@@ -1151,9 +1141,8 @@ export default {
         this.$emit('submitted', createdTicket)
         this.submittedTicket = null
         this.resetForm()
-        if (this.selectedSerials.length) {
-          this.scheduleLogPreparation()
-        }
+        // Always schedule log preparation after submission (for app/agent logs)
+        this.scheduleLogPreparation()
         this.emitSelection()
       } catch (error) {
         console.error('submitSupport error', error)

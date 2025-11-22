@@ -163,6 +163,13 @@ export default {
       firstFrameRendered: false,
       firstFrameImageUrl: null,
       videoStarted: false,
+      // WebSocket retry mechanism
+      scrcpyReconnectAttempts: 0,
+      scrcpyMaxRetries: 5,
+      scrcpyReconnectTimer: null,
+      scrcpyShouldReconnect: false,
+      scrcpyConnectionTimeout: 15000, // 15 seconds
+      scrcpyConnectionTimer: null,
       i18n: {
         preparing: '',
         running: '',
@@ -657,6 +664,11 @@ export default {
     },
     initializeWebCodecs() {
       if (!this.canvasCtx) {
+        // Check if canvas ref exists before trying to get context
+        if (!this.$refs.canvas) {
+          console.warn(`${this.no} Canvas ref not available yet, will retry later`);
+          return;
+        }
         this.canvasCtx = this.$refs.canvas.getContext('2d');
       }
       try {
@@ -684,7 +696,7 @@ export default {
       const frame = this.frameQueue.shift();
 
       if (frame) {
-        if (this.$refs.canvas) {
+        if (this.$refs.canvas && this.canvasCtx) {
           // 确保canvas尺寸与视频帧匹配
           if (this.$refs.canvas.width !== frame.displayWidth ||
             this.$refs.canvas.height !== frame.displayHeight) {
@@ -697,6 +709,8 @@ export default {
             this.videoStarted = true
             this.firstFrameImageUrl = null
           }
+        } else {
+          console.warn(`${this.no}-${this.device.serial} Canvas or context not available, skipping frame`);
         }
         frame.close(); // 重要：使用完毕后释放资源
       }
@@ -792,42 +806,196 @@ export default {
       }
     },
 
+    clearScrcpyReconnectTimer() {
+      if (this.scrcpyReconnectTimer) {
+        clearTimeout(this.scrcpyReconnectTimer);
+        this.scrcpyReconnectTimer = null;
+      }
+    },
+
+    clearScrcpyConnectionTimer() {
+      if (this.scrcpyConnectionTimer) {
+        clearTimeout(this.scrcpyConnectionTimer);
+        this.scrcpyConnectionTimer = null;
+      }
+    },
+
+    getScrcpyReconnectDelay() {
+      // Exponential backoff with jitter
+      const baseDelay = 2000;
+      const maxDelay = 20000;
+      const exponentialDelay = baseDelay * Math.pow(2, this.scrcpyReconnectAttempts);
+      const jitter = Math.random() * 1000;
+      return Math.min(maxDelay, exponentialDelay + jitter);
+    },
+
+    scheduleScrcpyReconnect() {
+      if (!this.scrcpyShouldReconnect || this.scrcpyReconnectTimer) {
+        return;
+      }
+
+      // Check if max retries exceeded
+      if (this.scrcpyReconnectAttempts >= this.scrcpyMaxRetries) {
+        console.error(`${this.no}-${this.device.serial} Scrcpy max retries (${this.scrcpyMaxRetries}) exceeded, stopping reconnection`);
+        this.scrcpyShouldReconnect = false;
+        this.scrcpyReconnectAttempts = 0;
+        this.loading = true;
+        return;
+      }
+
+      const delay = this.getScrcpyReconnectDelay();
+      console.log(`${this.no}-${this.device.serial} Scrcpy reconnect scheduled in ${delay}ms (attempt ${this.scrcpyReconnectAttempts + 1}/${this.scrcpyMaxRetries})`);
+
+      this.scrcpyReconnectTimer = setTimeout(async () => {
+        this.scrcpyReconnectTimer = null;
+        this.scrcpyReconnectAttempts += 1;
+        await this.connect();
+      }, delay);
+    },
+
+    closeWebSocketConnection(ws, clearHandlersFirst = false) {
+      if (!ws) return;
+      
+      try {
+        if (clearHandlersFirst) {
+          // Clear handlers before closing (prevents callbacks during reconnection)
+          ws.onopen = null;
+          ws.onmessage = null;
+          ws.onclose = null;
+          ws.onerror = null;
+        }
+
+        // Close the WebSocket connection
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          // Only send close frame if connection is fully open
+          if (ws.readyState === WebSocket.OPEN) {
+            try {
+              ws.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+              console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`);
+            } catch (e) {
+              console.error(`${this.no}-${this.device.serial} Failed to send close frame:`, e);
+            }
+          }
+          ws.close();
+        }
+
+        if (!clearHandlersFirst) {
+          // Clear handlers after closing (allows close callback to execute)
+          ws.onerror = null;
+          ws.onmessage = null;
+          ws.onclose = null;
+          ws.onopen = null;
+        }
+      } catch (error) {
+        console.error(`${this.no}-${this.device.serial} Error closing WebSocket:`, error);
+      }
+    },
+
+    cleanupScrcpy(stopReconnect = false) {
+      if (stopReconnect) {
+        this.scrcpyShouldReconnect = false;
+        this.scrcpyReconnectAttempts = 0;
+        this.clearScrcpyReconnectTimer();
+      }
+      this.clearScrcpyConnectionTimer();
+
+      if (this.scrcpy) {
+        // Store reference to avoid race conditions
+        const ws = this.scrcpy;
+        this.scrcpy = null;
+        // Close with handlers cleared after (allows close callback)
+        this.closeWebSocketConnection(ws, false);
+      }
+    },
+
     async connect() {
-      const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
-      const wsUrl = `ws://localhost:${wsPort}`
-      this.scrcpy = new WebSocket(wsUrl)
-      this.scrcpy.binaryType = 'arraybuffer'
+      // Clean up any existing connection without stopping reconnect
+      // Preserve the reconnect flag that was set in syncDisplay
+      if (this.scrcpy) {
+        this.clearScrcpyConnectionTimer();
+        const oldScrcpy = this.scrcpy;
+        this.scrcpy = null;
+        // Close with handlers cleared first (prevents callbacks during reconnection)
+        this.closeWebSocketConnection(oldScrcpy, true);
+      }
+
+      try {
+        const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
+        const wsUrl = `ws://localhost:${wsPort}`;
+
+        console.log(`${this.no}-${this.device.serial} Creating scrcpy WebSocket connection`);
+        this.scrcpy = new WebSocket(wsUrl);
+        this.scrcpy.binaryType = 'arraybuffer';
+
+        // Set connection timeout
+        this.scrcpyConnectionTimer = setTimeout(() => {
+          if (this.scrcpy && this.scrcpy.readyState === WebSocket.CONNECTING) {
+            console.warn(`${this.no}-${this.device.serial} Scrcpy connection timeout`);
+            this.scrcpy.close();
+          }
+        }, this.scrcpyConnectionTimeout);
+
+      } catch (error) {
+        console.error(`${this.no}-${this.device.serial} Failed to create scrcpy WebSocket:`, error);
+        if (this.scrcpyShouldReconnect) {
+          this.scheduleScrcpyReconnect();
+        }
+        return;
+      }
+
       this.scrcpy.onopen = () => {
-        console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onopen`)
-        let max_size = this.big ? 1024 : this.screenResolution
-        this.scrcpy.send(`${this.device.serial}`)
+        console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} WebSocket opened successfully`);
+        this.clearScrcpyConnectionTimer();
+
+        // Reset retry counter on successful connection
+        this.scrcpyReconnectAttempts = 0;
+        this.clearScrcpyReconnectTimer();
+
+        let max_size = this.big ? 1024 : this.screenResolution;
+        this.scrcpy.send(`${this.device.serial}`);
         // max size
-        this.scrcpy.send(max_size)
+        this.scrcpy.send(max_size);
         // control
-        this.scrcpy.send('true')
+        this.scrcpy.send('true');
         // fps
-        this.scrcpy.send(this.big ? 30 : 15)
+        this.scrcpy.send(this.big ? 30 : 15);
         // capabilities
         this.scrcpy.send(JSON.stringify({
           type: 'capabilities',
           firstFramePreview: true
-        }))
+        }));
       }
+
       this.scrcpy.onclose = (event) => {
-        this.loading = true
-        this.videoStarted = false
-        console.log('ws close', event?.code, event?.reason)
+        console.log(`${this.no}-${this.device.serial} WebSocket closed`, event?.code, event?.reason);
+        this.clearScrcpyConnectionTimer();
+        this.loading = true;
+        this.videoStarted = false;
+        this.scrcpy = null;
+
+        if (this.scrcpyShouldReconnect) {
+          this.scheduleScrcpyReconnect();
+        }
       }
-      this.scrcpy.onerror = () => {
-        this.loading = true
-        this.videoStarted = false
-        console.error(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} onerror`)
+
+      this.scrcpy.onerror = (error) => {
+        console.error(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} WebSocket error`, error);
+        this.clearScrcpyConnectionTimer();
+        this.loading = true;
+        this.videoStarted = false;
+
         // 关闭解码器
         if (this.videoDecoder) {
           this.videoDecoder.close();
           this.videoDecoder = null;
         }
+
+        // Close connection to trigger reconnect via onclose
+        if (this.scrcpy && this.scrcpy.readyState !== WebSocket.CLOSING && this.scrcpy.readyState !== WebSocket.CLOSED) {
+          this.scrcpy.close();
+        }
       }
+
       this.scrcpy.onmessage = async message => {
         if (this.message_index >= 2 && typeof message.data === 'string') {
           if (message.data.startsWith(FIRST_FRAME_PREFIX)) {
@@ -859,6 +1027,11 @@ export default {
                 console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
                 return;
               }
+              // Check if message.data is a string before calling split
+              if (typeof message.data !== 'string') {
+                console.warn(`${this.no}-${this.device.serial} expected string resolution info, got ${typeof message.data}`)
+                return;
+              }
               const [widthStr, heightStr] = message.data.split('x')
               const parsedWidth = Number(widthStr)
               const parsedHeight = Number(heightStr)
@@ -867,10 +1040,12 @@ export default {
                 this.real_height = parsedHeight
                 this.scaled = this.height / this.real_height
                 console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
-                await this.persistDeviceSize({
+                this.persistDeviceSize({
                   real_width: this.real_width,
                   real_height: this.real_height,
                   scaled: this.scaled
+                }).catch(error => {
+                  console.warn('Persist real dimensions failed:', error)
                 })
               } else {
                 console.warn(`${this.no}-${this.device.serial} received invalid resolution info: ${message.data}`)
@@ -891,49 +1066,32 @@ export default {
       }
     },
     syncDisplay() {
-      this.loading = true
-      this.firstFrameRendered = false
-      this.firstFrameImageUrl = null
-      this.videoStarted = false
-      this.message_index = 0
-      // 初始化WebCodecs
-      this.initializeWebCodecs();
+      this.loading = true;
+      this.firstFrameRendered = false;
+      this.firstFrameImageUrl = null;
+      this.videoStarted = false;
+      this.message_index = 0;
+
+      // Enable automatic reconnection
+      this.scrcpyShouldReconnect = true;
+      this.scrcpyReconnectAttempts = 0;
+      this.clearScrcpyReconnectTimer();
+
+      // 初始化WebCodecs - use nextTick to ensure DOM is ready
+      this.$nextTick(() => {
+        this.initializeWebCodecs();
+      });
       this.connect();
     },
     closeScrcpy() {
-      this.firstFrameRendered = false
-      this.firstFrameImageUrl = null
-      this.videoStarted = false
-      this.message_index = 0
-      if (this.scrcpy) {
-        try {
-          // Only send close frame if connection is fully open
-          if (this.scrcpy.readyState === WebSocket.OPEN) {
-            // Send close frame
-            this.scrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
-            console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`)
-          }
+      this.firstFrameRendered = false;
+      this.firstFrameImageUrl = null;
+      this.videoStarted = false;
+      this.message_index = 0;
 
-          // Clear event handlers
-          this.scrcpy.onerror = null;
-          this.scrcpy.onmessage = null;
-          this.scrcpy.onclose = null;
-          this.scrcpy.onopen = null;
-
-          // Close the WebSocket connection
-          if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
-            this.scrcpy.close();
-          }
-          console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} close end`)
-
-
-        } catch (error) {
-          console.error(`Error closing WebSocket connection: ${error}`);
-          // Ensure resources are cleaned up even if error occurs
-          this.scrcpy = null;
-          this.message_index = 0;
-        }
-      }
+      // Stop automatic reconnection and cleanup
+      this.cleanupScrcpy(true);
+      console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} scrcpy closed`);
     },
     closeDecoder() {
       if (this.videoDecoder) {

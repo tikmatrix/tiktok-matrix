@@ -1,4 +1,5 @@
 ﻿export default {
+  updateCheckFailed: 'Update check failed, Please check your network connection.',
   minimize: 'Minimize',
   maxPostsToProcessHelp: 'Limit how many posts are processed per run. Set to 0 to process all configured posts.',
   maxRetryCount: 'Max Retry Count',
@@ -995,6 +996,7 @@
   trial: 'Trial',
   trialDescription: 'Free trial for 7 days, All features Available! Cancel anytime.',
   tutorial: 'Tutorial',
+  support: 'Support',
   ultraResolution: 'Ultra',
   unFollow: 'UnFollow',
   unFollowAll: 'Unfollow All',
