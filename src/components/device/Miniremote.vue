@@ -657,6 +657,11 @@ export default {
     },
     initializeWebCodecs() {
       if (!this.canvasCtx) {
+        // Check if canvas ref exists before trying to get context
+        if (!this.$refs.canvas) {
+          console.warn(`${this.no} Canvas ref not available yet, will retry later`);
+          return;
+        }
         this.canvasCtx = this.$refs.canvas.getContext('2d');
       }
       try {
@@ -901,8 +906,10 @@ export default {
       this.firstFrameImageUrl = null
       this.videoStarted = false
       this.message_index = 0
-      // 初始化WebCodecs
-      this.initializeWebCodecs();
+      // 初始化WebCodecs - use nextTick to ensure DOM is ready
+      this.$nextTick(() => {
+        this.initializeWebCodecs();
+      });
       this.connect();
     },
     closeScrcpy() {
