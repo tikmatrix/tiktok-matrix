@@ -696,7 +696,7 @@ export default {
       const frame = this.frameQueue.shift();
 
       if (frame) {
-        if (this.$refs.canvas) {
+        if (this.$refs.canvas && this.canvasCtx) {
           // 确保canvas尺寸与视频帧匹配
           if (this.$refs.canvas.width !== frame.displayWidth ||
             this.$refs.canvas.height !== frame.displayHeight) {
@@ -709,6 +709,8 @@ export default {
             this.videoStarted = true
             this.firstFrameImageUrl = null
           }
+        } else {
+          console.warn(`${this.no}-${this.device.serial} Canvas or context not available, skipping frame`);
         }
         frame.close(); // 重要：使用完毕后释放资源
       }
@@ -861,35 +863,64 @@ export default {
 
       if (this.scrcpy) {
         try {
-          // Clear event handlers
-          this.scrcpy.onerror = null;
-          this.scrcpy.onmessage = null;
-          this.scrcpy.onclose = null;
-          this.scrcpy.onopen = null;
+          // Store reference to avoid race conditions
+          const ws = this.scrcpy;
+          this.scrcpy = null;
 
-          // Close the WebSocket connection
-          if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
+          // Close the WebSocket connection first
+          if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
             // Only send close frame if connection is fully open
-            if (this.scrcpy.readyState === WebSocket.OPEN) {
+            if (ws.readyState === WebSocket.OPEN) {
               try {
-                this.scrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+                ws.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
                 console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`);
               } catch (e) {
                 console.error(`${this.no}-${this.device.serial} Failed to send close frame:`, e);
               }
             }
-            this.scrcpy.close();
+            ws.close();
           }
+
+          // Clear event handlers after closing to prevent callbacks
+          ws.onerror = null;
+          ws.onmessage = null;
+          ws.onclose = null;
+          ws.onopen = null;
         } catch (error) {
           console.error(`${this.no}-${this.device.serial} Error cleaning up scrcpy:`, error);
         }
-        this.scrcpy = null;
       }
     },
 
     async connect() {
-      // Clean up any existing connection
-      this.cleanupScrcpy();
+      // Clean up any existing connection without stopping reconnect
+      // Preserve the reconnect flag that was set in syncDisplay
+      if (this.scrcpy) {
+        this.clearScrcpyConnectionTimer();
+        try {
+          // Clear event handlers to prevent callbacks during cleanup
+          const oldScrcpy = this.scrcpy;
+          this.scrcpy = null;
+          oldScrcpy.onopen = null;
+          oldScrcpy.onmessage = null;
+          oldScrcpy.onclose = null;
+          oldScrcpy.onerror = null;
+          
+          // Close the WebSocket connection
+          if (oldScrcpy.readyState === WebSocket.OPEN || oldScrcpy.readyState === WebSocket.CONNECTING) {
+            if (oldScrcpy.readyState === WebSocket.OPEN) {
+              try {
+                oldScrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+              } catch (e) {
+                console.error(`${this.no}-${this.device.serial} Failed to send close frame:`, e);
+              }
+            }
+            oldScrcpy.close();
+          }
+        } catch (error) {
+          console.error(`${this.no}-${this.device.serial} Error cleaning up old scrcpy:`, error);
+        }
+      }
 
       try {
         const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });

@@ -392,7 +392,8 @@ export default {
       // Monitor online/offline events for better reconnection handling
       this.handleOnline = async () => {
         console.log('Network connection restored, attempting to reconnect WebSocket');
-        if (this.wsShouldReconnect && (!this.ws || this.ws.readyState !== WebSocket.OPEN)) {
+        // Only reconnect if wsUrl is configured and WebSocket should reconnect
+        if (this.wsShouldReconnect && this.wsUrl && (!this.ws || this.ws.readyState !== WebSocket.OPEN)) {
           // Reset retry counter on network restoration
           this.wsReconnectAttempts = 0;
           this.clearWsReconnectTimer();
