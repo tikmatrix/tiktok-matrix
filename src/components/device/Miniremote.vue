@@ -696,7 +696,7 @@ export default {
       const frame = this.frameQueue.shift();
 
       if (frame) {
-        if (this.$refs.canvas) {
+        if (this.$refs.canvas && this.canvasCtx) {
           // 确保canvas尺寸与视频帧匹配
           if (this.$refs.canvas.width !== frame.displayWidth ||
             this.$refs.canvas.height !== frame.displayHeight) {
@@ -709,6 +709,8 @@ export default {
             this.videoStarted = true
             this.firstFrameImageUrl = null
           }
+        } else {
+          console.warn(`${this.no}-${this.device.serial} Canvas or context not available, skipping frame`);
         }
         frame.close(); // 重要：使用完毕后释放资源
       }
@@ -851,6 +853,44 @@ export default {
       }, delay);
     },
 
+    closeWebSocketConnection(ws, clearHandlersFirst = false) {
+      if (!ws) return;
+      
+      try {
+        if (clearHandlersFirst) {
+          // Clear handlers before closing (prevents callbacks during reconnection)
+          ws.onopen = null;
+          ws.onmessage = null;
+          ws.onclose = null;
+          ws.onerror = null;
+        }
+
+        // Close the WebSocket connection
+        if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          // Only send close frame if connection is fully open
+          if (ws.readyState === WebSocket.OPEN) {
+            try {
+              ws.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+              console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`);
+            } catch (e) {
+              console.error(`${this.no}-${this.device.serial} Failed to send close frame:`, e);
+            }
+          }
+          ws.close();
+        }
+
+        if (!clearHandlersFirst) {
+          // Clear handlers after closing (allows close callback to execute)
+          ws.onerror = null;
+          ws.onmessage = null;
+          ws.onclose = null;
+          ws.onopen = null;
+        }
+      } catch (error) {
+        console.error(`${this.no}-${this.device.serial} Error closing WebSocket:`, error);
+      }
+    },
+
     cleanupScrcpy(stopReconnect = false) {
       if (stopReconnect) {
         this.scrcpyShouldReconnect = false;
@@ -860,36 +900,24 @@ export default {
       this.clearScrcpyConnectionTimer();
 
       if (this.scrcpy) {
-        try {
-          // Clear event handlers
-          this.scrcpy.onerror = null;
-          this.scrcpy.onmessage = null;
-          this.scrcpy.onclose = null;
-          this.scrcpy.onopen = null;
-
-          // Close the WebSocket connection
-          if (this.scrcpy.readyState === WebSocket.OPEN || this.scrcpy.readyState === WebSocket.CONNECTING) {
-            // Only send close frame if connection is fully open
-            if (this.scrcpy.readyState === WebSocket.OPEN) {
-              try {
-                this.scrcpy.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
-                console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`);
-              } catch (e) {
-                console.error(`${this.no}-${this.device.serial} Failed to send close frame:`, e);
-              }
-            }
-            this.scrcpy.close();
-          }
-        } catch (error) {
-          console.error(`${this.no}-${this.device.serial} Error cleaning up scrcpy:`, error);
-        }
+        // Store reference to avoid race conditions
+        const ws = this.scrcpy;
         this.scrcpy = null;
+        // Close with handlers cleared after (allows close callback)
+        this.closeWebSocketConnection(ws, false);
       }
     },
 
     async connect() {
-      // Clean up any existing connection
-      this.cleanupScrcpy();
+      // Clean up any existing connection without stopping reconnect
+      // Preserve the reconnect flag that was set in syncDisplay
+      if (this.scrcpy) {
+        this.clearScrcpyConnectionTimer();
+        const oldScrcpy = this.scrcpy;
+        this.scrcpy = null;
+        // Close with handlers cleared first (prevents callbacks during reconnection)
+        this.closeWebSocketConnection(oldScrcpy, true);
+      }
 
       try {
         const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
