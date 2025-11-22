@@ -859,6 +859,11 @@ export default {
                 console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
                 return;
               }
+              // Check if message.data is a string before calling split
+              if (typeof message.data !== 'string') {
+                console.warn(`${this.no}-${this.device.serial} expected string resolution info, got ${typeof message.data}`)
+                return;
+              }
               const [widthStr, heightStr] = message.data.split('x')
               const parsedWidth = Number(widthStr)
               const parsedHeight = Number(heightStr)
