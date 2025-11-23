@@ -10,6 +10,7 @@ dependencies = [
  "embed-resource",
  "flexi_logger",
  "futures-util",
+ "lazy_static",
  "log",
  "open 5.3.2",
  "reqwest",
@@ -18,6 +19,7 @@ dependencies = [
  "sysinfo",
  "tauri",
  "tauri-build",
+ "tokio",
  "zip 2.1.5",
 ]
 

@@ -58,10 +58,6 @@ export default {
       listeners: [],
       supportUnreadMap: {},
       supportUnreadCount: 0,
-      // 自动更新相关
-      lastUserActivity: Date.now(),
-      autoUpdateTimer: null,
-      userActivityEvents: ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'],
     }
   },
 
@@ -508,21 +504,37 @@ export default {
       document.addEventListener('contextmenu', event => event.preventDefault());
     },
 
-    // 自动更新相关方法
-    setupUserActivityListeners() {
-      this.userActivityEvents.forEach(event => {
-        document.addEventListener(event, this.onUserActivity, { passive: true });
-      });
-    },
+    // ============ 自动更新相关方法（使用 Rust 后端）============
 
-    removeUserActivityListeners() {
-      this.userActivityEvents.forEach(event => {
-        document.removeEventListener(event, this.onUserActivity);
-      });
-    },
+    setupUserActivityTracking() {
+      // 追踪用户活动，通知 Rust 后端
+      const userActivityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
 
-    onUserActivity() {
-      this.lastUserActivity = Date.now();
+      // 使用防抖避免频繁调用
+      let activityTimeout = null;
+      const updateActivity = async () => {
+        if (activityTimeout) clearTimeout(activityTimeout);
+        activityTimeout = setTimeout(async () => {
+          try {
+            const { invoke } = await import('@tauri-apps/api/tauri');
+            await invoke('update_user_activity');
+          } catch (error) {
+            console.error('更新用户活动失败:', error);
+          }
+        }, 1000); // 1秒防抖
+      };
+
+      userActivityEvents.forEach(event => {
+        document.addEventListener(event, updateActivity, { passive: true });
+      });
+
+      // 保存清理函数
+      this.cleanupUserActivityTracking = () => {
+        if (activityTimeout) clearTimeout(activityTimeout);
+        userActivityEvents.forEach(event => {
+          document.removeEventListener(event, updateActivity);
+        });
+      };
     },
 
     hasRunningTasks() {
@@ -530,68 +542,41 @@ export default {
         this.devices.some(device => device.task_status === 1);
     },
 
-    isSystemIdle() {
-      let idleThreshold = 5 * 60 * 1000; // 5分钟无用户活动
-      //如果是dev环境，改为1分钟
-      const isDev = import.meta.env.DEV;
-      if (isDev) {
-        console.log("current is dev environment, set idle threshold to 1 minute")
-        idleThreshold = 1 * 60 * 1000;
-      }
-      return (Date.now() - this.lastUserActivity) > idleThreshold;
-    },
-
-    async triggerAutoUpdate() {
-      console.log('执行自动更新检查...');
-      try {
-        // 通过事件通知 TitleBar 执行静默更新
-        await this.$emiter('AUTO_UPDATE_TRIGGER');
-      } catch (error) {
-        console.error('自动更新失败:', error);
-      }
-    },
-
-    startAutoUpdateTimer() {
-      if (this.autoUpdateTimer) {
-        clearInterval(this.autoUpdateTimer);
-      }
-
+    async startAutoUpdateTimer() {
       if (!this.settings.auto_update_enabled) {
-        console.log('自动更新未启用，跳过启动定时器');
+        console.log('自动更新未启用');
         return;
       }
 
-      let interval = 10 * 60 * 1000; // 固定10分钟间隔
-      //如果是dev环境，间隔改为3分钟
-      const isDev = import.meta.env.DEV;
-      if (isDev) {
-        console.log("current is dev environment, set auto update interval to 3 minutes")
-        interval = 3 * 60 * 1000;
+      try {
+        const { invoke } = await import('@tauri-apps/api/tauri');
+
+        // 根据环境设置间隔
+        const isDev = import.meta.env.DEV;
+        const checkIntervalMinutes = isDev ? 3 : 10; // dev: 3分钟, prod: 10分钟
+        const idleThresholdMinutes = isDev ? 1 : 5;  // dev: 1分钟, prod: 5分钟
+
+        await invoke('start_auto_update_timer', {
+          config: {
+            enabled: true,
+            check_interval_minutes: checkIntervalMinutes,
+            idle_threshold_minutes: idleThresholdMinutes,
+          }
+        });
+
+        console.log(`自动更新定时器已启动: 间隔=${checkIntervalMinutes}分钟, 空闲阈值=${idleThresholdMinutes}分钟`);
+      } catch (error) {
+        console.error('启动自动更新定时器失败:', error);
       }
-      console.log(`启动自动更新定时器，间隔: ${interval / 1000 / 60} 分钟`);
-
-      this.autoUpdateTimer = setInterval(() => {
-        // 检查是否有正在运行的任务
-        if (this.hasRunningTasks()) {
-          console.log('有正在运行的任务，跳过自动更新');
-          return;
-        }
-
-        // 检查系统是否空闲
-        if (!this.isSystemIdle()) {
-          console.log('用户最近有活动，跳过自动更新');
-          return;
-        }
-
-        console.log('系统空闲且无运行任务，触发自动更新');
-        this.triggerAutoUpdate();
-      }, interval);
     },
 
-    stopAutoUpdateTimer() {
-      if (this.autoUpdateTimer) {
-        clearInterval(this.autoUpdateTimer);
-        this.autoUpdateTimer = null;
+    async stopAutoUpdateTimer() {
+      try {
+        const { invoke } = await import('@tauri-apps/api/tauri');
+        await invoke('stop_auto_update_timer');
+        console.log('自动更新定时器已停止');
+      } catch (error) {
+        console.error('停止自动更新定时器失败:', error);
       }
     },
 
@@ -702,9 +687,21 @@ export default {
       await this.handleSupportMarkAllRead()
     }))
 
-    // 设置用户活动监听
-    this.setupUserActivityListeners();
+    // 监听 Rust 后端的自动更新条件检查事件
+    this.listeners.push(await this.$listen('AUTO_UPDATE_CHECK_CONDITIONS', async () => {
+      try {
+        const { invoke } = await import('@tauri-apps/api/tauri');
+        const hasRunningTasks = this.hasRunningTasks();
 
+        // 通知 Rust 后端任务状态，由后端决定是否触发更新
+        await invoke('check_can_auto_update', { hasRunningTasks });
+      } catch (error) {
+        console.error('检查自动更新条件失败:', error);
+      }
+    }))
+
+    // 设置用户活动监听
+    this.setupUserActivityTracking();
 
   },
   unmounted() {
@@ -719,7 +716,9 @@ export default {
     this.cleanupNetworkMonitoring();
 
     // 清理自动更新相关资源
-    this.removeUserActivityListeners();
+    if (this.cleanupUserActivityTracking) {
+      this.cleanupUserActivityTracking();
+    }
     this.stopAutoUpdateTimer();
 
     // 清理 WebSocket 资源

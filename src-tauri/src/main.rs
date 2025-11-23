@@ -24,7 +24,10 @@ use tauri::{
     AppHandle, Manager,
 };
 use zip::read::ZipArchive;
+mod auto_update_manager;
 mod init_log;
+mod process_manager;
+mod update_manager;
 
 /**
  * 读取分发商标识
@@ -446,6 +449,140 @@ fn open_adb_terminal(dir: String) {
     }
 }
 
+// ============ Update Manager Commands ============
+
+/// Check libraries update from remote server
+#[tauri::command]
+async fn check_libs_update(
+    app_handle: tauri::AppHandle,
+    check_libs_url: String,
+    platform: String,
+    app_name: String,
+) -> Result<update_manager::CheckLibsResponse, String> {
+    update_manager::check_libs_update(&app_handle, &check_libs_url, &platform, &app_name).await
+}
+
+/// Get local library version
+#[tauri::command]
+fn get_local_lib_version(app_handle: tauri::AppHandle, lib_name: String) -> String {
+    update_manager::get_local_lib_version(&app_handle, &lib_name)
+}
+
+/// Process single library update (download + install)
+#[tauri::command]
+async fn process_lib_update(
+    app_handle: tauri::AppHandle,
+    lib: update_manager::LibInfo,
+    force: bool,
+) -> Result<bool, String> {
+    update_manager::process_lib_update(&app_handle, &lib, force).await
+}
+
+/// Batch process multiple libraries update
+#[tauri::command]
+async fn batch_update_libs(
+    app_handle: tauri::AppHandle,
+    libs: Vec<update_manager::LibInfo>,
+    force: bool,
+) -> Result<Vec<String>, String> {
+    let mut updated_libs = Vec::new();
+
+    for lib in libs {
+        match update_manager::process_lib_update(&app_handle, &lib, force).await {
+            Ok(true) => {
+                log::info!("Library {} updated successfully", lib.name);
+                updated_libs.push(lib.name.clone());
+            }
+            Ok(false) => {
+                log::info!("Library {} is up to date", lib.name);
+            }
+            Err(e) => {
+                log::error!("Failed to update library {}: {}", lib.name, e);
+                let error_status = update_manager::UpdateStatus {
+                    status: "error".to_string(),
+                    message: format!("Failed to update {}: {}", lib.name, e),
+                    lib_name: Some(lib.name.clone()),
+                };
+                error_status.emit(&app_handle);
+                return Err(format!("Failed to update {}: {}", lib.name, e));
+            }
+        }
+    }
+
+    // Emit completion status
+    let complete_status = update_manager::UpdateStatus {
+        status: "completed".to_string(),
+        message: "All libraries update completed".to_string(),
+        lib_name: None,
+    };
+    complete_status.emit(&app_handle);
+
+    Ok(updated_libs)
+}
+
+/// Check for Tauri application updates
+#[tauri::command]
+async fn check_tauri_update(
+    app_handle: tauri::AppHandle,
+) -> Result<update_manager::TauriUpdateInfo, String> {
+    update_manager::check_tauri_update(&app_handle).await
+}
+
+/// Install Tauri application update and relaunch
+#[tauri::command]
+async fn install_and_relaunch_update(app_handle: tauri::AppHandle) -> Result<(), String> {
+    update_manager::install_and_relaunch_update(&app_handle).await
+}
+
+// ============ Auto Update Manager Commands ============
+
+/// Update user activity timestamp
+#[tauri::command]
+fn update_user_activity() {
+    auto_update_manager::update_user_activity();
+}
+
+/// Start auto-update timer
+#[tauri::command]
+async fn start_auto_update_timer(
+    app_handle: tauri::AppHandle,
+    config: auto_update_manager::AutoUpdateConfig,
+) -> Result<(), String> {
+    auto_update_manager::start_auto_update_timer(app_handle, config).await
+}
+
+/// Stop auto-update timer
+#[tauri::command]
+fn stop_auto_update_timer() -> Result<(), String> {
+    auto_update_manager::stop_auto_update_timer()
+}
+
+/// Check if can auto-update (called from frontend with task status)
+#[tauri::command]
+async fn check_can_auto_update(
+    app_handle: tauri::AppHandle,
+    has_running_tasks: bool,
+) -> Result<bool, String> {
+    let config = auto_update_manager::AUTO_UPDATE_CONFIG
+        .lock()
+        .map(|c| c.clone())
+        .unwrap_or_default();
+
+    let should_update = auto_update_manager::should_trigger_auto_update(has_running_tasks, &config);
+
+    if should_update {
+        auto_update_manager::trigger_auto_update(&app_handle).await?;
+    }
+
+    Ok(should_update)
+}
+
+/// Get auto-update state info
+#[tauri::command]
+fn get_auto_update_state() -> auto_update_manager::AutoUpdateStateInfo {
+    auto_update_manager::get_auto_update_state()
+}
+
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -465,7 +602,23 @@ fn main() -> std::io::Result<()> {
             write_settings_file,
             read_post_settings_file,
             write_post_settings_file,
-            open_adb_terminal
+            open_adb_terminal,
+            check_libs_update,
+            get_local_lib_version,
+            process_lib_update,
+            batch_update_libs,
+            check_tauri_update,
+            install_and_relaunch_update,
+            update_user_activity,
+            start_auto_update_timer,
+            stop_auto_update_timer,
+            check_can_auto_update,
+            get_auto_update_state,
+            process_manager::check_agent_status,
+            process_manager::start_agent,
+            process_manager::wait_for_agent_ready,
+            process_manager::shutdown_agent,
+            process_manager::initialize_app
         ])
         .setup(|app| {
             let app_data_dir = app.path_resolver().app_data_dir().unwrap();
