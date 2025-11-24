@@ -13,7 +13,12 @@ async fn report_distributor_install(app_handle: AppHandle) {
         std::env::var("DISTRIBUTOR_CODE").unwrap_or_else(|_| "OFFICIAL".to_string());
 
     // Get machine ID from environment variable
-    let machine_id = std::env::var("MACHINE_ID").unwrap_or_else(|_| "UNKNOWN".to_string());
+    let machine_id = machine_uid::get()
+        .map_err(|error| {
+            log::error!("Failed to get machine uid for global events: {:?}", error);
+            "UNKNOWN"
+        })
+        .unwrap_or("UNKNOWN".to_string());
 
     // Get app version
     let app_version = app_handle.package_info().version.to_string();

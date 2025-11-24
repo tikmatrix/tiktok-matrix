@@ -128,7 +128,7 @@ fn log_proxy_config() {
 
     // If nothing is detected, log that
     if detect_system_proxy().is_none() && detect_env_proxy().is_none() {
-        log::debug!("No proxy configuration detected");
+        log::info!("No proxy configuration detected");
     }
 }
 
@@ -324,13 +324,13 @@ pub fn apply_proxy_config(
 ) -> Result<reqwest::ClientBuilder, String> {
     // Check if target is localhost - bypass proxy for local requests
     if is_localhost_url(target_url) {
-        log::debug!("🏠 Bypassing proxy for localhost URL: {}", target_url);
+        log::info!("🏠 Bypassing proxy for localhost URL: {}", target_url);
         return Ok(builder);
     }
 
     // Check NO_PROXY environment variable
     if should_bypass_proxy(target_url) {
-        log::debug!(
+        log::info!(
             "🚫 Bypassing proxy due to NO_PROXY setting for: {}",
             target_url
         );
@@ -353,7 +353,7 @@ pub fn apply_proxy_config(
         return Ok(builder.proxy(proxy));
     }
 
-    log::debug!("No proxy configured, using direct connection");
+    log::info!("No proxy configured, using direct connection");
     Ok(builder)
 }
 
@@ -586,7 +586,7 @@ async fn http_request(
     body: Option<String>,
     timeout: Option<u64>,
 ) -> Result<HttpResponse, String> {
-    log::debug!("HTTP request: {} {}", method, url);
+    log::info!("HTTP request: {} {}", method, url);
 
     // Create client with timeout
     let timeout_duration = std::time::Duration::from_secs(timeout.unwrap_or(30));
@@ -681,7 +681,7 @@ async fn agent_request(
         Ok(content) => {
             let trimmed = content.trim();
             if trimmed == "0" {
-                log::debug!("Agent port is 0, agent not ready yet");
+                log::info!("Agent port is 0, agent not ready yet");
                 return Ok(serde_json::json!({ "code": 0, "data": [] }));
             }
             trimmed.to_string()
@@ -737,7 +737,7 @@ async fn agent_request(
     };
 
     let query_url = format!("http://localhost:{}{}{}", port, url, query_string);
-    log::debug!("Agent request: {} {}", method, query_url);
+    log::info!("Agent request: {} {}", method, query_url);
 
     // Prepare headers
     let mut final_headers = headers.unwrap_or_default();
@@ -920,7 +920,7 @@ async fn download_file_with_version(
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
     // Request URL is already built above
-    log::debug!("Sending HTTP request...");
+    log::info!("Sending HTTP request...");
 
     let res = client
         .get(&request_url)
