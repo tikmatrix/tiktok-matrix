@@ -1,109 +1,45 @@
-import { fetch, Body, ResponseType } from '@tauri-apps/api/http';
-import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
-import { emit } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/tauri';
 
-function buildQuery(params) {
-  if (!params || typeof params !== 'object') {
-    return '';
-  }
-  const searchParams = new URLSearchParams();
-  Object.keys(params).forEach(key => {
-    const value = params[key];
-    if (value === undefined || value === null) {
-      return;
-    }
-    if (Array.isArray(value)) {
-      value.forEach(item => {
-        if (item !== undefined && item !== null) {
-          searchParams.append(key, String(item));
-        }
-      });
-      return;
-    }
-    searchParams.append(key, String(value));
-  });
-  const queryString = searchParams.toString();
-  return queryString ? `?${queryString}` : '';
-}
-
-function buildBody(config) {
-  if (config?.body) {
-    return config.body;
-  }
-  if (config?.form) {
-    return Body.form(config.form);
-  }
-  if (config?.data !== undefined) {
-    return Body.json(config.data);
-  }
-  return undefined;
-}
-
-function shouldSetJsonContentType(config) {
-  if (config?.headers && Object.keys(config.headers).some(key => key.toLowerCase() === 'content-type')) {
-    return false;
-  }
-  if (config?.body) {
-    return false;
-  }
-  if (config?.form) {
-    return false;
-  }
-  return config?.data !== undefined;
-}
-
+/**
+ * Simplified request wrapper using Rust backend
+ * All logic moved to Rust for:
+ * - Port reading
+ * - URL construction
+ * - Proxy selection
+ * - Error notifications
+ */
 const request = async function request(config) {
-  let port = '50809';
-  try {
-    const portFile = await readTextFile('port.txt', { dir: BaseDirectory.AppData });
-    if (portFile && portFile.trim()) {
-      port = portFile.trim();
-    }
-  } catch (error) {
-    console.warn('Failed to read agent port, fallback to default 50809', error);
-  }
+  const { method, url, params, headers, body, form, data, timeout, rawResponse } = config;
 
-  if (port === '0') {
-    console.log('port is 0, wait for agent to start');
-    return { code: 0, data: [] };
-  }
-
-  const { method, url } = config;
+  // Mock mode check
   if (import.meta.env.VITE_APP_MOCK === 'true') {
     console.warn('Mock mode enabled but no mock handler is defined. Returning empty response.');
     return Promise.resolve({ code: 0, data: [] });
   }
 
-  const querySuffix = buildQuery(config.params);
-  const queryUrl = `http://localhost:${port}${url}${querySuffix}`;
-
-  const headers = { ...(config.headers || {}) };
-  if (shouldSetJsonContentType(config)) {
-    headers['Content-Type'] = 'application/json';
-  }
-
-  const options = {
-    method: method || 'GET',
-    headers,
-    body: buildBody(config),
-    responseType: config.responseType || ResponseType.JSON,
-  };
-
-  if (config.timeout) {
-    options.timeout = config.timeout;
-  }
-
-  console.log(`request: ${queryUrl} options: ${JSON.stringify({ ...options, body: options.body ? '[Body]' : undefined })}`)
-  const response = await fetch(`${queryUrl}`, options);
-  console.log(`response status: ${response.status}`)
-  if (response.status >= 400) {
-    await emit('NOTIFY', {
-      type: 'error',
-      message: `url: ${queryUrl}, code: ${response.status}, message: ${response.data}`,
-      timeout: 2000
+  try {
+    // Call Rust backend which handles everything:
+    // - Reading port.txt
+    // - Building full URL with query params
+    // - Intelligent proxy selection (bypasses localhost automatically)
+    // - Error notifications via events
+    const response = await invoke('agent_request', {
+      method: method || 'GET',
+      url,
+      params: params || null,
+      headers: headers || null,
+      body: body || null,
+      form: form || null,
+      data: data !== undefined ? data : null,
+      timeout: timeout ? Math.floor(timeout / 1000) : 30,
+      rawResponse: rawResponse || false
     });
-    return config.rawResponse ? response : { code: response.status, data: response.data, error: response.data }
+
+    return response;
+  } catch (error) {
+    console.error('Request failed:', error);
+    throw error;
   }
-  return config.rawResponse ? response : response.data
 }
+
 export default request

@@ -6,6 +6,102 @@ use tauri::{AppHandle, Manager};
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
+// Report distributor installation to agent
+async fn report_distributor_install(app_handle: AppHandle) {
+    // Get distributor code from environment variable
+    let distributor_code =
+        std::env::var("DISTRIBUTOR_CODE").unwrap_or_else(|_| "OFFICIAL".to_string());
+
+    // Get machine ID from environment variable
+    let machine_id = std::env::var("MACHINE_ID").unwrap_or_else(|_| "UNKNOWN".to_string());
+
+    // Get app version
+    let app_version = app_handle.package_info().version.to_string();
+
+    // Get OS information
+    let os_type = std::env::consts::OS;
+    let os_arch = std::env::consts::ARCH;
+
+    // Get OS version (platform-specific)
+    let os_version = get_os_version();
+    let os_full_version = format!("{} {} ({})", os_type, os_version, os_arch);
+
+    log::info!(
+        "Reporting distributor install: distributor={}, version={}, os={}, machine_id={}",
+        distributor_code,
+        app_version,
+        os_full_version,
+        machine_id
+    );
+
+    // Build request payload
+    let payload = serde_json::json!({
+        "distributor_code": distributor_code,
+        "app_version": app_version,
+        "os_version": os_full_version,
+        "machine_id": machine_id,
+    });
+
+    // Call agent API
+    match crate::agent_request(
+        app_handle.clone(),
+        "POST".to_string(),
+        "/api/report_distributor_install".to_string(),
+        None,          // params
+        None,          // headers
+        None,          // body
+        None,          // form
+        Some(payload), // data
+        Some(30),      // timeout
+        false,         // raw_response
+    )
+    .await
+    {
+        Ok(response) => {
+            log::info!("Distributor install reported successfully: {:?}", response);
+        }
+        Err(e) => {
+            log::error!("Failed to report distributor install: {}", e);
+        }
+    }
+}
+
+// Get OS version string
+fn get_os_version() -> String {
+    #[cfg(target_os = "windows")]
+    {
+        // Try to get Windows version from registry or system info
+        if let Ok(output) = Command::new("cmd")
+            .args(&["/C", "ver"])
+            .creation_flags(0x08000000)
+            .output()
+        {
+            if output.status.success() {
+                let version_str = String::from_utf8_lossy(&output.stdout);
+                return version_str.trim().to_string();
+            }
+        }
+        "Unknown".to_string()
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        // Get macOS version using sw_vers
+        if let Ok(output) = Command::new("sw_vers").arg("-productVersion").output() {
+            if output.status.success() {
+                let version_str = String::from_utf8_lossy(&output.stdout);
+                return version_str.trim().to_string();
+            }
+        }
+        "Unknown".to_string()
+    }
+
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    {
+        "Unknown".to_string()
+    }
+}
+
 // Initialization result for the entire startup process
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InitializationResult {
@@ -43,7 +139,7 @@ pub struct AgentStartResult {
 // Check if agent is running by checking port 50809
 pub fn check_agent_running() -> AgentStatus {
     use std::net::TcpListener;
-    
+
     let port = 50809;
     match TcpListener::bind(("0.0.0.0", port)) {
         Ok(_) => {
@@ -71,11 +167,11 @@ fn get_process_using_port(port: u16) -> String {
     #[cfg(target_os = "windows")]
     {
         use std::process::Command;
-        
+
         let mut command = Command::new("netstat");
         command.args(&["-ano"]);
         command.creation_flags(0x08000000); // Hide console window
-        
+
         if let Ok(output) = command.output() {
             if output.status.success() {
                 let output_str = String::from_utf8_lossy(&output.stdout);
@@ -87,14 +183,12 @@ fn get_process_using_port(port: u16) -> String {
                         let mut tasklist = Command::new("tasklist");
                         tasklist.args(&["/FI", &format!("PID eq {}", pid)]);
                         tasklist.creation_flags(0x08000000);
-                        
+
                         if let Ok(task_output) = tasklist.output() {
                             let task_str = String::from_utf8_lossy(&task_output.stdout);
                             if let Some(process_line) = task_str.lines().nth(3) {
-                                let process_name = process_line
-                                    .split_whitespace()
-                                    .next()
-                                    .unwrap_or("unknown");
+                                let process_name =
+                                    process_line.split_whitespace().next().unwrap_or("unknown");
                                 log::info!(
                                     "Process using port {}: {} (PID: {})",
                                     port,
@@ -114,10 +208,10 @@ fn get_process_using_port(port: u16) -> String {
     #[cfg(target_os = "macos")]
     {
         use std::process::Command;
-        
+
         let mut command = Command::new("lsof");
         command.args(&["-i", &format!(":{}", port)]);
-        
+
         if let Ok(output) = command.output() {
             if output.status.success() {
                 let output_str = String::from_utf8_lossy(&output.stdout);
@@ -136,7 +230,7 @@ fn get_process_using_port(port: u16) -> String {
 pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, String> {
     // Check if agent is already running
     let status = check_agent_running();
-    
+
     if status.running {
         // Check if it's our agent
         if status.process_name == "agent.exe" || status.process_name == "agent" {
@@ -160,17 +254,19 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
     }
 
     // Get agent binary path
-    let app_data_dir = app_handle.path_resolver().app_data_dir()
+    let app_data_dir = app_handle
+        .path_resolver()
+        .app_data_dir()
         .ok_or("Failed to get app data directory")?;
-    
+
     #[cfg(target_os = "windows")]
     let agent_filename = "agent.exe";
-    
+
     #[cfg(target_os = "macos")]
     let agent_filename = "agent";
-    
+
     let agent_path = app_data_dir.join("bin").join(agent_filename);
-    
+
     // Check if agent binary exists
     if !agent_path.exists() {
         log::error!("Agent binary not found at: {:?}", agent_path);
@@ -184,25 +280,25 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
 
     // Start agent process
     log::info!("Starting agent from: {:?}", agent_path);
-    
+
     #[cfg(target_os = "windows")]
     {
         let mut command = Command::new(&agent_path);
         command.creation_flags(0x08000000); // Hide console window
         command.stdout(Stdio::null());
         command.stderr(Stdio::null());
-        
+
         match command.spawn() {
             Ok(child) => {
                 let pid = child.id();
                 log::info!("Agent started with PID: {}", pid);
-                
+
                 // Save PID to file
                 let pid_file = app_data_dir.join("agent.pid");
                 if let Err(e) = fs::write(&pid_file, pid.to_string()) {
                     log::warn!("Failed to write PID file: {}", e);
                 }
-                
+
                 Ok(AgentStartResult {
                     success: true,
                     error_type: String::new(),
@@ -221,7 +317,7 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
             }
         }
     }
-    
+
     #[cfg(target_os = "macos")]
     {
         match Command::new(&agent_path)
@@ -232,13 +328,13 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
             Ok(child) => {
                 let pid = child.id();
                 log::info!("Agent started with PID: {}", pid);
-                
+
                 // Save PID to file
                 let pid_file = app_data_dir.join("agent.pid");
                 if let Err(e) = fs::write(&pid_file, pid.to_string()) {
                     log::warn!("Failed to write PID file: {}", e);
                 }
-                
+
                 Ok(AgentStartResult {
                     success: true,
                     error_type: String::new(),
@@ -260,15 +356,20 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
 }
 
 // Wait for agent to be ready by checking port.txt
-pub async fn wait_agent_ready(app_handle: &AppHandle, timeout_seconds: u64) -> Result<bool, String> {
-    let app_data_dir = app_handle.path_resolver().app_data_dir()
+pub async fn wait_agent_ready(
+    app_handle: &AppHandle,
+    timeout_seconds: u64,
+) -> Result<bool, String> {
+    let app_data_dir = app_handle
+        .path_resolver()
+        .app_data_dir()
         .ok_or("Failed to get app data directory")?;
-    
+
     let port_file = app_data_dir.join("port.txt");
-    
+
     for i in 0..timeout_seconds {
         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-        
+
         if let Ok(content) = fs::read_to_string(&port_file) {
             if let Ok(port) = content.trim().parse::<u16>() {
                 if port > 0 {
@@ -277,11 +378,14 @@ pub async fn wait_agent_ready(app_handle: &AppHandle, timeout_seconds: u64) -> R
                 }
             }
         }
-        
+
         log::debug!("Waiting for agent... ({}/{})", i + 1, timeout_seconds);
     }
-    
-    log::error!("Agent did not become ready within {} seconds", timeout_seconds);
+
+    log::error!(
+        "Agent did not become ready within {} seconds",
+        timeout_seconds
+    );
     Ok(false)
 }
 
@@ -298,7 +402,7 @@ pub fn shutdown_processes(app_handle: &AppHandle) {
         } else {
             log::info!("Killed agent.exe");
         }
-        
+
         // Kill script
         let mut command = Command::new("taskkill");
         command.creation_flags(0x08000000);
@@ -309,7 +413,7 @@ pub fn shutdown_processes(app_handle: &AppHandle) {
             log::info!("Killed script.exe");
         }
     }
-    
+
     #[cfg(target_os = "macos")]
     {
         // Kill agent
@@ -320,7 +424,7 @@ pub fn shutdown_processes(app_handle: &AppHandle) {
         } else {
             log::info!("Killed agent");
         }
-        
+
         // Kill script
         let mut command = Command::new("pkill");
         command.args(&["-f", "script"]);
@@ -330,7 +434,7 @@ pub fn shutdown_processes(app_handle: &AppHandle) {
             log::info!("Killed script");
         }
     }
-    
+
     // Clear PID file
     if let Some(app_data_dir) = app_handle.path_resolver().app_data_dir() {
         let pid_file = app_data_dir.join("agent.pid");
@@ -352,7 +456,10 @@ pub fn start_agent(app_handle: AppHandle) -> Result<AgentStartResult, String> {
 }
 
 #[tauri::command]
-pub async fn wait_for_agent_ready(app_handle: AppHandle, timeout_seconds: u64) -> Result<bool, String> {
+pub async fn wait_for_agent_ready(
+    app_handle: AppHandle,
+    timeout_seconds: u64,
+) -> Result<bool, String> {
     wait_agent_ready(&app_handle, timeout_seconds).await
 }
 
@@ -368,7 +475,7 @@ pub async fn initialize_app(
     options: InitOptions,
 ) -> Result<InitializationResult, String> {
     log::info!("Starting app initialization with options: {:?}", options);
-    
+
     let mut result = InitializationResult {
         success: false,
         agent_status: check_agent_running(),
@@ -378,17 +485,27 @@ pub async fn initialize_app(
     };
 
     // Emit initialization started event
-    app_handle.emit_all("INIT_STATUS", &serde_json::json!({
-        "stage": "started",
-        "message": "Initialization started"
-    })).ok();
+    app_handle
+        .emit_all(
+            "INIT_STATUS",
+            &serde_json::json!({
+                "stage": "started",
+                "message": "Initialization started"
+            }),
+        )
+        .ok();
 
     // Step 1: Check updates if requested
     if options.check_updates {
-        app_handle.emit_all("INIT_STATUS", &serde_json::json!({
-            "stage": "checking_updates",
-            "message": "Checking for updates..."
-        })).ok();
+        app_handle
+            .emit_all(
+                "INIT_STATUS",
+                &serde_json::json!({
+                    "stage": "checking_updates",
+                    "message": "Checking for updates..."
+                }),
+            )
+            .ok();
 
         // Get platform info
         let platform = get_platform();
@@ -408,18 +525,25 @@ pub async fn initialize_app(
             if check_libs_url.trim().is_empty() {
                 if cfg!(debug_assertions) {
                     // In dev builds prefer local dev server
-                    check_libs_url = "http://localhost:8787/front-api/check_libs?beta=0".to_string();
+                    check_libs_url =
+                        "http://localhost:8787/front-api/check_libs?beta=0".to_string();
                 } else {
                     // Production default (can be overridden by environment)
-                    check_libs_url = "https://api.tikmatrix.com/front-api/check_libs?beta=0".to_string();
+                    check_libs_url =
+                        "https://api.tikmatrix.com/front-api/check_libs?beta=0".to_string();
                 }
             }
 
             // Emit which URL we're using for frontend visibility/debug
-            app_handle.emit_all("INIT_STATUS", &serde_json::json!({
-                "stage": "check_libs_url",
-                "message": format!("Using check_libs_url: {}", check_libs_url)
-            })).ok();
+            app_handle
+                .emit_all(
+                    "INIT_STATUS",
+                    &serde_json::json!({
+                        "stage": "check_libs_url",
+                        "message": format!("Using check_libs_url: {}", check_libs_url)
+                    }),
+                )
+                .ok();
         }
 
         // Check libraries update
@@ -428,15 +552,23 @@ pub async fn initialize_app(
             &check_libs_url,
             &platform,
             &app_name,
-        ).await {
+        )
+        .await
+        {
             Ok(response) => {
                 result.updates_checked = true;
-                
+
                 let libs = response.data.libs;
-                
+
                 // Update each library
                 for lib in libs {
-                    match crate::update_manager::process_lib_update(&app_handle, &lib, options.force_update).await {
+                    match crate::update_manager::process_lib_update(
+                        &app_handle,
+                        &lib,
+                        options.force_update,
+                    )
+                    .await
+                    {
                         Ok(true) => {
                             log::info!("Library {} updated successfully", lib.name);
                             result.updates_applied.push(lib.name.clone());
@@ -459,13 +591,18 @@ pub async fn initialize_app(
     }
 
     // Step 2: Check and start agent
-    app_handle.emit_all("INIT_STATUS", &serde_json::json!({
-        "stage": "starting_agent",
-        "message": "Starting agent..."
-    })).ok();
+    app_handle
+        .emit_all(
+            "INIT_STATUS",
+            &serde_json::json!({
+                "stage": "starting_agent",
+                "message": "Starting agent..."
+            }),
+        )
+        .ok();
 
     result.agent_status = check_agent_running();
-    
+
     if !result.agent_status.running {
         // Agent not running, start it
         match start_agent_process(&app_handle) {
@@ -477,14 +614,24 @@ pub async fn initialize_app(
                             if ready {
                                 result.success = true;
                                 result.agent_status = check_agent_running();
-                                
-                                app_handle.emit_all("INIT_STATUS", &serde_json::json!({
-                                    "stage": "completed",
-                                    "message": "Initialization completed successfully"
-                                })).ok();
-                                
+
+                                app_handle
+                                    .emit_all(
+                                        "INIT_STATUS",
+                                        &serde_json::json!({
+                                            "stage": "completed",
+                                            "message": "Initialization completed successfully"
+                                        }),
+                                    )
+                                    .ok();
+
                                 // Emit agent_started event for backward compatibility
-                                app_handle.emit_all("agent_started", &serde_json::json!({})).ok();
+                                app_handle
+                                    .emit_all("agent_started", &serde_json::json!({}))
+                                    .ok();
+
+                                // Report distributor installation after agent is ready
+                                tokio::spawn(report_distributor_install(app_handle.clone()));
                             } else {
                                 result.error = "Agent startup timeout".to_string();
                             }
@@ -501,17 +648,32 @@ pub async fn initialize_app(
                 result.error = format!("Failed to start agent: {}", e);
             }
         }
-    } else if result.agent_status.process_name == "agent.exe" || result.agent_status.process_name == "agent" {
+    } else if result.agent_status.process_name == "agent.exe"
+        || result.agent_status.process_name == "agent"
+    {
         // Agent is already running
         result.success = true;
-        app_handle.emit_all("INIT_STATUS", &serde_json::json!({
-            "stage": "completed",
-            "message": "Agent already running"
-        })).ok();
-        app_handle.emit_all("agent_started", &serde_json::json!({})).ok();
+        app_handle
+            .emit_all(
+                "INIT_STATUS",
+                &serde_json::json!({
+                    "stage": "completed",
+                    "message": "Agent already running"
+                }),
+            )
+            .ok();
+        app_handle
+            .emit_all("agent_started", &serde_json::json!({}))
+            .ok();
+
+        // Report distributor installation when agent is already running
+        tokio::spawn(report_distributor_install(app_handle.clone()));
     } else {
         // Port occupied by another process
-        result.error = format!("Port 50809 is occupied by {}", result.agent_status.process_name);
+        result.error = format!(
+            "Port 50809 is occupied by {}",
+            result.agent_status.process_name
+        );
     }
 
     if !result.success && result.error.is_empty() {
@@ -528,20 +690,19 @@ fn get_platform() -> String {
     {
         "windows".to_string()
     }
-    
+
     #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
     {
         "mac-arm".to_string()
     }
-    
+
     #[cfg(all(target_os = "macos", not(target_arch = "aarch64")))]
     {
         "mac-intel".to_string()
     }
-    
+
     #[cfg(not(any(target_os = "windows", target_os = "macos")))]
     {
         "unknown".to_string()
     }
 }
-

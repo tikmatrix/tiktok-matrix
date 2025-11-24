@@ -57,16 +57,24 @@ pub async fn check_libs_update(
     };
     status.emit(app_handle);
 
-    let client = reqwest::Client::new();
+    // Build the request URL first for proxy bypass check
     let url = format!("{}&time={}", check_libs_url, chrono::Utc::now().timestamp());
-
     log::info!("Checking libraries update from: {}", url);
+
+    // Create client with timeout and proxy configuration
+    let mut client_builder = reqwest::Client::builder().timeout(std::time::Duration::from_secs(10));
+
+    // Apply proxy configuration using the shared function from main (bypasses localhost automatically)
+    client_builder = crate::apply_proxy_config(client_builder, &url)?;
+
+    let client = client_builder
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
     let response = client
         .get(&url)
         .header("User-Agent", platform)
         .header("X-App-Id", app_name)
-        .timeout(std::time::Duration::from_secs(10))
         .send()
         .await
         .map_err(|e| format!("Failed to fetch update info: {}", e))?;

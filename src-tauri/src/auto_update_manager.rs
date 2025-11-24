@@ -68,45 +68,8 @@ pub fn is_system_idle(idle_threshold_minutes: u64) -> bool {
     false
 }
 
-/// Check if auto-update should be triggered
-pub fn should_trigger_auto_update(has_running_tasks: bool, config: &AutoUpdateConfig) -> bool {
-    if !config.enabled {
-        log::debug!("Auto-update is disabled");
-        return false;
-    }
-
-    if has_running_tasks {
-        log::debug!("Has running tasks, skipping auto-update");
-        return false;
-    }
-
-    if !is_system_idle(config.idle_threshold_minutes) {
-        log::debug!("System is not idle, skipping auto-update");
-        return false;
-    }
-
-    // Check if enough time has passed since last check
-    if let Ok(state) = AUTO_UPDATE_STATE.lock() {
-        if let Some(last_check) = state.last_check {
-            let elapsed = last_check.elapsed();
-            let interval = Duration::from_secs(config.check_interval_minutes * 60);
-            if elapsed < interval {
-                log::debug!(
-                    "Not enough time since last check: elapsed={:?}, interval={:?}",
-                    elapsed,
-                    interval
-                );
-                return false;
-            }
-        }
-    }
-
-    log::info!("Auto-update conditions met, should trigger update");
-    true
-}
-
 /// Update the last check timestamp
-pub fn update_last_check() {
+fn update_last_check() {
     if let Ok(mut state) = AUTO_UPDATE_STATE.lock() {
         state.last_check = Some(Instant::now());
         log::debug!("Updated last check timestamp");
@@ -165,15 +128,108 @@ pub async fn start_auto_update_timer(
                 continue;
             }
 
-            // Emit event to frontend to check if has running tasks
-            // Frontend will respond via check_can_auto_update command
-            app_handle
-                .emit_all("AUTO_UPDATE_CHECK_CONDITIONS", &())
-                .ok();
+            // Check if system is idle
+            if !is_system_idle(current_config.idle_threshold_minutes) {
+                log::debug!("System is not idle, skipping auto-update");
+                continue;
+            }
+
+            // Check time since last check
+            let should_check = AUTO_UPDATE_STATE
+                .lock()
+                .ok()
+                .and_then(|state| {
+                    state.last_check.map(|last_check| {
+                        let elapsed = last_check.elapsed();
+                        let interval_duration =
+                            Duration::from_secs(current_config.check_interval_minutes * 60);
+                        elapsed >= interval_duration
+                    })
+                })
+                .unwrap_or(true); // If no last check, should check
+
+            if !should_check {
+                log::debug!("Not enough time since last check");
+                continue;
+            }
+
+            // Check if has running tasks by querying agent
+            let has_running_tasks = match check_has_running_tasks(&app_handle).await {
+                Ok(has_tasks) => has_tasks,
+                Err(e) => {
+                    log::warn!("Failed to check running tasks: {}, skipping update", e);
+                    continue;
+                }
+            };
+
+            if has_running_tasks {
+                log::debug!("Has running tasks, skipping auto-update");
+                continue;
+            }
+
+            // All conditions met, trigger auto-update
+            log::info!("Auto-update conditions met, triggering update");
+            update_last_check();
+
+            // Emit event to trigger update in TitleBar
+            if let Err(e) = app_handle.emit_all("AUTO_UPDATE_TRIGGER", &()) {
+                log::error!("Failed to emit auto-update trigger: {}", e);
+            }
         }
     });
 
     Ok(())
+}
+
+/// Check if agent has running tasks
+async fn check_has_running_tasks(app_handle: &AppHandle) -> Result<bool, String> {
+    // Read agent port
+    let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+    let port_file = app_data_dir.join("port.txt");
+
+    let port = match std::fs::read_to_string(&port_file) {
+        Ok(content) => {
+            let trimmed = content.trim();
+            if trimmed == "0" {
+                // Agent not ready, assume no tasks
+                return Ok(false);
+            }
+            trimmed.to_string()
+        }
+        Err(_) => {
+            return Ok(false); // Can't read port, assume no tasks
+        }
+    };
+
+    // Query agent for running tasks
+    let url = format!("http://localhost:{}/api/get_running_tasks", port);
+
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(5))
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
+
+    match client.get(&url).send().await {
+        Ok(response) => {
+            if response.status().is_success() {
+                match response.json::<serde_json::Value>().await {
+                    Ok(json) => {
+                        // Check if data array is empty
+                        if let Some(data) = json.get("data") {
+                            if let Some(arr) = data.as_array() {
+                                return Ok(!arr.is_empty());
+                            }
+                        }
+                        Ok(false)
+                    }
+                    Err(_) => Ok(false),
+                }
+            } else {
+                Ok(false)
+            }
+        }
+        Err(_) => Ok(false), // Network error, assume no tasks
+    }
 }
 
 /// Stop auto-update timer
@@ -184,21 +240,6 @@ pub fn stop_auto_update_timer() -> Result<(), String> {
         state.is_running = false;
         state.last_check = None;
     }
-
-    Ok(())
-}
-
-/// Trigger auto-update check (called from frontend after conditions check)
-pub async fn trigger_auto_update(app_handle: &AppHandle) -> Result<(), String> {
-    log::info!("Triggering auto-update check");
-
-    // Update last check timestamp
-    update_last_check();
-
-    // Emit event to trigger update in TitleBar
-    app_handle
-        .emit_all("AUTO_UPDATE_TRIGGER", &())
-        .map_err(|e| format!("Failed to emit auto-update trigger: {}", e))?;
 
     Ok(())
 }
