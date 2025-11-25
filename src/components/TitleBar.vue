@@ -276,7 +276,7 @@ import { getAll } from '@tauri-apps/api/window';
 import { ask } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion, getName } from '@tauri-apps/api/app';
-import { installUpdate } from '@tauri-apps/api/updater';
+import { installUpdate, onUpdaterEvent } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
 import { open } from '@tauri-apps/api/shell';
 import { os } from '@tauri-apps/api';
@@ -487,9 +487,43 @@ export default {
             const yes = await ask(updateMessage, this.$t('updateConfirm'));
             if (yes) {
               this.check_update_dialog_title = 'Downloading update...';
-              await this.shutdown();
-              await installUpdate();
-              await relaunch();
+              
+              // Listen for Tauri update download progress
+              const unlisten = await onUpdaterEvent(({ error, status }) => {
+                console.log('Updater event:', status, error);
+                if (status === 'PENDING') {
+                  this.check_update_dialog_title = 'Downloading update...';
+                } else if (status === 'DONE') {
+                  this.check_update_dialog_title = 'Installing update...';
+                  this.download_progress = { filesize: 0, transfered: 0, transfer_rate: 0, percentage: 0 };
+                } else if (status === 'ERROR') {
+                  console.error('Update error:', error);
+                }
+              });
+
+              // Listen for download progress event
+              const unlistenProgress = await this.$listen('tauri://update-download-progress', (event) => {
+                const { chunk_length, content_length } = event.payload;
+                if (content_length && content_length > 0) {
+                  // Update progress
+                  const currentTransferred = (this.download_progress.transfered || 0) + chunk_length;
+                  this.download_progress = {
+                    filesize: content_length,
+                    transfered: currentTransferred,
+                    transfer_rate: chunk_length,
+                    percentage: Math.round((currentTransferred / content_length) * 100)
+                  };
+                }
+              });
+
+              try {
+                await this.shutdown();
+                await installUpdate();
+                await relaunch();
+              } finally {
+                unlisten();
+                unlistenProgress();
+              }
               return;
             }
           } else {
