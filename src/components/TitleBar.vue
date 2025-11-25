@@ -276,7 +276,7 @@ import { getAll } from '@tauri-apps/api/window';
 import { ask } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion, getName } from '@tauri-apps/api/app';
-import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
+import { installUpdate } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
 import { open } from '@tauri-apps/api/shell';
 import { os } from '@tauri-apps/api';
@@ -467,7 +467,8 @@ export default {
               check_updates: false,
               force_update: false,
               silent: true,
-              check_libs_url: ''
+              check_libs_url: '',
+              check_tauri_update: false
             }
           });
           console.log('Skip update check, just start agent:', initResult);
@@ -483,68 +484,53 @@ export default {
         this.$refs.download_dialog.showModal();
       }
 
-      // Check for Tauri app updates first (only in non-silent mode)
-      if (!silent) {
-        try {
-          const { shouldUpdate, manifest } = await checkUpdate();
-          if (shouldUpdate) {
-            console.log(`Update available ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`);
-
-            const platform = await this.getPlatform();
-            if (platform === 'windows') {
-              // Windows: Auto-update via Tauri
-              const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
-              if (yes) {
-                this.check_update_dialog_title = 'Downloading update...';
-                await this.shutdown();
-                await installUpdate();
-                await relaunch();
-                return;
-              }
-            } else {
-              // macOS: Prompt user to download manually
-              const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
-                ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
-                : `${this.whitelabelConfig.officialWebsite}/Download`;
-
-              const yes = await ask(
-                this.$t('macUpdatePrompt', { version: manifest?.version }),
-                this.$t('macUpdateAvailable')
-              );
-
-              if (yes) {
-                console.log('Opening download page:', downloadUrl);
-                await open(downloadUrl);
-              }
-              // Continue to check library updates and start agent
-            }
-          } else {
-            console.log('No update available');
-          }
-        } catch (e) {
-          console.error('Update check failed:', e);
-          this.$emiter('NOTIFY', {
-            type: 'error',
-            message: this.$t('updateCheckFailed'),
-            timeout: 4000
-          });
-          this.$refs.download_dialog.close();
-          return;
-        }
-      }
-
       try {
         const initResult = await invoke('initialize_app', {
           options: {
             check_updates: true,
             force_update: force,
             silent: silent,
-            // leave check_libs_url empty so backend will choose a sensible default/fallback
-            check_libs_url: ''
+            check_libs_url: '',
+            check_tauri_update: !silent // Only check Tauri updates in non-silent mode
           }
         });
 
         console.log('Initialization result:', initResult);
+
+        // Handle Tauri app update if available
+        if (initResult.tauri_update && initResult.tauri_update.should_update) {
+          const updateInfo = initResult.tauri_update;
+          console.log(`Update available ${updateInfo.version}, ${updateInfo.date}, ${updateInfo.body}`);
+
+          const platform = await this.getPlatform();
+          if (platform === 'windows') {
+            // Windows: Auto-update via Tauri
+            const yes = await ask(`${updateInfo.body || ''}`, this.$t('updateConfirm'));
+            if (yes) {
+              this.check_update_dialog_title = 'Downloading update...';
+              await this.shutdown();
+              await installUpdate();
+              await relaunch();
+              return;
+            }
+          } else {
+            // macOS: Prompt user to download manually
+            const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
+              ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
+              : `${this.whitelabelConfig.officialWebsite}/Download`;
+
+            const yes = await ask(
+              this.$t('macUpdatePrompt', { version: updateInfo.version }),
+              this.$t('macUpdateAvailable')
+            );
+
+            if (yes) {
+              console.log('Opening download page:', downloadUrl);
+              await open(downloadUrl);
+            }
+            // Continue to handle other results
+          }
+        }
 
         if (!silent) {
           this.$refs.download_dialog.close();
