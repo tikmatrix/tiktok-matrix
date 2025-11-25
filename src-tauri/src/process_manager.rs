@@ -1,3 +1,4 @@
+use crate::http_client;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::process::{Command, Stdio};
@@ -6,7 +7,7 @@ use tauri::{AppHandle, Manager};
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
-// Report distributor installation to agent
+// Report distributor installation to agent using common agent request logic
 async fn report_distributor_install(app_handle: AppHandle) {
     // Get distributor code from environment variable
     let distributor_code =
@@ -47,8 +48,8 @@ async fn report_distributor_install(app_handle: AppHandle) {
         "machine_id": machine_id,
     });
 
-    // Call agent API
-    match crate::agent_request(
+    // Call agent API using common http_client module
+    match http_client::agent_request(
         app_handle.clone(),
         "POST".to_string(),
         "/api/report_distributor_install".to_string(),

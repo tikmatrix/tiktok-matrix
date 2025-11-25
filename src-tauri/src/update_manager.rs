@@ -1,3 +1,5 @@
+use crate::file_utils;
+use crate::proxy_config;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -64,8 +66,8 @@ pub async fn check_libs_update(
     // Create client with timeout and proxy configuration
     let mut client_builder = reqwest::Client::builder().timeout(std::time::Duration::from_secs(10));
 
-    // Apply proxy configuration using the shared function from main (bypasses localhost automatically)
-    client_builder = crate::apply_proxy_config(client_builder, &url)?;
+    // Apply proxy configuration using the shared function (bypasses localhost automatically)
+    client_builder = proxy_config::apply_proxy_config(client_builder, &url)?;
 
     let client = client_builder
         .build()
@@ -213,7 +215,7 @@ pub async fn download_lib_file(app_handle: &AppHandle, lib: &LibInfo) -> Result<
     let file_path = tmp_dir.join(filename);
 
     // Use existing download_file_with_version command
-    let download_result = crate::download_file_with_version(
+    let download_result = file_utils::download_file_with_version(
         lib.download_url.clone(),
         file_path.to_str().unwrap().to_string(),
         app_handle.clone(),
@@ -251,14 +253,14 @@ pub async fn install_lib_file(
             std::thread::sleep(std::time::Duration::from_secs(3));
 
             // Unzip platform-tools
-            crate::unzip_file(
+            file_utils::unzip_file(
                 tmp_file_path.to_str().unwrap().to_string(),
                 app_data_dir.to_str().unwrap().to_string(),
             )?;
 
             // Grant permission on macOS
             #[cfg(target_os = "macos")]
-            crate::grant_permission(app_handle.clone(), "platform-tools/adb".to_string());
+            file_utils::grant_permission(app_handle.clone(), "platform-tools/adb".to_string());
 
             log::info!("Installed platform-tools");
         }
@@ -267,7 +269,7 @@ pub async fn install_lib_file(
             crate::kill_process("PaddleOCR-json".to_string());
 
             // Unzip PaddleOCR
-            crate::unzip_file(
+            file_utils::unzip_file(
                 tmp_file_path.to_str().unwrap().to_string(),
                 app_data_dir.to_str().unwrap().to_string(),
             )?;
