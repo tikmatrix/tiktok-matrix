@@ -684,7 +684,8 @@ pub async fn initialize_app(
     } else if result.agent_status.process_name == "agent.exe"
         || result.agent_status.process_name == "agent"
     {
-        // Agent is already running
+        // Agent is already running - no need to emit agent_started or report distributor
+        // These should only happen on first startup when agent transitions from not running to running
         result.success = true;
         app_handle
             .emit_all(
@@ -695,12 +696,6 @@ pub async fn initialize_app(
                 }),
             )
             .ok();
-        app_handle
-            .emit_all("agent_started", &serde_json::json!({}))
-            .ok();
-
-        // Report distributor installation when agent is already running
-        tokio::spawn(report_distributor_install(app_handle.clone()));
     } else {
         // Port occupied by another process
         result.error = format!(
