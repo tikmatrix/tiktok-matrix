@@ -505,7 +505,8 @@ export default {
           const platform = await this.getPlatform();
           if (platform === 'windows') {
             // Windows: Auto-update via Tauri
-            const yes = await ask(`${updateInfo.body || ''}`, this.$t('updateConfirm'));
+            const updateMessage = updateInfo.body || this.$t('updateAvailable');
+            const yes = await ask(updateMessage, this.$t('updateConfirm'));
             if (yes) {
               this.check_update_dialog_title = 'Downloading update...';
               await this.shutdown();

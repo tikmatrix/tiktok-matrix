@@ -505,6 +505,8 @@ pub async fn initialize_app(
         .ok();
 
     // Step 0: Check Tauri app updates if requested (only in non-silent mode)
+    // Tauri updates require user interaction for confirmation dialogs,
+    // so we skip this in silent/background mode (e.g., auto-update timer)
     if options.check_tauri_update && !options.silent {
         app_handle
             .emit_all(
