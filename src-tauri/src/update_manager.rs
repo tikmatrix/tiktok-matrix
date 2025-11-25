@@ -95,21 +95,33 @@ pub async fn check_libs_update(
     Ok(check_response)
 }
 
-/// Get local library version from storage
+/// Get local library version from storage (uses app_state.json for compatibility with frontend)
 pub fn get_local_lib_version(app_handle: &AppHandle, lib_name: &str) -> String {
     let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
-    let version_file = app_data_dir
-        .join("data")
-        .join(format!("{}_version.txt", lib_name));
+    let storage_path = app_data_dir.join("data").join("app_state.json");
 
-    if let Ok(content) = fs::read_to_string(&version_file) {
-        content.trim().replace("\"", "").to_string()
-    } else {
-        "0".to_string()
+    if !storage_path.exists() {
+        return "0".to_string();
     }
+
+    if let Ok(content) = fs::read_to_string(&storage_path) {
+        if content.trim().is_empty() {
+            return "0".to_string();
+        }
+
+        if let Ok(store) = serde_json::from_str::<serde_json::Value>(&content) {
+            if let Some(value) = store.get(lib_name) {
+                if let Some(s) = value.as_str() {
+                    return s.trim().replace("\"", "").to_string();
+                }
+            }
+        }
+    }
+
+    "0".to_string()
 }
 
-/// Save library version to storage
+/// Save library version to storage (uses app_state.json for compatibility with frontend)
 pub fn save_local_lib_version(
     app_handle: &AppHandle,
     lib_name: &str,
@@ -117,11 +129,32 @@ pub fn save_local_lib_version(
 ) -> Result<(), String> {
     let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
     let data_dir = app_data_dir.join("data");
+    let storage_path = data_dir.join("app_state.json");
 
+    // Ensure data directory exists
     fs::create_dir_all(&data_dir).map_err(|e| e.to_string())?;
 
-    let version_file = data_dir.join(format!("{}_version.txt", lib_name));
-    fs::write(&version_file, version).map_err(|e| e.to_string())?;
+    // Load existing store or create new one
+    let mut store: serde_json::Map<String, serde_json::Value> = if storage_path.exists() {
+        let content = fs::read_to_string(&storage_path).map_err(|e| e.to_string())?;
+        if content.trim().is_empty() {
+            serde_json::Map::new()
+        } else {
+            serde_json::from_str(&content).unwrap_or_else(|_| serde_json::Map::new())
+        }
+    } else {
+        serde_json::Map::new()
+    };
+
+    // Update the value
+    store.insert(
+        lib_name.to_string(),
+        serde_json::Value::String(version.to_string()),
+    );
+
+    // Write back to file
+    let json_str = serde_json::to_string_pretty(&store).map_err(|e| e.to_string())?;
+    fs::write(&storage_path, json_str).map_err(|e| e.to_string())?;
 
     log::info!("Saved {} version: {}", lib_name, version);
     Ok(())

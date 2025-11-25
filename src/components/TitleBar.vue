@@ -457,27 +457,6 @@ export default {
       }
     },
     async check_update(force = false, silent = false) {
-      // Skip update check if already done (unless force is true)
-      const skipUpdateCheck = sessionStorage.getItem('skipUpdateCheck');
-      if (skipUpdateCheck && !force) {
-        // Still need to ensure agent is running, call with check_updates=false
-        try {
-          const initResult = await invoke('initialize_app', {
-            options: {
-              check_updates: false,
-              force_update: false,
-              silent: true,
-              check_libs_url: '',
-              check_tauri_update: false
-            }
-          });
-          console.log('Skip update check, just start agent:', initResult);
-        } catch (e) {
-          console.error('Failed to start agent:', e);
-        }
-        return;
-      }
-
       // Use unified initialization process from Rust backend
       if (!silent) {
         this.check_update_dialog_title = 'Checking update...';
@@ -538,10 +517,7 @@ export default {
         }
 
         if (initResult.success) {
-          // Mark as checked to avoid repetitive checks
-          if (!force) {
-            sessionStorage.setItem('skipUpdateCheck', 'true');
-          }
+          // Initialization successful, nothing else to do
         } else {
           // Handle errors
           if (initResult.error.includes('Port 50809 is occupied')) {
