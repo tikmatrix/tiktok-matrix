@@ -2,10 +2,47 @@ use crate::http_client;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::process::{Command, Stdio};
+use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
+
+// Global state for agent monitor
+lazy_static::lazy_static! {
+    static ref MONITOR_RUNNING: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+    static ref MONITOR_ENABLED: Arc<AtomicBool> = Arc::new(AtomicBool::new(true));
+}
+
+// Agent monitor configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentMonitorConfig {
+    pub enabled: bool,
+    pub check_interval_seconds: u64,
+    pub max_restart_attempts: u32,
+    pub restart_cooldown_seconds: u64,
+}
+
+impl Default for AgentMonitorConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            check_interval_seconds: 10,
+            max_restart_attempts: 3,
+            restart_cooldown_seconds: 30,
+        }
+    }
+}
+
+// Agent monitor state info for frontend
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentMonitorState {
+    pub is_monitoring: bool,
+    pub is_enabled: bool,
+    pub restart_count: u32,
+    pub last_restart_time: Option<String>,
+}
 
 // Report distributor installation to agent using common agent request logic
 async fn report_distributor_install(app_handle: AppHandle) {
@@ -611,6 +648,16 @@ pub async fn initialize_app(
 
                                 // Report distributor installation after agent is ready
                                 tokio::spawn(report_distributor_install(app_handle.clone()));
+
+                                // Start agent monitor after agent is successfully started
+                                let monitor_handle = app_handle.clone();
+                                tokio::spawn(async move {
+                                    start_agent_monitor(
+                                        monitor_handle,
+                                        AgentMonitorConfig::default(),
+                                    )
+                                    .await;
+                                });
                             } else {
                                 result.error = "Agent startup timeout".to_string();
                             }
@@ -642,6 +689,12 @@ pub async fn initialize_app(
                 }),
             )
             .ok();
+
+        // Start agent monitor even if agent is already running
+        let monitor_handle = app_handle.clone();
+        tokio::spawn(async move {
+            start_agent_monitor(monitor_handle, AgentMonitorConfig::default()).await;
+        });
     } else {
         // Port occupied by another process
         result.error = format!(
@@ -678,5 +731,211 @@ fn get_platform() -> String {
     #[cfg(not(any(target_os = "windows", target_os = "macos")))]
     {
         "unknown".to_string()
+    }
+}
+
+// ============ Agent Monitor Functions ============
+
+/// Start agent monitoring task
+pub async fn start_agent_monitor(app_handle: AppHandle, config: AgentMonitorConfig) {
+    // Check if already running
+    if MONITOR_RUNNING.load(std::sync::atomic::Ordering::SeqCst) {
+        log::info!("Agent monitor is already running");
+        return;
+    }
+
+    if !config.enabled {
+        log::info!("Agent monitor is disabled");
+        return;
+    }
+
+    MONITOR_RUNNING.store(true, std::sync::atomic::Ordering::SeqCst);
+    MONITOR_ENABLED.store(true, std::sync::atomic::Ordering::SeqCst);
+
+    log::info!(
+        "Starting agent monitor with config: interval={}s, max_attempts={}, cooldown={}s",
+        config.check_interval_seconds,
+        config.max_restart_attempts,
+        config.restart_cooldown_seconds
+    );
+
+    let check_interval = std::time::Duration::from_secs(config.check_interval_seconds);
+    let cooldown = std::time::Duration::from_secs(config.restart_cooldown_seconds);
+    let max_attempts = config.max_restart_attempts;
+
+    tokio::spawn(async move {
+        let mut restart_count: u32 = 0;
+        let mut last_restart_time: Option<std::time::Instant> = None;
+        let mut consecutive_failures: u32 = 0;
+
+        loop {
+            // Check if monitor should stop
+            if !MONITOR_ENABLED.load(std::sync::atomic::Ordering::SeqCst) {
+                log::info!("Agent monitor stopped by user");
+                break;
+            }
+
+            // Wait for check interval
+            tokio::time::sleep(check_interval).await;
+
+            // Check agent status
+            let status = check_agent_running();
+
+            if status.running {
+                // Agent is running, reset failure counter
+                if consecutive_failures > 0 {
+                    log::info!("Agent recovered, resetting failure counter");
+                    consecutive_failures = 0;
+                }
+                continue;
+            }
+
+            // Agent not running, check if we should restart
+            log::warn!("Agent is not running, attempting to restart...");
+
+            // Check cooldown period
+            if let Some(last_time) = last_restart_time {
+                if last_time.elapsed() < cooldown {
+                    log::info!(
+                        "Restart cooldown in effect, waiting... ({:.1}s remaining)",
+                        (cooldown - last_time.elapsed()).as_secs_f32()
+                    );
+                    continue;
+                }
+            }
+
+            // Check restart attempt limit
+            if restart_count >= max_attempts {
+                log::error!(
+                    "Max restart attempts ({}) reached, stopping monitor",
+                    max_attempts
+                );
+
+                // Emit event to notify frontend
+                app_handle
+                    .emit_all(
+                        "AGENT_MONITOR_STATUS",
+                        &serde_json::json!({
+                            "event": "max_restarts_reached",
+                            "restart_count": restart_count,
+                            "message": "Agent failed to start after maximum restart attempts"
+                        }),
+                    )
+                    .ok();
+
+                break;
+            }
+
+            // Attempt to restart agent
+            match start_agent_process(&app_handle) {
+                Ok(result) => {
+                    if result.success {
+                        restart_count += 1;
+                        last_restart_time = Some(std::time::Instant::now());
+                        consecutive_failures = 0;
+
+                        log::info!(
+                            "Agent restarted successfully (attempt {}/{})",
+                            restart_count,
+                            max_attempts
+                        );
+
+                        // Wait for agent to be ready
+                        match wait_agent_ready(&app_handle, 10).await {
+                            Ok(ready) => {
+                                if ready {
+                                    log::info!("Agent is ready after restart");
+
+                                    // Emit success event
+                                    app_handle
+                                        .emit_all(
+                                            "AGENT_MONITOR_STATUS",
+                                            &serde_json::json!({
+                                                "event": "agent_restarted",
+                                                "restart_count": restart_count,
+                                                "message": "Agent was automatically restarted"
+                                            }),
+                                        )
+                                        .ok();
+
+                                    // Also emit agent_started event for backward compatibility
+                                    app_handle
+                                        .emit_all("agent_started", &serde_json::json!({}))
+                                        .ok();
+                                } else {
+                                    consecutive_failures += 1;
+                                    log::error!("Agent failed to become ready after restart");
+                                }
+                            }
+                            Err(e) => {
+                                consecutive_failures += 1;
+                                log::error!("Error waiting for agent: {}", e);
+                            }
+                        }
+                    } else {
+                        consecutive_failures += 1;
+                        log::error!("Failed to restart agent: {}", result.message);
+
+                        // Emit failure event
+                        app_handle
+                            .emit_all(
+                                "AGENT_MONITOR_STATUS",
+                                &serde_json::json!({
+                                    "event": "restart_failed",
+                                    "error_type": result.error_type,
+                                    "message": result.message
+                                }),
+                            )
+                            .ok();
+                    }
+                }
+                Err(e) => {
+                    consecutive_failures += 1;
+                    log::error!("Error restarting agent: {}", e);
+                }
+            }
+        }
+
+        MONITOR_RUNNING.store(false, std::sync::atomic::Ordering::SeqCst);
+        log::info!("Agent monitor task ended");
+    });
+}
+
+/// Stop agent monitoring
+pub fn stop_agent_monitor() {
+    log::info!("Stopping agent monitor...");
+    MONITOR_ENABLED.store(false, std::sync::atomic::Ordering::SeqCst);
+}
+
+/// Check if agent monitor is running
+pub fn is_agent_monitor_running() -> bool {
+    MONITOR_RUNNING.load(std::sync::atomic::Ordering::SeqCst)
+}
+
+// ============ Tauri Commands for Agent Monitor ============
+
+#[tauri::command]
+pub async fn start_agent_monitoring(
+    app_handle: AppHandle,
+    config: Option<AgentMonitorConfig>,
+) -> Result<(), String> {
+    let cfg = config.unwrap_or_default();
+    start_agent_monitor(app_handle, cfg).await;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn stop_agent_monitoring() -> Result<(), String> {
+    stop_agent_monitor();
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_agent_monitor_state() -> AgentMonitorState {
+    AgentMonitorState {
+        is_monitoring: MONITOR_RUNNING.load(std::sync::atomic::Ordering::SeqCst),
+        is_enabled: MONITOR_ENABLED.load(std::sync::atomic::Ordering::SeqCst),
+        restart_count: 0, // This would need persistent state to track
+        last_restart_time: None,
     }
 }
