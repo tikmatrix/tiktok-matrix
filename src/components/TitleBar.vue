@@ -276,6 +276,10 @@ import { getAll } from '@tauri-apps/api/window';
 import { ask } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion, getName } from '@tauri-apps/api/app';
+import { checkUpdate, installUpdate } from '@tauri-apps/api/updater';
+import { relaunch } from '@tauri-apps/api/process';
+import { open } from '@tauri-apps/api/shell';
+import { os } from '@tauri-apps/api';
 import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import AgentErrorDialog from './AgentErrorDialog.vue';
@@ -453,10 +457,80 @@ export default {
       }
     },
     async check_update(force = false, silent = false) {
+      // Skip update check if already done (unless force is true)
+      const skipUpdateCheck = sessionStorage.getItem('skipUpdateCheck');
+      if (skipUpdateCheck && !force) {
+        // Still need to ensure agent is running, call with check_updates=false
+        try {
+          const initResult = await invoke('initialize_app', {
+            options: {
+              check_updates: false,
+              force_update: false,
+              silent: true,
+              check_libs_url: ''
+            }
+          });
+          console.log('Skip update check, just start agent:', initResult);
+        } catch (e) {
+          console.error('Failed to start agent:', e);
+        }
+        return;
+      }
+
       // Use unified initialization process from Rust backend
       if (!silent) {
-        this.check_update_dialog_title = 'Initializing...';
+        this.check_update_dialog_title = 'Checking update...';
         this.$refs.download_dialog.showModal();
+      }
+
+      // Check for Tauri app updates first (only in non-silent mode)
+      if (!silent) {
+        try {
+          const { shouldUpdate, manifest } = await checkUpdate();
+          if (shouldUpdate) {
+            console.log(`Update available ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`);
+
+            const platform = await this.getPlatform();
+            if (platform === 'windows') {
+              // Windows: Auto-update via Tauri
+              const yes = await ask(`${manifest?.body}`, this.$t('updateConfirm'));
+              if (yes) {
+                this.check_update_dialog_title = 'Downloading update...';
+                await this.shutdown();
+                await installUpdate();
+                await relaunch();
+                return;
+              }
+            } else {
+              // macOS: Prompt user to download manually
+              const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
+                ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
+                : `${this.whitelabelConfig.officialWebsite}/Download`;
+
+              const yes = await ask(
+                this.$t('macUpdatePrompt', { version: manifest?.version }),
+                this.$t('macUpdateAvailable')
+              );
+
+              if (yes) {
+                console.log('Opening download page:', downloadUrl);
+                await open(downloadUrl);
+              }
+              // Continue to check library updates and start agent
+            }
+          } else {
+            console.log('No update available');
+          }
+        } catch (e) {
+          console.error('Update check failed:', e);
+          this.$emiter('NOTIFY', {
+            type: 'error',
+            message: this.$t('updateCheckFailed'),
+            timeout: 4000
+          });
+          this.$refs.download_dialog.close();
+          return;
+        }
       }
 
       try {
@@ -542,6 +616,34 @@ export default {
     async startAgent(silent = false) {
       // Simplified: just call initialization without update check
       await this.check_update(false, silent);
+    },
+
+    openWhiteLabelDialog() {
+      this.$refs.whitelabelDialog.showDialog();
+    },
+
+    openSupportDialog() {
+      this.$emiter('showDialog', { name: 'support' })
+    },
+
+    onWhiteLabelConfigUpdated(config) {
+      this.whitelabelConfig = config;
+      document.title = config.appName || 'TikMatrix';
+      this.$emit('whitelabel-updated', config);
+    },
+
+    async getPlatform() {
+      const osType = await os.type();
+      const arch = await os.arch();
+      let platform = 'windows';
+      if (osType === 'Darwin') {
+        if (arch === 'aarch64') {
+          platform = 'mac-arm';
+        } else {
+          platform = 'mac-intel';
+        }
+      }
+      return platform;
     },
   },
   async mounted() {

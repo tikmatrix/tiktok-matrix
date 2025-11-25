@@ -21,6 +21,7 @@ import AppDialog from './AppDialog.vue'
 import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs'
+import { invoke } from "@tauri-apps/api/tauri";
 import { getItem } from './utils/storage.js';
 import {
   getSupportUnreadState,
@@ -504,6 +505,26 @@ export default {
       document.addEventListener('contextmenu', event => event.preventDefault());
     },
 
+    // Start auto-update timer with settings
+    async startAutoUpdateTimer() {
+      try {
+        const isDev = import.meta.env.DEV;
+        const checkInterval = isDev ? 3 : 10; // 3 minutes in dev, 10 minutes in prod
+        const idleThreshold = isDev ? 1 : 5; // 1 minute in dev, 5 minutes in prod
+
+        await invoke('start_auto_update_timer', {
+          config: {
+            enabled: this.settings?.auto_update_enabled || false,
+            check_interval_minutes: checkInterval,
+            idle_threshold_minutes: idleThreshold
+          }
+        });
+        console.log('Auto-update timer started');
+      } catch (error) {
+        console.error('Failed to start auto-update timer:', error);
+      }
+    },
+
   },
 
   async mounted() {
@@ -528,6 +549,9 @@ export default {
       await this.connectAgent();
       await this.getRunningTasks();
       await this.$emiter('reload_tasks', {})
+
+      // Start auto-update timer
+      await this.startAutoUpdateTimer();
     }));
     this.listeners.push(await this.$listen('reload_devices', async () => {
       await this.getDevices();
@@ -552,6 +576,8 @@ export default {
     //reload_settings
     this.listeners.push(await this.$listen('reload_settings', async () => {
       await this.get_settings()
+      // Restart auto-update timer (settings may have changed)
+      await this.startAutoUpdateTimer();
     }))
 
     this.listeners.push(await this.$listen('supportMarkRead', async (e) => {
@@ -577,6 +603,11 @@ export default {
 
     // Cleanup network monitoring
     this.cleanupNetworkMonitoring();
+
+    // Stop auto-update timer
+    invoke('stop_auto_update_timer').catch(e => {
+      console.error('Failed to stop auto-update timer:', e);
+    });
 
     // 清理 WebSocket 资源
     this.cleanupWebSocket(true);
