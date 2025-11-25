@@ -1446,6 +1446,22 @@ fn get_auto_update_state() -> auto_update_manager::AutoUpdateStateInfo {
 
 fn main() -> std::io::Result<()> {
     tauri::Builder::default()
+        .on_window_event(|event| {
+            // Handle window close/destroy events to shutdown agent processes
+            match event.event() {
+                tauri::WindowEvent::CloseRequested { .. } => {
+                    // Don't prevent close, but shutdown processes before closing
+                    log::info!("Window close requested, shutting down agent processes...");
+                    process_manager::shutdown_processes(&event.window().app_handle());
+                }
+                tauri::WindowEvent::Destroyed => {
+                    // Also handle destroy event as a fallback
+                    log::info!("Window destroyed, ensuring agent processes are shutdown...");
+                    process_manager::shutdown_processes(&event.window().app_handle());
+                }
+                _ => {}
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             get_distributor_code,
             grant_permission,

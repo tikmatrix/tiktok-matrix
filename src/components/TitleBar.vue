@@ -417,14 +417,11 @@ export default {
     async closeWindow() {
       const yes = await ask(this.$t('exitConfirm'), this.$t('confirm'));
       if (yes) {
-        await this.shutdown();
+        // Agent shutdown is now handled automatically by Rust on window close event
         getAll().forEach((win) => {
           win.close();
         });
       }
-    },
-    async shutdown() {
-      await invoke("shutdown_agent");
     },
     changeLocale() {
       this.$i18n.locale = this.currentLocale;
@@ -487,7 +484,7 @@ export default {
             const yes = await ask(updateMessage, this.$t('updateConfirm'));
             if (yes) {
               this.check_update_dialog_title = 'Downloading update...';
-              
+
               // Listen for Tauri update download progress
               const unlisten = await onUpdaterEvent(({ error, status }) => {
                 console.log('Updater event:', status, error);
