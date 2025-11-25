@@ -184,7 +184,7 @@
 </template>
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem, setItem } from '@/utils/storage.js';
 import { getUnlockedFeatures } from '@/utils/features.js';
 import { cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 export default {

@@ -40,7 +40,7 @@
             <div class="flex-1">
                 <div class="flex items-center justify-between mb-2">
                     <span class="font-bold">{{ $t('syncProgress') }}: {{ syncProgress.current }} / {{ syncProgress.total
-                        }}</span>
+                    }}</span>
                     <div class="flex items-center gap-4">
                         <span class="text-md">{{ $t('success') }}: {{ syncProgress.success }}, {{ $t('failed') }}: {{
                             syncProgress.failed }}</span>
@@ -197,7 +197,7 @@ import DataSyncButton from '../analytics/DataSyncButton.vue'
 import * as XLSX from 'xlsx'
 import { writeBinaryFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { invoke } from "@tauri-apps/api/tauri"
-import { getJsonItem, setJsonItem, getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
+import { getJsonItem, setJsonItem, getItem, setItem, removeItem } from '@/utils/storage.js';
 
 export default {
     name: 'AccountAnalytics',

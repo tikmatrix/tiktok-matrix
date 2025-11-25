@@ -168,7 +168,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import * as XLSX from 'xlsx'
 import { open, message } from '@tauri-apps/api/dialog'
 import { readBinaryFile } from '@tauri-apps/api/fs';
-import { getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
+import { getJsonItem, setJsonItem } from '@/utils/storage.js';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 
 export default {

@@ -60,7 +60,7 @@
 <script>
 import Countup from './Countup.vue'
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem, setItem } from '@/utils/storage.js';
 export default {
     name: 'Tasks',
     props: ['settings'],

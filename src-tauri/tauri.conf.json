@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "TikMatrix",
-    "version": "2.9.13"
+    "version": "2.9.11"
   },
   "tauri": {
     "allowlist": {

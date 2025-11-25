@@ -824,6 +824,146 @@ async fn agent_request(
     }
 }
 
+// ============ Persistent Storage Commands ============
+
+/// Get single storage item
+#[tauri::command]
+fn get_storage_item(app: tauri::AppHandle, key: String) -> Result<Option<String>, String> {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let storage_path = work_dir.join("data").join("app_state.json");
+
+    if !storage_path.exists() {
+        return Ok(None);
+    }
+
+    let content = std::fs::read_to_string(&storage_path).map_err(|e| e.to_string())?;
+    if content.trim().is_empty() {
+        return Ok(None);
+    }
+
+    let store: serde_json::Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
+
+    if let Some(value) = store.get(&key) {
+        if value.is_null() {
+            return Ok(None);
+        }
+        Ok(Some(value.as_str().unwrap_or("").to_string()))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Set single storage item
+#[tauri::command]
+fn set_storage_item(app: tauri::AppHandle, key: String, value: String) -> Result<(), String> {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let data_dir = work_dir.join("data");
+    let storage_path = data_dir.join("app_state.json");
+
+    // Ensure data directory exists
+    std::fs::create_dir_all(&data_dir).map_err(|e| e.to_string())?;
+
+    // Load existing store or create new one
+    let mut store: serde_json::Map<String, serde_json::Value> = if storage_path.exists() {
+        let content = std::fs::read_to_string(&storage_path).map_err(|e| e.to_string())?;
+        if content.trim().is_empty() {
+            serde_json::Map::new()
+        } else {
+            serde_json::from_str(&content).unwrap_or_else(|_| serde_json::Map::new())
+        }
+    } else {
+        serde_json::Map::new()
+    };
+
+    // Update the value
+    store.insert(key, serde_json::Value::String(value));
+
+    // Write back to file
+    let json_str = serde_json::to_string_pretty(&store).map_err(|e| e.to_string())?;
+    std::fs::write(&storage_path, json_str).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Remove single storage item
+#[tauri::command]
+fn remove_storage_item(app: tauri::AppHandle, key: String) -> Result<(), String> {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let storage_path = work_dir.join("data").join("app_state.json");
+
+    if !storage_path.exists() {
+        return Ok(());
+    }
+
+    let content = std::fs::read_to_string(&storage_path).map_err(|e| e.to_string())?;
+    if content.trim().is_empty() {
+        return Ok(());
+    }
+
+    let mut store: serde_json::Map<String, serde_json::Value> =
+        serde_json::from_str(&content).unwrap_or_else(|_| serde_json::Map::new());
+
+    store.remove(&key);
+
+    let json_str = serde_json::to_string_pretty(&store).map_err(|e| e.to_string())?;
+    std::fs::write(&storage_path, json_str).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Clear all storage
+#[tauri::command]
+fn clear_storage(app: tauri::AppHandle) -> Result<(), String> {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let storage_path = work_dir.join("data").join("app_state.json");
+
+    let empty_store = serde_json::Map::new();
+    let json_str = serde_json::to_string_pretty(&empty_store).map_err(|e| e.to_string())?;
+    std::fs::write(&storage_path, json_str).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Get all storage keys
+#[tauri::command]
+fn get_all_storage_keys(app: tauri::AppHandle) -> Result<Vec<String>, String> {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let storage_path = work_dir.join("data").join("app_state.json");
+
+    if !storage_path.exists() {
+        return Ok(Vec::new());
+    }
+
+    let content = std::fs::read_to_string(&storage_path).map_err(|e| e.to_string())?;
+    if content.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let store: serde_json::Map<String, serde_json::Value> =
+        serde_json::from_str(&content).unwrap_or_else(|_| serde_json::Map::new());
+
+    Ok(store.keys().cloned().collect())
+}
+
+/// Get all storage data as snapshot
+#[tauri::command]
+fn get_storage_snapshot(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
+    let work_dir = app.path_resolver().app_data_dir().unwrap();
+    let storage_path = work_dir.join("data").join("app_state.json");
+
+    if !storage_path.exists() {
+        return Ok(serde_json::json!({}));
+    }
+
+    let content = std::fs::read_to_string(&storage_path).map_err(|e| e.to_string())?;
+    if content.trim().is_empty() {
+        return Ok(serde_json::json!({}));
+    }
+
+    let store: serde_json::Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
+    Ok(store)
+}
+
 // 通用的设置文件读取函数
 #[tauri::command]
 fn read_settings_file_generic(app: tauri::AppHandle, filename: String) -> Result<String, String> {
@@ -1321,6 +1461,12 @@ fn main() -> std::io::Result<()> {
             get_env,
             http_request,
             agent_request,
+            get_storage_item,
+            set_storage_item,
+            remove_storage_item,
+            clear_storage,
+            get_all_storage_keys,
+            get_storage_snapshot,
             read_settings_file_generic,
             write_settings_file_generic,
             read_settings_file,
@@ -1388,8 +1534,6 @@ fn main() -> std::io::Result<()> {
         })
         .on_page_load(|_window, _payload| {
             log::info!("[TikMatrix] page load triggered");
-            log::info!("VITE_APP_NAME: {:?}", std::env::var("VITE_APP_NAME"));
-            log::info!("VITE_TARGET_APP: {:?}", std::env::var("VITE_TARGET_APP"));
         })
         //listen to the tauri update event
         .run(tauri::generate_context!())

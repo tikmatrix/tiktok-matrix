@@ -67,7 +67,7 @@ import paymentMixin from '../mixins/paymentMixin'
 import licenseMixin from '../mixins/licenseMixin'
 import orderMixin from '../mixins/orderMixin'
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem, setItem } from '@/utils/storage.js';
 
 export default {
     name: 'LicenseManagementDialog',

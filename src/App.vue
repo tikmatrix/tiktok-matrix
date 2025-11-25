@@ -21,7 +21,7 @@ import AppDialog from './AppDialog.vue'
 import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs'
-import { getItem } from './utils/persistentStorage.js';
+import { getItem } from './utils/storage.js';
 import {
   getSupportUnreadState,
   mergeSupportUpdates,

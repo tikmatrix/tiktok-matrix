@@ -1,4 +1,4 @@
-import { getJsonItem, removeItem, setJsonItem } from './persistentStorage.js';
+import { getJsonItem, removeItem, setJsonItem } from './storage.js';
 
 /**
  * 功能解锁管理工具

@@ -281,7 +281,7 @@ import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import AgentErrorDialog from './AgentErrorDialog.vue';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 import { isFeatureUnlocked } from '../utils/features.js';
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem, setItem } from '@/utils/storage.js';
 import LicenseLifecycle from './LicenseLifecycle.vue';
 
 export default {

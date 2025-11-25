@@ -104,7 +104,7 @@
 </template>
 
 <script>
-import { getJsonItem, setJsonItem, getItem, setItem, removeItem } from '@/utils/persistentStorage.js';
+import { getJsonItem, setJsonItem, getItem, setItem, removeItem } from '@/utils/storage.js';
 export default {
     name: 'CustomCommands',
     props: ['settings'],

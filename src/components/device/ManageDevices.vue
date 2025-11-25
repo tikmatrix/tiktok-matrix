@@ -346,7 +346,7 @@ import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem, setItem } from '@/utils/storage.js';
 
 const GRID_CARD_WIDTH_KEY = 'gridCardWidth';
 const LEGACY_CARD_WIDTH_KEY = 'deviceWidth';

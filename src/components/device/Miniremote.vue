@@ -103,7 +103,7 @@ import RightBars from './RightBars.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
-import { getItem, getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
+import { getItem, getJsonItem, setJsonItem } from '@/utils/storage.js';
 const FIRST_FRAME_PREFIX = 'FIRST_FRAME_BASE64:';
 const DEVICE_SIZE_STORAGE_PREFIX = 'deviceSize:';
 const LEGACY_WIDTH_KEY = 'deviceWidth';
@@ -855,7 +855,7 @@ export default {
 
     closeWebSocketConnection(ws, clearHandlersFirst = false) {
       if (!ws) return;
-      
+
       try {
         if (clearHandlersFirst) {
           // Clear handlers before closing (prevents callbacks during reconnection)
