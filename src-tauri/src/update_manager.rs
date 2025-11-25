@@ -336,10 +336,23 @@ pub async fn process_lib_update(
     );
 
     // Check if update is needed
+    log::info!(
+        "Update check for {}: force={}, file_exists={}, local_version='{}', remote_version='{}', versions_equal={}",
+        lib.name,
+        force,
+        file_exists,
+        local_version,
+        lib.version,
+        local_version == lib.version
+    );
+
     if !force && file_exists && local_version == lib.version {
         log::info!("Library {} is up to date", lib.name);
         return Ok(false);
     }
+
+    log::info!("Library {} needs update (force={}, file_exists={}, version_match={})",
+        lib.name, force, file_exists, local_version == lib.version);
 
     // Download file
     let tmp_file = download_lib_file(app_handle, lib).await?;
