@@ -20,7 +20,6 @@ import Sidebar from './components/Sidebar.vue'
 import AppDialog from './AppDialog.vue'
 import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
-import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { invoke } from '@tauri-apps/api/tauri'
 import { getItem } from './utils/storage.js';
 import {
@@ -254,14 +253,8 @@ export default {
     // Connect to agent via Rust WebSocket manager
     async connectAgent() {
       try {
-        const wsPort = await readTextFile('wssport.txt', { dir: BaseDirectory.AppData });
-        if (wsPort === '0') {
-          console.log('WebSocket port is 0, skipping connection');
-          return;
-        }
-        const port = parseInt(wsPort, 10);
-        console.log('Connecting to agent WebSocket on port:', port);
-        await invoke('ws_connect', { port });
+        console.log('Connecting to agent WebSocket...');
+        await invoke('ws_connect');
       } catch (error) {
         console.error('Failed to connect agent WebSocket:', error);
       }

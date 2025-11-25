@@ -1,6 +1,7 @@
 use futures_util::{SinkExt, StreamExt};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 use tokio::sync::mpsc;
@@ -33,6 +34,7 @@ struct WsManagerState {
     last_error: String,
     should_reconnect: bool,
     shutdown_tx: Option<mpsc::Sender<()>>,
+    app_data_dir: Option<PathBuf>,
 }
 
 impl Default for WsManagerState {
@@ -45,6 +47,7 @@ impl Default for WsManagerState {
             last_error: String::new(),
             should_reconnect: false,
             shutdown_tx: None,
+            app_data_dir: None,
         }
     }
 }
@@ -97,16 +100,48 @@ fn rand_jitter() -> f64 {
     (nanos % 1000) as f64 / 1000.0
 }
 
-/// Start WebSocket connection to agent
-pub async fn connect_ws(app_handle: AppHandle, ws_port: u16) -> Result<(), String> {
-    let url = format!("ws://localhost:{}", ws_port);
-    log::info!("Starting WebSocket connection to {}", url);
+/// Read WebSocket port from wssport.txt file
+fn read_ws_port(app_data_dir: &PathBuf) -> Option<u16> {
+    let port_file = app_data_dir.join("wssport.txt");
+    match std::fs::read_to_string(&port_file) {
+        Ok(content) => {
+            let trimmed = content.trim();
+            match trimmed.parse::<u16>() {
+                Ok(port) if port > 0 => {
+                    log::info!("Read WebSocket port from file: {}", port);
+                    Some(port)
+                }
+                Ok(_) => {
+                    log::debug!("WebSocket port is 0, agent not ready");
+                    None
+                }
+                Err(e) => {
+                    log::warn!("Failed to parse WebSocket port '{}': {}", trimmed, e);
+                    None
+                }
+            }
+        }
+        Err(e) => {
+            log::warn!("Failed to read wssport.txt: {}", e);
+            None
+        }
+    }
+}
 
-    // Check if already connected to the same URL
+/// Start WebSocket connection to agent (reads port from file)
+pub async fn start_ws_connection(app_handle: AppHandle) -> Result<(), String> {
+    let app_data_dir = app_handle
+        .path_resolver()
+        .app_data_dir()
+        .ok_or("Failed to get app data directory")?;
+
+    log::info!("Starting WebSocket connection manager");
+
+    // Check if already running
     {
         let state = WS_STATE.lock();
-        if state.state == WsState::Connected && state.url == url {
-            log::info!("WebSocket already connected to {}", url);
+        if state.state == WsState::Connected || state.state == WsState::Connecting {
+            log::info!("WebSocket already connected or connecting");
             return Ok(());
         }
     }
@@ -120,12 +155,12 @@ pub async fn connect_ws(app_handle: AppHandle, ws_port: u16) -> Result<(), Strin
     // Update state
     {
         let mut state = WS_STATE.lock();
-        state.url = url.clone();
         state.state = WsState::Connecting;
         state.should_reconnect = true;
         state.reconnect_attempts = 0;
         state.last_error.clear();
         state.shutdown_tx = Some(shutdown_tx);
+        state.app_data_dir = Some(app_data_dir.clone());
     }
 
     emit_ws_status(&app_handle, &get_current_status());
@@ -133,7 +168,7 @@ pub async fn connect_ws(app_handle: AppHandle, ws_port: u16) -> Result<(), Strin
     // Spawn WebSocket connection task
     let app_handle_clone = app_handle.clone();
     tokio::spawn(async move {
-        ws_connection_loop(app_handle_clone, url, shutdown_rx).await;
+        ws_connection_loop(app_handle_clone, app_data_dir, shutdown_rx).await;
     });
 
     Ok(())
@@ -142,7 +177,7 @@ pub async fn connect_ws(app_handle: AppHandle, ws_port: u16) -> Result<(), Strin
 /// Main WebSocket connection loop with reconnection logic
 async fn ws_connection_loop(
     app_handle: AppHandle,
-    url: String,
+    app_data_dir: PathBuf,
     mut shutdown_rx: mpsc::Receiver<()>,
 ) {
     loop {
@@ -175,9 +210,43 @@ async fn ws_connection_loop(
             break;
         }
 
+        // Read port from file (re-read on each attempt in case agent restarted)
+        let port = match read_ws_port(&app_data_dir) {
+            Some(p) => p,
+            None => {
+                log::info!("WebSocket port not available, waiting...");
+                {
+                    let mut state = WS_STATE.lock();
+                    state.last_error = "Port not available".to_string();
+                    state.reconnect_attempts += 1;
+                }
+                emit_ws_status(&app_handle, &get_current_status());
+
+                // Wait before retrying
+                let delay = get_reconnect_delay(attempts);
+                tokio::select! {
+                    _ = shutdown_rx.recv() => {
+                        log::info!("WebSocket shutdown during port wait");
+                        {
+                            let mut state = WS_STATE.lock();
+                            state.state = WsState::Disconnected;
+                            state.should_reconnect = false;
+                        }
+                        emit_ws_status(&app_handle, &get_current_status());
+                        return;
+                    }
+                    _ = tokio::time::sleep(tokio::time::Duration::from_millis(delay)) => {}
+                }
+                continue;
+            }
+        };
+
+        let url = format!("ws://localhost:{}", port);
+
         // Update state to connecting/reconnecting
         {
             let mut state = WS_STATE.lock();
+            state.url = url.clone();
             if attempts > 0 {
                 state.state = WsState::Reconnecting;
             } else {
@@ -366,10 +435,10 @@ pub fn reset_reconnect_attempts() {
 
 // ============ Tauri Commands ============
 
-/// Connect to agent WebSocket
+/// Connect to agent WebSocket (reads port from wssport.txt)
 #[tauri::command]
-pub async fn ws_connect(app_handle: AppHandle, port: u16) -> Result<(), String> {
-    connect_ws(app_handle, port).await
+pub async fn ws_connect(app_handle: AppHandle) -> Result<(), String> {
+    start_ws_connection(app_handle).await
 }
 
 /// Disconnect from agent WebSocket
