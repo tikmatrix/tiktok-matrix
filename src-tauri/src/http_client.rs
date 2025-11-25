@@ -38,8 +38,6 @@ pub async fn http_request(
     body: Option<String>,
     timeout: Option<u64>,
 ) -> Result<HttpResponse, String> {
-    log::info!("HTTP request: {} {}", method, url);
-
     // Create client with timeout
     let timeout_duration = std::time::Duration::from_secs(timeout.unwrap_or(30));
     let mut client_builder = Client::builder()
@@ -84,6 +82,12 @@ pub async fn http_request(
 
     // Extract response details
     let status = response.status().as_u16();
+    log::info!(
+        "HTTP request: {} {} ==> Response status: {}",
+        method,
+        url,
+        status
+    );
     let mut response_headers = std::collections::HashMap::new();
     for (key, value) in response.headers() {
         if let Ok(value_str) = value.to_str() {
@@ -182,7 +186,6 @@ pub async fn agent_request(
     };
 
     let query_url = format!("http://localhost:{}{}{}", port, url, query_string);
-    log::info!("Agent request: {} {}", method, query_url);
 
     // Prepare headers
     let mut final_headers = headers.unwrap_or_default();

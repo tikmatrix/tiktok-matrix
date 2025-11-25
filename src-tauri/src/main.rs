@@ -17,6 +17,7 @@ mod process_manager;
 mod proxy_config;
 mod storage;
 mod update_manager;
+mod websocket_manager;
 
 /**
  * 读取分发商标识
@@ -368,7 +369,11 @@ fn main() -> std::io::Result<()> {
             process_manager::start_agent,
             process_manager::wait_for_agent_ready,
             process_manager::shutdown_agent,
-            process_manager::initialize_app
+            process_manager::initialize_app,
+            websocket_manager::ws_connect,
+            websocket_manager::ws_disconnect,
+            websocket_manager::ws_get_status,
+            websocket_manager::ws_reset_reconnect
         ])
         .setup(|app| {
             let app_data_dir = app.path_resolver().app_data_dir().unwrap();

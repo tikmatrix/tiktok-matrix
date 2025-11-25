@@ -21,6 +21,7 @@ import AppDialog from './AppDialog.vue'
 import ManageDevices from './components/device/ManageDevices.vue'
 import Notifications from './components/Notifications.vue';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
+import { invoke } from '@tauri-apps/api/tauri'
 import { getItem } from './utils/storage.js';
 import {
   getSupportUnreadState,
@@ -45,14 +46,6 @@ export default {
       settings: {},
       groups: [],
       showSidebar: true,
-      ws: null,
-      wsUrl: '',
-      wsShouldReconnect: false,
-      wsReconnectAttempts: 0,
-      wsReconnectTimer: null,
-      wsMaxRetries: 10, // Maximum retry attempts before giving up
-      wsConnectionTimeout: 10000, // 10 seconds connection timeout
-      wsConnectionTimer: null,
       running_devices: [],
       selecedDevices: [],
       listeners: [],
@@ -184,121 +177,11 @@ export default {
         })
       })
     },
-    normalizeWsUrl(url = '') {
-      return typeof url === 'string' ? url.replace(/\/$/, '') : '';
-    },
 
-    clearWsReconnectTimer() {
-      if (this.wsReconnectTimer) {
-        clearTimeout(this.wsReconnectTimer);
-        this.wsReconnectTimer = null;
-      }
-    },
-
-    clearWsConnectionTimer() {
-      if (this.wsConnectionTimer) {
-        clearTimeout(this.wsConnectionTimer);
-        this.wsConnectionTimer = null;
-      }
-    },
-
-    getWsReconnectDelay() {
-      // Exponential backoff with jitter: base * 2^attempts + random jitter
-      const baseDelay = 2000;
-      const maxDelay = 30000;
-      const exponentialDelay = baseDelay * Math.pow(2, this.wsReconnectAttempts);
-      const jitter = Math.random() * 1000; // Add up to 1 second random jitter
-      return Math.min(maxDelay, exponentialDelay + jitter);
-    },
-
-    scheduleWsReconnect() {
-      if (!this.wsShouldReconnect || this.wsReconnectTimer) {
-        return;
-      }
-
-      // Check if max retries exceeded
-      if (this.wsReconnectAttempts >= this.wsMaxRetries) {
-        console.error(`WebSocket max retries (${this.wsMaxRetries}) exceeded, stopping reconnection attempts`);
-        this.wsShouldReconnect = false;
-        this.wsReconnectAttempts = 0;
-        return;
-      }
-
-      const delay = this.getWsReconnectDelay();
-      console.log(`WebSocket reconnect scheduled in ${delay}ms (attempt ${this.wsReconnectAttempts + 1}/${this.wsMaxRetries})`);
-      this.wsReconnectTimer = setTimeout(async () => {
-        this.wsReconnectTimer = null;
-        this.wsReconnectAttempts += 1;
-        await this.connectAgent();
-      }, delay);
-    },
-
-    cleanupWebSocket(stopReconnect = false) {
-      if (stopReconnect) {
-        this.wsShouldReconnect = false;
-        this.wsReconnectAttempts = 0;
-        this.clearWsReconnectTimer();
-      }
-      this.clearWsConnectionTimer();
-      if (!this.ws) {
-        return;
-      }
+    // Handle agent message from Rust WebSocket manager
+    async handleAgentMessage(message) {
       try {
-        this.ws.onopen = null;
-        this.ws.onmessage = null;
-        this.ws.onclose = null;
-        this.ws.onerror = null;
-        if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
-          this.ws.close();
-        }
-      } catch (error) {
-        console.error('cleanupWebSocket error', error);
-      }
-      this.ws = null;
-    },
-
-    initializeWebSocket() {
-      if (!this.wsUrl) {
-        return;
-      }
-
-      if (this.ws) {
-        const isActive = this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING;
-        const sameUrl = this.normalizeWsUrl(this.ws.url) === this.normalizeWsUrl(this.wsUrl);
-        if (isActive && sameUrl) {
-          console.log('WebSocket already connected or connecting');
-          return;
-        }
-        this.cleanupWebSocket();
-      }
-
-      try {
-        console.log('Creating WebSocket connection to', this.wsUrl);
-        this.ws = new WebSocket(this.wsUrl);
-
-        // Set connection timeout
-        this.wsConnectionTimer = setTimeout(() => {
-          if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
-            console.warn('WebSocket connection timeout, closing connection');
-            this.ws.close();
-          }
-        }, this.wsConnectionTimeout);
-      } catch (error) {
-        console.error('Failed to create WebSocket', error);
-        this.scheduleWsReconnect();
-        return;
-      }
-
-      this.ws.onopen = async () => {
-        console.log('WebSocket connection opened successfully');
-        this.clearWsConnectionTimer();
-        await this.getDevices();
-        this.wsReconnectAttempts = 0;
-        this.clearWsReconnectTimer();
-      }
-      this.ws.onmessage = async (e) => {
-        // console.log(e.data)
-        const json = JSON.parse(e.data)
+        const json = typeof message === 'string' ? JSON.parse(message) : message;
         if (json.action === 'reload_devices') {
           let data = json.data
           if (data) {
@@ -316,12 +199,12 @@ export default {
           let serial = json.serial
           let status = json.status
           if (status === 1) {
-            // 避免重复插入导致数组无限增长
+            // Avoid duplicate inserts causing infinite array growth
             if (!this.running_devices.includes(serial)) {
               this.running_devices.push(serial)
             }
           } else if (this.running_devices.length) {
-            // 移除所有相关条目，防止残留重复数据
+            // Remove all related entries to prevent residual duplicate data
             this.running_devices = this.running_devices.filter(item => item !== serial)
           }
           this.devices.forEach(device => {
@@ -338,7 +221,7 @@ export default {
               if (status === -1) {
                 device.task_status = -1
               } else if (status === 0 && device.task_status !== 1) {
-                //task is not running
+                // Task is not running
                 device.task_status = 0
               }
             }
@@ -351,49 +234,47 @@ export default {
         } else {
           await this.emitGenericAgentEvent(json)
         }
-      }
-      this.ws.onclose = async (event) => {
-        console.log('WebSocket closed', event?.code, event?.reason);
-        this.clearWsConnectionTimer();
-        this.ws = null;
-        this.devices = []
-        if (this.wsShouldReconnect) {
-          this.scheduleWsReconnect();
-        }
-      }
-      this.ws.onerror = async (e) => {
-        console.error('WebSocket error', e);
-        this.clearWsConnectionTimer();
-        if (this.ws && this.ws.readyState !== WebSocket.CLOSING && this.ws.readyState !== WebSocket.CLOSED) {
-          this.ws.close();
-        }
+      } catch (error) {
+        console.error('handleAgentMessage parse error', error);
       }
     },
 
+    // Handle WebSocket status changes from Rust
+    handleWsStatusChange(status) {
+      console.log('WebSocket status changed:', status);
+      if (status.state === 'Connected') {
+        // WebSocket connected, fetch devices
+        this.getDevices();
+      } else if (status.state === 'Disconnected') {
+        // WebSocket disconnected, clear devices
+        this.devices = [];
+      }
+    },
+
+    // Connect to agent via Rust WebSocket manager
     async connectAgent() {
-      const wsPort = await readTextFile('wssport.txt', { dir: BaseDirectory.AppData });
-      if (wsPort === '0') {
-        this.cleanupWebSocket(true);
-        return;
+      try {
+        const wsPort = await readTextFile('wssport.txt', { dir: BaseDirectory.AppData });
+        if (wsPort === '0') {
+          console.log('WebSocket port is 0, skipping connection');
+          return;
+        }
+        const port = parseInt(wsPort, 10);
+        console.log('Connecting to agent WebSocket on port:', port);
+        await invoke('ws_connect', { port });
+      } catch (error) {
+        console.error('Failed to connect agent WebSocket:', error);
       }
-      this.wsUrl = `ws://localhost:${wsPort}`
-      console.log(this.wsUrl)
-      this.wsShouldReconnect = true;
-      this.wsReconnectAttempts = 0;
-      this.clearWsReconnectTimer();
-      this.initializeWebSocket();
     },
 
+    // Setup network monitoring for reconnection
     setupNetworkMonitoring() {
-      // Monitor online/offline events for better reconnection handling
       this.handleOnline = async () => {
-        console.log('Network connection restored, attempting to reconnect WebSocket');
-        // Only reconnect if wsUrl is configured and WebSocket should reconnect
-        if (this.wsShouldReconnect && this.wsUrl && (!this.ws || this.ws.readyState !== WebSocket.OPEN)) {
-          // Reset retry counter on network restoration
-          this.wsReconnectAttempts = 0;
-          this.clearWsReconnectTimer();
-          await this.connectAgent();
+        console.log('Network connection restored, resetting reconnect attempts');
+        try {
+          await invoke('ws_reset_reconnect');
+        } catch (error) {
+          console.error('Failed to reset reconnect:', error);
         }
       };
 
@@ -489,7 +370,7 @@ export default {
   },
 
   async mounted() {
-    // 禁止右键菜单
+    // Disable context menu
     this.disableMenu();
 
     await this.initializeSupportUnread();
@@ -497,7 +378,17 @@ export default {
     // Setup network status monitoring
     this.setupNetworkMonitoring();
 
-    // 监听代理启动事件
+    // Listen to agent messages from Rust WebSocket manager
+    this.listeners.push(await this.$listen('agent_message', async (e) => {
+      await this.handleAgentMessage(e.payload);
+    }));
+
+    // Listen to WebSocket status changes from Rust
+    this.listeners.push(await this.$listen('ws_status', (e) => {
+      this.handleWsStatusChange(e.payload);
+    }));
+
+    // Listen to agent startup events
     this.listeners.push(await this.$listen('INIT_STATUS', async (e) => {
       const status = e.payload;
       if (status.stage === 'completed') {
@@ -513,12 +404,12 @@ export default {
     this.listeners.push(await this.$listen('reload_devices', async () => {
       await this.getDevices();
     }));
-    // 监听重新加载运行任务事件
+    // Listen to reload running tasks events
     this.listeners.push(await this.$listen('reload_running_tasks', async () => {
       await this.getRunningTasks();
     }));
 
-    // 监听侧边栏变化事件
+    // Listen to sidebar change events
     this.listeners.push(await this.$listen('sidebarChange', (e) => {
       this.showSidebar = e.payload;
     }));
@@ -530,7 +421,7 @@ export default {
     this.listeners.push(await this.$listen('reload_group', async () => {
       await this.get_groups()
     }))
-    //reload_settings
+    // Reload settings
     this.listeners.push(await this.$listen('reload_settings', async () => {
       await this.get_settings()
     }))
@@ -559,8 +450,7 @@ export default {
     // Cleanup network monitoring
     this.cleanupNetworkMonitoring();
 
-    // 清理 WebSocket 资源
-    this.cleanupWebSocket(true);
+    // Note: WebSocket connection is managed by Rust backend, no cleanup needed here
   }
 }
 </script>
