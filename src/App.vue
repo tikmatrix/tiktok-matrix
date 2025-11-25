@@ -516,18 +516,17 @@ export default {
     this.setupNetworkMonitoring();
 
     // 监听代理启动事件
-    this.listeners.push(await this.$listen('agent_started', async () => {
-      await this.$emiter('NOTIFY', {
-        type: 'success',
-        message: this.$t('agentStarted'),
-        timeout: 2000
-      });
-      await this.get_settings()
-      await this.get_groups()
+    this.listeners.push(await this.$listen('INIT_STATUS', async (e) => {
+      const status = e.payload;
+      if (status.stage === 'completed') {
+        await this.get_settings()
+        await this.get_groups()
 
-      await this.connectAgent();
-      await this.getRunningTasks();
-      await this.$emiter('reload_tasks', {})
+        await this.connectAgent();
+        await this.getRunningTasks();
+        await this.$emiter('reload_tasks', {})
+      }
+
     }));
     this.listeners.push(await this.$listen('reload_devices', async () => {
       await this.getDevices();

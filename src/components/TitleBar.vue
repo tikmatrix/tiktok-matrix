@@ -701,6 +701,10 @@ export default {
       } else if (status.message) {
         this.check_update_dialog_title = status.message;
       }
+      if (status.stage === 'completed') {
+        await this.loadLicense();
+        if (!this.isLicensed()) this.showLicenseDialog();
+      }
     });
 
     await this.$listen("LICENSE", async (e) => {
@@ -708,10 +712,7 @@ export default {
       if (e.payload.show) this.showLicenseDialog();
     });
 
-    await this.$listen('agent_started', async () => {
-      await this.loadLicense();
-      if (!this.isLicensed()) this.showLicenseDialog();
-    });
+
 
     await this.$listen('featureUnlocked', async () => {
       this.isWhiteLabelUnlocked = await isFeatureUnlocked('whiteLabel');
