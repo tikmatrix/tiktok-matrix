@@ -115,15 +115,17 @@ pub struct InitializationResult {
     pub updates_checked: bool,
     pub updates_applied: Vec<String>,
     pub error: String,
+    pub tauri_update: Option<crate::update_manager::TauriUpdateInfo>,
 }
 
 // Initialization options
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InitOptions {
     pub check_updates: bool,
-    pub force_update: bool,
     pub silent: bool,
     pub check_libs_url: String,
+    #[serde(default)]
+    pub check_tauri_update: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -487,6 +489,7 @@ pub async fn initialize_app(
         updates_checked: false,
         updates_applied: Vec::new(),
         error: String::new(),
+        tauri_update: None,
     };
 
     // Emit initialization started event
@@ -499,6 +502,32 @@ pub async fn initialize_app(
             }),
         )
         .ok();
+
+    // Step 0: Check Tauri app updates if requested (only in non-silent mode)
+    // Tauri updates require user interaction for confirmation dialogs,
+    // so we skip this in silent/background mode (e.g., auto-update timer)
+    if options.check_tauri_update && !options.silent {
+        app_handle
+            .emit_all(
+                "INIT_STATUS",
+                &serde_json::json!({
+                    "stage": "checking_tauri_update",
+                    "message": "Checking for application updates..."
+                }),
+            )
+            .ok();
+
+        match crate::update_manager::check_tauri_update(&app_handle).await {
+            Ok(update_info) => {
+                log::info!("Tauri update check result: {:?}", update_info);
+                result.tauri_update = Some(update_info);
+            }
+            Err(e) => {
+                log::error!("Failed to check Tauri updates: {}", e);
+                // Don't fail initialization, just log the error
+            }
+        }
+    }
 
     // Step 1: Check updates if requested
     if options.check_updates {
@@ -570,7 +599,6 @@ pub async fn initialize_app(
                     match crate::update_manager::process_lib_update(
                         &app_handle,
                         &lib,
-                        options.force_update,
                     )
                     .await
                     {
@@ -656,7 +684,8 @@ pub async fn initialize_app(
     } else if result.agent_status.process_name == "agent.exe"
         || result.agent_status.process_name == "agent"
     {
-        // Agent is already running
+        // Agent is already running - no need to emit agent_started or report distributor
+        // These should only happen on first startup when agent transitions from not running to running
         result.success = true;
         app_handle
             .emit_all(
@@ -667,12 +696,6 @@ pub async fn initialize_app(
                 }),
             )
             .ok();
-        app_handle
-            .emit_all("agent_started", &serde_json::json!({}))
-            .ok();
-
-        // Report distributor installation when agent is already running
-        tokio::spawn(report_distributor_install(app_handle.clone()));
     } else {
         // Port occupied by another process
         result.error = format!(

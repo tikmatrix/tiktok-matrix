@@ -7,7 +7,7 @@
       <span class="text-2xl text-base-content font-bold" v-if="whitelabelConfig.showAppNameInTitle">{{
         whitelabelConfig.appName }}</span>
       <!-- 检查更新按钮 -->
-      <button @click="check_update(true)"
+      <button @click="check_update()"
         class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">
         <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
         <span>v{{ version }}</span>
@@ -276,6 +276,10 @@ import { getAll } from '@tauri-apps/api/window';
 import { ask } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion, getName } from '@tauri-apps/api/app';
+import { installUpdate, onUpdaterEvent } from '@tauri-apps/api/updater';
+import { relaunch } from '@tauri-apps/api/process';
+import { open } from '@tauri-apps/api/shell';
+import { os } from '@tauri-apps/api';
 import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import AgentErrorDialog from './AgentErrorDialog.vue';
@@ -452,10 +456,10 @@ export default {
         this.isLoadingLicense = false;
       }
     },
-    async check_update(force = false, silent = false) {
+    async check_update(silent = false) {
       // Use unified initialization process from Rust backend
       if (!silent) {
-        this.check_update_dialog_title = 'Initializing...';
+        this.check_update_dialog_title = 'Checking update...';
         this.$refs.download_dialog.showModal();
       }
 
@@ -463,24 +467,90 @@ export default {
         const initResult = await invoke('initialize_app', {
           options: {
             check_updates: true,
-            force_update: force,
             silent: silent,
-            // leave check_libs_url empty so backend will choose a sensible default/fallback
-            check_libs_url: ''
+            check_libs_url: '',
+            check_tauri_update: !silent // Only check Tauri updates in non-silent mode
           }
         });
 
         console.log('Initialization result:', initResult);
+
+        // Handle Tauri app update if available
+        if (initResult.tauri_update && initResult.tauri_update.should_update) {
+          const updateInfo = initResult.tauri_update;
+          console.log(`Update available ${updateInfo.version}, ${updateInfo.date}, ${updateInfo.body}`);
+
+          const platform = await this.getPlatform();
+          if (platform === 'windows') {
+            // Windows: Auto-update via Tauri
+            const updateMessage = updateInfo.body || this.$t('updateAvailable');
+            const yes = await ask(updateMessage, this.$t('updateConfirm'));
+            if (yes) {
+              this.check_update_dialog_title = 'Downloading update...';
+              
+              // Listen for Tauri update download progress
+              const unlisten = await onUpdaterEvent(({ error, status }) => {
+                console.log('Updater event:', status, error);
+                if (status === 'PENDING') {
+                  this.check_update_dialog_title = 'Downloading update...';
+                } else if (status === 'DONE') {
+                  this.check_update_dialog_title = 'Installing update...';
+                  this.download_progress = { filesize: 0, transfered: 0, transfer_rate: 0, percentage: 0 };
+                } else if (status === 'ERROR') {
+                  console.error('Update error:', error);
+                }
+              });
+
+              // Listen for download progress event
+              const unlistenProgress = await this.$listen('tauri://update-download-progress', (event) => {
+                const { chunk_length, content_length } = event.payload;
+                if (content_length && content_length > 0) {
+                  // Update progress
+                  const currentTransferred = (this.download_progress.transfered || 0) + chunk_length;
+                  this.download_progress = {
+                    filesize: content_length,
+                    transfered: currentTransferred,
+                    transfer_rate: chunk_length,
+                    percentage: Math.round((currentTransferred / content_length) * 100)
+                  };
+                }
+              });
+
+              try {
+                await this.shutdown();
+                await installUpdate();
+                await relaunch();
+              } finally {
+                unlisten();
+                unlistenProgress();
+              }
+              return;
+            }
+          } else {
+            // macOS: Prompt user to download manually
+            const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
+              ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
+              : `${this.whitelabelConfig.officialWebsite}/Download`;
+
+            const yes = await ask(
+              this.$t('macUpdatePrompt', { version: updateInfo.version }),
+              this.$t('macUpdateAvailable')
+            );
+
+            if (yes) {
+              console.log('Opening download page:', downloadUrl);
+              await open(downloadUrl);
+            }
+            // Continue to handle other results
+          }
+        }
 
         if (!silent) {
           this.$refs.download_dialog.close();
         }
 
         if (initResult.success) {
-          // Mark as checked to avoid repetitive checks
-          if (!force) {
-            sessionStorage.setItem('skipUpdateCheck', 'true');
-          }
+          // Initialization successful, nothing else to do
         } else {
           // Handle errors
           if (initResult.error.includes('Port 50809 is occupied')) {
@@ -541,7 +611,35 @@ export default {
 
     async startAgent(silent = false) {
       // Simplified: just call initialization without update check
-      await this.check_update(false, silent);
+      await this.check_update(silent);
+    },
+
+    openWhiteLabelDialog() {
+      this.$refs.whitelabelDialog.showDialog();
+    },
+
+    openSupportDialog() {
+      this.$emiter('showDialog', { name: 'support' })
+    },
+
+    onWhiteLabelConfigUpdated(config) {
+      this.whitelabelConfig = config;
+      document.title = config.appName || 'TikMatrix';
+      this.$emit('whitelabel-updated', config);
+    },
+
+    async getPlatform() {
+      const osType = await os.type();
+      const arch = await os.arch();
+      let platform = 'windows';
+      if (osType === 'Darwin') {
+        if (arch === 'aarch64') {
+          platform = 'mac-arm';
+        } else {
+          platform = 'mac-intel';
+        }
+      }
+      return platform;
     },
   },
   async mounted() {
@@ -623,7 +721,7 @@ export default {
     });
 
     await this.$listen('AUTO_UPDATE_TRIGGER', async () => {
-      await this.check_update(true, true);
+      await this.check_update(true);
     });
 
     this.check_update();
