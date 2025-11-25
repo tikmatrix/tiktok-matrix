@@ -7,7 +7,7 @@
       <span class="text-2xl text-base-content font-bold" v-if="whitelabelConfig.showAppNameInTitle">{{
         whitelabelConfig.appName }}</span>
       <!-- 检查更新按钮 -->
-      <button @click="check_update(true)"
+      <button @click="check_update()"
         class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">
         <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
         <span>v{{ version }}</span>
@@ -456,7 +456,7 @@ export default {
         this.isLoadingLicense = false;
       }
     },
-    async check_update(force = false, silent = false) {
+    async check_update(silent = false) {
       // Use unified initialization process from Rust backend
       if (!silent) {
         this.check_update_dialog_title = 'Checking update...';
@@ -467,7 +467,6 @@ export default {
         const initResult = await invoke('initialize_app', {
           options: {
             check_updates: true,
-            force_update: force,
             silent: silent,
             check_libs_url: '',
             check_tauri_update: !silent // Only check Tauri updates in non-silent mode
@@ -578,7 +577,7 @@ export default {
 
     async startAgent(silent = false) {
       // Simplified: just call initialization without update check
-      await this.check_update(false, silent);
+      await this.check_update(silent);
     },
 
     openWhiteLabelDialog() {
@@ -688,7 +687,7 @@ export default {
     });
 
     await this.$listen('AUTO_UPDATE_TRIGGER', async () => {
-      await this.check_update(true, true);
+      await this.check_update(true);
     });
 
     this.check_update();

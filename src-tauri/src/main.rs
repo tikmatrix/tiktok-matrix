@@ -1356,9 +1356,8 @@ fn get_local_lib_version(app_handle: tauri::AppHandle, lib_name: String) -> Stri
 async fn process_lib_update(
     app_handle: tauri::AppHandle,
     lib: update_manager::LibInfo,
-    force: bool,
 ) -> Result<bool, String> {
-    update_manager::process_lib_update(&app_handle, &lib, force).await
+    update_manager::process_lib_update(&app_handle, &lib).await
 }
 
 /// Batch process multiple libraries update
@@ -1366,12 +1365,11 @@ async fn process_lib_update(
 async fn batch_update_libs(
     app_handle: tauri::AppHandle,
     libs: Vec<update_manager::LibInfo>,
-    force: bool,
 ) -> Result<Vec<String>, String> {
     let mut updated_libs = Vec::new();
 
     for lib in libs {
-        match update_manager::process_lib_update(&app_handle, &lib, force).await {
+        match update_manager::process_lib_update(&app_handle, &lib).await {
             Ok(true) => {
                 log::info!("Library {} updated successfully", lib.name);
                 updated_libs.push(lib.name.clone());

@@ -316,7 +316,6 @@ pub async fn install_lib_file(
 pub async fn process_lib_update(
     app_handle: &AppHandle,
     lib: &LibInfo,
-    force: bool,
 ) -> Result<bool, String> {
     log::info!(
         "Processing library: {} (version: {})",
@@ -335,24 +334,14 @@ pub async fn process_lib_update(
         file_exists
     );
 
-    // Check if update is needed
-    log::info!(
-        "Update check for {}: force={}, file_exists={}, local_version='{}', remote_version='{}', versions_equal={}",
-        lib.name,
-        force,
-        file_exists,
-        local_version,
-        lib.version,
-        local_version == lib.version
-    );
-
-    if !force && file_exists && local_version == lib.version {
+    // Check if update is needed: skip if file exists and version matches
+    if file_exists && local_version == lib.version {
         log::info!("Library {} is up to date", lib.name);
         return Ok(false);
     }
 
-    log::info!("Library {} needs update (force={}, file_exists={}, version_match={})",
-        lib.name, force, file_exists, local_version == lib.version);
+    log::info!("Library {} needs update (file_exists={}, version_match={})",
+        lib.name, file_exists, local_version == lib.version);
 
     // Download file
     let tmp_file = download_lib_file(app_handle, lib).await?;

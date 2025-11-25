@@ -122,7 +122,6 @@ pub struct InitializationResult {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InitOptions {
     pub check_updates: bool,
-    pub force_update: bool,
     pub silent: bool,
     pub check_libs_url: String,
     #[serde(default)]
@@ -600,7 +599,6 @@ pub async fn initialize_app(
                     match crate::update_manager::process_lib_update(
                         &app_handle,
                         &lib,
-                        options.force_update,
                     )
                     .await
                     {
