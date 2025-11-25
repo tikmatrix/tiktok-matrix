@@ -16,26 +16,22 @@ async fn report_distributor_install(app_handle: AppHandle) {
     // Get app version
     let app_version = app_handle.package_info().version.to_string();
 
-    // Get OS information
     let os_type = std::env::consts::OS;
     let os_arch = std::env::consts::ARCH;
-
-    // Get OS version (platform-specific)
-    let os_version = get_os_version();
-    let os_full_version = format!("{} {} ({})", os_type, os_version, os_arch);
+    let os_version = &format!("{} ({})", os_type, os_arch);
 
     log::info!(
         "Reporting distributor install: distributor={}, version={}, os={}",
         distributor_code,
         app_version,
-        os_full_version,
+        os_version,
     );
 
     // Build request payload
     let payload = serde_json::json!({
         "distributor_code": distributor_code,
         "app_version": app_version,
-        "os_version": os_full_version,
+        "os_version": os_version,
     });
 
     // Call agent API using common http_client module
@@ -59,42 +55,6 @@ async fn report_distributor_install(app_handle: AppHandle) {
         Err(e) => {
             log::error!("Failed to report distributor install: {}", e);
         }
-    }
-}
-
-// Get OS version string
-fn get_os_version() -> String {
-    #[cfg(target_os = "windows")]
-    {
-        // Try to get Windows version from registry or system info
-        if let Ok(output) = Command::new("cmd")
-            .args(&["/C", "ver"])
-            .creation_flags(0x08000000)
-            .output()
-        {
-            if output.status.success() {
-                let version_str = String::from_utf8_lossy(&output.stdout);
-                return version_str.trim().to_string();
-            }
-        }
-        "Unknown".to_string()
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        // Get macOS version using sw_vers
-        if let Ok(output) = Command::new("sw_vers").arg("-productVersion").output() {
-            if output.status.success() {
-                let version_str = String::from_utf8_lossy(&output.stdout);
-                return version_str.trim().to_string();
-            }
-        }
-        "Unknown".to_string()
-    }
-
-    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
-    {
-        "Unknown".to_string()
     }
 }
 
