@@ -13,14 +13,6 @@ async fn report_distributor_install(app_handle: AppHandle) {
     let distributor_code =
         std::env::var("DISTRIBUTOR_CODE").unwrap_or_else(|_| "OFFICIAL".to_string());
 
-    // Get machine ID from environment variable
-    let machine_id = machine_uid::get()
-        .map_err(|error| {
-            log::error!("Failed to get machine uid for global events: {:?}", error);
-            "UNKNOWN"
-        })
-        .unwrap_or("UNKNOWN".to_string());
-
     // Get app version
     let app_version = app_handle.package_info().version.to_string();
 
@@ -33,11 +25,10 @@ async fn report_distributor_install(app_handle: AppHandle) {
     let os_full_version = format!("{} {} ({})", os_type, os_version, os_arch);
 
     log::info!(
-        "Reporting distributor install: distributor={}, version={}, os={}, machine_id={}",
+        "Reporting distributor install: distributor={}, version={}, os={}",
         distributor_code,
         app_version,
         os_full_version,
-        machine_id
     );
 
     // Build request payload
@@ -45,7 +36,6 @@ async fn report_distributor_install(app_handle: AppHandle) {
         "distributor_code": distributor_code,
         "app_version": app_version,
         "os_version": os_full_version,
-        "machine_id": machine_id,
     });
 
     // Call agent API using common http_client module
@@ -597,12 +587,7 @@ pub async fn initialize_app(
 
                 // Update each library
                 for lib in libs {
-                    match crate::update_manager::process_lib_update(
-                        &app_handle,
-                        &lib,
-                    )
-                    .await
-                    {
+                    match crate::update_manager::process_lib_update(&app_handle, &lib).await {
                         Ok(true) => {
                             log::info!("Library {} updated successfully", lib.name);
                             result.updates_applied.push(lib.name.clone());
