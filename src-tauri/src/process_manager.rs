@@ -907,11 +907,6 @@ pub fn stop_agent_monitor() {
     MONITOR_ENABLED.store(false, std::sync::atomic::Ordering::SeqCst);
 }
 
-/// Check if agent monitor is running
-pub fn is_agent_monitor_running() -> bool {
-    MONITOR_RUNNING.load(std::sync::atomic::Ordering::SeqCst)
-}
-
 // ============ Tauri Commands for Agent Monitor ============
 
 #[tauri::command]
