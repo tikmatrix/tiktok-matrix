@@ -28,14 +28,13 @@
                             class="text-md font-semibold uppercase tracking-wide text-base-content/70 md:text-right md:pt-1">{{
                                 $t('postWay') }}</span>
                         <div class="flex flex-wrap gap-4">
-                            <label class="flex items-center gap-2" v-if="localFormData.placement !== 'story'">
+                            <label class="flex items-center gap-2" v-if="whitelabelConfig.targetApp === 'tiktok'">
                                 <input type="radio" id="share" value="share" v-model="localFormData.post_way"
                                     class="form-radio text-primary">
                                 <span>{{ $t('share') }}</span>
                             </label>
                             <label class="flex items-center gap-2">
                                 <input type="radio" id="addButton" value="addButton" v-model="localFormData.post_way"
-                                    :checked="localFormData.placement === 'story' ? true : false"
                                     class="form-radio text-primary">
                                 <span>{{ $t('addButton') }}</span>
                             </label>
@@ -386,6 +385,13 @@ export default {
                 if (this.localFormData.add_sound !== 'custom' && !this.localFormData.custom_sound_keyword) {
                     this.localFormData.custom_sound_keyword = newVal?.custom_sound_keyword || '';
                 }
+                // For Instagram, auto migrate 'share' to 'addButton' for backward compatibility
+                if (this.whitelabelConfig.targetApp === 'instagram' && this.localFormData.post_way === 'share') {
+                    this.localFormData.post_way = 'addButton';
+                }
+                if (this.whitelabelConfig.targetApp === 'instagram' && this.localFormData.placement === 'story') {
+                    this.localFormData.post_way = 'addButton';
+                }
             },
             deep: true,
             immediate: true
@@ -487,6 +493,13 @@ export default {
         },
     },
     async mounted() {
+        // For Instagram, auto migrate 'share' to 'addButton' for backward compatibility
+        if (this.whitelabelConfig.targetApp === 'instagram' && this.localFormData.post_way === 'share') {
+            this.localFormData.post_way = 'addButton';
+        }
+        if (this.whitelabelConfig.targetApp === 'instagram' && this.localFormData.placement === 'story') {
+            this.localFormData.post_way = 'addButton';
+        }
         await this.getTags();
     },
     beforeUnmount() {
