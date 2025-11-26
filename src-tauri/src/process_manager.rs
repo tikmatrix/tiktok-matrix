@@ -146,7 +146,7 @@ pub fn check_agent_running() -> AgentStatus {
             }
         }
         Err(_) => {
-            log::info!("Agent is running on port {}", port);
+            log::debug!("Agent is running on port {}", port);
             let process_name = get_process_using_port(port);
             AgentStatus {
                 running: true,
@@ -184,7 +184,7 @@ fn get_process_using_port(port: u16) -> String {
                             if let Some(process_line) = task_str.lines().nth(3) {
                                 let process_name =
                                     process_line.split_whitespace().next().unwrap_or("unknown");
-                                log::info!(
+                                log::debug!(
                                     "Process using port {}: {} (PID: {})",
                                     port,
                                     process_name,

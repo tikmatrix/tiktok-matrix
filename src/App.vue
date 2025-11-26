@@ -242,8 +242,7 @@ export default {
     handleWsStatusChange(status) {
       console.log('WebSocket status changed:', status);
       if (status.state === 'Connected') {
-        // WebSocket connected, fetch devices
-        this.getDevices();
+        // WebSocket connected
       } else if (status.state === 'Disconnected') {
         // WebSocket disconnected, clear devices
         this.devices = [];
@@ -391,9 +390,23 @@ export default {
         await this.getRunningTasks();
         await this.getDevices();
         await this.$emiter('reload_tasks', {})
+        await this.$emiter('LICENSE', { reload: true });
       }
 
     }));
+    await this.$listen("AGENT_MONITOR_STATUS", async (e) => {
+      const status = e.payload;
+      console.log("Agent monitor status:", status);
+      if (status.stage === 'agent_restarted') {
+        await this.get_settings()
+        await this.get_groups()
+        await this.connectAgent();
+        await this.getRunningTasks();
+        await this.getDevices();
+        await this.$emiter('reload_tasks', {})
+        await this.$emiter('LICENSE', { reload: true });
+      }
+    });
     this.listeners.push(await this.$listen('reload_devices', async () => {
       await this.getDevices();
     }));

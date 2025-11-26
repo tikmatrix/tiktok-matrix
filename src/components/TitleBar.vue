@@ -606,11 +606,6 @@ export default {
       }
     },
 
-    async startAgent(silent = false) {
-      // Simplified: just call initialization without update check
-      await this.check_update(silent);
-    },
-
     openWhiteLabelDialog() {
       this.$refs.whitelabelDialog.showDialog();
     },
@@ -701,11 +696,9 @@ export default {
       } else if (status.message) {
         this.check_update_dialog_title = status.message;
       }
-      if (status.stage === 'completed') {
-        await this.loadLicense();
-        if (!this.isLicensed()) this.showLicenseDialog();
-      }
+
     });
+
 
     await this.$listen("LICENSE", async (e) => {
       if (e.payload.reload) await this.loadLicense();
