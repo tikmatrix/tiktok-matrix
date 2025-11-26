@@ -32,7 +32,7 @@
         'border-2 hover:shadow-lg',
         hasSupportUnread
           ? 'border-error/40 bg-error/10 hover:bg-error/20 hover:border-error text-error'
-          : 'border-primary/30 bg-gradient-to-r from-primary/5 to-secondary/5 hover:border-primary hover:from-primary/10 hover:to-secondary/10 text-base-content'
+          : 'border-primary/30 bg-linear-to-r from-primary/5 to-secondary/5 hover:border-primary hover:from-primary/10 hover:to-secondary/10 text-base-content'
       ]" :title="$t('supportEntryTitle')">
         <font-awesome-icon icon="fa-solid fa-headset"
           :class="['h-5 w-5 transition-colors', hasSupportUnread ? 'text-error animate-pulse' : '']" />

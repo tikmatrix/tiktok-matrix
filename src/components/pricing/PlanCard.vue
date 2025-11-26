@@ -1,5 +1,5 @@
 <template>
-    <div class="card bg-gradient-to-br shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 border"
+    <div class="card bg-linear-to-br shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 border"
         :class="cardClasses">
         <div class="card-body p-4">
             <!-- 最受欢迎标签 -->
@@ -42,7 +42,7 @@
             <!-- 功能列表 -->
             <ul class="space-y-2 mb-4 feature-list">
                 <li v-for="feature in plan.includes[$i18n.locale]" :key="feature" class="flex items-center gap-2">
-                    <div class="w-4 h-4 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
+                    <div class="w-4 h-4 rounded-full bg-success/20 flex items-center justify-center shrink-0">
                         <CheckIcon class="w-2.5 h-2.5 text-success" />
                     </div>
                     <span class="text-md">{{ feature }}</span>

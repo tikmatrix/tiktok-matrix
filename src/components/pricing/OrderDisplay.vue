@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-gradient-to-br from-warning/10 to-error/10 rounded-xl shadow-md border border-warning/20 p-4 mb-4">
+    <div class="bg-linear-to-br from-warning/10 to-error/10 rounded-xl shadow-md border border-warning/20 p-4 mb-4">
         <div class="text-center mb-4">
             <h3 class="text-xl font-bold text-warning mb-3">{{ $t('pendingPayment') }}</h3>
 

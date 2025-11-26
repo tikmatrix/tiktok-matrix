@@ -1,11 +1,11 @@
 <template>
-    <div class="fixed top-0 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none">
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 z-9999 pointer-events-none">
         <div class="notification-container">
             <transition name="notification" mode="out-in">
                 <div v-if="currentNotification" :key="currentNotification.id"
                     class="notification-item shadow-xl rounded-lg p-2 max-w-xxl flex items-center pointer-events-auto"
                     :class="notificationClass(currentNotification.type)">
-                    <div class="flex-shrink-0 mr-3">
+                    <div class="shrink-0 mr-3">
                         <font-awesome-icon :icon="notificationIcon(currentNotification.type)" class="text-lg" />
                     </div>
                     <div class="flex-1 overflow-hidden">

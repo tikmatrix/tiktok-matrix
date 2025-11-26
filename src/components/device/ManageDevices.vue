@@ -119,7 +119,7 @@
                             v-if="device.connect_type == '0'">USB</div>
                           <div class="badge badge-primary badge-md md:badge-md" v-else>TCP</div>
                         </td>
-                        <td class="px-2 text-base-content/70 break-words">{{ device.group_name || '--' }}</td>
+                        <td class="px-2 text-base-content/70 wrap-break-word">{{ device.group_name || '--' }}</td>
                         <td class="px-2 whitespace-nowrap">
                           <div class="badge badge-success badge-md md:badge-md text-success-content"
                             v-if="device.task_status == '1'">
@@ -137,7 +137,7 @@
                           </div>
                         </td>
                         <td class="px-2">
-                          <div class="flex flex-col gap-2 max-w-[14rem] md:max-w-[18rem]">
+                          <div class="flex flex-col gap-2 max-w-56 md:max-w-[18rem]">
                             <span v-if="device.proxyRotation?.rotation_url" class="truncate"
                               :title="device.proxyRotation.rotation_url">{{
                                 device.proxyRotation.rotation_url }}</span>
@@ -211,7 +211,7 @@
   </div>
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
     :z="20" drag-handle=".drag"
-    class="bg-base-100 fixed top-32 right-32 border-1 border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
+    class="bg-base-100 fixed top-32 right-32 border border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
     <Miniremote :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
