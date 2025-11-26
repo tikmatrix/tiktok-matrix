@@ -244,8 +244,7 @@ export default {
       if (status.state === 'Connected') {
         // WebSocket connected
       } else if (status.state === 'Disconnected') {
-        // WebSocket disconnected, clear devices
-        this.devices = [];
+        // WebSocket disconnected
       }
     },
 
@@ -358,7 +357,41 @@ export default {
       // 禁用右键菜单
       document.addEventListener('contextmenu', event => event.preventDefault());
     },
+    async startAutoUpdateTimer() {
+      if (!this.settings.auto_update_enabled) {
+        console.log('自动更新未启用');
+        return;
+      }
 
+      try {
+
+        // 根据环境设置间隔
+        const isDev = import.meta.env.DEV;
+        const checkIntervalMinutes = isDev ? 3 : 10; // dev: 3分钟, prod: 10分钟
+        const idleThresholdMinutes = isDev ? 1 : 5;  // dev: 1分钟, prod: 5分钟
+
+        await invoke('start_auto_update_timer', {
+          config: {
+            enabled: true,
+            check_interval_minutes: checkIntervalMinutes,
+            idle_threshold_minutes: idleThresholdMinutes,
+          }
+        });
+
+        console.log(`自动更新定时器已启动: 间隔=${checkIntervalMinutes}分钟, 空闲阈值=${idleThresholdMinutes}分钟`);
+      } catch (error) {
+        console.error('启动自动更新定时器失败:', error);
+      }
+    },
+
+    async stopAutoUpdateTimer() {
+      try {
+        await invoke('stop_auto_update_timer');
+        console.log('自动更新定时器已停止');
+      } catch (error) {
+        console.error('停止自动更新定时器失败:', error);
+      }
+    },
   },
 
   async mounted() {
@@ -391,13 +424,15 @@ export default {
         await this.getDevices();
         await this.$emiter('reload_tasks', {})
         await this.$emiter('LICENSE', { reload: true });
+        await this.startAutoUpdateTimer();
+
       }
 
     }));
     await this.$listen("AGENT_MONITOR_STATUS", async (e) => {
       const status = e.payload;
       console.log("Agent monitor status:", status);
-      if (status.stage === 'agent_restarted') {
+      if (status.event === 'agent_restarted') {
         await this.get_settings()
         await this.get_groups()
         await this.connectAgent();
@@ -405,6 +440,7 @@ export default {
         await this.getDevices();
         await this.$emiter('reload_tasks', {})
         await this.$emiter('LICENSE', { reload: true });
+        await this.startAutoUpdateTimer();
       }
     });
     this.listeners.push(await this.$listen('reload_devices', async () => {
@@ -455,8 +491,7 @@ export default {
 
     // Cleanup network monitoring
     this.cleanupNetworkMonitoring();
-
-    // Note: WebSocket connection is managed by Rust backend, no cleanup needed here
+    this.stopAutoUpdateTimer();
   }
 }
 </script>
