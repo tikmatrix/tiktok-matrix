@@ -128,8 +128,8 @@ function copyBinaries() {
 // Main execution
 async function main() {
     try {
-        killProcesses();
         await runCargoBuild();
+        killProcesses();
         copyBinaries();
         console.log('🎉 Build completed successfully!');
     } catch (error) {

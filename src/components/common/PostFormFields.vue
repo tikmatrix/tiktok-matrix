@@ -93,7 +93,7 @@
             <div class="card-body space-y-6">
                 <h3 class="card-title text-lg font-semibold">{{ $t('soundSettings') }}</h3>
                 <div class="space-y-4">
-                    <div v-if="localFormData.post_way !== 'useSound' && whitelabelConfig.targetApp === 'tiktok'"
+                    <div v-if="localFormData.post_way !== 'useSound'"
                         class="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)] items-start">
                         <div class="flex items-center gap-1 md:justify-end md:pt-1">
                             <span class="text-md font-semibold uppercase tracking-wide text-base-content/70">{{
