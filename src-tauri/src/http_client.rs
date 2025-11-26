@@ -1,3 +1,4 @@
+use crate::auto_update_manager;
 use crate::proxy_config;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -122,6 +123,9 @@ pub async fn agent_request(
     timeout: Option<u64>,
     raw_response: bool,
 ) -> Result<serde_json::Value, String> {
+    // Update user activity timestamp for auto-update manager
+    auto_update_manager::update_user_activity();
+
     // Read agent port from file
     let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
     let port_file = app_data_dir.join("port.txt");

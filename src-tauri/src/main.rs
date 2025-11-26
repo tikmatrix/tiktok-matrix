@@ -284,27 +284,6 @@ async fn install_and_relaunch_update(app_handle: tauri::AppHandle) -> Result<(),
 
 // ============ Auto Update Manager Commands ============
 
-/// Update user activity timestamp
-#[tauri::command]
-fn update_user_activity() {
-    auto_update_manager::update_user_activity();
-}
-
-/// Start auto-update timer
-#[tauri::command]
-async fn start_auto_update_timer(
-    app_handle: tauri::AppHandle,
-    config: auto_update_manager::AutoUpdateConfig,
-) -> Result<(), String> {
-    auto_update_manager::start_auto_update_timer(app_handle, config).await
-}
-
-/// Stop auto-update timer
-#[tauri::command]
-fn stop_auto_update_timer() -> Result<(), String> {
-    auto_update_manager::stop_auto_update_timer()
-}
-
 /// Get auto-update state info
 #[tauri::command]
 fn get_auto_update_state() -> auto_update_manager::AutoUpdateStateInfo {
@@ -361,9 +340,6 @@ fn main() -> std::io::Result<()> {
             batch_update_libs,
             check_tauri_update,
             install_and_relaunch_update,
-            update_user_activity,
-            start_auto_update_timer,
-            stop_auto_update_timer,
             get_auto_update_state,
             process_manager::check_agent_status,
             process_manager::start_agent,
@@ -418,6 +394,32 @@ fn main() -> std::io::Result<()> {
             std::fs::write(format!("{}/port.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wsport.txt", work_dir), "0")?;
             std::fs::write(format!("{}/wssport.txt", work_dir), "0")?;
+
+            // Start auto-update timer automatically
+            // Dev: check every 3 minutes, Prod: check every 60 minutes
+            let check_interval = if cfg!(debug_assertions) { 3 } else { 60 };
+            let auto_update_config = auto_update_manager::AutoUpdateConfig {
+                enabled: true,
+                check_interval_minutes: check_interval,
+                idle_threshold_minutes: 5,
+            };
+            let app_handle_clone = app.handle();
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = auto_update_manager::start_auto_update_timer(
+                    app_handle_clone,
+                    auto_update_config,
+                )
+                .await
+                {
+                    log::error!("Failed to start auto-update timer: {}", e);
+                } else {
+                    log::info!(
+                        "Auto-update timer started with {} minutes interval",
+                        check_interval
+                    );
+                }
+            });
+
             Ok(())
         })
         .on_page_load(|_window, _payload| {

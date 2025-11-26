@@ -232,18 +232,6 @@ async fn check_has_running_tasks(app_handle: &AppHandle) -> Result<bool, String>
     }
 }
 
-/// Stop auto-update timer
-pub fn stop_auto_update_timer() -> Result<(), String> {
-    log::info!("Stopping auto-update timer");
-
-    if let Ok(mut state) = AUTO_UPDATE_STATE.lock() {
-        state.is_running = false;
-        state.last_check = None;
-    }
-
-    Ok(())
-}
-
 /// Get current auto-update state info
 #[derive(Debug, Clone, Serialize)]
 pub struct AutoUpdateStateInfo {
