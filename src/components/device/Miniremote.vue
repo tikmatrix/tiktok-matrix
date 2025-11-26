@@ -297,12 +297,25 @@ export default {
         return Number.isFinite(normalized) ? normalized : fallback;
       };
 
+      // Minimum acceptable width to ensure the screen is visible
+      const MIN_WIDTH = 80;
+
       if (this.deviceSizeKey) {
         const storedSize = await getJsonItem(this.deviceSizeKey);
         if (storedSize && typeof storedSize === 'object') {
+          let width = parseNumber(storedSize.width, this.default_width);
+          let height = parseNumber(storedSize.height, this.default_height);
+
+          // If stored width is too small, reset to default values
+          // This fixes the issue where previous buggy scaling resulted in tiny sizes
+          if (width < MIN_WIDTH) {
+            width = this.default_width;
+            height = this.default_height;
+          }
+
           return {
-            width: parseNumber(storedSize.width, this.default_width),
-            height: parseNumber(storedSize.height, this.default_height),
+            width,
+            height,
             resolution: parseNumber(storedSize.screenResolution, this.screenResolution)
           };
         }
@@ -314,9 +327,15 @@ export default {
         getItem(LEGACY_RESOLUTION_KEY)
       ]);
 
-      const width = parseNumber(legacyWidth, this.default_width);
-      const height = parseNumber(legacyHeight, this.default_height);
+      let width = parseNumber(legacyWidth, this.default_width);
+      let height = parseNumber(legacyHeight, this.default_height);
       const resolution = parseNumber(legacyResolution, this.screenResolution);
+
+      // Apply minimum width check for legacy values as well
+      if (width < MIN_WIDTH) {
+        width = this.default_width;
+        height = this.default_height;
+      }
 
       if (this.deviceSizeKey) {
         await this.persistDeviceSize({
@@ -1212,7 +1231,13 @@ export default {
       this.syncDisplay()
     }))
     this.listeners.push(await this.$listen('screenScaled', (e) => {
-      if (e.payload.action === 'plus') {
+      // If targetWidth is provided, use it to calculate the correct size
+      // This ensures the screen size syncs with the card container size
+      if (e.payload.targetWidth && this.real_height > 0 && this.real_width > 0) {
+        const aspectRatio = this.real_height / this.real_width
+        this.width = e.payload.targetWidth
+        this.height = e.payload.targetWidth * aspectRatio
+      } else if (e.payload.action === 'plus') {
         this.width = this.width * 1.1
         this.height = this.height * 1.1
       } else if (e.payload.action === 'minus') {

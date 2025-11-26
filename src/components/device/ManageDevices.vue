@@ -956,7 +956,8 @@ export default {
         this.persistCardMinWidth(nextWidth)
       }
 
-      this.$emiter('screenScaled', { action })
+      // Pass target width to Miniremote so it can sync its internal size
+      this.$emiter('screenScaled', { action, targetWidth: this.cardMinWidth })
     },
     sizeChanged(payload) {
       const { width, deviceSerial } = this.normaliseSizeChangedPayload(payload)
