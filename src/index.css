@@ -1,8 +1,9 @@
 /* ./src/index.css */
 @import "tailwindcss";
-@plugin "daisyui";
 
-@config '../tailwind.config.js';
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark, cupcake;
+}
 
 /* add the code bellow */
 @utility no-scrollbar {

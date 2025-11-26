@@ -52,7 +52,7 @@
     "@tauri-apps/cli": "^1.5.9",
     "@vitejs/plugin-vue": "^4.2.3",
     "cross-env": "^10.1.0",
-    "daisyui": "^5.0.9",
+    "daisyui": "^5.5.5",
     "eslint": "^8.57.1",
     "eslint-plugin-vue": "^9.27.0",
     "postcss": "^8.4.38",
