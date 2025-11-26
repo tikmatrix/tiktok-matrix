@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, resolve, join } from 'path';
 import { platform, homedir } from 'os';
-import { copyFileSync, mkdirSync, chmodSync } from 'fs';
+import { copyFileSync, mkdirSync, chmodSync, unlinkSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,23 +22,53 @@ console.log(`📁 Agent directory: ${agentDir}`);
 
 // Step 1: Kill existing processes
 function killProcesses() {
-    if (isWindows) {
+    // Return a promise that resolves when kill commands exit.
+    return new Promise((resolve) => {
         console.log('🔪 Killing existing processes...');
-        try {
-            spawn('taskkill', ['/IM', 'agent.exe', '/F'], { stdio: 'ignore' });
-            spawn('taskkill', ['/IM', 'script.exe', '/F'], { stdio: 'ignore' });
-        } catch (error) {
-            // Ignore errors if processes don't exist
+
+        const children = [];
+
+        if (isWindows) {
+            try {
+                children.push(spawn('taskkill', ['/IM', 'agent.exe', '/F'], { stdio: 'ignore' }));
+                children.push(spawn('taskkill', ['/IM', 'script.exe', '/F'], { stdio: 'ignore' }));
+            } catch (error) {
+                // ignore
+            }
+        } else {
+            try {
+                children.push(spawn('pkill', ['-f', 'agent'], { stdio: 'ignore' }));
+                children.push(spawn('pkill', ['-f', 'script'], { stdio: 'ignore' }));
+            } catch (error) {
+                // ignore
+            }
         }
-    } else {
-        console.log('🔪 Killing existing processes...');
-        try {
-            spawn('pkill', ['-f', 'agent'], { stdio: 'ignore' });
-            spawn('pkill', ['-f', 'script'], { stdio: 'ignore' });
-        } catch (error) {
-            // Ignore errors if processes don't exist
+
+        if (children.length === 0) {
+            // nothing to wait for
+            return resolve();
         }
-    }
+
+        let remaining = children.length;
+        children.forEach((c) => {
+            if (!c || !c.on) {
+                remaining -= 1;
+                if (remaining <= 0) resolve();
+                return;
+            }
+            c.on('close', () => {
+                remaining -= 1;
+                if (remaining <= 0) resolve();
+            });
+            // also guard against error
+            c.on('error', () => {
+                remaining -= 1;
+                if (remaining <= 0) resolve();
+            });
+        });
+        // Fallback: resolve after a short timeout in case OS doesn't return
+        setTimeout(() => resolve(), 2000);
+    });
 }
 
 // Step 2: Run cargo build
@@ -69,10 +99,37 @@ function runCargoBuild() {
 }
 
 // Step 3: Copy binaries to destination
-function copyBinaries() {
+async function copyBinaries() {
     console.log('📦 Copying binaries...');
 
     const releaseDir = join(agentDir, 'target', debugMode ? 'debug' : 'release');
+
+    // helper: try copy with retries
+    async function copyWithRetry(src, dest, makeExecutable = false) {
+        const maxAttempts = 6;
+        const delayMs = 300;
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                // If destination exists, try unlinking first to avoid EBUSY from stale handles
+                try {
+                    unlinkSync(dest);
+                } catch (e) {
+                    // ignore unlink errors
+                }
+
+                copyFileSync(src, dest);
+                if (makeExecutable) {
+                    try { chmodSync(dest, 0o755); } catch (e) { /* ignore */ }
+                }
+                return;
+            } catch (err) {
+                if (attempt === maxAttempts) throw err;
+                // wait a bit and retry
+                await new Promise((res) => setTimeout(res, delayMs));
+            }
+        }
+    }
 
     if (isWindows) {
         // Windows paths
@@ -86,14 +143,14 @@ function copyBinaries() {
 
         // Copy agent.exe
         const agentSrc = join(releaseDir, 'agent.exe');
-        copyFileSync(agentSrc, join(tikmatrixBin, 'agent.exe'));
-        copyFileSync(agentSrc, join(igmatrixBin, 'agent.exe'));
+        await copyWithRetry(agentSrc, join(tikmatrixBin, 'agent.exe'));
+        await copyWithRetry(agentSrc, join(igmatrixBin, 'agent.exe'));
         console.log('✅ agent.exe copied');
 
         // Copy script.exe
         const scriptSrc = join(releaseDir, 'script.exe');
-        copyFileSync(scriptSrc, join(tikmatrixBin, 'script.exe'));
-        copyFileSync(scriptSrc, join(igmatrixBin, 'script.exe'));
+        await copyWithRetry(scriptSrc, join(tikmatrixBin, 'script.exe'));
+        await copyWithRetry(scriptSrc, join(igmatrixBin, 'script.exe'));
         console.log('✅ script.exe copied');
 
     } else {
@@ -112,15 +169,13 @@ function copyBinaries() {
         // Copy agent
         const agentSrc = join(releaseDir, 'agent');
         const agentDest = join(binDir, 'agent');
-        copyFileSync(agentSrc, agentDest);
-        chmodSync(agentDest, 0o755); // Make executable
+        await copyWithRetry(agentSrc, agentDest, true);
         console.log('✅ agent copied');
 
         // Copy script
         const scriptSrc = join(releaseDir, 'script');
         const scriptDest = join(binDir, 'script');
-        copyFileSync(scriptSrc, scriptDest);
-        chmodSync(scriptDest, 0o755); // Make executable
+        await copyWithRetry(scriptSrc, scriptDest, true);
         console.log('✅ script copied');
     }
 }
@@ -129,8 +184,8 @@ function copyBinaries() {
 async function main() {
     try {
         await runCargoBuild();
-        killProcesses();
-        copyBinaries();
+        await killProcesses();
+        await copyBinaries();
         console.log('🎉 Build completed successfully!');
     } catch (error) {
         console.error('❌ Build failed:', error.message);
