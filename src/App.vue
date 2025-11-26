@@ -387,9 +387,9 @@ export default {
       if (status.stage === 'completed') {
         await this.get_settings()
         await this.get_groups()
-
         await this.connectAgent();
         await this.getRunningTasks();
+        await this.getDevices();
         await this.$emiter('reload_tasks', {})
       }
 

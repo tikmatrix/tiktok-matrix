@@ -125,6 +125,55 @@
 
 
 </template>
+<style scoped>
+.drag-select {
+  display: flex;
+  flex-wrap: wrap;
+
+}
+
+.drag-select__wrapper {
+  border: 1px solid #ccc;
+  padding: 5px;
+  margin: 2px;
+  border-radius: 1px;
+  background: #fff;
+}
+
+.drag-select__area {
+  background: #fff;
+}
+
+.drag-select__area:after {
+  display: block;
+  position: absolute;
+  content: " ";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border: 1px solid rgb(66, 153, 225)
+}
+
+.drag-select-option {
+  width: auto;
+  height: 20px;
+  margin: 1px;
+  color: #969696;
+  background: #f1f0f0;
+  border-radius: 1px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 4px;
+  font-size: x-small;
+}
+
+.drag-select-option--selected {
+  color: #000;
+  background: #5fdddc
+}
+</style>
 <script>
 
 import General from './General.vue'
