@@ -42,9 +42,8 @@
 
 
 /* 在全局 CSS 或 App.vue 的 style 中添加 */
-dialog.modal {
+/* dialog.modal {
   top: 48px !important;
-  /* Titlebar 高度 */
   height: calc(100vh - 48px) !important;
   max-height: calc(100vh - 48px) !important;
 }
@@ -52,4 +51,4 @@ dialog.modal {
 dialog.modal::backdrop {
   top: 48px !important;
   height: calc(100vh - 48px) !important;
-}
+} */
