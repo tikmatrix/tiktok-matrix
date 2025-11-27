@@ -158,6 +158,7 @@ export default {
             for (const serial of this.prevDeviceSerials) {
                 if (!newSerials.has(serial)) {
                     this.renderedDeviceMap.delete(serial)
+                    console.log(`DeviceGrid: Removed device with serial ${serial} from rendered map, remaining devices: ${this.renderedDeviceMap.size}`)
                 }
             }
 
@@ -167,6 +168,7 @@ export default {
                 if (serial && this.renderedDeviceMap.has(serial)) {
                     // Update existing device reference
                     this.renderedDeviceMap.set(serial, device)
+                    console.log(`DeviceGrid: Updated device with serial ${serial} in rendered map, currently rendered devices: ${this.renderedDeviceMap.size}`)
                 }
             }
 
@@ -179,6 +181,7 @@ export default {
             if (newToRender.length > 0) {
                 // Add new devices to queue
                 this.pendingQueue.push(...newToRender)
+                console.log(`DeviceGrid: Queued ${newToRender.length} new devices for rendering, pending queue size: ${this.pendingQueue.length}`)
                 // Start consumer if not running
                 this.startConsumer()
             }
@@ -197,7 +200,9 @@ export default {
         startConsumer() {
             if (this.isConsuming) return
             this.isConsuming = true
-            this.consumeBatch()
+            this.consumeTimerId = setTimeout(() => {
+                this.consumeBatch()
+            }, this.renderInterval)
         },
 
         // Consumer: stop the render loop
