@@ -2,15 +2,14 @@
     <div :style="gridStyle" class="grid auto-rows-fr gap-4">
         <div v-for="(device, index) in renderedDevices" :key="deviceKey(device, index)"
             :class="['device-card-appear', isDockedBig(device) ? 'col-span-2 row-span-2 z-20' : 'z-10']">
-            <Device :device="device" :no="device?.key" @sizeChanged="handleSizeChanged" />
+            <Device :device="device" :no="device?.key" :gridCardWidth="gridCardWidth" />
         </div>
     </div>
 </template>
 
 <script>
 import Device from './Device.vue'
-
-const DEFAULT_MIN_WIDTH = 150
+import { getItem } from '@/utils/storage.js';
 const DEFAULT_BATCH_SIZE = 1
 const DEFAULT_RENDER_INTERVAL = 300
 
@@ -24,9 +23,9 @@ export default {
             type: Array,
             default: () => []
         },
-        minWidth: {
+        gridCardWidth: {
             type: Number,
-            default: DEFAULT_MIN_WIDTH
+            default: 150
         },
         batchSize: {
             type: Number,
@@ -37,7 +36,6 @@ export default {
             default: DEFAULT_RENDER_INTERVAL
         }
     },
-    emits: ['minWidthStabilized'],
     data() {
         return {
             // Map of serial -> device for rendered cards
@@ -48,10 +46,7 @@ export default {
             consumeTimerId: null,
             // Track if consumer is running
             isConsuming: false,
-            // Width tracking
-            deviceWidthMap: {
-                '__default__': this.minWidth || DEFAULT_MIN_WIDTH
-            },
+
             // Previous device serial set for diff detection
             prevDeviceSerials: new Set(),
             // Track the docked big screen device serial
@@ -79,7 +74,7 @@ export default {
             if (total > 0 && total <= 5) {
                 return {
                     display: 'grid',
-                    gridTemplateColumns: `repeat(${total}, minmax(${this.minWidth}px, auto))`,
+                    gridTemplateColumns: `repeat(${total}, minmax(${this.gridCardWidth}px, auto))`,
                     justifyContent: 'flex-start',
                     autoRows: 'auto',
                     gap: '1rem',
@@ -88,7 +83,7 @@ export default {
             }
             return {
                 display: 'grid',
-                gridTemplateColumns: `repeat(auto-fit, minmax(${this.minWidth}px, 1fr))`,
+                gridTemplateColumns: `repeat(auto-fit, minmax(${this.gridCardWidth}px, 1fr))`,
                 autoRows: 'auto',
                 gap: '1.25rem',
                 flex: 1
@@ -102,13 +97,6 @@ export default {
             },
             deep: true,
             immediate: true
-        },
-        minWidth(newValue) {
-            const nextWidth = Number(newValue) || DEFAULT_MIN_WIDTH
-            this.deviceWidthMap = {
-                ...this.deviceWidthMap,
-                '__default__': nextWidth
-            }
         }
     },
     beforeUnmount() {
@@ -122,7 +110,6 @@ export default {
         this.listeners = []
     },
     async mounted() {
-        const { getItem } = await import('@/utils/storage.js')
         // Listen for openDevice event to track docked big screen device
         this.listeners.push(await this.$listen('openDevice', async (e) => {
             const bigScreen = await getItem('bigScreen') || 'standard'
@@ -243,45 +230,7 @@ export default {
         deviceKey(device, index) {
             return device?.real_serial || device?.serial || device?.key || `device-${index}`
         },
-        handleSizeChanged(payload) {
-            const { width, deviceSerial } = this.normalizeSizePayload(payload)
-            if (!Number.isFinite(width) || width <= 0) {
-                return
-            }
-            const serialKey = deviceSerial || '__default__'
-            if (this.deviceWidthMap[serialKey] === width) {
-                return
-            }
-            this.deviceWidthMap = {
-                ...this.deviceWidthMap,
-                [serialKey]: width
-            }
-            this.emitWidthIfNeeded()
-        },
-        normalizeSizePayload(payload) {
-            if (typeof payload === 'number') {
-                return { width: payload, deviceSerial: null }
-            }
-            if (payload && typeof payload === 'object') {
-                const width = Number(payload.width)
-                const deviceSerial = payload.deviceSerial || payload.serial || null
-                return { width, deviceSerial }
-            }
-            const fallbackWidth = Number(payload)
-            return { width: fallbackWidth, deviceSerial: null }
-        },
-        emitWidthIfNeeded() {
-            const values = Object.values(this.deviceWidthMap || {})
-                .map(value => Number(value))
-                .filter(value => Number.isFinite(value) && value > 0)
-            if (values.length === 0) {
-                return
-            }
-            const nextWidth = Math.max(...values)
-            if (Math.abs(nextWidth - this.minWidth) > 0.5) {
-                this.$emit('minWidthStabilized', nextWidth)
-            }
-        }
+
     }
 }
 </script>

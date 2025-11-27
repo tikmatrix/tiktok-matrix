@@ -483,8 +483,6 @@
   isRunning: '运行中',
   joinFanClub: '加入粉丝团',
   keyboard: '键盘',
-  keyboardInput: '键盘控制',
-  keyboardInputTip: '在大屏模式下点击设备屏幕获取焦点，然后使用电脑键盘输入文字、标点符号和控制设备',
   language: '语言',
   left: '左滑',
   leftDays: '剩余天数',

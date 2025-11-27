@@ -485,8 +485,6 @@
   isRunning: 'Is Running',
   joinFanClub: 'Join Fan Club',
   keyboard: 'Keyboard',
-  keyboardInput: 'Keyboard Control',
-  keyboardInputTip: 'Click on device screen in big mode to focus, then use computer keyboard to input text, punctuation and control the device',
   language: 'Lang',
   left: 'Left',
   leftDays: 'Left Days',

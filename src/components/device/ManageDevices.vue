@@ -4,19 +4,6 @@
       class="flex-1 w-full h-full overflow-hidden rounded-2xl bg-base-100 border border-base-200/60 shadow-md backdrop-blur-md">
       <div class="h-full overflow-y-auto no-scrollbar px-4 pb-20 pt-4 space-y-4">
 
-        <!-- 键盘输入提示信息 -->
-        <div v-if="showKeyboardTip" class="alert alert-info shadow-lg relative">
-          <button class="absolute top-2 right-2 btn btn-md btn-ghost hover:btn-error" @click="closeKeyboardTip">
-            <font-awesome-icon icon="fa-solid fa-times" class="h-3 w-3" />
-          </button>
-          <div class="flex items-center pr-8">
-            <font-awesome-icon icon="fa-solid fa-keyboard" class="h-6 w-6 text-info" />
-            <div class="ml-3">
-              <h3 class="font-bold text-lg">{{ $t('keyboardInput') }}</h3>
-              <div class="text-md">{{ $t('keyboardInputTip') }}</div>
-            </div>
-          </div>
-        </div>
 
         <Pagination ref="device_panel" :items="mydevices" :pageSize="200" @refresh="refreshPage" :showTopControls="true"
           :showBottomControls="false">
@@ -170,14 +157,13 @@
                   </table>
                 </div>
               </div>
-              <DeviceGrid v-else :devices="slotProps.items" :min-width="cardMinWidth"
-                @min-width-stabilized="handleGridWidthStabilized" />
+              <DeviceGrid v-else :devices="slotProps.items" :gridCardWidth="gridCardWidth" />
             </div>
           </template>
         </Pagination>
 
 
-        <div v-if="isLicensed && devices.length == 0"
+        <div v-if="devices.length == 0"
           class="w-full min-h-[40vh] bg-base-100 flex flex-col items-center justify-center rounded-xl border border-dashed border-base-300 p-8">
           <div class="relative flex justify-center items-center">
             <div class="absolute animate-spin rounded-full h-48 w-48 border-t-4 border-b-4 border-purple-500"></div>
@@ -289,8 +275,7 @@ import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 import { getItem, setItem } from '@/utils/storage.js';
 
-const GRID_CARD_WIDTH_KEY = 'gridCardWidth';
-const LEGACY_CARD_WIDTH_KEY = 'deviceWidth';
+
 
 
 export default {
@@ -333,9 +318,7 @@ export default {
       scanDetails: [],
       groups: [],
       currentDevice: null,
-      cardMinWidth: 150,
-      licenseData: {},
-      showKeyboardTip: true,
+      gridCardWidth: 150,
       // Debug Dialog
       showDebugDialog: false,
       debugDevice: null,
@@ -354,9 +337,7 @@ export default {
     }
   },
   watch: {
-    async showKeyboardTip(val) {
-      await setItem('showKeyboardTip', val ? 'true' : 'false')
-    },
+
     groups: {
       handler() {
         this.syncDisplayedDevices()
@@ -385,9 +366,7 @@ export default {
       scanPort,
       storedProxyHost,
       storedProxyPort,
-      storedGridCardWidth,
-      storedLegacyDeviceWidth,
-      storedShowKeyboardTip
+      gridCardWidth
     ] = await Promise.all([
       getWhiteLabelConfig(),
       getItem('listMode'),
@@ -399,9 +378,7 @@ export default {
       getItem('scan_port'),
       getItem('proxy_host'),
       getItem('proxy_port'),
-      getItem(GRID_CARD_WIDTH_KEY),
-      getItem(LEGACY_CARD_WIDTH_KEY),
-      getItem('showKeyboardTip')
+      getItem('gridCardWidth'),
     ]);
 
     const parseNumber = (value, fallback) => {
@@ -433,15 +410,9 @@ export default {
     if (storedProxyPort !== null) {
       this.proxy_port = parseNumber(storedProxyPort, 8080);
     }
+    this.gridCardWidth = parseNumber(gridCardWidth, 150);
 
-    const widthParsed = parseNumber(storedGridCardWidth ?? storedLegacyDeviceWidth, 150);
-    if (widthParsed > 0) {
-      this.cardMinWidth = widthParsed;
-    }
 
-    if (storedShowKeyboardTip !== null) {
-      this.showKeyboardTip = storedShowKeyboardTip !== 'false';
-    }
   },
   methods: {
     setDisplayMode(mode) {
@@ -473,9 +444,6 @@ export default {
       this.currentDevice.sort = parseInt(this.currentDevice.sort)
       await setItem(`sort_${this.currentDevice.real_serial}`, this.currentDevice.sort)
       this.mydevices.sort((a, b) => {
-        // fisrt: sort
-        // second: group_id
-        // third: real_serial
         return a.sort - b.sort || a.group_id - b.group_id || a.real_serial - b.real_serial
       });
       this.$emiter('reload_devices', {})
@@ -487,9 +455,7 @@ export default {
       this.mydevices = []
       this.$emiter('reload_devices', { force: true })
     },
-    closeKeyboardTip() {
-      this.showKeyboardTip = false
-    },
+
     // proxy rotation form handling moved to DeviceProxyRotation child component
     async loadProxyRotations() {
       try {
@@ -828,53 +794,29 @@ export default {
       //reload settings
       await this.$emiter('reload_settings', {})
     },
-    handleScale(action) {
+    async handleScale(action) {
       const factor = action === 'plus' ? 1.1 : action === 'minus' ? 0.9 : 1
       if (factor === 1) {
         return
       }
       const MIN_WIDTH = 80
-      const nextWidth = Math.max(MIN_WIDTH, Math.round(this.cardMinWidth * factor))
+      const nextWidth = Math.max(MIN_WIDTH, Math.round(this.gridCardWidth * factor))
 
-      if (Math.abs(nextWidth - this.cardMinWidth) > 0.5) {
-        this.cardMinWidth = nextWidth
-        this.persistCardMinWidth(nextWidth)
+      if (Math.abs(nextWidth - this.gridCardWidth) > 0.5) {
+        this.gridCardWidth = nextWidth
+        await setItem('gridCardWidth', this.gridCardWidth)
+        await this.$emiter('screenScaled', { action, targetWidth: this.gridCardWidth })
       }
+    },
 
-      // Pass target width to Device so it can sync its internal size
-      this.$emiter('screenScaled', { action, targetWidth: this.cardMinWidth })
-    },
-    handleGridWidthStabilized(width) {
-      if (!Number.isFinite(width) || width <= 0) {
-        return
-      }
-      if (Math.abs(width - this.cardMinWidth) <= 0.5) {
-        return
-      }
-      this.cardMinWidth = Math.round(width)
-      this.persistCardMinWidth(this.cardMinWidth)
-    },
-    async persistCardMinWidth(value) {
-      try {
-        await setItem(GRID_CARD_WIDTH_KEY, value)
-      } catch (error) {
-        console.warn('Failed to persist grid card width:', error)
-      }
-    },
-    async showLicenseDialog() {
-      await this.$emiter('LICENSE', { show: true });
-    },
     handleCloseDebugDialog() {
       this.showDebugDialog = false
       this.debugDevice = null
     },
   },
   computed: {
-    isLicensed() {
-      return this.licenseData.leftdays > 0 || this.licenseData.is_stripe_active == 1;
-    },
     screenSizeDisplay() {
-      return Math.round(this.cardMinWidth || 0);
+      return Math.round(this.gridCardWidth || 0);
     },
     canClearProxyRotation() {
       return !!this.proxyRotationForm.device_serial && !!this.proxyRotationMap[this.proxyRotationForm.device_serial]
@@ -903,10 +845,7 @@ export default {
     await this.$listen('closeDevice', () => {
       this.device = null
     });
-    // 监听TitleBar组件的授权状态变更
-    await this.$listen('LICENSE_STATUS_CHANGED', async (e) => {
-      this.licenseData = e.payload;
-    });
+
 
     // 监听打开 Debug Dialog 事件
     await this.$listen('openDebugDialog', async (e) => {

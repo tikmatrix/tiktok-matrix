@@ -98,15 +98,11 @@
 <script>
 /* global VideoDecoder, EncodedVideoChunk */
 import RightBars from './RightBars.vue';
+import { getItem } from '@/utils/storage.js';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
-import { getItem, getJsonItem, setJsonItem } from '@/utils/storage.js';
 const FIRST_FRAME_PREFIX = 'FIRST_FRAME_BASE64:';
-const DEVICE_SIZE_STORAGE_PREFIX = 'deviceSize:';
-const LEGACY_WIDTH_KEY = 'deviceWidth';
-const LEGACY_HEIGHT_KEY = 'deviceHeight';
-const LEGACY_RESOLUTION_KEY = 'screenResolution';
 export default {
   name: 'Device',
   components: {
@@ -127,18 +123,19 @@ export default {
         return {}
       }
     },
+    gridCardWidth: {
+      type: Number,
+      default: 150
+    },
 
   },
   data() {
     return {
-      default_width: 150,
-      default_height: 300,
       big: false,
       visible: true,
       rotation: 0,
       videoDecoder: null,
       scrcpy: null,
-      deviceSizeKey: null,
       loading: true,
       operating: false,
       input_dialog_title: '',
@@ -150,7 +147,6 @@ export default {
       width: 150,
       real_width: 0,
       real_height: 0,
-      scaled: 1,
       listeners: [],
       touch: false,
       screenResolution: 512,
@@ -243,132 +239,16 @@ export default {
     }
   },
   async created() {
-    this.deviceSizeKey = this.buildDeviceSizeKey();
-    const { width, height, resolution } = await this.loadInitialDimensions();
-    this.default_width = width;
-    this.default_height = height;
-    this.width = width;
-    this.height = height;
-    this.screenResolution = resolution;
+    this.width = this.gridCardWidth
+    this.height = this.gridCardWidth * 16 / 9
   },
-  watch: {
-    scaled(newVal) {
-      //console.log(`scaled: ${newVal}`)
-      if (this.real_width == 0 || this.real_height == 0 || newVal == 0) {
-        return
-      }
-      this.width = this.real_width * newVal
-      this.height = this.real_height * newVal
-      //console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
-      this.$emit('sizeChanged', this.width)
-    },
-    width(newVal) {
-      this.persistDeviceSize({ width: newVal }).catch(error => {
-        console.warn('Persist width failed:', error)
-      })
-      //console.log(`width changed: ${newVal}`)
-      this.$emit('sizeChanged', {
-        width: newVal,
-        deviceSerial: this.device?.real_serial || this.device?.serial || null
-      })
-    },
-    height(newVal) {
-      this.persistDeviceSize({ height: newVal }).catch(error => {
-        console.warn('Persist height failed:', error)
-      })
-    }
-  },
+
   methods: {
     getDeviceIdentifier() {
       return this.device?.real_serial || this.device?.serial || null;
     },
-    buildDeviceSizeKey() {
-      const identifier = this.getDeviceIdentifier();
-      return identifier ? `${DEVICE_SIZE_STORAGE_PREFIX}${identifier}` : null;
-    },
-    async loadInitialDimensions() {
-      const parseNumber = (value, fallback) => {
-        if (value === null || value === undefined) {
-          return fallback;
-        }
-        const normalized = Number(String(value).replace(/"/g, ''));
-        return Number.isFinite(normalized) ? normalized : fallback;
-      };
 
-      // Minimum acceptable width to ensure the screen is visible
-      const MIN_WIDTH = 80;
 
-      if (this.deviceSizeKey) {
-        const storedSize = await getJsonItem(this.deviceSizeKey);
-        if (storedSize && typeof storedSize === 'object') {
-          let width = parseNumber(storedSize.width, this.default_width);
-          let height = parseNumber(storedSize.height, this.default_height);
-
-          // If stored width is too small, reset to default values
-          // This fixes the issue where previous buggy scaling resulted in tiny sizes
-          if (width < MIN_WIDTH) {
-            width = this.default_width;
-            height = this.default_height;
-          }
-
-          return {
-            width,
-            height,
-            resolution: parseNumber(storedSize.screenResolution, this.screenResolution)
-          };
-        }
-      }
-
-      const [legacyWidth, legacyHeight, legacyResolution] = await Promise.all([
-        getItem(LEGACY_WIDTH_KEY),
-        getItem(LEGACY_HEIGHT_KEY),
-        getItem(LEGACY_RESOLUTION_KEY)
-      ]);
-
-      let width = parseNumber(legacyWidth, this.default_width);
-      let height = parseNumber(legacyHeight, this.default_height);
-      const resolution = parseNumber(legacyResolution, this.screenResolution);
-
-      // Apply minimum width check for legacy values as well
-      if (width < MIN_WIDTH) {
-        width = this.default_width;
-        height = this.default_height;
-      }
-
-      if (this.deviceSizeKey) {
-        await this.persistDeviceSize({
-          width,
-          height,
-          screenResolution: resolution
-        });
-      }
-
-      return { width, height, resolution };
-    },
-    async persistDeviceSize(overrides = {}) {
-      if (!this.deviceSizeKey) {
-        return;
-      }
-
-      const coerceNumber = (value, fallback) => {
-        if (value === null || value === undefined) {
-          return fallback;
-        }
-        const next = Number(value);
-        return Number.isFinite(next) ? next : fallback;
-      };
-
-      const payload = {
-        width: coerceNumber(overrides.width ?? this.width, this.default_width),
-        height: coerceNumber(overrides.height ?? this.height, this.default_height),
-        scaled: coerceNumber(overrides.scaled ?? this.scaled, this.scaled || 1),
-        real_width: coerceNumber(overrides.real_width ?? this.real_width, this.real_width || 0),
-        real_height: coerceNumber(overrides.real_height ?? this.real_height, this.real_height || 0),
-        screenResolution: coerceNumber(overrides.screenResolution ?? this.screenResolution, this.screenResolution)
-      };
-
-      await setJsonItem(this.deviceSizeKey, payload);
-    },
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -1039,11 +919,6 @@ export default {
               break
             }
             case 1: {
-              if (this.big || this.width != this.default_width) {
-                this.message_index += 1
-                //console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
-                return;
-              }
               // Check if message.data is a string before calling split
               if (typeof message.data !== 'string') {
                 console.warn(`${this.no}-${this.device.serial} expected string resolution info, got ${typeof message.data}`)
@@ -1055,15 +930,11 @@ export default {
               if (Number.isFinite(parsedWidth) && Number.isFinite(parsedHeight) && parsedHeight !== 0) {
                 this.real_width = parsedWidth
                 this.real_height = parsedHeight
-                this.scaled = this.height / this.real_height
-                //console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
-                this.persistDeviceSize({
-                  real_width: this.real_width,
-                  real_height: this.real_height,
-                  scaled: this.scaled
-                }).catch(error => {
-                  console.warn('Persist real dimensions failed:', error)
-                })
+                const aspectRatio = this.real_height / this.real_width
+                this.width = this.gridCardWidth
+                this.height = this.width * aspectRatio
+                //console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}`)
+
               } else {
                 console.warn(`${this.no}-${this.device.serial} received invalid resolution info: ${message.data}`)
               }
@@ -1226,23 +1097,18 @@ export default {
     }))
 
     this.listeners.push(await this.$listen('screenScaled', (e) => {
-      // If targetWidth is provided, use it to calculate the correct size
-      // This ensures the screen size syncs with the card container size
+      console.log(`${this.no}-${this.device.serial} received screenScaled event:`, e.payload)
       if (e.payload.targetWidth && this.real_height > 0 && this.real_width > 0) {
         const aspectRatio = this.real_height / this.real_width
         this.width = e.payload.targetWidth
         this.height = e.payload.targetWidth * aspectRatio
-      } else if (e.payload.action === 'plus') {
-        this.width = this.width * 1.1
-        this.height = this.height * 1.1
-      } else if (e.payload.action === 'minus') {
-        this.width = this.width * 0.9
-        this.height = this.height * 0.9
+        console.log(`${this.no}-${this.device.serial} screenScaled to width: ${this.width}, height: ${this.height}, aspectRatio: ${aspectRatio}`)
+      } else {
+        console.warn(`${this.no}-${this.device.serial} screenScaled event missing targetWidth or invalid real dimensions, this.real_width: ${this.real_width}, this.real_height: ${this.real_height}`)
       }
     }))
     this.listeners.push(await this.$listen('screenResolution', async (e) => {
       this.screenResolution = e.payload.resolution;
-      await this.persistDeviceSize({ screenResolution: this.screenResolution });
       this.closeScrcpy();
       this.closeDecoder();
       this.syncDisplay();
