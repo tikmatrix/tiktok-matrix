@@ -1,13 +1,14 @@
 <template>
     <div :style="gridStyle" class="grid auto-rows-fr gap-4">
-        <div v-for="(device, index) in renderedDevices" :key="deviceKey(device, index)" class="device-card-appear">
-            <Miniremote :device="device" :no="device?.key" @sizeChanged="handleSizeChanged" />
+        <div v-for="(device, index) in renderedDevices" :key="deviceKey(device, index)"
+            :class="['device-card-appear', isDockedBig(device) ? 'col-span-2 row-span-2 z-20' : 'z-10']">
+            <Device :device="device" :no="device?.key" @sizeChanged="handleSizeChanged" />
         </div>
     </div>
 </template>
 
 <script>
-import Miniremote from './Miniremote.vue'
+import Device from './Device.vue'
 
 const DEFAULT_MIN_WIDTH = 150
 const DEFAULT_BATCH_SIZE = 1
@@ -16,7 +17,7 @@ const DEFAULT_RENDER_INTERVAL = 300
 export default {
     name: 'DeviceGrid',
     components: {
-        Miniremote
+        Device
     },
     props: {
         devices: {
@@ -52,7 +53,11 @@ export default {
                 '__default__': this.minWidth || DEFAULT_MIN_WIDTH
             },
             // Previous device serial set for diff detection
-            prevDeviceSerials: new Set()
+            prevDeviceSerials: new Set(),
+            // Track the docked big screen device serial
+            dockedDeviceSerial: null,
+            // Event listeners
+            listeners: []
         }
     },
     computed: {
@@ -70,7 +75,7 @@ export default {
             })
         },
         gridStyle() {
-            const total = Array.isArray(this.devices) ? this.devices.length : 0
+            const total = Array.isArray(this.renderedDevices) ? this.renderedDevices.length : 0
             if (total > 0 && total <= 5) {
                 return {
                     display: 'grid',
@@ -108,8 +113,37 @@ export default {
     },
     beforeUnmount() {
         this.stopConsumer()
+        // Clean up event listeners
+        this.listeners.forEach(listener => {
+            if (typeof listener === 'function') {
+                listener()
+            }
+        })
+        this.listeners = []
+    },
+    async mounted() {
+        const { getItem } = await import('@/utils/storage.js')
+        // Listen for openDevice event to track docked big screen device
+        this.listeners.push(await this.$listen('openDevice', async (e) => {
+            const bigScreen = await getItem('bigScreen') || 'standard'
+            if (bigScreen === 'docked') {
+                this.dockedDeviceSerial = e.payload?.serial || null
+            }
+        }))
+        // Listen for closeDevice event to clear docked big screen device
+        this.listeners.push(await this.$listen('closeDevice', () => {
+            this.dockedDeviceSerial = null
+        }))
     },
     methods: {
+        // Check if device is in docked big screen mode
+        isDockedBig(device) {
+            if (!this.dockedDeviceSerial) {
+                return false
+            }
+            const serial = this.getDeviceSerial(device)
+            return serial === this.dockedDeviceSerial
+        },
         // Get unique key for a device
         getDeviceSerial(device) {
             return device?.real_serial || device?.serial || device?.key || null

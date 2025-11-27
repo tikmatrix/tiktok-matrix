@@ -1,6 +1,5 @@
 <template>
-  <div
-    :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-visible']">
+  <div class="relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-visible">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag bg-base-300 p-2" v-if="big">
@@ -64,10 +63,9 @@
               <span class="text-primary font-bold">{{ $t('operating') }}</span>
             </div>
           </div>
-          <RightBars v-if="big" :serial="device.serial" :real_serial="device.real_serial" />
         </div>
-
       </div>
+      <RightBars v-if="big" :serial="device.serial" :real_serial="device.real_serial" />
     </div>
 
 
@@ -110,7 +108,7 @@ const LEGACY_WIDTH_KEY = 'deviceWidth';
 const LEGACY_HEIGHT_KEY = 'deviceHeight';
 const LEGACY_RESOLUTION_KEY = 'screenResolution';
 export default {
-  name: 'Miniremote',
+  name: 'Device',
   components: {
     RightBars,
   },
@@ -1198,12 +1196,14 @@ export default {
           this.closeScrcpy();
           this.closeDecoder();
           this.operating = true
-          return
+        } else if (bigScreen === 'docked') {
+          this.closeScrcpy();
+          this.closeDecoder();
+          this.big = true;
+          this.syncDisplay();
+        } else {
+          console.warn(`Unknown bigScreen mode: ${bigScreen}`);
         }
-        this.closeScrcpy();
-        this.closeDecoder();
-        this.big = true;
-        this.syncDisplay();
       }
       if (e.payload.serial !== this.device.serial && this.operating) {
         const bigScreen = await getItem('bigScreen') || 'standard'

@@ -341,6 +341,7 @@ export default {
           device.key = index + 1;
         });
 
+
       } catch (error) {
         console.error('获取设备列表失败:', error);
       }

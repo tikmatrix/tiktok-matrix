@@ -210,7 +210,7 @@
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
     :z="20" drag-handle=".drag"
     class="bg-base-100 fixed top-32 right-32 border border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
-    <Miniremote :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'" />
+    <Device :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300">
@@ -279,7 +279,7 @@
 </style>
 <script>
 import MyButton from '../Button.vue'
-import Miniremote from './Miniremote.vue'
+import Device from './Device.vue'
 import Pagination from '../Pagination.vue'
 import DeviceGrid from './DeviceGrid.vue'
 import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
@@ -307,7 +307,7 @@ export default {
   },
   components: {
     MyButton,
-    Miniremote,
+    Device,
     Pagination,
     DeviceGrid,
     DeviceDebugDialog,
@@ -841,7 +841,7 @@ export default {
         this.persistCardMinWidth(nextWidth)
       }
 
-      // Pass target width to Miniremote so it can sync its internal size
+      // Pass target width to Device so it can sync its internal size
       this.$emiter('screenScaled', { action, targetWidth: this.cardMinWidth })
     },
     handleGridWidthStabilized(width) {
