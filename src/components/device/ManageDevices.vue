@@ -157,7 +157,7 @@
                   </table>
                 </div>
               </div>
-              <DeviceGrid v-else :devices="slotProps.items" :gridCardWidth="gridCardWidth" />
+              <DeviceGrid v-else :devices="slotProps.items" :gridCardHeight="gridCardHeight" />
             </div>
           </template>
         </Pagination>
@@ -318,7 +318,7 @@ export default {
       scanDetails: [],
       groups: [],
       currentDevice: null,
-      gridCardWidth: 150,
+      gridCardHeight: 150,
       // Debug Dialog
       showDebugDialog: false,
       debugDevice: null,
@@ -366,7 +366,7 @@ export default {
       scanPort,
       storedProxyHost,
       storedProxyPort,
-      gridCardWidth
+      gridCardHeight
     ] = await Promise.all([
       getWhiteLabelConfig(),
       getItem('listMode'),
@@ -378,7 +378,7 @@ export default {
       getItem('scan_port'),
       getItem('proxy_host'),
       getItem('proxy_port'),
-      getItem('gridCardWidth'),
+      getItem('gridCardHeight'),
     ]);
 
     const parseNumber = (value, fallback) => {
@@ -410,7 +410,7 @@ export default {
     if (storedProxyPort !== null) {
       this.proxy_port = parseNumber(storedProxyPort, 8080);
     }
-    this.gridCardWidth = parseNumber(gridCardWidth, 150);
+    this.gridCardHeight = parseNumber(gridCardHeight, 150);
 
 
   },
@@ -799,13 +799,13 @@ export default {
       if (factor === 1) {
         return
       }
-      const MIN_WIDTH = 80
-      const nextWidth = Math.max(MIN_WIDTH, Math.round(this.gridCardWidth * factor))
+      const MIN = 100
+      const nextWidth = Math.max(MIN, Math.round(this.gridCardHeight * factor))
 
-      if (Math.abs(nextWidth - this.gridCardWidth) > 0.5) {
-        this.gridCardWidth = nextWidth
-        await setItem('gridCardWidth', this.gridCardWidth)
-        await this.$emiter('screenScaled', { action, targetWidth: this.gridCardWidth })
+      if (Math.abs(nextWidth - this.gridCardHeight) > 0.5) {
+        this.gridCardHeight = nextWidth
+        await setItem('gridCardHeight', this.gridCardHeight)
+        await this.$emiter('screenScaled', { size: this.gridCardHeight })
       }
     },
 
@@ -816,7 +816,7 @@ export default {
   },
   computed: {
     screenSizeDisplay() {
-      return Math.round(this.gridCardWidth || 0);
+      return Math.round(this.gridCardHeight || 0);
     },
     canClearProxyRotation() {
       return !!this.proxyRotationForm.device_serial && !!this.proxyRotationMap[this.proxyRotationForm.device_serial]
@@ -882,6 +882,33 @@ export default {
 :deep(.device-card-appear) {
   animation: devicePopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-fill-mode: both;
+  position: relative;
+  overflow: hidden;
+}
+
+:deep(.device-card-appear::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(var(--p) / 0.15),
+      transparent);
+  animation: shimmer 1.5s ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 100%;
+  }
 }
 
 :deep(.device-card-appear:nth-child(1)) {

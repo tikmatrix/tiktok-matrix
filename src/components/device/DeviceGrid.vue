@@ -2,7 +2,7 @@
     <div :style="gridStyle" class="grid auto-rows-fr gap-4">
         <div v-for="(device, index) in renderedDevices" :key="deviceKey(device, index)"
             :class="['device-card-appear', isDockedBig(device) ? 'col-span-2 row-span-2 z-20' : 'z-10']">
-            <Device :device="device" :no="device?.key" :gridCardWidth="gridCardWidth" />
+            <Device :device="device" :no="device?.key" :gridCardHeight="gridCardHeight" />
         </div>
     </div>
 </template>
@@ -23,9 +23,9 @@ export default {
             type: Array,
             default: () => []
         },
-        gridCardWidth: {
+        gridCardHeight: {
             type: Number,
-            default: 150
+            default: 250
         },
         batchSize: {
             type: Number,
@@ -74,7 +74,7 @@ export default {
             if (total > 0 && total <= 5) {
                 return {
                     display: 'grid',
-                    gridTemplateColumns: `repeat(${total}, minmax(${this.gridCardWidth}px, auto))`,
+                    gridTemplateColumns: `repeat(${total}, minmax(${this.gridCardHeight * 9 / 16}px, auto))`,
                     justifyContent: 'flex-start',
                     autoRows: 'auto',
                     gap: '1rem',
@@ -83,7 +83,7 @@ export default {
             }
             return {
                 display: 'grid',
-                gridTemplateColumns: `repeat(auto-fit, minmax(${this.gridCardWidth}px, 1fr))`,
+                gridTemplateColumns: `repeat(auto-fit, minmax(${this.gridCardHeight * 9 / 16}px, 1fr))`,
                 autoRows: 'auto',
                 gap: '1.25rem',
                 flex: 1
@@ -145,7 +145,7 @@ export default {
             for (const serial of this.prevDeviceSerials) {
                 if (!newSerials.has(serial)) {
                     this.renderedDeviceMap.delete(serial)
-                    console.log(`DeviceGrid: Removed device with serial ${serial} from rendered map, remaining devices: ${this.renderedDeviceMap.size}`)
+                    //console.log(`DeviceGrid: Removed device with serial ${serial} from rendered map, remaining devices: ${this.renderedDeviceMap.size}`)
                 }
             }
 
@@ -155,7 +155,7 @@ export default {
                 if (serial && this.renderedDeviceMap.has(serial)) {
                     // Update existing device reference
                     this.renderedDeviceMap.set(serial, device)
-                    console.log(`DeviceGrid: Updated device with serial ${serial} in rendered map, currently rendered devices: ${this.renderedDeviceMap.size}`)
+                    //console.log(`DeviceGrid: Updated device with serial ${serial} in rendered map, currently rendered devices: ${this.renderedDeviceMap.size}`)
                 }
             }
 
@@ -168,7 +168,7 @@ export default {
             if (newToRender.length > 0) {
                 // Add new devices to queue
                 this.pendingQueue.push(...newToRender)
-                console.log(`DeviceGrid: Queued ${newToRender.length} new devices for rendering, pending queue size: ${this.pendingQueue.length}`)
+                //console.log(`DeviceGrid: Queued ${newToRender.length} new devices for rendering, pending queue size: ${this.pendingQueue.length}`)
                 // Start consumer if not running
                 this.startConsumer()
             }

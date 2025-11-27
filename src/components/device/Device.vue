@@ -123,9 +123,9 @@ export default {
         return {}
       }
     },
-    gridCardWidth: {
+    gridCardHeight: {
       type: Number,
-      default: 150
+      default: 250
     },
 
   },
@@ -143,8 +143,8 @@ export default {
       input_callback: null,
       message_index: 0,
       name: 'Loading...',
-      height: 300,
-      width: 150,
+      height: 250,
+      width: 250 * 9 / 16,
       real_width: 0,
       real_height: 0,
       listeners: [],
@@ -239,8 +239,8 @@ export default {
     }
   },
   async created() {
-    this.width = this.gridCardWidth
-    this.height = this.gridCardWidth * 16 / 9
+    this.height = this.gridCardHeight * (this.bigSize ? 2 : 1)
+    this.width = this.gridCardHeight * 9 / 16 * (this.bigSize ? 2 : 1)
   },
 
   methods: {
@@ -931,8 +931,8 @@ export default {
                 this.real_width = parsedWidth
                 this.real_height = parsedHeight
                 const aspectRatio = this.real_height / this.real_width
-                this.width = this.gridCardWidth
-                this.height = this.width * aspectRatio
+                this.height = this.gridCardHeight * (this.bigSize ? 2 : 1)
+                this.width = this.gridCardHeight / aspectRatio * (this.bigSize ? 2 : 1)
                 //console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}`)
 
               } else {
@@ -1085,6 +1085,14 @@ export default {
           this.operating = false
           this.syncDisplay();
         }
+      } else if (e.payload.serial !== this.device.serial && this.big) {
+        const bigScreen = await getItem('bigScreen') || 'standard'
+        if (bigScreen === 'docked') {
+          this.closeScrcpy();
+          this.closeDecoder();
+          this.big = false;
+          this.syncDisplay();
+        }
       }
     }))
     this.listeners.push(await this.$listen('syncEventData', (e) => {
@@ -1097,12 +1105,12 @@ export default {
     }))
 
     this.listeners.push(await this.$listen('screenScaled', (e) => {
-      console.log(`${this.no}-${this.device.serial} received screenScaled event:`, e.payload)
-      if (e.payload.targetWidth && this.real_height > 0 && this.real_width > 0) {
+      //console.log(`${this.no}-${this.device.serial} received screenScaled event:`, e.payload)
+      if (e.payload.size && this.real_height > 0 && this.real_width > 0) {
         const aspectRatio = this.real_height / this.real_width
-        this.width = e.payload.targetWidth
-        this.height = e.payload.targetWidth * aspectRatio
-        console.log(`${this.no}-${this.device.serial} screenScaled to width: ${this.width}, height: ${this.height}, aspectRatio: ${aspectRatio}`)
+        this.height = e.payload.size
+        this.width = e.payload.size / aspectRatio
+        //console.log(`${this.no}-${this.device.serial} screenScaled to width: ${this.width}, height: ${this.height}, aspectRatio: ${aspectRatio}`)
       } else {
         console.warn(`${this.no}-${this.device.serial} screenScaled event missing targetWidth or invalid real dimensions, this.real_width: ${this.real_width}, this.real_height: ${this.real_height}`)
       }
