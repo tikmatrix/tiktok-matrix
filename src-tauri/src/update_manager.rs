@@ -290,6 +290,9 @@ pub async fn install_lib_file(
             log::info!("Installed {} to {:?}", lib.name, dest_file);
         }
         "script" | "agent" => {
+            // Pause agent monitor to prevent auto-restart during update
+            crate::process_manager::pause_agent_monitor();
+
             // Kill process before update
             crate::kill_process(lib.name.clone());
             std::thread::sleep(std::time::Duration::from_secs(3));
@@ -298,13 +301,20 @@ pub async fn install_lib_file(
             fs::create_dir_all(&bin_dir).map_err(|e| e.to_string())?;
 
             let dest_file = bin_dir.join(tmp_file_path.file_name().unwrap());
-            fs::copy(tmp_file_path, &dest_file).map_err(|e| e.to_string())?;
+            fs::copy(tmp_file_path, &dest_file).map_err(|e| {
+                // Resume monitor on error
+                crate::process_manager::resume_agent_monitor();
+                e.to_string()
+            })?;
 
             // Grant permission on macOS
             #[cfg(target_os = "macos")]
             crate::grant_permission(app_handle.clone(), format!("bin/{}", lib.name));
 
             log::info!("Installed {} to {:?}", lib.name, dest_file);
+
+            // Resume agent monitor after successful installation
+            crate::process_manager::resume_agent_monitor();
         }
         _ => {
             return Err(format!("Unknown library type: {}", lib.name));
@@ -315,10 +325,7 @@ pub async fn install_lib_file(
 }
 
 /// Process single library update
-pub async fn process_lib_update(
-    app_handle: &AppHandle,
-    lib: &LibInfo,
-) -> Result<bool, String> {
+pub async fn process_lib_update(app_handle: &AppHandle, lib: &LibInfo) -> Result<bool, String> {
     log::info!(
         "Processing library: {} (version: {})",
         lib.name,
@@ -342,8 +349,12 @@ pub async fn process_lib_update(
         return Ok(false);
     }
 
-    log::info!("Library {} needs update (file_exists={}, version_match={})",
-        lib.name, file_exists, local_version == lib.version);
+    log::info!(
+        "Library {} needs update (file_exists={}, version_match={})",
+        lib.name,
+        file_exists,
+        local_version == lib.version
+    );
 
     // Download file
     let tmp_file = download_lib_file(app_handle, lib).await?;

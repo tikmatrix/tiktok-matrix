@@ -13,6 +13,8 @@ use std::os::windows::process::CommandExt;
 lazy_static::lazy_static! {
     static ref MONITOR_RUNNING: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
     static ref MONITOR_ENABLED: Arc<AtomicBool> = Arc::new(AtomicBool::new(true));
+    // Pause flag to temporarily prevent auto-restart during updates
+    static ref MONITOR_PAUSED: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
 }
 
 // Agent monitor configuration
@@ -40,6 +42,7 @@ impl Default for AgentMonitorConfig {
 pub struct AgentMonitorState {
     pub is_monitoring: bool,
     pub is_enabled: bool,
+    pub is_paused: bool,
     pub restart_count: u32,
     pub last_restart_time: Option<String>,
 }
@@ -778,6 +781,12 @@ pub async fn start_agent_monitor(app_handle: AppHandle, config: AgentMonitorConf
             // Wait for check interval
             tokio::time::sleep(check_interval).await;
 
+            // Check if monitor is paused (during agent update)
+            if MONITOR_PAUSED.load(std::sync::atomic::Ordering::SeqCst) {
+                log::debug!("Agent monitor is paused, skipping restart check");
+                continue;
+            }
+
             // Check agent status
             let status = check_agent_running();
 
@@ -907,6 +916,25 @@ pub fn stop_agent_monitor() {
     MONITOR_ENABLED.store(false, std::sync::atomic::Ordering::SeqCst);
 }
 
+/// Pause agent monitoring temporarily (e.g., during agent update)
+/// This prevents auto-restart while installing updates
+pub fn pause_agent_monitor() {
+    log::info!("Pausing agent monitor for update...");
+    MONITOR_PAUSED.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
+/// Resume agent monitoring after update is complete
+pub fn resume_agent_monitor() {
+    log::info!("Resuming agent monitor after update...");
+    MONITOR_PAUSED.store(false, std::sync::atomic::Ordering::SeqCst);
+}
+
+/// Check if agent monitor is paused
+#[allow(dead_code)]
+pub fn is_agent_monitor_paused() -> bool {
+    MONITOR_PAUSED.load(std::sync::atomic::Ordering::SeqCst)
+}
+
 // ============ Tauri Commands for Agent Monitor ============
 
 #[tauri::command]
@@ -930,6 +958,7 @@ pub fn get_agent_monitor_state() -> AgentMonitorState {
     AgentMonitorState {
         is_monitoring: MONITOR_RUNNING.load(std::sync::atomic::Ordering::SeqCst),
         is_enabled: MONITOR_ENABLED.load(std::sync::atomic::Ordering::SeqCst),
+        is_paused: MONITOR_PAUSED.load(std::sync::atomic::Ordering::SeqCst),
         restart_count: 0, // This would need persistent state to track
         last_restart_time: None,
     }
