@@ -61,18 +61,7 @@
           </div>
         </div>
 
-        <!-- 自动更新 -->
-        <div class="flex items-start justify-between py-3 border-b border-base-200">
-          <div class="flex-1">
-            <label class="text-md font-medium text-base-content">{{ $t('autoUpdateEnabled') }}</label>
-            <p class="text-md text-base-content/60 mt-1" v-if="localSettings.auto_update_enabled">{{
-              $t('autoUpdateTips') }}
-            </p>
-          </div>
-          <input type="checkbox" class="toggle toggle-primary toggle-md mt-1"
-            v-model="localSettings.auto_update_enabled" :true-value="true" :false-value="false"
-            @change="update_settings" />
-        </div>
+
       </div>
     </div>
 
@@ -259,11 +248,7 @@ export default {
     if (storedBigScreen) {
       this.bigScreen = storedBigScreen;
     }
-    // 设置默认值
-    if (this.localSettings.auto_update_enabled === undefined) {
-      this.localSettings = { ...this.localSettings, auto_update_enabled: true };
-      await this.update_settings();
-    }
+
   }
 }
 </script>

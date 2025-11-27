@@ -255,20 +255,20 @@ export default {
   },
   watch: {
     scaled(newVal) {
-      console.log(`scaled: ${newVal}`)
+      //console.log(`scaled: ${newVal}`)
       if (this.real_width == 0 || this.real_height == 0 || newVal == 0) {
         return
       }
       this.width = this.real_width * newVal
       this.height = this.real_height * newVal
-      console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
+      //console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
       this.$emit('sizeChanged', this.width)
     },
     width(newVal) {
       this.persistDeviceSize({ width: newVal }).catch(error => {
         console.warn('Persist width failed:', error)
       })
-      console.log(`width changed: ${newVal}`)
+      //console.log(`width changed: ${newVal}`)
       this.$emit('sizeChanged', {
         width: newVal,
         deviceSerial: this.device?.real_serial || this.device?.serial || null
@@ -700,7 +700,7 @@ export default {
             console.error(`${this.no}Error VideoDecoder:`, error, `code: ${error.code}`);
           },
         });
-        console.log(`${this.no}-${this.device.serial} videoDecoder initialized`)
+        //console.log(`${this.no}-${this.device.serial} videoDecoder initialized`)
 
 
       } catch (e) {
@@ -793,7 +793,7 @@ export default {
             codec: codec,
             optimizeForLatency: true,
           });
-          console.log(`${this.no}-${this.device.serial} configure`)
+          //console.log(`${this.no}-${this.device.serial} configure`)
           return
         }
 
@@ -804,7 +804,7 @@ export default {
         if (this.videoDecoder.state === 'configured') {
           //check queue length
           if (this.frameQueue.length > 5 && !isIDR) {
-            console.log(`${this.no}-${this.device.serial} frameQueue is full(${this.frameQueue.length}), skip`)
+            //console.log(`${this.no}-${this.device.serial} frameQueue is full(${this.frameQueue.length}), skip`)
             return
           }
           const chunk = new EncodedVideoChunk({
@@ -815,7 +815,7 @@ export default {
           this.videoDecoder.decode(chunk);
         } else {
           if (this.videoDecoder.state === 'closed' && !this.loading) {
-            console.log(`${this.no}-${this.device.serial} videoDecoder is closed, loading`)
+            //console.log(`${this.no}-${this.device.serial} videoDecoder is closed, loading`)
             this.loading = true
           }
         }
@@ -863,7 +863,7 @@ export default {
       }
 
       const delay = this.getScrcpyReconnectDelay();
-      console.log(`${this.no}-${this.device.serial} Scrcpy reconnect scheduled in ${delay}ms (attempt ${this.scrcpyReconnectAttempts + 1}/${this.scrcpyMaxRetries})`);
+      //console.log(`${this.no}-${this.device.serial} Scrcpy reconnect scheduled in ${delay}ms (attempt ${this.scrcpyReconnectAttempts + 1}/${this.scrcpyMaxRetries})`);
 
       this.scrcpyReconnectTimer = setTimeout(async () => {
         this.scrcpyReconnectTimer = null;
@@ -890,7 +890,7 @@ export default {
           if (ws.readyState === WebSocket.OPEN) {
             try {
               ws.send(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
-              console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`);
+              //console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} send close frame`);
             } catch (e) {
               console.error(`${this.no}-${this.device.serial} Failed to send close frame:`, e);
             }
@@ -942,7 +942,7 @@ export default {
         const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
         const wsUrl = `ws://localhost:${wsPort}`;
 
-        console.log(`${this.no}-${this.device.serial} Creating scrcpy WebSocket connection`);
+        //console.log(`${this.no}-${this.device.serial} Creating scrcpy WebSocket connection`);
         this.scrcpy = new WebSocket(wsUrl);
         this.scrcpy.binaryType = 'arraybuffer';
 
@@ -963,7 +963,7 @@ export default {
       }
 
       this.scrcpy.onopen = () => {
-        console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} WebSocket opened successfully`);
+        //console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} WebSocket opened successfully`);
         this.clearScrcpyConnectionTimer();
 
         // Reset retry counter on successful connection
@@ -985,8 +985,8 @@ export default {
         }));
       }
 
-      this.scrcpy.onclose = (event) => {
-        console.log(`${this.no}-${this.device.serial} WebSocket closed`, event?.code, event?.reason);
+      this.scrcpy.onclose = () => {
+        //console.log(`${this.no}-${this.device.serial} WebSocket closed`, event?.code, event?.reason);
         this.clearScrcpyConnectionTimer();
         this.loading = true;
         this.videoStarted = false;
@@ -1018,15 +1018,15 @@ export default {
       this.scrcpy.onmessage = async message => {
         if (this.message_index >= 2 && typeof message.data === 'string') {
           if (message.data.startsWith(FIRST_FRAME_PREFIX)) {
-            console.log(`${this.no}-${this.device.serial} receive first frame preview, time: ${new Date().toISOString()}`)
+            //console.log(`${this.no}-${this.device.serial} receive first frame preview, time: ${new Date().toISOString()}`)
             this.renderFirstFramePreview(message.data.slice(FIRST_FRAME_PREFIX.length))
           } else {
-            console.log('scrcpy string message ignored', message.data)
+            //console.log('scrcpy string message ignored', message.data)
           }
           return
         }
         if (this.message_index < 2) {
-          console.log(`receive init message index: ${this.message_index}, data: ${message.data}, time: ${new Date().toISOString()}`)
+          //console.log(`receive init message index: ${this.message_index}, data: ${message.data}, time: ${new Date().toISOString()}`)
           switch (this.message_index) {
             case 0: {
               this.name = message.data;
@@ -1043,7 +1043,7 @@ export default {
             case 1: {
               if (this.big || this.width != this.default_width) {
                 this.message_index += 1
-                console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
+                //console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
                 return;
               }
               // Check if message.data is a string before calling split
@@ -1058,7 +1058,7 @@ export default {
                 this.real_width = parsedWidth
                 this.real_height = parsedHeight
                 this.scaled = this.height / this.real_height
-                console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
+                //console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
                 this.persistDeviceSize({
                   real_width: this.real_width,
                   real_height: this.real_height,
@@ -1075,7 +1075,7 @@ export default {
           this.message_index += 1
           // Mark scrcpy as ready after handshake completes
           if (this.message_index >= 2) {
-            console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
+            //console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
           }
           return
         }
@@ -1110,7 +1110,7 @@ export default {
 
       // Stop automatic reconnection and cleanup
       this.cleanupScrcpy(true);
-      console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} scrcpy closed`);
+      //console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} scrcpy closed`);
     },
     closeDecoder() {
       if (this.videoDecoder) {
@@ -1224,12 +1224,7 @@ export default {
         this.scrcpy.send(e.payload.data)
       }
     }))
-    this.listeners.push(await this.$listen('refreshDevice', (e) => {
-      console.log('refreshDevice', e.payload)
-      this.closeScrcpy()
-      this.closeDecoder()
-      this.syncDisplay()
-    }))
+
     this.listeners.push(await this.$listen('screenScaled', (e) => {
       // If targetWidth is provided, use it to calculate the correct size
       // This ensures the screen size syncs with the card container size
@@ -1255,10 +1250,10 @@ export default {
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        console.log(`${this.no}-${this.device.serial} hidden`)
+        //console.log(`${this.no}-${this.device.serial} hidden`)
         this.visible = false
       } else {
-        console.log(`${this.no}-${this.device.serial} visible`)
+        //console.log(`${this.no}-${this.device.serial} visible`)
         this.visible = true
       }
     })

@@ -266,7 +266,7 @@ export default {
           .then(async () => {
             this.newGroupName = ''
             this.showAddGroup = false
-            await this.$emiter('reload_group', {})
+            await this.$emiter('reload_groups', {})
           })
       } else {
         this.$service
@@ -276,7 +276,7 @@ export default {
           .then(async () => {
             this.newGroupName = ''
             this.showAddGroup = false
-            await this.$emiter('reload_group', {})
+            await this.$emiter('reload_groups', {})
 
           })
       }
@@ -290,7 +290,7 @@ export default {
             id: id
           })
           .then(async () => {
-            await this.$emiter('reload_group', {})
+            await this.$emiter('reload_groups', {})
           })
       }
 

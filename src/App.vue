@@ -184,7 +184,8 @@ export default {
         if (json.action === 'reload_devices') {
           let data = json.data
           if (data) {
-            this.getDevices()
+            console.log('Received reload_devices with data:', data);
+            await this.$emiter('reload_devices', {})
           }
         } else if (json.action === 'reload_license') {
           await this.$emiter('LICENSE', { reload: true })
@@ -385,11 +386,12 @@ export default {
     this.listeners.push(await this.$listen('INIT_STATUS', async (e) => {
       const status = e.payload;
       if (status.stage === 'completed') {
-        await this.get_settings()
-        await this.get_groups()
+        console.log("Agent initialization completed, loading resources...");
         await this.connectAgent();
-        await this.getRunningTasks();
-        await this.getDevices();
+        await this.$emiter('reload_settings', {})
+        await this.$emiter('reload_groups', {})
+        await this.$emiter('reload_devices', {})
+        await this.$emiter('reload_running_tasks', {})
         await this.$emiter('reload_tasks', {})
         await this.$emiter('LICENSE', { reload: true });
 
@@ -400,16 +402,21 @@ export default {
       const status = e.payload;
       console.log("Agent monitor status:", status);
       if (status.event === 'agent_restarted') {
-        await this.get_settings()
-        await this.get_groups()
+        console.log("Agent has restarted, reloading resources...");
         await this.connectAgent();
-        await this.getRunningTasks();
-        await this.getDevices();
+        await this.$emiter('reload_settings', {})
+        await this.$emiter('reload_groups', {})
+        await this.$emiter('reload_devices', {})
+        await this.$emiter('reload_running_tasks', {})
         await this.$emiter('reload_tasks', {})
         await this.$emiter('LICENSE', { reload: true });
       }
     });
-    this.listeners.push(await this.$listen('reload_devices', async () => {
+    this.listeners.push(await this.$listen('reload_devices', async (e) => {
+      if (e.payload && e.payload.force) {
+        console.log("Force reloading devices as requested");
+        this.devices = [];
+      }
       await this.getDevices();
     }));
     // Listen to reload running tasks events
@@ -426,7 +433,7 @@ export default {
     this.listeners.push(await this.$listen('selecedDevices', (e) => {
       this.selecedDevices = e.payload;
     }))
-    this.listeners.push(await this.$listen('reload_group', async () => {
+    this.listeners.push(await this.$listen('reload_groups', async () => {
       await this.get_groups()
     }))
     // Reload settings

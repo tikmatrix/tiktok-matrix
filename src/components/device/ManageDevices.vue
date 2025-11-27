@@ -105,8 +105,8 @@
                       </tr>
                     </thead>
                     <tbody class="text-md text-base-content/80">
-                      <tr v-for="(device, index) in slotProps.items" :key="index"
-                        class="hover:bg-base-100/60 transition-colors even:bg-base-100/40">
+                      <tr v-for="(device, index) in slotProps.items" :key="device.real_serial || device.serial || index"
+                        class="hover:bg-base-100/60 transition-colors even:bg-base-100/40 device-card-appear">
                         <td class="font-semibold text-base-content/70 whitespace-nowrap px-2">{{ device.key }}</td>
                         <td class="px-2">
                           <a class="link link-primary font-medium break-all" @click="$emiter('openDevice', device)"
@@ -170,10 +170,8 @@
                   </table>
                 </div>
               </div>
-              <div :style="gridStyle" v-else class="grid auto-rows-fr gap-4">
-                <Miniremote :device="device" :key="device.real_serial" :no="device.key"
-                  v-for="device in slotProps.items" @sizeChanged="sizeChanged" />
-              </div>
+              <DeviceGrid v-else :devices="slotProps.items" :min-width="cardMinWidth"
+                @min-width-stabilized="handleGridWidthStabilized" />
             </div>
           </template>
         </Pagination>
@@ -269,67 +267,8 @@
     </form>
   </dialog>
 
-  <dialog ref="proxy_rotation_dialog" class="modal">
-    <div class="modal-box bg-base-300 max-w-3xl">
-      <h3 class="font-bold text-lg mb-4">
-        {{ $t('proxyRotationConfig') }}
-        <span v-if="proxyRotationForm.device_label" class="text-sm text-base-content/70 ml-2">({{
-          proxyRotationForm.device_label }})</span>
-      </h3>
-      <form class="space-y-4" @submit.prevent="saveProxyRotation">
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">{{ $t('proxyRotationUrl') }}</span>
-          </label>
-          <input class="input input-bordered input-md w-full" type="url" v-model.trim="proxyRotationForm.rotation_url"
-            required />
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">{{ $t('requestMethod') }}</span>
-            </label>
-            <select class="select select-bordered" v-model="proxyRotationForm.method">
-              <option value="GET">GET</option>
-              <option value="POST">POST</option>
-            </select>
-          </div>
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">{{ $t('requestTimeout') }}</span>
-            </label>
-            <input class="input input-bordered input-md" type="number" min="1000"
-              v-model.number="proxyRotationForm.timeout_ms" />
-          </div>
-        </div>
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">{{ $t('requestHeadersJson') }}</span>
-          </label>
-          <textarea class="textarea textarea-bordered font-mono" rows="4" v-model.trim="proxyRotationForm.headers_json"
-            :placeholder="$t('requestHeadersPlaceholder', { authorizationHeader: requestHeadersSample })"></textarea>
-        </div>
-        <div class="form-control" v-if="proxyRotationForm.method === 'POST'">
-          <label class="label">
-            <span class="label-text font-semibold">{{ $t('requestBodyJson') }}</span>
-          </label>
-          <textarea class="textarea textarea-bordered font-mono" rows="4" v-model.trim="proxyRotationForm.body_json"
-            :placeholder="$t('requestBodyPlaceholder')"></textarea>
-        </div>
-        <div class="modal-action">
-          <button type="button" class="btn" @click="closeProxyRotationDialog">{{ $t('cancel') }}</button>
-          <button type="button" class="btn btn-error" v-if="canClearProxyRotation" @click="clearProxyRotation">{{
-            $t('clearConfiguration') }}</button>
-          <button type="submit" class="btn btn-primary" :class="{ 'loading': proxyRotationSaving }">
-            <span v-if="!proxyRotationSaving">{{ $t('save') }}</span>
-          </button>
-        </div>
-      </form>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button>close</button>
-    </form>
-  </dialog>
+  <DeviceProxyRotation ref="proxy_rotation_component" @save="handleProxyRotationSave" @clear="handleProxyRotationClear"
+    @error="handleProxyRotationError" />
 
   <!-- Debug Dialog -->
   <DeviceDebugDialog v-if="debugDevice" v-model="showDebugDialog" :device="debugDevice"
@@ -342,7 +281,9 @@
 import MyButton from '../Button.vue'
 import Miniremote from './Miniremote.vue'
 import Pagination from '../Pagination.vue'
+import DeviceGrid from './DeviceGrid.vue'
 import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
+import DeviceProxyRotation from './DeviceProxyRotation.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
@@ -368,7 +309,9 @@ export default {
     MyButton,
     Miniremote,
     Pagination,
-    DeviceDebugDialog
+    DeviceGrid,
+    DeviceDebugDialog,
+    DeviceProxyRotation
   },
   data() {
     return {
@@ -376,7 +319,6 @@ export default {
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       listMode: false,
       mydevices: [],
-      deviceWidthMap: {},
       ip_1: 192,
       ip_2: 168,
       ip_3: 1,
@@ -407,7 +349,6 @@ export default {
         body_json: '',
         timeout_ms: 10000,
       },
-      proxyRotationSaving: false,
       testingRotations: {},
       requestHeadersSample: '{ "Authorization": "Bearer token" }',
     }
@@ -498,8 +439,6 @@ export default {
       this.cardMinWidth = widthParsed;
     }
 
-    this.deviceWidthMap = { '__default__': this.cardMinWidth }
-
     if (storedShowKeyboardTip !== null) {
       this.showKeyboardTip = storedShowKeyboardTip !== 'false';
     }
@@ -545,22 +484,13 @@ export default {
       return device?.real_serial || device?.serial || ''
     },
     refreshPage() {
-      this.$emiter('refreshDevice', {})
+      this.mydevices = []
+      this.$emiter('reload_devices', { force: true })
     },
     closeKeyboardTip() {
       this.showKeyboardTip = false
     },
-    resetProxyRotationForm() {
-      this.proxyRotationForm = {
-        device_serial: '',
-        device_label: '',
-        rotation_url: '',
-        method: 'GET',
-        headers_json: '',
-        body_json: '',
-        timeout_ms: 10000,
-      }
-    },
+    // proxy rotation form handling moved to DeviceProxyRotation child component
     async loadProxyRotations() {
       try {
         const fileExists = await exists('data/proxy-rotations.json', { dir: BaseDirectory.AppData })
@@ -611,35 +541,10 @@ export default {
         this.mydevices = []
         return
       }
-      this.mydevices = this.devices
       const groupNameMap = new Map(
         (this.groups || []).map(group => [group.id, group.name])
       )
-      this.mydevices.forEach(device => {
-        this.decorateDevice(device, groupNameMap)
-      })
-
-      const validSerials = new Set([
-        '__default__',
-        ...this.mydevices.map(device => this.getDeviceSerial(device) || '__default__')
-      ])
-      let mapChanged = false
-      const nextWidthMap = {}
-      Object.entries(this.deviceWidthMap || {}).forEach(([key, value]) => {
-        if (validSerials.has(key)) {
-          nextWidthMap[key] = value
-        } else {
-          mapChanged = true
-        }
-      })
-      if (mapChanged) {
-        this.deviceWidthMap = nextWidthMap
-        const nextWidth = this.calculateGridCardWidth()
-        if (Math.abs(nextWidth - this.cardMinWidth) > 0.5) {
-          this.cardMinWidth = nextWidth
-          this.persistCardMinWidth(nextWidth)
-        }
-      }
+      this.mydevices = this.devices.map(device => this.decorateDevice(device, groupNameMap))
     },
     openProxyRotationDialog(device) {
       const serial = this.getDeviceSerial(device)
@@ -651,24 +556,18 @@ export default {
         body: {},
         timeout_ms: 10000,
       }
-      this.proxyRotationForm.device_serial = serial
-      this.proxyRotationForm.device_label = device?.key || serial
-      this.proxyRotationForm.rotation_url = config.rotation_url || ''
-      this.proxyRotationForm.method = config.method || 'GET'
-      this.proxyRotationForm.timeout_ms = config.timeout_ms || 10000
-      this.proxyRotationForm.headers_json = config.headers ? JSON.stringify(config.headers, null, 2) : ''
-      this.proxyRotationForm.body_json = config.body ? JSON.stringify(config.body, null, 2) : ''
-      if (this.$refs.proxy_rotation_dialog?.showModal) {
-        this.$refs.proxy_rotation_dialog.showModal()
-      } else if (this.$refs.proxy_rotation_dialog?.show) {
-        this.$refs.proxy_rotation_dialog.show()
+      if (this.$refs.proxy_rotation_component && this.$refs.proxy_rotation_component.show) {
+        const payload = {
+          device_serial: serial,
+          device_label: device?.key || serial,
+          rotation_url: config.rotation_url || '',
+          method: config.method || 'GET',
+          timeout_ms: config.timeout_ms || 10000,
+          headers_json: config.headers ? JSON.stringify(config.headers, null, 2) : '',
+          body_json: config.body ? JSON.stringify(config.body, null, 2) : ''
+        }
+        this.$refs.proxy_rotation_component.show(payload)
       }
-    },
-    closeProxyRotationDialog() {
-      if (this.$refs.proxy_rotation_dialog?.close) {
-        this.$refs.proxy_rotation_dialog.close()
-      }
-      this.resetProxyRotationForm()
     },
     async persistProxyRotations() {
       try {
@@ -695,26 +594,22 @@ export default {
         throw new Error(this.$t('invalidJsonFormat'))
       }
     },
-    async saveProxyRotation() {
-      if (!this.proxyRotationForm.device_serial) {
-        return
-      }
-      this.proxyRotationSaving = true
+    // Handlers for extracted DeviceProxyRotation child component
+    async handleProxyRotationSave(form) {
+      if (!form || !form.device_serial) return
       try {
-        const headers = this.parseJsonInput(this.proxyRotationForm.headers_json, {})
-        const body = this.proxyRotationForm.method === 'POST'
-          ? this.parseJsonInput(this.proxyRotationForm.body_json, {})
-          : undefined
+        const headers = this.parseJsonInput(form.headers_json, {})
+        const body = form.method === 'POST' ? this.parseJsonInput(form.body_json, {}) : undefined
         const config = {
-          device_serial: this.proxyRotationForm.device_serial,
-          rotation_url: this.proxyRotationForm.rotation_url,
-          method: this.proxyRotationForm.method,
+          device_serial: form.device_serial,
+          rotation_url: form.rotation_url,
+          method: form.method,
           headers,
           body,
-          timeout_ms: Number(this.proxyRotationForm.timeout_ms) || 10000,
-          last_status: this.proxyRotationMap[this.proxyRotationForm.device_serial]?.last_status || null,
-          last_message: this.proxyRotationMap[this.proxyRotationForm.device_serial]?.last_message || '',
-          last_rotated_at: this.proxyRotationMap[this.proxyRotationForm.device_serial]?.last_rotated_at || null,
+          timeout_ms: Number(form.timeout_ms) || 10000,
+          last_status: this.proxyRotationMap[form.device_serial]?.last_status || null,
+          last_message: this.proxyRotationMap[form.device_serial]?.last_message || '',
+          last_rotated_at: this.proxyRotationMap[form.device_serial]?.last_rotated_at || null,
         }
         this.proxyRotationMap = {
           ...this.proxyRotationMap,
@@ -727,7 +622,6 @@ export default {
           message: this.$t('proxyRotationSaved'),
           timeout: 3000,
         })
-        this.closeProxyRotationDialog()
       } catch (error) {
         console.error('Failed to save proxy rotation:', error)
         await this.$emiter('NOTIFY', {
@@ -735,16 +629,10 @@ export default {
           message: error.message || this.$t('proxyRotationSaveFailed'),
           timeout: 4000,
         })
-      } finally {
-        this.proxyRotationSaving = false
       }
     },
-    async clearProxyRotation() {
-      const serial = this.proxyRotationForm.device_serial
-      if (!serial) {
-        return
-      }
-      this.proxyRotationSaving = true
+    async handleProxyRotationClear(serial) {
+      if (!serial) return
       try {
         const updatedMap = { ...this.proxyRotationMap }
         delete updatedMap[serial]
@@ -756,7 +644,6 @@ export default {
           message: this.$t('proxyRotationCleared'),
           timeout: 3000,
         })
-        this.closeProxyRotationDialog()
       } catch (error) {
         console.error('Failed to clear proxy rotation:', error)
         await this.$emiter('NOTIFY', {
@@ -764,9 +651,11 @@ export default {
           message: this.$t('proxyRotationSaveFailed'),
           timeout: 4000,
         })
-      } finally {
-        this.proxyRotationSaving = false
       }
+    },
+    handleProxyRotationError(err) {
+      console.error('Proxy rotation child error:', err)
+      this.$emiter('NOTIFY', { type: 'error', message: err?.message || String(err), timeout: 4000 })
     },
     formatRotationTime(timestamp) {
       if (!timestamp) {
@@ -949,58 +838,21 @@ export default {
 
       if (Math.abs(nextWidth - this.cardMinWidth) > 0.5) {
         this.cardMinWidth = nextWidth
-        this.deviceWidthMap = {
-          ...this.deviceWidthMap,
-          '__default__': nextWidth
-        }
         this.persistCardMinWidth(nextWidth)
       }
 
       // Pass target width to Miniremote so it can sync its internal size
       this.$emiter('screenScaled', { action, targetWidth: this.cardMinWidth })
     },
-    sizeChanged(payload) {
-      const { width, deviceSerial } = this.normaliseSizeChangedPayload(payload)
+    handleGridWidthStabilized(width) {
       if (!Number.isFinite(width) || width <= 0) {
         return
       }
-
-      const serialKey = deviceSerial || '__default__'
-      const currentWidth = this.deviceWidthMap[serialKey]
-      if (currentWidth === width) {
+      if (Math.abs(width - this.cardMinWidth) <= 0.5) {
         return
       }
-
-      this.deviceWidthMap = {
-        ...this.deviceWidthMap,
-        [serialKey]: width
-      }
-
-      const nextWidth = this.calculateGridCardWidth()
-      if (nextWidth > 0 && Math.abs(nextWidth - this.cardMinWidth) > 0.5) {
-        this.cardMinWidth = nextWidth
-        this.persistCardMinWidth(nextWidth)
-        console.log('Device card min width stabilised to:', this.cardMinWidth)
-      }
-    },
-    normaliseSizeChangedPayload(payload) {
-      if (typeof payload === 'number') {
-        return { width: payload, deviceSerial: null }
-      }
-      if (payload && typeof payload === 'object') {
-        const width = Number(payload.width)
-        const deviceSerial = payload.deviceSerial || payload.serial || null
-        return { width, deviceSerial }
-      }
-      const fallbackWidth = Number(payload)
-      return { width: fallbackWidth, deviceSerial: null }
-    },
-    calculateGridCardWidth() {
-      const values = Object.values(this.deviceWidthMap || {}).map(value => Number(value)).filter(value => Number.isFinite(value) && value > 0)
-      if (values.length === 0) {
-        return this.cardMinWidth
-      }
-      return Math.max(...values)
+      this.cardMinWidth = Math.round(width)
+      this.persistCardMinWidth(this.cardMinWidth)
     },
     async persistCardMinWidth(value) {
       try {
@@ -1023,27 +875,6 @@ export default {
     },
     screenSizeDisplay() {
       return Math.round(this.cardMinWidth || 0);
-    },
-    gridStyle() {
-      // 当元素数量<=5个时，限制最大宽度而不是占满整行
-      if (this.mydevices.length <= 5) {
-        return {
-          display: 'grid',
-          gridTemplateColumns: `repeat(${this.mydevices.length}, minmax(${this.cardMinWidth}px, auto))`,
-          justifyContent: 'flex-start',
-          autoRows: 'auto',
-          gap: '1rem',
-          flex: 1
-        }
-      }
-      // 更多元素时保持原来的自适应布局
-      return {
-        display: 'grid',
-        gridTemplateColumns: `repeat(auto-fit, minmax(${this.cardMinWidth}px, 1fr))`,
-        autoRows: 'auto',
-        gap: '1.25rem',
-        flex: 1
-      }
     },
     canClearProxyRotation() {
       return !!this.proxyRotationForm.device_serial && !!this.proxyRotationMap[this.proxyRotationForm.device_serial]
@@ -1091,3 +922,46 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+@keyframes devicePopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+
+  60% {
+    transform: scale(1.05) translateY(-5px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+:deep(.device-card-appear) {
+  animation: devicePopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-fill-mode: both;
+}
+
+:deep(.device-card-appear:nth-child(1)) {
+  animation-delay: 0s;
+}
+
+:deep(.device-card-appear:nth-child(2)) {
+  animation-delay: 0.05s;
+}
+
+:deep(.device-card-appear:nth-child(3)) {
+  animation-delay: 0.1s;
+}
+
+:deep(.device-card-appear:nth-child(4)) {
+  animation-delay: 0.15s;
+}
+
+:deep(.device-card-appear:nth-child(5)) {
+  animation-delay: 0.2s;
+}
+</style>
