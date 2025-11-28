@@ -514,7 +514,6 @@ export default {
               });
 
               try {
-                await this.shutdown();
                 await installUpdate();
                 await relaunch();
               } finally {
