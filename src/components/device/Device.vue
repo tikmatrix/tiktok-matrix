@@ -1109,8 +1109,8 @@ export default {
       console.log(`${this.no}-${this.device.serial} received screenScaled event:`, e.payload)
       if (e.payload.size && this.real_height > 0 && this.real_width > 0) {
         const aspectRatio = this.real_height / this.real_width
-        this.height = e.payload.size
-        this.width = e.payload.size / aspectRatio
+        this.height = e.payload.size * (this.big ? 2 : 1)
+        this.width = e.payload.size / aspectRatio * (this.big ? 2 : 1)
         console.log(`${this.no}-${this.device.serial} screenScaled to width: ${this.width}, height: ${this.height}, aspectRatio: ${aspectRatio}`)
       } else {
         console.warn(`${this.no}-${this.device.serial} screenScaled event missing targetWidth or invalid real dimensions, this.real_width: ${this.real_width}, this.real_height: ${this.real_height}`)

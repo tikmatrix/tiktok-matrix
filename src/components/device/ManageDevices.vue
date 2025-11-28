@@ -196,7 +196,8 @@
   <vue-draggable-resizable v-if="device && device.serial" :w="`auto`" :h="`auto`" :resizable="false" :parent="false"
     :z="20" drag-handle=".drag"
     class="bg-base-100 fixed top-32 right-32 border border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
-    <Device :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'" />
+    <Device :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'"
+      :gridCardHeight="gridCardHeight" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300">
