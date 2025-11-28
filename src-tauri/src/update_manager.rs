@@ -309,7 +309,7 @@ pub async fn install_lib_file(
 
             // Grant permission on macOS
             #[cfg(target_os = "macos")]
-            crate::grant_permission(app_handle.clone(), format!("bin/{}", lib.name));
+            file_utils::grant_permission(app_handle.clone(), format!("bin/{}", lib.name));
 
             log::info!("Installed {} to {:?}", lib.name, dest_file);
 
