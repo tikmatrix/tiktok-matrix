@@ -42,7 +42,7 @@
               <path d="m6 9 6 6 6-6" />
             </svg>
           </label>
-          <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+          <ul tabindex="0" class="dropdown-content z-1 menu p-2 shadow bg-base-100 rounded-box w-52">
             <li v-for="size in [10, 20, 30, 50, 100]" :key="size">
               <a @click="changePageSize(size)">{{ size }}</a>
             </li>

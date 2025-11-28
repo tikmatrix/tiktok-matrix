@@ -819,14 +819,6 @@ export function migrate_license(data) {
   })
 }
 
-export function report_distributor_install(data) {
-  return request({
-    method: 'post',
-    url: api.report_distributor_install,
-    data
-  })
-}
-
 export function detectCurrentPackage(serial) {
   return request({
     method: 'post',

@@ -1,7 +1,7 @@
 <template>
     <dialog ref="license_management_dialog" class="modal license-management-dialog">
         <div
-            class="modal-box w-11/12 max-w-7xl overflow-y-auto max-h-[90vh] bg-gradient-to-br from-base-100 to-base-200">
+            class="modal-box w-11/12 max-w-7xl overflow-y-auto max-h-[90vh] bg-linear-to-br from-base-100 to-base-200">
             <!-- 关闭按钮 -->
             <form method="dialog">
                 <button
@@ -67,7 +67,7 @@ import paymentMixin from '../mixins/paymentMixin'
 import licenseMixin from '../mixins/licenseMixin'
 import orderMixin from '../mixins/orderMixin'
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem, setItem } from '@/utils/storage.js';
 
 export default {
     name: 'LicenseManagementDialog',

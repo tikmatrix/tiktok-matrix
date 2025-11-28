@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col justify-start z-30 bg-base-200/90 backdrop-blur-md shadow-lg rounded-r-xl absolute top-0 left-full ml-2 border border-l-0 border-base-300 group min-w-[2.5rem] max-w-[2.5rem] hover:max-w-md transition-all duration-300 ease-in-out overflow-hidden">
+    class="flex flex-col justify-start z-30 bg-base-200/90 backdrop-blur-md shadow-lg rounded-r-xl absolute top-0 left-full ml-2 border border-l-0 border-base-300 group min-w-10 max-w-10 hover:max-w-md transition-all duration-300 ease-in-out overflow-hidden">
 
     <!-- 展开指示器 -->
     <div
@@ -11,7 +11,7 @@
     <button
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none first:rounded-t-xl tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('task')" @click="$emiter('send_keycode', 'task')">
-      <font-awesome-icon icon="fa fa-window-restore" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa fa-window-restore" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('task') }}</span>
@@ -19,7 +19,7 @@
     <button
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('home')" @click="$emiter('send_keycode', 'home')">
-      <font-awesome-icon icon="fa-solid fa-home" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa-solid fa-home" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('home') }}</span>
@@ -27,7 +27,7 @@
     <button
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('back')" @click="$emiter('send_keycode', 'back')">
-      <font-awesome-icon icon="fa fa-reply" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa fa-reply" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('back') }}</span>
@@ -36,7 +36,7 @@
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('power')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'keyevent', 'KEYCODE_POWER'] })">
-      <font-awesome-icon icon="fa fa-lightbulb" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa fa-lightbulb" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('power') }}</span>
@@ -48,7 +48,7 @@
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('up')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '1000', '500', '500', '300'] })">
-      <font-awesome-icon icon="fa-arrow-up" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa-arrow-up" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('up') }}</span>
@@ -57,7 +57,7 @@
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('down')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '500', '500', '1000', '300'] })">
-      <font-awesome-icon icon="fa-arrow-down" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa-arrow-down" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('down') }}</span>
@@ -66,7 +66,7 @@
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('left')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '1000', '500', '500', '500', '300'] })">
-      <font-awesome-icon icon="fa-arrow-left" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa-arrow-left" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('left') }}</span>
@@ -75,7 +75,7 @@
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('right')"
       @click="$emiter('adbEventData', { args: ['shell', 'input', 'swipe', '500', '500', '1000', '500', '300'] })">
-      <font-awesome-icon icon="fa-arrow-right" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa-arrow-right" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('right') }}</span>
@@ -87,7 +87,7 @@
     <button
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('input')" @click="show_text_input_dialog">
-      <font-awesome-icon icon="fa fa-keyboard" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa fa-keyboard" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('input') }}</span>
@@ -96,7 +96,7 @@
     <button
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('debug')" @click="openDebugWindow">
-      <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa-solid fa-bug" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('debug') }}</span>
@@ -104,7 +104,7 @@
     <button
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('logs')" @click="showLogs">
-      <font-awesome-icon icon="fa-solid fa-file-text" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa-solid fa-file-text" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('logs') }}</span>
@@ -112,7 +112,7 @@
     <button
       class="btn bg-transparent hover:bg-primary hover:text-primary-content border-0 text-base-content p-2 min-h-0 h-12 w-full flex-col justify-center items-center gap-1 rounded-none last:rounded-b-xl tooltip tooltip-right transition-all duration-200 group-hover:flex-row group-hover:justify-start group-hover:gap-2"
       :data-tip="$t('workProfile')" @click="show_work_profile_user_dialog">
-      <font-awesome-icon icon="fa-solid fa-briefcase" class="h-4 w-4 flex-shrink-0" />
+      <font-awesome-icon icon="fa-solid fa-briefcase" class="h-4 w-4 shrink-0" />
       <span
         class="text-md font-medium max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-md group-hover:opacity-100 transition-all duration-300">{{
           $t('workProfile') }}</span>

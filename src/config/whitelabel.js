@@ -29,7 +29,7 @@ export const DEFAULT_WHITELABEL_CONFIG = {
 
 };
 
-import { getJsonItem, removeItem, setJsonItem } from '../utils/persistentStorage.js';
+import { getJsonItem, removeItem, setJsonItem } from '../utils/storage.js';
 
 /**
  * 获取白标配置

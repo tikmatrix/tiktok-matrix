@@ -187,17 +187,17 @@ function updateMainRs() {
     backupTextFile(mainRsPath);
     let content = fs.readFileSync(mainRsPath, 'utf-8');
 
-    // 在 setup_env 函数的 debug_assertions 块之后添加 MOSS_URL 设置
-    const debugBlockRegex = /(if cfg!\(debug_assertions\) \{[\s\S]*?\})\s*(\})/;
-    if (!debugBlockRegex.test(content)) {
-        throw new Error('无法在 main.rs 中找到 setup_env 函数的 debug_assertions 块。');
+    // 将 MOSS_URL 和 MATRIX_APP_NAME 在 `setup_env` 函数的末尾设置，
+    // 使用正则定位 `setup_env` 函数的开头并在其闭合前插入变量设置。
+    const setupEnvRegex = /(fn setup_env\([^)]*\)\s*\{[\s\S]*?)\n\}/;
+    if (!setupEnvRegex.test(content)) {
+        throw new Error('无法在 main.rs 中找到 `setup_env` 函数或其结束位置。');
     }
 
-    // 在 debug_assertions 的 if 块之后、setup_env 函数结束之前插入 MOSS_URL
     const MATRIX_APP_NAME = targetApp === 'tiktok' ? 'TikMatrix' : 'IgMatrix';
     content = content.replace(
-        debugBlockRegex,
-        `$1\n    std::env::set_var("MOSS_URL", "${escapeRust(mossUrl)}");\n    std::env::set_var("MATRIX_APP_NAME", "${escapeRust(MATRIX_APP_NAME)}");$2`
+        setupEnvRegex,
+        `$1\n    std::env::set_var("MOSS_URL", "${escapeRust(mossUrl)}");\n    std::env::set_var("MATRIX_APP_NAME", "${escapeRust(MATRIX_APP_NAME)}");\n}`
     );
 
     fs.writeFileSync(mainRsPath, content, 'utf-8');

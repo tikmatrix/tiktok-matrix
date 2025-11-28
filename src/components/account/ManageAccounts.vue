@@ -92,7 +92,7 @@
                     </div>
                     <div class="dropdown dropdown-hover">
                       <label tabindex="0" class="btn btn-md btn-circle btn-outline">+</label>
-                      <div tabindex="0" class="dropdown-content z-[1] card card-compact shadow bg-base-100 p-2">
+                      <div tabindex="0" class="dropdown-content z-1 card card-compact shadow bg-base-100 p-2">
                         <div class="card-body p-2">
                           <!-- 已存在的标签列表 -->
                           <div class="mb-2" v-if="allUniqueTags.length > 0">
@@ -168,7 +168,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import * as XLSX from 'xlsx'
 import { open, message } from '@tauri-apps/api/dialog'
 import { readBinaryFile } from '@tauri-apps/api/fs';
-import { getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
+import { getJsonItem, setJsonItem } from '@/utils/storage.js';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
 
 export default {

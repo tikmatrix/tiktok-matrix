@@ -1,6 +1,5 @@
 <template>
-  <div
-    :class="[big ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1', 'relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-visible']">
+  <div class="relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-visible">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag bg-base-300 p-2" v-if="big">
@@ -22,9 +21,8 @@
         </div>
 
         <div class="flex flex-row flex-1 relative overflow-visible"
-          :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
-          <div class="relative flex-1 object-fill"
-            :style="'width:' + (big ? 2 * width : width) + 'px;height:' + (big ? 2 * height : height) + 'px'">
+          :style="'width:' + width + 'px;height:' + height + 'px'">
+          <div class="relative flex-1 object-fill" :style="'width:' + width + 'px;height:' + height + 'px'">
             <canvas
               class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
@@ -64,10 +62,9 @@
               <span class="text-primary font-bold">{{ $t('operating') }}</span>
             </div>
           </div>
-          <RightBars v-if="big" :serial="device.serial" :real_serial="device.real_serial" />
         </div>
-
       </div>
+      <RightBars v-if="big" :serial="device.serial" :real_serial="device.real_serial" />
     </div>
 
 
@@ -100,17 +97,13 @@
 <script>
 /* global VideoDecoder, EncodedVideoChunk */
 import RightBars from './RightBars.vue';
+import { getItem } from '@/utils/storage.js';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
-import { getItem, getJsonItem, setJsonItem } from '@/utils/persistentStorage.js';
 const FIRST_FRAME_PREFIX = 'FIRST_FRAME_BASE64:';
-const DEVICE_SIZE_STORAGE_PREFIX = 'deviceSize:';
-const LEGACY_WIDTH_KEY = 'deviceWidth';
-const LEGACY_HEIGHT_KEY = 'deviceHeight';
-const LEGACY_RESOLUTION_KEY = 'screenResolution';
 export default {
-  name: 'Miniremote',
+  name: 'Device',
   components: {
     RightBars,
   },
@@ -129,18 +122,19 @@ export default {
         return {}
       }
     },
+    gridCardHeight: {
+      type: Number,
+      default: 250
+    },
 
   },
   data() {
     return {
-      default_width: 150,
-      default_height: 300,
       big: false,
       visible: true,
       rotation: 0,
       videoDecoder: null,
       scrcpy: null,
-      deviceSizeKey: null,
       loading: true,
       operating: false,
       input_dialog_title: '',
@@ -148,11 +142,10 @@ export default {
       input_callback: null,
       message_index: 0,
       name: 'Loading...',
-      height: 300,
-      width: 150,
+      height: 250,
+      width: 250 * 9 / 16,
       real_width: 0,
       real_height: 0,
-      scaled: 1,
       listeners: [],
       touch: false,
       screenResolution: 512,
@@ -245,113 +238,16 @@ export default {
     }
   },
   async created() {
-    this.deviceSizeKey = this.buildDeviceSizeKey();
-    const { width, height, resolution } = await this.loadInitialDimensions();
-    this.default_width = width;
-    this.default_height = height;
-    this.width = width;
-    this.height = height;
-    this.screenResolution = resolution;
+    this.height = this.gridCardHeight * (this.big ? 2 : 1)
+    this.width = this.gridCardHeight * 9 / 16 * (this.big ? 2 : 1)
   },
-  watch: {
-    scaled(newVal) {
-      console.log(`scaled: ${newVal}`)
-      if (this.real_width == 0 || this.real_height == 0 || newVal == 0) {
-        return
-      }
-      this.width = this.real_width * newVal
-      this.height = this.real_height * newVal
-      console.log(`newScaled: ${newVal}, width: ${this.width}, height: ${this.height}`)
-      this.$emit('sizeChanged', this.width)
-    },
-    width(newVal) {
-      this.persistDeviceSize({ width: newVal }).catch(error => {
-        console.warn('Persist width failed:', error)
-      })
-      console.log(`width changed: ${newVal}`)
-      this.$emit('sizeChanged', {
-        width: newVal,
-        deviceSerial: this.device?.real_serial || this.device?.serial || null
-      })
-    },
-    height(newVal) {
-      this.persistDeviceSize({ height: newVal }).catch(error => {
-        console.warn('Persist height failed:', error)
-      })
-    }
-  },
+
   methods: {
     getDeviceIdentifier() {
       return this.device?.real_serial || this.device?.serial || null;
     },
-    buildDeviceSizeKey() {
-      const identifier = this.getDeviceIdentifier();
-      return identifier ? `${DEVICE_SIZE_STORAGE_PREFIX}${identifier}` : null;
-    },
-    async loadInitialDimensions() {
-      const parseNumber = (value, fallback) => {
-        if (value === null || value === undefined) {
-          return fallback;
-        }
-        const normalized = Number(String(value).replace(/"/g, ''));
-        return Number.isFinite(normalized) ? normalized : fallback;
-      };
 
-      if (this.deviceSizeKey) {
-        const storedSize = await getJsonItem(this.deviceSizeKey);
-        if (storedSize && typeof storedSize === 'object') {
-          return {
-            width: parseNumber(storedSize.width, this.default_width),
-            height: parseNumber(storedSize.height, this.default_height),
-            resolution: parseNumber(storedSize.screenResolution, this.screenResolution)
-          };
-        }
-      }
 
-      const [legacyWidth, legacyHeight, legacyResolution] = await Promise.all([
-        getItem(LEGACY_WIDTH_KEY),
-        getItem(LEGACY_HEIGHT_KEY),
-        getItem(LEGACY_RESOLUTION_KEY)
-      ]);
-
-      const width = parseNumber(legacyWidth, this.default_width);
-      const height = parseNumber(legacyHeight, this.default_height);
-      const resolution = parseNumber(legacyResolution, this.screenResolution);
-
-      if (this.deviceSizeKey) {
-        await this.persistDeviceSize({
-          width,
-          height,
-          screenResolution: resolution
-        });
-      }
-
-      return { width, height, resolution };
-    },
-    async persistDeviceSize(overrides = {}) {
-      if (!this.deviceSizeKey) {
-        return;
-      }
-
-      const coerceNumber = (value, fallback) => {
-        if (value === null || value === undefined) {
-          return fallback;
-        }
-        const next = Number(value);
-        return Number.isFinite(next) ? next : fallback;
-      };
-
-      const payload = {
-        width: coerceNumber(overrides.width ?? this.width, this.default_width),
-        height: coerceNumber(overrides.height ?? this.height, this.default_height),
-        scaled: coerceNumber(overrides.scaled ?? this.scaled, this.scaled || 1),
-        real_width: coerceNumber(overrides.real_width ?? this.real_width, this.real_width || 0),
-        real_height: coerceNumber(overrides.real_height ?? this.real_height, this.real_height || 0),
-        screenResolution: coerceNumber(overrides.screenResolution ?? this.screenResolution, this.screenResolution)
-      };
-
-      await setJsonItem(this.deviceSizeKey, payload);
-    },
     coords(boundingW, boundingH, relX, relY, rotation) {
       var w, h, x, y
       switch (rotation) {
@@ -855,7 +751,7 @@ export default {
 
     closeWebSocketConnection(ws, clearHandlersFirst = false) {
       if (!ws) return;
-      
+
       try {
         if (clearHandlersFirst) {
           // Clear handlers before closing (prevents callbacks during reconnection)
@@ -966,7 +862,7 @@ export default {
         }));
       }
 
-      this.scrcpy.onclose = (event) => {
+      this.scrcpy.onclose = () => {
         console.log(`${this.no}-${this.device.serial} WebSocket closed`, event?.code, event?.reason);
         this.clearScrcpyConnectionTimer();
         this.loading = true;
@@ -1022,11 +918,6 @@ export default {
               break
             }
             case 1: {
-              if (this.big || this.width != this.default_width) {
-                this.message_index += 1
-                console.log(`${this.no}-${this.device.serial} scrcpy handshake complete, ready for interaction`)
-                return;
-              }
               // Check if message.data is a string before calling split
               if (typeof message.data !== 'string') {
                 console.warn(`${this.no}-${this.device.serial} expected string resolution info, got ${typeof message.data}`)
@@ -1038,15 +929,11 @@ export default {
               if (Number.isFinite(parsedWidth) && Number.isFinite(parsedHeight) && parsedHeight !== 0) {
                 this.real_width = parsedWidth
                 this.real_height = parsedHeight
-                this.scaled = this.height / this.real_height
-                console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, scaled: ${this.scaled}`)
-                this.persistDeviceSize({
-                  real_width: this.real_width,
-                  real_height: this.real_height,
-                  scaled: this.scaled
-                }).catch(error => {
-                  console.warn('Persist real dimensions failed:', error)
-                })
+                const aspectRatio = this.real_height / this.real_width
+                this.height = this.gridCardHeight * (this.big ? 2 : 1)
+                this.width = this.gridCardHeight / aspectRatio * (this.big ? 2 : 1)
+                console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, width: ${this.width}, height: ${this.height}`)
+
               } else {
                 console.warn(`${this.no}-${this.device.serial} received invalid resolution info: ${message.data}`)
               }
@@ -1071,7 +958,8 @@ export default {
       this.firstFrameImageUrl = null;
       this.videoStarted = false;
       this.message_index = 0;
-
+      this.height = this.gridCardHeight * (this.big ? 2 : 1)
+      this.width = this.gridCardHeight * 9 / 16 * (this.big ? 2 : 1)
       // Enable automatic reconnection
       this.scrcpyShouldReconnect = true;
       this.scrcpyReconnectAttempts = 0;
@@ -1179,12 +1067,15 @@ export default {
           this.closeScrcpy();
           this.closeDecoder();
           this.operating = true
-          return
+        } else if (bigScreen === 'docked') {
+          this.closeScrcpy();
+          this.closeDecoder();
+          this.big = true;
+          this.syncDisplay();
+
+        } else {
+          console.warn(`Unknown bigScreen mode: ${bigScreen}`);
         }
-        this.closeScrcpy();
-        this.closeDecoder();
-        this.big = true;
-        this.syncDisplay();
       }
       if (e.payload.serial !== this.device.serial && this.operating) {
         const bigScreen = await getItem('bigScreen') || 'standard'
@@ -1193,6 +1084,14 @@ export default {
           this.closeDecoder();
           this.big = false;
           this.operating = false
+          this.syncDisplay();
+        }
+      } else if (e.payload.serial !== this.device.serial && this.big) {
+        const bigScreen = await getItem('bigScreen') || 'standard'
+        if (bigScreen === 'docked') {
+          this.closeScrcpy();
+          this.closeDecoder();
+          this.big = false;
           this.syncDisplay();
         }
       }
@@ -1205,24 +1104,20 @@ export default {
         this.scrcpy.send(e.payload.data)
       }
     }))
-    this.listeners.push(await this.$listen('refreshDevice', (e) => {
-      console.log('refreshDevice', e.payload)
-      this.closeScrcpy()
-      this.closeDecoder()
-      this.syncDisplay()
-    }))
+
     this.listeners.push(await this.$listen('screenScaled', (e) => {
-      if (e.payload.action === 'plus') {
-        this.width = this.width * 1.1
-        this.height = this.height * 1.1
-      } else if (e.payload.action === 'minus') {
-        this.width = this.width * 0.9
-        this.height = this.height * 0.9
+      console.log(`${this.no}-${this.device.serial} received screenScaled event:`, e.payload)
+      if (e.payload.size && this.real_height > 0 && this.real_width > 0) {
+        const aspectRatio = this.real_height / this.real_width
+        this.height = e.payload.size
+        this.width = e.payload.size / aspectRatio
+        console.log(`${this.no}-${this.device.serial} screenScaled to width: ${this.width}, height: ${this.height}, aspectRatio: ${aspectRatio}`)
+      } else {
+        console.warn(`${this.no}-${this.device.serial} screenScaled event missing targetWidth or invalid real dimensions, this.real_width: ${this.real_width}, this.real_height: ${this.real_height}`)
       }
     }))
     this.listeners.push(await this.$listen('screenResolution', async (e) => {
       this.screenResolution = e.payload.resolution;
-      await this.persistDeviceSize({ screenResolution: this.screenResolution });
       this.closeScrcpy();
       this.closeDecoder();
       this.syncDisplay();

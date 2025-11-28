@@ -18,7 +18,7 @@
     </div>
 
     <button v-else
-        class="btn btn-md flex items-center gap-2 px-4 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-none"
+        class="btn btn-md flex items-center gap-2 px-4 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md cursor-pointer bg-linear-to-r from-emerald-500 to-teal-600 text-white border-none"
         @click="$emit('open-license')">
         <font-awesome-icon icon="fa-solid fa-crown" class="h-5 w-5 text-yellow-200" />
         <span class="font-semibold whitespace-nowrap">{{ licenseData.plan_name }}</span>

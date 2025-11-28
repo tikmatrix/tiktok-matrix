@@ -125,6 +125,7 @@
 
 
 </template>
+<style scoped></style>
 <script>
 
 import General from './General.vue'
@@ -216,7 +217,7 @@ export default {
       return [
         'rounded-xl shadow-md',
         isActive
-          ? 'bg-gradient-to-r from-primary via-secondary to-primary/80 text-primary-content shadow-md ring-1 ring-primary/50 scale-[1.02]'
+          ? 'bg-linear-to-r from-primary via-secondary to-primary/80 text-primary-content shadow-md ring-1 ring-primary/50 scale-[1.02]'
           : 'text-base-content/70 hover:text-base-content hover:bg-primary/10'
       ]
     },
@@ -265,7 +266,7 @@ export default {
           .then(async () => {
             this.newGroupName = ''
             this.showAddGroup = false
-            await this.$emiter('reload_group', {})
+            await this.$emiter('reload_groups', {})
           })
       } else {
         this.$service
@@ -275,7 +276,7 @@ export default {
           .then(async () => {
             this.newGroupName = ''
             this.showAddGroup = false
-            await this.$emiter('reload_group', {})
+            await this.$emiter('reload_groups', {})
 
           })
       }
@@ -289,7 +290,7 @@ export default {
             id: id
           })
           .then(async () => {
-            await this.$emiter('reload_group', {})
+            await this.$emiter('reload_groups', {})
           })
       }
 

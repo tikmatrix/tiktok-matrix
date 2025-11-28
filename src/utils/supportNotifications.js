@@ -1,4 +1,4 @@
-import { getJsonItem, setJsonItem } from './persistentStorage.js';
+import { getJsonItem, setJsonItem } from './storage.js';
 
 const STORAGE_KEY = 'support_unread_map_v1';
 const TICKET_KEY_FIELDS = [

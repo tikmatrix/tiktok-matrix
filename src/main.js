@@ -1,7 +1,6 @@
 import './assets/main.css';
 import { createApp } from 'vue';
 import App from './App.vue';
-import './index.css';
 import * as service from './service';
 /* import the fontawesome core */
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -17,7 +16,7 @@ import VueDragSelect from '@coleqiu/vue-drag-select';
 import VueDraggableResizable from 'vue-draggable-resizable';
 import { emit, listen } from '@tauri-apps/api/event';
 import { initWhiteLabel } from './utils/whiteLabelHelpers.js';
-import { initStorage } from './utils/persistentStorage.js';
+import { initStorage } from './utils/storage.js';
 
 async function bootstrap() {
     try {

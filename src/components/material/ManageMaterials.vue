@@ -78,7 +78,7 @@
                     </div>
                     <div class="dropdown dropdown-hover">
                       <label tabindex="0" class="btn btn-md btn-circle btn-outline">+</label>
-                      <div tabindex="0" class="dropdown-content z-[1] card card-compact shadow bg-base-100 p-2">
+                      <div tabindex="0" class="dropdown-content z-1 card card-compact shadow bg-base-100 p-2">
                         <div class="card-body p-2 ring-info ring-1 rounded-md shadow-md">
                           <!-- 已存在的标签列表 -->
                           <div v-if="tags.length > 0">

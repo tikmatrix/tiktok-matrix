@@ -420,7 +420,7 @@ export default {
         timeout: 2000
       });
       await this.$emiter('closeDialog', {})
-      await this.$emiter('reload_group', {})
+      await this.$emiter('reload_groups', {})
     },
   },
   async created() {

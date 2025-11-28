@@ -3,7 +3,7 @@
     <!-- 应用配置 -->
     <div class="mb-8">
       <h3 class="text-lg font-semibold text-base-content mb-4 border-l-4 border-primary pl-3">{{ $t('appConfiguration')
-        }}</h3>
+      }}</h3>
       <div class="space-y-4">
         <!-- TikTok包名选择 -->
         <div class="flex items-center justify-between py-3 border-b border-base-200"
@@ -61,18 +61,7 @@
           </div>
         </div>
 
-        <!-- 自动更新 -->
-        <div class="flex items-start justify-between py-3 border-b border-base-200">
-          <div class="flex-1">
-            <label class="text-md font-medium text-base-content">{{ $t('autoUpdateEnabled') }}</label>
-            <p class="text-md text-base-content/60 mt-1" v-if="localSettings.auto_update_enabled">{{
-              $t('autoUpdateTips') }}
-            </p>
-          </div>
-          <input type="checkbox" class="toggle toggle-primary toggle-md mt-1"
-            v-model="localSettings.auto_update_enabled" :true-value="true" :false-value="false"
-            @change="update_settings" />
-        </div>
+
       </div>
     </div>
 
@@ -138,7 +127,7 @@
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
 import { appDataDir } from '@tauri-apps/api/path';
-import { getItem, setItem } from '@/utils/persistentStorage.js';
+import { getItem, setItem } from '@/utils/storage.js';
 import { getUnlockedFeatures, unlockFeature as unlockFeatureFlag } from '@/utils/features.js';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 
@@ -259,11 +248,7 @@ export default {
     if (storedBigScreen) {
       this.bigScreen = storedBigScreen;
     }
-    // 设置默认值
-    if (this.localSettings.auto_update_enabled === undefined) {
-      this.localSettings = { ...this.localSettings, auto_update_enabled: true };
-      await this.update_settings();
-    }
+
   }
 }
 </script>
