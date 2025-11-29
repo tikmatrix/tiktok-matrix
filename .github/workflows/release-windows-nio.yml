@@ -1,0 +1,134 @@
+name: Release - Windows
+run-name: ${{ github.actor }} is building Release (windows) 🚀
+on:
+  push:
+    tags:
+      - "nio*"
+permissions:
+  contents: write
+jobs:
+  deploy-windows:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: windows-latest
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: setup rust
+        id: setup-rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Rust Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      - name: build official package
+        run: |
+          npm install
+          .\build.ps1
+      - name: upload official package to r2
+        uses: ryand56/r2-upload-action@v1.4
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID_NIO }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY_NIO }}
+          r2-bucket: tikmatrix
+          source-dir: ./src-tauri/target/release/bundle/msi
+          destination-dir: ./
+      - name: update version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-version.js
+      - name: clear uploaded files
+        run: |
+          Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
+      # IgMatrix whitelabel build and upload steps
+      - name: build IgMatrix whitelabel package
+        run: |
+          node scripts/build-whitelabel.js IgMatrix
+      - name: upload IgMatrix package to r2
+        uses: ryand56/r2-upload-action@v1.4
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID_NIO }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY_NIO }}
+          r2-bucket: tikmatrix
+          source-dir: ./src-tauri/target/release/bundle/msi
+          destination-dir: ./
+      - name: update IgMatrix version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-version.js --app=igmatrix --app-name=IgMatrix
+      - name: clear uploaded files
+        run: |
+          Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
+      - name: update IgMatrix download url
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-download-url.js --platform=windows --distributor=OFFICIAL --app=igmatrix --app-name=IgMatrix
+      # TikZenX whitelabel build and upload steps
+      - name: build TikZenX whitelabel package
+        run: |
+          node scripts/build-whitelabel.js TikZenX
+      - name: upload TikZenX package to r2
+        uses: ryand56/r2-upload-action@v1.4
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID_NIO }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY_NIO }}
+          r2-bucket: tikmatrix
+          source-dir: ./src-tauri/target/release/bundle/msi
+          destination-dir: ./
+      - name: update TikZenX version
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-version.js --app=tikzenx --app-name=TikZenX
+      - name: clear uploaded files
+        run: |
+          Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
+      - name: update TikZenX download url
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-download-url.js --platform=windows --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
+      # Build and upload distributor packages
+      - name: build distributor packages
+        run: |
+          node scripts/build-distributor-packages-windows.js
+      - name: upload distributor packages to r2
+        uses: ryand56/r2-upload-action@v1.4
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID_NIO }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY_NIO }}
+          r2-bucket: tikmatrix
+          source-dir: ./dist-distributors
+          destination-dir: ./distributors
+      - name: clear uploaded files
+        run: |
+          Remove-Item -Path .\dist-distributors\* -Force -Recurse
+      - name: update distributor download urls
+        env:
+          TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          node scripts/update-download-url.js --platform=windows --all-distributors
