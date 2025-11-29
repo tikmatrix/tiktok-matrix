@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col justify-start z-30 bg-base-200/90 backdrop-blur-md shadow-lg rounded-r-xl absolute top-0 left-full ml-2 border border-l-0 border-base-300 group min-w-10 max-w-10 hover:max-w-md transition-all duration-300 ease-in-out overflow-hidden">
+    class="flex flex-col justify-start z-30 bg-base-200/90 backdrop-blur-md shadow-lg rounded-r-xl absolute top-0 left-full border border-l-0 border-base-300 group min-w-10 max-w-10 hover:max-w-md transition-all duration-300 ease-in-out overflow-hidden">
 
     <!-- 展开指示器 -->
     <div

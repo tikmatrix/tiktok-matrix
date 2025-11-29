@@ -1,5 +1,5 @@
 <template>
-  <div class="relative shadow-2xl border-2 ring-1 ring-info ring-opacity-50 rounded-md overflow-visible">
+  <div class="relative">
     <div class="flex justify-center items-center">
       <div class="flex flex-col">
         <div class="flex flex-row drag bg-base-300 p-2" v-if="big">
@@ -20,7 +20,8 @@
           </button>
         </div>
 
-        <div class="flex flex-row flex-1 relative overflow-visible"
+        <div
+          class="flex flex-row flex-1 relative shadow-2xl border-2 ring-2 ring-info ring-opacity-50 rounded-lg overflow-visible"
           :style="'width:' + width + 'px;height:' + height + 'px'">
           <div class="relative flex-1 object-fill" :style="'width:' + width + 'px;height:' + height + 'px'">
             <canvas

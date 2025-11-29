@@ -830,14 +830,10 @@ export default {
       const storedBigScreen = await getItem('bigScreen')
       const bigScreen = storedBigScreen || 'standard'
       if (bigScreen === 'standard') {
-        this.device = e.payload
-        const groupNameMap = new Map(
-          (this.groups || []).map(group => [group.id, group.name])
-        )
-        const decoratedDevice = this.decorateDevice(this.device, groupNameMap) || this.device
+        let device = e.payload
         for (let i = 0; i < this.mydevices.length; i++) {
-          if (this.mydevices[i].serial === this.device.serial) {
-            this.mydevices[i] = decoratedDevice
+          if (this.mydevices[i].serial === device.serial) {
+            this.device = this.mydevices[i]
             break
           }
         }
