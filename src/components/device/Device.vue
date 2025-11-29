@@ -239,8 +239,8 @@ export default {
     }
   },
   async created() {
-    this.height = this.gridCardHeight * (this.big ? 2 : 1)
-    this.width = this.gridCardHeight * 9 / 16 * (this.big ? 2 : 1)
+    this.height = await this.calculateDeviceHeight()
+    this.width = this.height / (16 / 9)
   },
 
   methods: {
@@ -931,8 +931,8 @@ export default {
                 this.real_width = parsedWidth
                 this.real_height = parsedHeight
                 const aspectRatio = this.real_height / this.real_width
-                this.height = this.gridCardHeight * (this.big ? 2 : 1)
-                this.width = this.gridCardHeight / aspectRatio * (this.big ? 2 : 1)
+                this.height = await this.calculateDeviceHeight()
+                this.width = this.height / aspectRatio
                 console.log(`${this.no}-${this.device.serial} real_width: ${this.real_width}, real_height: ${this.real_height}, width: ${this.width}, height: ${this.height}`)
 
               } else {
@@ -953,14 +953,28 @@ export default {
         this.processH264Data(message.data);
       }
     },
-    syncDisplay() {
+    //计算设备高度
+    async calculateDeviceHeight() {
+      if (this.big) {
+        const bigScreen = await getItem('bigScreen') || 'standard'
+        if (bigScreen === 'standard') {
+          // min 50% of screen height; max 90% of screen height
+          const screenHeight = window.innerHeight;
+          return Math.min(Math.max(screenHeight * 0.5, this.gridCardHeight * 2), screenHeight * 0.8);
+        } else if (bigScreen === 'docked') {
+          return this.gridCardHeight * 2
+        }
+      }
+      return this.gridCardHeight
+    },
+    async syncDisplay() {
       this.loading = true;
       this.firstFrameRendered = false;
       this.firstFrameImageUrl = null;
       this.videoStarted = false;
       this.message_index = 0;
-      this.height = this.gridCardHeight * (this.big ? 2 : 1)
-      this.width = this.gridCardHeight * 9 / 16 * (this.big ? 2 : 1)
+      this.height = await this.calculateDeviceHeight()
+      this.width = this.height / (16 / 9)
       // Enable automatic reconnection
       this.scrcpyShouldReconnect = true;
       this.scrcpyReconnectAttempts = 0;
@@ -1058,7 +1072,7 @@ export default {
         if (this.$refs.canvas) {
           this.$refs.canvas.blur();
         }
-        this.syncDisplay();
+        await this.syncDisplay();
       }
     }))
     this.listeners.push(await this.$listen('openDevice', async (e) => {
@@ -1072,7 +1086,7 @@ export default {
           this.closeScrcpy();
           this.closeDecoder();
           this.big = true;
-          this.syncDisplay();
+          await this.syncDisplay();
 
         } else {
           console.warn(`Unknown bigScreen mode: ${bigScreen}`);
@@ -1085,7 +1099,7 @@ export default {
           this.closeDecoder();
           this.big = false;
           this.operating = false
-          this.syncDisplay();
+          await this.syncDisplay();
         }
       } else if (e.payload.serial !== this.device.serial && this.big) {
         const bigScreen = await getItem('bigScreen') || 'standard'
@@ -1093,7 +1107,7 @@ export default {
           this.closeScrcpy();
           this.closeDecoder();
           this.big = false;
-          this.syncDisplay();
+          await this.syncDisplay();
         }
       }
     }))
@@ -1106,12 +1120,12 @@ export default {
       }
     }))
 
-    this.listeners.push(await this.$listen('screenScaled', (e) => {
+    this.listeners.push(await this.$listen('screenScaled', async (e) => {
       console.log(`${this.no}-${this.device.serial} received screenScaled event:`, e.payload)
       if (e.payload.size && this.real_height > 0 && this.real_width > 0) {
         const aspectRatio = this.real_height / this.real_width
-        this.height = e.payload.size * (this.big ? 2 : 1)
-        this.width = e.payload.size / aspectRatio * (this.big ? 2 : 1)
+        this.height = await this.calculateDeviceHeight()
+        this.width = this.height / aspectRatio
         console.log(`${this.no}-${this.device.serial} screenScaled to width: ${this.width}, height: ${this.height}, aspectRatio: ${aspectRatio}`)
       } else {
         console.warn(`${this.no}-${this.device.serial} screenScaled event missing targetWidth or invalid real dimensions, this.real_width: ${this.real_width}, this.real_height: ${this.real_height}`)
@@ -1121,7 +1135,7 @@ export default {
       this.screenResolution = e.payload.resolution;
       this.closeScrcpy();
       this.closeDecoder();
-      this.syncDisplay();
+      await this.syncDisplay();
     }))
 
     document.addEventListener('visibilitychange', () => {
@@ -1134,13 +1148,13 @@ export default {
       }
     })
 
-    document.addEventListener('copy', () => {
+    document.addEventListener('copy', async () => {
       if (this.big) {
-        this.copyFromPhone()
+        await this.copyFromPhone()
       }
     })
 
-    this.syncDisplay()
+    await this.syncDisplay()
   },
   async unmounted() {
     this.closeScrcpy()
