@@ -236,6 +236,7 @@ fn main() -> std::io::Result<()> {
 
             // 读取并记录分发商代码
             let app_handle = app.handle();
+            process_manager::shutdown_processes(&app_handle);
             match get_distributor_code(app_handle) {
                 Ok(code) => {
                     log::info!("✅ Distributor Code: {}", code);

@@ -276,8 +276,7 @@ import { getAll } from '@tauri-apps/api/window';
 import { ask } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion, getName } from '@tauri-apps/api/app';
-import { installUpdate, onUpdaterEvent } from '@tauri-apps/api/updater';
-import { relaunch } from '@tauri-apps/api/process';
+import { onUpdaterEvent } from '@tauri-apps/api/updater';
 import { open } from '@tauri-apps/api/shell';
 import { os } from '@tauri-apps/api';
 import LicenseManagementDialog from './LicenseManagementDialog.vue';
@@ -486,7 +485,7 @@ export default {
               this.check_update_dialog_title = 'Downloading update...';
 
               // Listen for Tauri update download progress
-              const unlisten = await onUpdaterEvent(({ error, status }) => {
+              await onUpdaterEvent(({ error, status }) => {
                 console.log('Updater event:', status, error);
                 if (status === 'PENDING') {
                   this.check_update_dialog_title = 'Downloading update...';
@@ -499,7 +498,7 @@ export default {
               });
 
               // Listen for download progress event
-              const unlistenProgress = await this.$listen('tauri://update-download-progress', (event) => {
+              await this.$listen('tauri://update-download-progress', (event) => {
                 const { chunk_length, content_length } = event.payload;
                 if (content_length && content_length > 0) {
                   // Update progress
@@ -513,13 +512,7 @@ export default {
                 }
               });
 
-              try {
-                await installUpdate();
-                await relaunch();
-              } finally {
-                unlisten();
-                unlistenProgress();
-              }
+              await invoke('install_and_relaunch_update');
               return;
             }
           } else {
