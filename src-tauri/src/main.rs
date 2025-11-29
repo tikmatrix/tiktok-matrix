@@ -70,8 +70,6 @@ fn setup_env(working_dir: &str, version: String) {
 
     if cfg!(debug_assertions) {
         std::env::set_var("MOSS_URL", "http://localhost:8787/moss");
-        std::env::set_var("RUST_BACKTRACE", "1");
-        std::env::set_var("LOG_LEVEL", "info");
     }
 
     // Log proxy configuration for debugging
@@ -229,6 +227,10 @@ fn main() -> std::io::Result<()> {
             let app_data_dir = app.path_resolver().app_data_dir().unwrap();
             let work_dir = app_data_dir.to_str().unwrap();
             log::info!("work_dir: {}", work_dir);
+            if cfg!(debug_assertions) {
+                std::env::set_var("LOG_LEVEL", "debug");
+                std::env::set_var("RUST_BACKTRACE", "1");
+            }
             init_log::init(work_dir);
             let version = app.package_info().version.clone();
             let version_str = version.to_string();

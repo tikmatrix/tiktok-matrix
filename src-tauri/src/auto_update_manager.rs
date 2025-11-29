@@ -1,7 +1,11 @@
 use serde::{Deserialize, Serialize};
+use std::process::Command;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Manager};
+
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AutoUpdateConfig {
@@ -68,6 +72,52 @@ pub fn is_system_idle(idle_threshold_minutes: u64) -> bool {
     false
 }
 
+/// Check if script process is running
+pub fn is_script_running() -> bool {
+    #[cfg(target_os = "windows")]
+    {
+        let mut command = Command::new("tasklist");
+        command.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        command.args(&["/FI", "IMAGENAME eq script.exe", "/NH"]);
+
+        match command.output() {
+            Ok(output) => {
+                let output_str = String::from_utf8_lossy(&output.stdout);
+                let is_running = output_str.contains("script.exe");
+                log::debug!("Script process check: is_running={}", is_running);
+                return is_running;
+            }
+            Err(e) => {
+                log::warn!("Failed to check script process: {}", e);
+                return false;
+            }
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let mut command = Command::new("pgrep");
+        command.args(&["-x", "script"]);
+
+        match command.status() {
+            Ok(status) => {
+                let is_running = status.success();
+                log::debug!("Script process check: is_running={}", is_running);
+                return is_running;
+            }
+            Err(e) => {
+                log::warn!("Failed to check script process: {}", e);
+                return false;
+            }
+        }
+    }
+
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    {
+        false
+    }
+}
+
 /// Update the last check timestamp
 fn update_last_check() {
     if let Ok(mut state) = AUTO_UPDATE_STATE.lock() {
@@ -131,6 +181,12 @@ pub async fn start_auto_update_timer(
             // Check if system is idle
             if !is_system_idle(current_config.idle_threshold_minutes) {
                 log::debug!("System is not idle, skipping auto-update");
+                continue;
+            }
+
+            // Check if script process is running
+            if is_script_running() {
+                log::debug!("Script process is running, skipping auto-update");
                 continue;
             }
 
