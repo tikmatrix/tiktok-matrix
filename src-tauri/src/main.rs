@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-use std::{fs, net::TcpListener, process::Command};
+use std::{fs, process::Command};
 
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
@@ -90,92 +90,6 @@ fn get_env(key: String) -> String {
 }
 
 #[tauri::command]
-fn is_agent_running() -> String {
-    //check 50809 port is listening
-    let port = 50809;
-    match TcpListener::bind(("0.0.0.0", port)) {
-        Ok(_) => {
-            log::info!("agent is not running on port {}", port);
-            "".to_string()
-        }
-        Err(_) => {
-            log::info!("agent is running on port {}", port);
-            //check which process is listening on port 50809
-            #[cfg(target_os = "windows")]
-            {
-                let mut command = Command::new("netstat");
-                command.args(&["-ano"]);
-                command.creation_flags(0x08000000); // 隐藏命令行窗口
-                let output = command.output().unwrap();
-                if output.status.success() {
-                    let output_str = String::from_utf8_lossy(&output.stdout);
-                    if output_str.contains(&format!(":{}", port)) {
-                        // 找到包含端口号的行
-                        if let Some(line) = output_str
-                            .lines()
-                            .find(|line| line.contains(&format!(":{}", port)))
-                        {
-                            // 提取PID
-                            if let Some(pid) = line.split_whitespace().last() {
-                                // 使用tasklist命令获取进程名
-                                let mut tasklist = Command::new("tasklist");
-                                tasklist.args(&["/FI", &format!("PID eq {}", pid)]);
-                                tasklist.creation_flags(0x08000000);
-                                if let Ok(task_output) = tasklist.output() {
-                                    let task_str = String::from_utf8_lossy(&task_output.stdout);
-                                    if let Some(process_line) = task_str.lines().nth(3) {
-                                        let process_name = process_line
-                                            .split_whitespace()
-                                            .next()
-                                            .unwrap_or("unknown");
-                                        log::info!(
-                                            "agent is running on port {}, process: {} (PID: {})",
-                                            port,
-                                            process_name,
-                                            pid
-                                        );
-                                        return process_name.to_string();
-                                    }
-                                }
-                            }
-                        }
-                        "".to_string()
-                    } else {
-                        log::info!("agent is not running on port {}", port);
-                        "".to_string()
-                    }
-                } else {
-                    log::info!("agent is not running on port {}", port);
-                    "".to_string()
-                }
-            }
-
-            #[cfg(target_os = "macos")]
-            {
-                let mut command = Command::new("lsof");
-                command.args(&["-i", format!(":{}", port).as_str()]);
-                let output = command.output().unwrap();
-                if output.status.success() {
-                    let output_str = String::from_utf8_lossy(&output.stdout);
-                    if let Some(line) = output_str.lines().nth(1) {
-                        let process_name = line.split_whitespace().next().unwrap_or("unknown");
-                        log::info!(
-                            "agent is running on port {}, process: {}",
-                            port,
-                            process_name
-                        );
-                        return process_name.to_string();
-                    }
-                    "".to_string()
-                } else {
-                    log::info!("agent is not running on port {}", port);
-                    "".to_string()
-                }
-            }
-        }
-    }
-}
-#[tauri::command]
 fn kill_process(name: String) {
     #[cfg(target_os = "windows")]
     {
@@ -227,47 +141,6 @@ async fn process_lib_update(
     update_manager::process_lib_update(&app_handle, &lib).await
 }
 
-/// Batch process multiple libraries update
-#[tauri::command]
-async fn batch_update_libs(
-    app_handle: tauri::AppHandle,
-    libs: Vec<update_manager::LibInfo>,
-) -> Result<Vec<String>, String> {
-    let mut updated_libs = Vec::new();
-
-    for lib in libs {
-        match update_manager::process_lib_update(&app_handle, &lib).await {
-            Ok(true) => {
-                log::info!("Library {} updated successfully", lib.name);
-                updated_libs.push(lib.name.clone());
-            }
-            Ok(false) => {
-                log::info!("Library {} is up to date", lib.name);
-            }
-            Err(e) => {
-                log::error!("Failed to update library {}: {}", lib.name, e);
-                let error_status = update_manager::UpdateStatus {
-                    status: "error".to_string(),
-                    message: format!("Failed to update {}: {}", lib.name, e),
-                    lib_name: Some(lib.name.clone()),
-                };
-                error_status.emit(&app_handle);
-                return Err(format!("Failed to update {}: {}", lib.name, e));
-            }
-        }
-    }
-
-    // Emit completion status
-    let complete_status = update_manager::UpdateStatus {
-        status: "completed".to_string(),
-        message: "All libraries update completed".to_string(),
-        lib_name: None,
-    };
-    complete_status.emit(&app_handle);
-
-    Ok(updated_libs)
-}
-
 /// Check for Tauri application updates
 #[tauri::command]
 async fn check_tauri_update(
@@ -316,7 +189,6 @@ fn main() -> std::io::Result<()> {
             file_utils::download_file,
             file_utils::download_file_with_version,
             file_utils::unzip_file,
-            is_agent_running,
             set_env,
             get_env,
             http_client::http_request,
@@ -337,7 +209,6 @@ fn main() -> std::io::Result<()> {
             check_libs_update,
             get_local_lib_version,
             process_lib_update,
-            batch_update_libs,
             check_tauri_update,
             install_and_relaunch_update,
             get_auto_update_state,
