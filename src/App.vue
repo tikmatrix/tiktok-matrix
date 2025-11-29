@@ -42,6 +42,7 @@ export default {
   data() {
     return {
       devices: [],
+      runningTasks: [],
       settings: {},
       groups: [],
       showSidebar: true,
@@ -50,6 +51,28 @@ export default {
       listeners: [],
       supportUnreadMap: {},
       supportUnreadCount: 0,
+    }
+  },
+  watch: {
+    runningTasks: {
+      handler(newTasks) {
+        console.log("Running tasks updated:", newTasks);
+        const runningSerials = newTasks.map(task => task.serial);
+        this.devices.forEach(device => {
+          device.task_status = runningSerials.includes(device.real_serial) ? 1 : 0;
+        });
+      },
+      deep: true
+    },
+    devices: {
+      handler(newDevices) {
+        console.log("Devices updated:", newDevices);
+        const runningSerials = this.runningTasks.map(task => task.serial);
+        newDevices.forEach(device => {
+          device.task_status = runningSerials.includes(device.real_serial) ? 1 : 0;
+        });
+      },
+      deep: true
     }
   },
 
@@ -169,11 +192,8 @@ export default {
     },
     async getRunningTasks() {
       this.$service.get_running_tasks().then(res => {
-        let running_tasks = res.data
-        let running_serials = running_tasks.map(task => task.serial)
-        this.devices.forEach(device => {
-          device.task_status = running_serials.includes(device.real_serial) ? 1 : 0
-        })
+        this.runningTasks = res.data
+
       })
     },
 
