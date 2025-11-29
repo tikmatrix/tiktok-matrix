@@ -42,7 +42,7 @@ jobs:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID_NIO }}
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY_NIO }}
-          r2-bucket: tikmatrix
+          r2-bucket: matrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
       - name: update version
@@ -64,7 +64,7 @@ jobs:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID_NIO }}
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY_NIO }}
-          r2-bucket: tikmatrix
+          r2-bucket: matrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
       - name: update IgMatrix version
@@ -92,7 +92,7 @@ jobs:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID_NIO }}
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY_NIO }}
-          r2-bucket: tikmatrix
+          r2-bucket: matrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
       - name: update TikZenX version
@@ -120,7 +120,7 @@ jobs:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID_NIO }}
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY_NIO }}
-          r2-bucket: tikmatrix
+          r2-bucket: matrix
           source-dir: ./dist-distributors
           destination-dir: ./distributors
       - name: clear uploaded files
