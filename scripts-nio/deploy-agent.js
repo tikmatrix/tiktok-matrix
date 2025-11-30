@@ -112,7 +112,7 @@ async function deploy() {
         // Upload to R2
         if (deployAgent) {
             console.log(`Uploading ${AGENT_NAME} to R2...`);
-            execSync(`wrangler r2 object put tikmatrix/${AGENT_NAME} --file=target/release/agent.exe --remote`, {
+            execSync(`wrangler r2 object put matrix/${AGENT_NAME} --file=target/release/agent.exe --remote`, {
                 stdio: 'inherit',
                 cwd: AGENT_PROJECT_PATH
             });
@@ -120,7 +120,7 @@ async function deploy() {
 
         if (deployScript) {
             console.log(`Uploading ${SCRIPT_NAME} to R2...`);
-            execSync(`wrangler r2 object put tikmatrix/${SCRIPT_NAME} --file=target/release/script.exe --remote`, {
+            execSync(`wrangler r2 object put matrix/${SCRIPT_NAME} --file=target/release/script.exe --remote`, {
                 stdio: 'inherit',
                 cwd: AGENT_PROJECT_PATH
             });
