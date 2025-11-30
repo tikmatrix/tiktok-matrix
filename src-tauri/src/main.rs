@@ -69,7 +69,8 @@ fn setup_env(working_dir: &str, version: String) {
     std::env::set_var("MATRIX_APP_VERSION", version.clone());
 
     if cfg!(debug_assertions) {
-        std::env::set_var("MOSS_URL", "http://localhost:8787/moss");
+        // std::env::set_var("MOSS_URL", "http://localhost:8787/moss");
+        std::env::set_var("MOSS_URL", "https://api.ytmatrix.com/moss");
     }
 
     // Log proxy configuration for debugging

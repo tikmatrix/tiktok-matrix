@@ -50,14 +50,14 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-version.js
+          node scripts-nio/update-version.js
       - name: clear uploaded files
         run: |
           Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
       # IgMatrix whitelabel build and upload steps
       - name: build IgMatrix whitelabel package
         run: |
-          node scripts/build-whitelabel.js IgMatrix
+          node scripts-nio/build-whitelabel.js IgMatrix
       - name: upload IgMatrix package to r2
         uses: ryand56/r2-upload-action@v1.4
         with:
@@ -72,7 +72,7 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-version.js --app=igmatrix --app-name=IgMatrix
+          node scripts-nio/update-version.js --app=igmatrix --app-name=IgMatrix
       - name: clear uploaded files
         run: |
           Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
@@ -81,11 +81,11 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-download-url.js --platform=windows --distributor=OFFICIAL --app=igmatrix --app-name=IgMatrix
+          node scripts-nio/update-download-url.js --platform=windows --distributor=OFFICIAL --app=igmatrix --app-name=IgMatrix
       # TikZenX whitelabel build and upload steps
       - name: build TikZenX whitelabel package
         run: |
-          node scripts/build-whitelabel.js TikZenX
+          node scripts-nio/build-whitelabel.js TikZenX
       - name: upload TikZenX package to r2
         uses: ryand56/r2-upload-action@v1.4
         with:
@@ -100,7 +100,7 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-version.js --app=tikzenx --app-name=TikZenX
+          node scripts-nio/update-version.js --app=tikzenx --app-name=TikZenX
       - name: clear uploaded files
         run: |
           Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
@@ -109,11 +109,11 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-download-url.js --platform=windows --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
+          node scripts-nio/update-download-url.js --platform=windows --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
       # Build and upload distributor packages
       - name: build distributor packages
         run: |
-          node scripts/build-distributor-packages-windows.js
+          node scripts-nio/build-distributor-packages-windows.js
       - name: upload distributor packages to r2
         uses: ryand56/r2-upload-action@v1.4
         with:
@@ -131,4 +131,4 @@ jobs:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          node scripts/update-download-url.js --platform=windows --all-distributors
+          node scripts-nio/update-download-url.js --platform=windows --all-distributors
