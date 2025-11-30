@@ -555,7 +555,7 @@ pub async fn initialize_app(
                 } else {
                     // Production default (can be overridden by environment)
                     check_libs_url =
-                        "https://api.tikmatrix.com/front-api/check_libs?beta=0".to_string();
+                        "https://api.niostack.com/front-api/check_libs?beta=0".to_string();
                 }
             }
 

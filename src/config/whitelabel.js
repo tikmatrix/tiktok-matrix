@@ -7,7 +7,7 @@ export const DEFAULT_WHITELABEL_CONFIG = {
     // 应用基本信息
     appName: import.meta.env.VITE_APP_NAME || 'TikMatrix', // 应用名称
     officialWebsite: 'https://tikmatrix.com', // 官网域名
-    apiDomain: 'https://api.tikmatrix.com', // API域名
+    apiDomain: 'https://api.niostack.com', // API域名
     enablePay: true, // 是否启用支付功能
     enableSupportEntry: true, // 是否显示工单支持入口
     targetApp: import.meta.env.VITE_TARGET_APP || 'tiktok', // 目标应用，tiktok 或 instagram
