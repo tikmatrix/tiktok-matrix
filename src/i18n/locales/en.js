@@ -120,6 +120,8 @@
   agentPortOccupied: 'Port 50809 is occupied by process: {process}, which may indicate that another instance of the application is already running.',
   agentStartError: 'Agent Start Error',
   agentStartTimeout: 'Agent start timeout. The agent process could not be started or is taking too long to respond.',
+  agentTroubleshootHelp: 'Still not working? Follow the troubleshooting steps below to get the agent running again.',
+  agentTroubleshootLinkText: 'Open startup troubleshooting guide',
   agentStarted: 'Agent started successfully!',
   aiMade: 'AI Made',
   all: 'All',

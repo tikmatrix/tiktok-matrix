@@ -119,6 +119,8 @@
   agentPortOccupied: '端口50809被进程：{process}占用，这可能表明应用程序的另一个实例已经在运行。',
   agentStartError: 'Agent启动错误',
   agentStartTimeout: 'Agent启动超时。Agent进程无法启动或响应时间过长。',
+  agentTroubleshootHelp: '仍无法启动？请按照指南排查常见问题。',
+  agentTroubleshootLinkText: '查看启动失败排查教程',
   agentStarted: 'Agent 启动成功!',
   aiMade: 'AI 制作',
   all: '全部',

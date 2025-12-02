@@ -5,6 +5,13 @@
             <p class="py-4" v-if="errorType === 'port'">{{ $t('agentPortOccupied', { process: processName }) }}</p>
             <p class="py-4" v-else-if="errorType === 'timeout'">{{ $t('agentStartTimeout') }}</p>
             <p class="py-4" v-else-if="errorType === 'notfound'">{{ $t('agentNotFound') }}</p>
+            <div class="rounded-lg bg-base-200/70 px-4 py-3 text-sm text-base-content/80">
+                <p class="font-medium text-base-content">{{ $t('agentTroubleshootHelp') }}</p>
+                <a class="link link-primary wrap-break-word" :href="troubleshootLink" target="_blank"
+                    rel="noopener noreferrer">
+                    {{ $t('agentTroubleshootLinkText') }}
+                </a>
+            </div>
             <div class="modal-action">
                 <button class="btn btn-error" @click="clearAgentCache">{{ $t('clearAgentCache') }}</button>
                 <button class="btn" @click="closeDialog">{{ $t('cancel') }}</button>
@@ -30,6 +37,11 @@ export default {
         errorType: {
             type: String,
             default: 'port' // 'port' 或 'timeout'
+        }
+    },
+    data() {
+        return {
+            troubleshootLink: 'https://tikmatrix.com/docs/troubleshooting/software-startup-error'
         }
     },
     methods: {
