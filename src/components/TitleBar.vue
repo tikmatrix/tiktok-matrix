@@ -555,6 +555,17 @@ export default {
                 timeout: 3000
               });
             }
+          } else if (initResult.error.includes('missing_vc_runtime')) {
+            if (!silent) {
+              this.agentErrorType = 'runtime';
+              this.$refs.agentErrorDialog.show();
+            } else {
+              await this.$emiter('NOTIFY', {
+                type: 'error',
+                message: this.$t('agentRuntimeMissing'),
+                timeout: 5000
+              });
+            }
           } else if (initResult.error.includes('not found')) {
             if (!silent) {
               this.agentErrorType = 'notfound';

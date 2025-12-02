@@ -9,12 +9,36 @@ use tauri::{AppHandle, Manager};
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
+#[cfg(target_os = "windows")]
+const VC_REDIST_GUIDE_URL: &str =
+    "https://tikmatrix.com/docs/troubleshooting/software-startup-error#step-2-check-microsoft-visual-c-redistributable";
+
 // Global state for agent monitor
 lazy_static::lazy_static! {
     static ref MONITOR_RUNNING: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
     static ref MONITOR_ENABLED: Arc<AtomicBool> = Arc::new(AtomicBool::new(true));
     // Pause flag to temporarily prevent auto-restart during updates
     static ref MONITOR_PAUSED: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+}
+
+#[cfg(target_os = "windows")]
+fn has_vc_runtime() -> bool {
+    use std::path::PathBuf;
+
+    let system_root = std::env::var("SystemRoot").unwrap_or_else(|_| "C:\\Windows".to_string());
+    let candidates = [
+        PathBuf::from(&system_root).join("System32\\vcruntime140.dll"),
+        PathBuf::from(&system_root).join("System32\\vcruntime140_1.dll"),
+        PathBuf::from(&system_root).join("SysWOW64\\vcruntime140.dll"),
+        PathBuf::from(&system_root).join("SysWOW64\\vcruntime140_1.dll"),
+    ];
+
+    candidates.iter().any(|path| path.exists())
+}
+
+#[cfg(not(target_os = "windows"))]
+fn has_vc_runtime() -> bool {
+    true
 }
 
 // Agent monitor configuration
@@ -274,6 +298,24 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
             process_name: String::new(),
             message: format!("Agent binary not found at: {:?}", agent_path),
         });
+    }
+
+    // Ensure required redistributables are available before starting agent
+    #[cfg(target_os = "windows")]
+    {
+        if !has_vc_runtime() {
+            let message = format!(
+                "missing_vc_runtime: Microsoft Visual C++ Redistributable is not installed. Please follow the guide: {}",
+                VC_REDIST_GUIDE_URL
+            );
+            log::warn!("{}", message);
+            return Ok(AgentStartResult {
+                success: false,
+                error_type: "runtime".to_string(),
+                process_name: String::new(),
+                message,
+            });
+        }
     }
 
     // Start agent process
