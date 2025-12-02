@@ -551,7 +551,7 @@ pub async fn initialize_app(
                 if cfg!(debug_assertions) {
                     // In dev builds prefer local dev server
                     check_libs_url =
-                        "https://api.ytmatrix.com/front-api/check_libs?beta=0".to_string();
+                        "http://127.0.0.1:8787/front-api/check_libs?beta=0".to_string();
                 } else {
                     // Production default (can be overridden by environment)
                     check_libs_url =

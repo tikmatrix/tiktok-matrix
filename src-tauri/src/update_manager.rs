@@ -2,7 +2,7 @@ use crate::file_utils;
 use crate::proxy_config;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -42,6 +42,51 @@ pub struct UpdateStatus {
 impl UpdateStatus {
     pub fn emit(&self, handle: &AppHandle) {
         handle.emit_all("UPDATE_STATUS", &self).ok();
+    }
+}
+
+fn copy_file_with_retry(
+    src: &Path,
+    dest: &Path,
+    max_attempts: u32,
+    delay_ms: u64,
+    mut on_retry: Option<&mut dyn FnMut(u32)>,
+) -> Result<(), std::io::Error> {
+    let mut attempt = 0;
+    loop {
+        match fs::copy(src, dest) {
+            Ok(_) => return Ok(()),
+            Err(err) => {
+                let should_retry = {
+                    #[cfg(target_os = "windows")]
+                    {
+                        err.raw_os_error() == Some(32)
+                    }
+
+                    #[cfg(not(target_os = "windows"))]
+                    {
+                        false
+                    }
+                };
+
+                if should_retry && attempt + 1 < max_attempts {
+                    if let Some(callback) = &mut on_retry {
+                        callback(attempt + 1);
+                    }
+                    log::warn!(
+                        "{} is locked, retrying copy ({}/{})",
+                        dest.display(),
+                        attempt + 2,
+                        max_attempts
+                    );
+                    std::thread::sleep(std::time::Duration::from_millis(delay_ms));
+                    attempt += 1;
+                    continue;
+                }
+
+                return Err(err);
+            }
+        }
     }
 }
 
@@ -284,7 +329,9 @@ pub async fn install_lib_file(
             fs::copy(tmp_file_path, &dest_file).map_err(|e| e.to_string())?;
 
             if lib.name == "apk" || lib.name == "test-apk" {
-                std::env::set_var("agent_version", &lib.version);
+                unsafe {
+                    std::env::set_var("agent_version", &lib.version);
+                }
             }
 
             log::info!("Installed {} to {:?}", lib.name, dest_file);
@@ -293,19 +340,30 @@ pub async fn install_lib_file(
             // Pause agent monitor to prevent auto-restart during update
             crate::process_manager::pause_agent_monitor();
 
-            // Kill process before update
-            crate::kill_process(lib.name.clone());
+            // Ensure both agent and script are stopped to avoid automatic restarts
+            crate::kill_process("agent".to_string());
+            crate::kill_process("script".to_string());
             std::thread::sleep(std::time::Duration::from_secs(3));
 
             let bin_dir = app_data_dir.join("bin");
             fs::create_dir_all(&bin_dir).map_err(|e| e.to_string())?;
 
             let dest_file = bin_dir.join(tmp_file_path.file_name().unwrap());
-            fs::copy(tmp_file_path, &dest_file).map_err(|e| {
-                // Resume monitor on error
-                crate::process_manager::resume_agent_monitor();
-                e.to_string()
-            })?;
+            let mut retry_hook = |attempt: u32| {
+                log::info!(
+                    "Re-killing agent/script before retry attempt {} due to locked file",
+                    attempt + 1
+                );
+                crate::kill_process("agent".to_string());
+                crate::kill_process("script".to_string());
+            };
+
+            copy_file_with_retry(tmp_file_path, &dest_file, 5, 500, Some(&mut retry_hook))
+                .map_err(|e| {
+                    // Resume monitor on error
+                    crate::process_manager::resume_agent_monitor();
+                    e.to_string()
+                })?;
 
             // Grant permission on macOS
             #[cfg(target_os = "macos")]
