@@ -223,13 +223,20 @@ pub async fn start_auto_update_timer(
                 continue;
             }
 
-            // All conditions met, trigger auto-update
-            log::info!("Auto-update conditions met, triggering update");
+            // All conditions met, trigger Tauri update check
+            log::info!("Auto-update conditions met, checking Tauri application update");
             update_last_check();
 
-            // Emit event to trigger update in TitleBar
-            if let Err(e) = app_handle.emit_all("AUTO_UPDATE_TRIGGER", &()) {
-                log::error!("Failed to emit auto-update trigger: {}", e);
+            match crate::update_manager::check_tauri_update(&app_handle).await {
+                Ok(info) => {
+                    log::info!("Tauri update check result: {:?}", info);
+                    if let Err(e) = app_handle.emit_all("TAURI_UPDATE_STATUS", &info) {
+                        log::error!("Failed to emit Tauri update status: {}", e);
+                    }
+                }
+                Err(e) => {
+                    log::warn!("Background Tauri update check failed: {}", e);
+                }
             }
         }
     });

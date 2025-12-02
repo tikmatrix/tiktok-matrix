@@ -7,8 +7,12 @@
       <span class="text-2xl text-base-content font-bold" v-if="whitelabelConfig.showAppNameInTitle">{{
         whitelabelConfig.appName }}</span>
       <!-- 检查更新按钮 -->
-      <button @click="check_update()"
-        class="flex items-center space-x-1 text-md text-info ml-2 hover:underline pointer cursor-pointer">
+      <button @click="check_update()" :class="[
+        'relative flex items-center space-x-1 text-md ml-2 hover:underline cursor-pointer',
+        tauriUpdateAvailable ? 'text-error' : 'text-info'
+      ]">
+        <span v-if="tauriUpdateAvailable"
+          class="absolute -top-1 -right-1 inline-flex h-2 w-2 rounded-full bg-error animate-pulse" />
         <font-awesome-icon icon="fa-solid fa-sync" class="h-4 w-4" />
         <span>v{{ version }}</span>
       </button>
@@ -323,6 +327,8 @@ export default {
       agentErrorType: 'port',
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       isWhiteLabelUnlocked: false,
+      tauriUpdateAvailable: false,
+      tauriUpdateInfo: null,
     }
   },
   watch: {
@@ -456,7 +462,26 @@ export default {
         this.isLoadingLicense = false;
       }
     },
-    async check_update(silent = false) {
+    async check_update(arg = {}) {
+      let silent = false;
+      let includeTauri = true;
+
+      if (typeof arg === 'boolean') {
+        silent = arg;
+        includeTauri = !silent;
+      } else if (arg && typeof arg === 'object') {
+        silent = arg.silent ?? false;
+        includeTauri = arg.includeTauri ?? !silent;
+      }
+
+      if (!silent) {
+        // 用户主动触发检查时重置提示状态
+        if (includeTauri) {
+          this.tauriUpdateAvailable = false;
+          this.tauriUpdateInfo = null;
+        }
+      }
+
       // Use unified initialization process from Rust backend
       if (!silent) {
         this.check_update_dialog_title = 'Checking update...';
@@ -469,16 +494,17 @@ export default {
             check_updates: true,
             silent: silent,
             check_libs_url: '',
-            check_tauri_update: !silent // Only check Tauri updates in non-silent mode
+            check_tauri_update: includeTauri // 是否检查 Tauri 更新由调用方控制
           }
         });
 
         console.log('Initialization result:', initResult);
 
         // Handle Tauri app update if available
-        if (initResult.tauri_update && initResult.tauri_update.should_update) {
+        if (includeTauri && initResult.tauri_update && initResult.tauri_update.should_update) {
           const updateInfo = initResult.tauri_update;
           console.log(`Update available ${updateInfo.version}, ${updateInfo.date}, ${updateInfo.body}`);
+          this.tauriUpdateInfo = updateInfo;
 
           const platform = await this.getPlatform();
           if (platform === 'windows') {
@@ -536,6 +562,10 @@ export default {
             }
             // Continue to handle other results
           }
+        } else if (includeTauri) {
+          // 没有可用更新时同步清空提示
+          this.tauriUpdateAvailable = false;
+          this.tauriUpdateInfo = null;
         }
 
         if (!silent) {
@@ -718,11 +748,18 @@ export default {
       this.isWhiteLabelUnlocked = await isFeatureUnlocked('whiteLabel');
     });
 
-    await this.$listen('AUTO_UPDATE_TRIGGER', async () => {
-      await this.check_update(true);
+    await this.$listen('TAURI_UPDATE_STATUS', async (event) => {
+      const payload = event.payload || {};
+      if (payload.should_update) {
+        this.tauriUpdateAvailable = true;
+        this.tauriUpdateInfo = payload;
+      } else {
+        this.tauriUpdateAvailable = false;
+        this.tauriUpdateInfo = null;
+      }
     });
 
-    this.check_update();
+    this.check_update({ includeTauri: false });
   }
 }
 </script>
