@@ -61,26 +61,21 @@ fn get_distributor_code(app_handle: tauri::AppHandle) -> Result<String, String> 
 }
 
 fn setup_env(working_dir: &str, version: String) {
-    std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
-    std::env::set_var(
-        "MATRIX_APP_NAME",
-        std::env::var("VITE_APP_NAME").unwrap_or("TikMatrix".into()),
-    );
-    std::env::set_var("MATRIX_APP_VERSION", version.clone());
-    if cfg!(debug_assertions) {
-        std::env::set_var("MOSS_URL", "http://localhost:8787/moss");
-    } else {
-        std::env::set_var("MOSS_URL", "https://api.niostack.com/moss");
-    }
-
+    unsafe {
+        std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
+        std::env::set_var(
+            "MATRIX_APP_NAME",
+            std::env::var("VITE_APP_NAME").unwrap_or("TikMatrix".into()),
+        );
+        std::env::set_var("MATRIX_APP_VERSION", version.clone());
+        if cfg!(debug_assertions) {
+            std::env::set_var("MOSS_URL", "http://localhost:8787/moss");
+        } else {
+            std::env::set_var("MOSS_URL", "https://api.niostack.com/moss");
+        }
+    };
     // Log proxy configuration for debugging
     proxy_config::log_proxy_config();
-}
-
-#[tauri::command]
-fn set_env(key: String, value: String) {
-    std::env::set_var(key.clone(), value.clone());
-    log::info!("set env: {} = {}", key, value);
 }
 
 #[tauri::command]
@@ -188,7 +183,6 @@ fn main() -> std::io::Result<()> {
             file_utils::download_file,
             file_utils::download_file_with_version,
             file_utils::unzip_file,
-            set_env,
             get_env,
             http_client::http_request,
             http_client::agent_request,
@@ -229,8 +223,10 @@ fn main() -> std::io::Result<()> {
             let work_dir = app_data_dir.to_str().unwrap();
             log::info!("work_dir: {}", work_dir);
             if cfg!(debug_assertions) {
-                std::env::set_var("LOG_LEVEL", "debug");
-                std::env::set_var("RUST_BACKTRACE", "1");
+                unsafe {
+                    std::env::set_var("LOG_LEVEL", "debug");
+                    std::env::set_var("RUST_BACKTRACE", "1");
+                };
             }
             init_log::init(work_dir);
             let version = app.package_info().version.clone();
@@ -243,7 +239,7 @@ fn main() -> std::io::Result<()> {
             match get_distributor_code(app_handle) {
                 Ok(code) => {
                     log::info!("✅ Distributor Code: {}", code);
-                    std::env::set_var("DISTRIBUTOR_CODE", &code);
+                    unsafe { std::env::set_var("DISTRIBUTOR_CODE", &code) };
                 }
                 Err(e) => log::warn!("⚠️  Failed to get distributor code: {}", e),
             }
