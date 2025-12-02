@@ -18,8 +18,8 @@ impl Default for AutoUpdateConfig {
     fn default() -> Self {
         Self {
             enabled: false,
-            check_interval_minutes: 10,
-            idle_threshold_minutes: 5,
+            check_interval_minutes: 60,
+            idle_threshold_minutes: 10,
         }
     }
 }
