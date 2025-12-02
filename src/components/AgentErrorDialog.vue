@@ -31,7 +31,6 @@
 </template>
 
 <script>
-import { getAll } from '@tauri-apps/api/window';
 import { removeDir } from '@tauri-apps/api/fs';
 import { BaseDirectory } from '@tauri-apps/api/fs';
 import { message } from '@tauri-apps/api/dialog';
@@ -62,10 +61,8 @@ export default {
             this.$refs.dialog.close();
         },
         async exitApp() {
-            await this.$parent.shutdown();
-            getAll().forEach((win) => {
-                win.close();
-            });
+            this.closeDialog();
+            this.$emit('exit-app', true);
         },
         async clearAgentCache() {
             try {

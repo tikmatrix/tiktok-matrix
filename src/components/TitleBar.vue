@@ -267,7 +267,8 @@
   </dialog>
 
   <!-- Agent错误弹窗 -->
-  <AgentErrorDialog ref="agentErrorDialog" :process-name="agentProcessName" :error-type="agentErrorType" />
+  <AgentErrorDialog ref="agentErrorDialog" :process-name="agentProcessName" :error-type="agentErrorType"
+    @exit-app="closeApp" />
 </template>
 
 <script>
@@ -415,15 +416,18 @@ export default {
     },
     async closeWindow() {
       const yes = await ask(this.$t('exitConfirm'), this.$t('confirm'));
-      if (yes) {
-        // Agent shutdown is now handled automatically by Rust on window close event
+      await this.closeApp(yes);
+    },
+    changeLocale() {
+      this.$i18n.locale = this.currentLocale;
+    },
+    async closeApp(result) {
+      if (result === true) {
+        // Agent shutdown is handled automatically on window close
         getAll().forEach((win) => {
           win.close();
         });
       }
-    },
-    changeLocale() {
-      this.$i18n.locale = this.currentLocale;
     },
     showLicenseDialog() {
       this.$refs.licenseManagementDialog.show()
