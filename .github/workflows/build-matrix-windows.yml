@@ -1,27 +1,74 @@
-name: Release - Windows
-run-name: ${{ github.actor }} is building Release (windows) 🚀
+name: Build Matrix - Windows
+run-name: ${{ github.actor }} is building Matrix (Windows) 🚀
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: false
+        default: "main"
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: false
+        default: "main"
+        type: string
+
 permissions:
   contents: write
+
 jobs:
-  deploy-windows:
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: windows-latest
+  create-tag:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout main repository
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          ref: main
-      - name: setup node
+          ref: ${{ inputs.branch }}
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if tag already exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ inputs.version }}$"; then
+            echo "Tag ${{ inputs.version }} already exists on remote, skipping tag creation"
+          else
+            git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+            git push origin "${{ inputs.version }}"
+            echo "Tag ${{ inputs.version }} created and pushed successfully"
+          fi
+
+  build-matrix-windows:
+    needs: [create-tag]
+    if: ${{ always() && (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped') }}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: setup rust
-        id: setup-rust
+
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+
       - name: Rust Cache
         uses: actions/cache@v3
         with:
@@ -32,11 +79,13 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
-      - name: build official package
+
+      - name: Build official package
         run: |
           npm install
           .\build.ps1
-      - name: upload official package to r2
+
+      - name: Upload official package to R2
         uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
@@ -45,20 +94,24 @@ jobs:
           r2-bucket: matrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
-      - name: update version
+
+      - name: Update version
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-version.js
-      - name: clear uploaded files
+
+      - name: Clear uploaded files
         run: |
           Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
+
       # IgMatrix whitelabel build and upload steps
-      - name: build IgMatrix whitelabel package
+      - name: Build IgMatrix whitelabel package
         run: |
           node scripts/build-whitelabel.js IgMatrix
-      - name: upload IgMatrix package to r2
+
+      - name: Upload IgMatrix package to R2
         uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
@@ -67,26 +120,31 @@ jobs:
           r2-bucket: matrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
-      - name: update IgMatrix version
+
+      - name: Update IgMatrix version
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-version.js --app=igmatrix --app-name=IgMatrix
-      - name: clear uploaded files
+
+      - name: Clear uploaded files
         run: |
           Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
-      - name: update IgMatrix download url
+
+      - name: Update IgMatrix download url
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-download-url.js --platform=windows --distributor=OFFICIAL --app=igmatrix --app-name=IgMatrix
+
       # TikZenX whitelabel build and upload steps
-      - name: build TikZenX whitelabel package
+      - name: Build TikZenX whitelabel package
         run: |
           node scripts/build-whitelabel.js TikZenX
-      - name: upload TikZenX package to r2
+
+      - name: Upload TikZenX package to R2
         uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
@@ -95,26 +153,31 @@ jobs:
           r2-bucket: matrix
           source-dir: ./src-tauri/target/release/bundle/msi
           destination-dir: ./
-      - name: update TikZenX version
+
+      - name: Update TikZenX version
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-version.js --app=tikzenx --app-name=TikZenX
-      - name: clear uploaded files
+
+      - name: Clear uploaded files
         run: |
           Remove-Item -Path .\src-tauri\target\release\bundle\msi\* -Force -Recurse
-      - name: update TikZenX download url
+
+      - name: Update TikZenX download url
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-download-url.js --platform=windows --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
+
       # Build and upload distributor packages
-      - name: build distributor packages
+      - name: Build distributor packages
         run: |
           node scripts/build-distributor-packages-windows.js
-      - name: upload distributor packages to r2
+
+      - name: Upload distributor packages to R2
         uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
@@ -123,10 +186,12 @@ jobs:
           r2-bucket: matrix
           source-dir: ./dist-distributors
           destination-dir: ./distributors
-      - name: clear uploaded files
+
+      - name: Clear uploaded files
         run: |
           Remove-Item -Path .\dist-distributors\* -Force -Recurse
-      - name: update distributor download urls
+
+      - name: Update distributor download urls
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}

@@ -1,29 +1,76 @@
-name: Release - macOS
-run-name: ${{ github.actor }} is building Release (macOS) 🚀
+name: Build Matrix - macOS
+run-name: ${{ github.actor }} is building Matrix (macOS) 🚀
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: false
+        default: "main"
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: false
+        default: "main"
+        type: string
+
 permissions:
   contents: write
+
 jobs:
-  deploy-macos:
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: macos-latest
+  create-tag:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout main repository
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          ref: main
-      - name: setup node
+          ref: ${{ inputs.branch }}
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if tag already exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ inputs.version }}$"; then
+            echo "Tag ${{ inputs.version }} already exists on remote, skipping tag creation"
+          else
+            git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+            git push origin "${{ inputs.version }}"
+            echo "Tag ${{ inputs.version }} created and pushed successfully"
+          fi
+
+  build-matrix-macos:
+    needs: [create-tag]
+    if: ${{ always() && (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped') }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: setup rust
-        id: setup-rust
+
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
+
       - name: Rust Cache
         uses: actions/cache@v3
         with:
@@ -34,12 +81,14 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
-      - name: build official package
+
+      - name: Build official package
         run: |
           npm install
           chmod +x ./build.sh
           ./build.sh
-      - name: upload official package to r2
+
+      - name: Upload official package to R2
         uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
@@ -48,14 +97,17 @@ jobs:
           r2-bucket: matrix
           source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
           destination-dir: ./
-      - name: clear uploaded files
+
+      - name: Clear uploaded files
         run: |
           rm -rf ./src-tauri/target/universal-apple-darwin/release/bundle/dmg/*
+
       # IgMatrix whitelabel build and upload steps
-      - name: build IgMatrix whitelabel package
+      - name: Build IgMatrix whitelabel package
         run: |
           node scripts/build-whitelabel.js IgMatrix
-      - name: upload IgMatrix package to r2
+
+      - name: Upload IgMatrix package to R2
         uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
@@ -64,20 +116,24 @@ jobs:
           r2-bucket: matrix
           source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
           destination-dir: ./
-      - name: clear uploaded files
+
+      - name: Clear uploaded files
         run: |
           rm -rf ./src-tauri/target/universal-apple-darwin/release/bundle/dmg/*
-      - name: update IgMatrix download url
+
+      - name: Update IgMatrix download url
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-download-url.js --platform=mac --distributor=OFFICIAL --app=igmatrix --app-name=IgMatrix
+
       # TikZenX whitelabel build and upload steps
-      - name: build TikZenX whitelabel package
+      - name: Build TikZenX whitelabel package
         run: |
           node scripts/build-whitelabel.js TikZenX
-      - name: upload TikZenX package to r2
+
+      - name: Upload TikZenX package to R2
         uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
@@ -86,20 +142,24 @@ jobs:
           r2-bucket: matrix
           source-dir: ./src-tauri/target/universal-apple-darwin/release/bundle/dmg
           destination-dir: ./
-      - name: clear uploaded files
+
+      - name: Clear uploaded files
         run: |
           rm -rf ./src-tauri/target/universal-apple-darwin/release/bundle/dmg/*
-      - name: update TikZenX download url
+
+      - name: Update TikZenX download url
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           node scripts/update-download-url.js --platform=mac --distributor=OFFICIAL --app=tikzenx --app-name=TikZenX
+
       # Build and upload distributor packages
-      - name: build distributor packages
+      - name: Build distributor packages
         run: |
           node scripts/build-distributor-packages-mac.js
-      - name: upload distributor packages to r2
+
+      - name: Upload distributor packages to R2
         uses: ryand56/r2-upload-action@v1.4
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID_NIO }}
@@ -108,10 +168,12 @@ jobs:
           r2-bucket: matrix
           source-dir: ./dist-distributors
           destination-dir: ./distributors
-      - name: clear uploaded files
+
+      - name: Clear uploaded files
         run: |
           rm -rf ./dist-distributors/*
-      - name: update distributor download urls
+
+      - name: Update distributor download urls
         env:
           TIKMATRIX_API_KEY: ${{ secrets.TIKMATRIX_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
