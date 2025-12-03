@@ -79,8 +79,8 @@ function buildDownloadUrl(platform, version, distributorCode, appName) {
     }
 
     basePath = distributorCode === 'OFFICIAL'
-        ? 'https://r2.tikmatrix.com'
-        : 'https://r2.tikmatrix.com/distributors'
+        ? 'https://r2.niostack.com'
+        : 'https://r2.niostack.com/distributors'
 
     return `${basePath}/${fileName}`
 }
@@ -90,7 +90,7 @@ async function updateDownloadUrl(platform, app, distributorCode, downloadUrl) {
     console.log(`Updating ${distributorCode} (${platform}): ${downloadUrl}`)
 
     try {
-        const response = await fetch('https://api.tikmatrix.com/ci/update_download_url', {
+        const response = await fetch('https://api.niostack.com/ci/update_download_url', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'text/plain',

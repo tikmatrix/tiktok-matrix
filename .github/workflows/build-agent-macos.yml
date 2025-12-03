@@ -1,0 +1,141 @@
+name: Build Agent - macOS
+run-name: ${{ github.actor }} is building Agent (macOS) 🚀
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: false
+        default: "main"
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: false
+        default: "main"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-agent-macos:
+    # Use ARM runner (macos-14) - cheaper and faster than Intel runner
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout tiktok-agent private repository
+        uses: actions/checkout@v3
+        with:
+          repository: tikmatrix/tiktok-agent
+          token: ${{ secrets.AGENT_REPO_TOKEN }}
+          ref: ${{ inputs.branch }}
+          path: tiktok-agent
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tiktok-agent/target
+          key: ${{ runner.os }}-agent-cargo-universal-${{ hashFiles('tiktok-agent/**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-agent-cargo-universal-
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install target platforms
+        run: |
+          rustup target add x86_64-apple-darwin
+          rustup target add aarch64-apple-darwin
+
+      - name: Build ARM64 (native)
+        working-directory: tiktok-agent
+        run: cargo build --release --target aarch64-apple-darwin
+
+      - name: Build x86_64 (cross-compile)
+        working-directory: tiktok-agent
+        run: cargo build --release --target x86_64-apple-darwin
+
+      - name: Prepare bin directories
+        run: |
+          # Prepare ARM64 binaries
+          mkdir -p ./tiktok-agent/target/aarch64-apple-darwin/release/bin
+          cp ./tiktok-agent/target/aarch64-apple-darwin/release/agent ./tiktok-agent/target/aarch64-apple-darwin/release/bin/
+          cp ./tiktok-agent/target/aarch64-apple-darwin/release/script ./tiktok-agent/target/aarch64-apple-darwin/release/bin/
+
+          # Prepare x86_64 binaries
+          mkdir -p ./tiktok-agent/target/x86_64-apple-darwin/release/bin
+          cp ./tiktok-agent/target/x86_64-apple-darwin/release/agent ./tiktok-agent/target/x86_64-apple-darwin/release/bin/
+          cp ./tiktok-agent/target/x86_64-apple-darwin/release/script ./tiktok-agent/target/x86_64-apple-darwin/release/bin/
+
+      - name: Upload ARM64 to R2
+        uses: ryand56/r2-upload-action@v1.4
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: matrix
+          source-dir: ./tiktok-agent/target/aarch64-apple-darwin/release/bin
+          destination-dir: aarch64-apple-darwin
+
+      - name: Upload x86_64 to R2
+        uses: ryand56/r2-upload-action@v1.4
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: matrix
+          source-dir: ./tiktok-agent/target/x86_64-apple-darwin/release/bin
+          destination-dir: x86_64-apple-darwin
+
+      - name: Update Library Versions
+        run: |
+          # Extract version from input
+          VERSION="${{ inputs.version }}"
+
+          # Update function
+          update_lib() {
+            local NAME=$1
+            local PLATFORM=$2
+            local TARGET=$3
+
+            local UPDATE_DATA=$(cat <<EOF
+          {
+            "oldName": "$NAME",
+            "oldPlatform": "$PLATFORM",
+            "name": "$NAME",
+            "downloadUrl": "https://r2.niostack.com/$TARGET/$NAME",
+            "platform": "$PLATFORM",
+            "version": "$VERSION",
+            "app": "TikMatrix"
+          }
+          EOF
+            )
+
+            echo "Updating $NAME for $PLATFORM..."
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.API_KEY }}" \
+              -d "$UPDATE_DATA" \
+              "https://api.niostack.com/ci/update_lib"
+          }
+
+          # Update all libraries
+          update_lib "agent" "mac-arm" "aarch64-apple-darwin"
+          update_lib "script" "mac-arm" "aarch64-apple-darwin"
+          update_lib "agent" "mac-intel" "x86_64-apple-darwin"
+          update_lib "script" "mac-intel" "x86_64-apple-darwin"
+
+          echo "Updated all library versions to $VERSION"

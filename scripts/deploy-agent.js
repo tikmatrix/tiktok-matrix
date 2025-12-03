@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // API Configuration
 const API_KEY = 'LUfAkEaQ3Hwd5Cs6KbJr8FVGYDSzMj9R';
-const API_URL = 'https://api.tikmatrix.com/ci/update_lib';
+const API_URL = 'https://api.niostack.com/ci/update_lib';
 // const API_URL = 'http://localhost:8787/ci/update_lib';
 const PLATFORM = 'windows';
 const BETA = '0'; //changeme 设置为 '1' 以使用测试环境
@@ -112,7 +112,7 @@ async function deploy() {
         // Upload to R2
         if (deployAgent) {
             console.log(`Uploading ${AGENT_NAME} to R2...`);
-            execSync(`wrangler r2 object put tikmatrix/${AGENT_NAME} --file=target/release/agent.exe --remote`, {
+            execSync(`wrangler r2 object put matrix/${AGENT_NAME} --file=target/release/agent.exe --remote`, {
                 stdio: 'inherit',
                 cwd: AGENT_PROJECT_PATH
             });
@@ -120,7 +120,7 @@ async function deploy() {
 
         if (deployScript) {
             console.log(`Uploading ${SCRIPT_NAME} to R2...`);
-            execSync(`wrangler r2 object put tikmatrix/${SCRIPT_NAME} --file=target/release/script.exe --remote`, {
+            execSync(`wrangler r2 object put matrix/${SCRIPT_NAME} --file=target/release/script.exe --remote`, {
                 stdio: 'inherit',
                 cwd: AGENT_PROJECT_PATH
             });
@@ -134,7 +134,7 @@ async function deploy() {
                 oldName: 'agent',
                 oldPlatform: PLATFORM,
                 name: 'agent',
-                downloadUrl: `https://r2.tikmatrix.com/${AGENT_NAME}`,
+                downloadUrl: `https://r2.niostack.com/${AGENT_NAME}`,
                 platform: PLATFORM,
                 version: version,
                 app: 'TikMatrix',
@@ -156,7 +156,7 @@ async function deploy() {
                 oldName: 'script',
                 oldPlatform: PLATFORM,
                 name: 'script',
-                downloadUrl: `https://r2.tikmatrix.com/${SCRIPT_NAME}`,
+                downloadUrl: `https://r2.niostack.com/${SCRIPT_NAME}`,
                 platform: PLATFORM,
                 version: version,
                 app: 'TikMatrix',

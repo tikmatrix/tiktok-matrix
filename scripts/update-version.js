@@ -59,20 +59,20 @@ let body = JSON.stringify({
     "platforms": {
         "windows-x86_64": {
             "signature": signature,
-            "url": `https://r2.tikmatrix.com/${params.appName}_${version}_x64_en-US.msi.zip`
+            "url": `https://r2.niostack.com/${params.appName}_${version}_x64_en-US.msi.zip`
         },
         "darwin-x86_64": {
             "signature": signature,
-            "url": `https://r2.tikmatrix.com/${params.appName}_${version}_universal.dmg`
+            "url": `https://r2.niostack.com/${params.appName}_${version}_universal.dmg`
         },
         "darwin-arm64": {
             "signature": signature,
-            "url": `https://r2.tikmatrix.com/${params.appName}_${version}_universal.dmg`
+            "url": `https://r2.niostack.com/${params.appName}_${version}_universal.dmg`
         }
     }
 }, null, 2)
 
-let response = await fetch('https://api.tikmatrix.com/ci/update_version_info', {
+let response = await fetch('https://api.niostack.com/ci/update_version_info', {
     method: 'PUT',
     headers: {
         'Content-Type': 'text/plain',

@@ -1,0 +1,43 @@
+name: Build Agent - All Platforms
+run-name: ${{ github.actor }} is building Agent (All Platforms) 🚀
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: false
+        default: "main"
+        type: string
+      platforms:
+        description: "Platforms to build"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - windows
+          - macos
+
+permissions:
+  contents: write
+
+jobs:
+  build-agent-windows:
+    if: ${{ inputs.platforms == 'all' || inputs.platforms == 'windows' }}
+    uses: ./.github/workflows/build-agent-windows.yml
+    with:
+      version: ${{ inputs.version }}
+      branch: ${{ inputs.branch }}
+    secrets: inherit
+
+  build-agent-macos:
+    if: ${{ inputs.platforms == 'all' || inputs.platforms == 'macos' }}
+    uses: ./.github/workflows/build-agent-macos.yml
+    with:
+      version: ${{ inputs.version }}
+      branch: ${{ inputs.branch }}
+    secrets: inherit
