@@ -12,6 +12,15 @@ on:
         required: false
         default: "main"
         type: string
+      build_target:
+        description: "Build target"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - agent
+          - script
   workflow_call:
     inputs:
       version:
@@ -23,12 +32,44 @@ on:
         required: false
         default: "main"
         type: string
+      build_target:
+        description: "Build target"
+        required: false
+        default: "all"
+        type: string
 
 permissions:
   contents: write
 
 jobs:
+  create-tag:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tiktok-agent private repository
+        uses: actions/checkout@v3
+        with:
+          repository: tikmatrix/tiktok-agent
+          token: ${{ secrets.AGENT_REPO_TOKEN }}
+          ref: ${{ inputs.branch }}
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if tag already exists
+          if git rev-parse "${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "Tag ${{ inputs.version }} already exists, skipping tag creation"
+          else
+            git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+            git push origin "${{ inputs.version }}"
+            echo "Tag ${{ inputs.version }} created and pushed successfully"
+          fi
+
   build-agent-windows:
+    needs: [create-tag]
+    if: ${{ always() && (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped') }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -61,15 +102,38 @@ jobs:
       - name: Install target platform
         run: rustup target add ${{ matrix.target }}
 
-      - name: Build
+      - name: Build all
+        if: ${{ inputs.build_target == 'all' }}
         working-directory: tiktok-agent
         run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build agent only
+        if: ${{ inputs.build_target == 'agent' }}
+        working-directory: tiktok-agent
+        run: cargo build --release --target ${{ matrix.target }} --bin agent
+
+      - name: Build script only
+        if: ${{ inputs.build_target == 'script' }}
+        working-directory: tiktok-agent
+        run: cargo build --release --target ${{ matrix.target }} --bin script
 
       - name: Prepare bin directory
         run: |
           New-Item -ItemType Directory -Force -Path ./tiktok-agent/target/${{ matrix.target }}/release/bin
-          Copy-Item ./tiktok-agent/target/${{ matrix.target }}/release/agent.exe ./tiktok-agent/target/${{ matrix.target }}/release/bin/
-          Copy-Item ./tiktok-agent/target/${{ matrix.target }}/release/script.exe ./tiktok-agent/target/${{ matrix.target }}/release/bin/
+
+          $buildTarget = "${{ inputs.build_target }}"
+
+          if ($buildTarget -eq "all" -or $buildTarget -eq "agent") {
+            if (Test-Path "./tiktok-agent/target/${{ matrix.target }}/release/agent.exe") {
+              Copy-Item ./tiktok-agent/target/${{ matrix.target }}/release/agent.exe ./tiktok-agent/target/${{ matrix.target }}/release/bin/
+            }
+          }
+
+          if ($buildTarget -eq "all" -or $buildTarget -eq "script") {
+            if (Test-Path "./tiktok-agent/target/${{ matrix.target }}/release/script.exe") {
+              Copy-Item ./tiktok-agent/target/${{ matrix.target }}/release/script.exe ./tiktok-agent/target/${{ matrix.target }}/release/bin/
+            }
+          }
         shell: pwsh
 
       - name: Upload to R2
@@ -86,63 +150,68 @@ jobs:
         run: |
           # Extract version from input
           $VERSION = "${{ inputs.version }}"
+          $BUILD_TARGET = "${{ inputs.build_target }}"
 
           # Determine platform
           $PLATFORM = "windows"
 
           # Update agent library
-          $AGENT_UPDATE_DATA = @"
-          {
-            "oldName": "agent",
-            "oldPlatform": "$PLATFORM",
-            "name": "agent",
-            "downloadUrl": "https://r2.niostack.com/${{ matrix.target }}/agent.exe",
-            "platform": "$PLATFORM",
-            "version": "$VERSION",
-            "app": "TikMatrix"
-          }
+          if ($BUILD_TARGET -eq "all" -or $BUILD_TARGET -eq "agent") {
+            $AGENT_UPDATE_DATA = @"
+            {
+              "oldName": "agent",
+              "oldPlatform": "$PLATFORM",
+              "name": "agent",
+              "downloadUrl": "https://r2.niostack.com/${{ matrix.target }}/agent.exe",
+              "platform": "$PLATFORM",
+              "version": "$VERSION",
+              "app": "TikMatrix"
+            }
           "@
+
+            # Call update API for agent
+            Write-Host "Updating agent library..."
+            try {
+              $agentHeaders = @{
+                "Content-Type" = "application/json"
+                "Authorization" = "Bearer ${{ secrets.API_KEY }}"
+              }
+              Invoke-RestMethod -Uri "https://api.niostack.com/ci/update_lib" -Method Post -Headers $agentHeaders -Body $AGENT_UPDATE_DATA
+              Write-Host "Agent library updated successfully"
+            } catch {
+              Write-Host "Error updating agent library: $_"
+              exit 1
+            }
+          }
 
           # Update script library
-          $SCRIPT_UPDATE_DATA = @"
-          {
-            "oldName": "script",
-            "oldPlatform": "$PLATFORM",
-            "name": "script",
-            "downloadUrl": "https://r2.niostack.com/${{ matrix.target }}/script.exe",
-            "platform": "$PLATFORM",
-            "version": "$VERSION",
-            "app": "TikMatrix"
-          }
+          if ($BUILD_TARGET -eq "all" -or $BUILD_TARGET -eq "script") {
+            $SCRIPT_UPDATE_DATA = @"
+            {
+              "oldName": "script",
+              "oldPlatform": "$PLATFORM",
+              "name": "script",
+              "downloadUrl": "https://r2.niostack.com/${{ matrix.target }}/script.exe",
+              "platform": "$PLATFORM",
+              "version": "$VERSION",
+              "app": "TikMatrix"
+            }
           "@
 
-          # Call update API for agent
-          Write-Host "Updating agent library..."
-          try {
-            $agentHeaders = @{
-              "Content-Type" = "application/json"
-              "Authorization" = "Bearer ${{ secrets.API_KEY }}"
+            # Call update API for script
+            Write-Host "Updating script library..."
+            try {
+              $scriptHeaders = @{
+                "Content-Type" = "application/json"
+                "Authorization" = "Bearer ${{ secrets.API_KEY }}"
+              }
+              Invoke-RestMethod -Uri "https://api.niostack.com/ci/update_lib" -Method Post -Headers $scriptHeaders -Body $SCRIPT_UPDATE_DATA
+              Write-Host "Script library updated successfully"
+            } catch {
+              Write-Host "Error updating script library: $_"
+              exit 1
             }
-            Invoke-RestMethod -Uri "https://api.niostack.com/ci/update_lib" -Method Post -Headers $agentHeaders -Body $AGENT_UPDATE_DATA
-            Write-Host "Agent library updated successfully"
-          } catch {
-            Write-Host "Error updating agent library: $_"
-            exit 1
           }
 
-          # Call update API for script
-          Write-Host "Updating script library..."
-          try {
-            $scriptHeaders = @{
-              "Content-Type" = "application/json"
-              "Authorization" = "Bearer ${{ secrets.API_KEY }}"
-            }
-            Invoke-RestMethod -Uri "https://api.niostack.com/ci/update_lib" -Method Post -Headers $scriptHeaders -Body $SCRIPT_UPDATE_DATA
-            Write-Host "Script library updated successfully"
-          } catch {
-            Write-Host "Error updating script library: $_"
-            exit 1
-          }
-
-          Write-Host "Updated both agent and script library versions for $PLATFORM to $VERSION"
+          Write-Host "Updated library versions for $PLATFORM to $VERSION (target: $BUILD_TARGET)"
         shell: pwsh

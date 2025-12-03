@@ -12,6 +12,15 @@ on:
         required: false
         default: "main"
         type: string
+      build_target:
+        description: "Build target"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - agent
+          - script
   workflow_call:
     inputs:
       version:
@@ -23,12 +32,44 @@ on:
         required: false
         default: "main"
         type: string
+      build_target:
+        description: "Build target"
+        required: false
+        default: "all"
+        type: string
 
 permissions:
   contents: write
 
 jobs:
+  create-tag:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tiktok-agent private repository
+        uses: actions/checkout@v3
+        with:
+          repository: tikmatrix/tiktok-agent
+          token: ${{ secrets.AGENT_REPO_TOKEN }}
+          ref: ${{ inputs.branch }}
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if tag already exists
+          if git rev-parse "${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "Tag ${{ inputs.version }} already exists, skipping tag creation"
+          else
+            git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+            git push origin "${{ inputs.version }}"
+            echo "Tag ${{ inputs.version }} created and pushed successfully"
+          fi
+
   build-agent-macos:
+    needs: [create-tag]
+    if: ${{ always() && (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped') }}
     # Use ARM runner (macos-14) - cheaper and faster than Intel runner
     runs-on: macos-14
 
@@ -60,25 +101,65 @@ jobs:
           rustup target add x86_64-apple-darwin
           rustup target add aarch64-apple-darwin
 
-      - name: Build ARM64 (native)
+      - name: Build ARM64 - all
+        if: ${{ inputs.build_target == 'all' }}
         working-directory: tiktok-agent
         run: cargo build --release --target aarch64-apple-darwin
 
-      - name: Build x86_64 (cross-compile)
+      - name: Build ARM64 - agent only
+        if: ${{ inputs.build_target == 'agent' }}
+        working-directory: tiktok-agent
+        run: cargo build --release --target aarch64-apple-darwin --bin agent
+
+      - name: Build ARM64 - script only
+        if: ${{ inputs.build_target == 'script' }}
+        working-directory: tiktok-agent
+        run: cargo build --release --target aarch64-apple-darwin --bin script
+
+      - name: Build x86_64 - all
+        if: ${{ inputs.build_target == 'all' }}
         working-directory: tiktok-agent
         run: cargo build --release --target x86_64-apple-darwin
 
+      - name: Build x86_64 - agent only
+        if: ${{ inputs.build_target == 'agent' }}
+        working-directory: tiktok-agent
+        run: cargo build --release --target x86_64-apple-darwin --bin agent
+
+      - name: Build x86_64 - script only
+        if: ${{ inputs.build_target == 'script' }}
+        working-directory: tiktok-agent
+        run: cargo build --release --target x86_64-apple-darwin --bin script
+
       - name: Prepare bin directories
         run: |
+          BUILD_TARGET="${{ inputs.build_target }}"
+
           # Prepare ARM64 binaries
           mkdir -p ./tiktok-agent/target/aarch64-apple-darwin/release/bin
-          cp ./tiktok-agent/target/aarch64-apple-darwin/release/agent ./tiktok-agent/target/aarch64-apple-darwin/release/bin/
-          cp ./tiktok-agent/target/aarch64-apple-darwin/release/script ./tiktok-agent/target/aarch64-apple-darwin/release/bin/
+          if [[ "$BUILD_TARGET" == "all" || "$BUILD_TARGET" == "agent" ]]; then
+            if [ -f "./tiktok-agent/target/aarch64-apple-darwin/release/agent" ]; then
+              cp ./tiktok-agent/target/aarch64-apple-darwin/release/agent ./tiktok-agent/target/aarch64-apple-darwin/release/bin/
+            fi
+          fi
+          if [[ "$BUILD_TARGET" == "all" || "$BUILD_TARGET" == "script" ]]; then
+            if [ -f "./tiktok-agent/target/aarch64-apple-darwin/release/script" ]; then
+              cp ./tiktok-agent/target/aarch64-apple-darwin/release/script ./tiktok-agent/target/aarch64-apple-darwin/release/bin/
+            fi
+          fi
 
           # Prepare x86_64 binaries
           mkdir -p ./tiktok-agent/target/x86_64-apple-darwin/release/bin
-          cp ./tiktok-agent/target/x86_64-apple-darwin/release/agent ./tiktok-agent/target/x86_64-apple-darwin/release/bin/
-          cp ./tiktok-agent/target/x86_64-apple-darwin/release/script ./tiktok-agent/target/x86_64-apple-darwin/release/bin/
+          if [[ "$BUILD_TARGET" == "all" || "$BUILD_TARGET" == "agent" ]]; then
+            if [ -f "./tiktok-agent/target/x86_64-apple-darwin/release/agent" ]; then
+              cp ./tiktok-agent/target/x86_64-apple-darwin/release/agent ./tiktok-agent/target/x86_64-apple-darwin/release/bin/
+            fi
+          fi
+          if [[ "$BUILD_TARGET" == "all" || "$BUILD_TARGET" == "script" ]]; then
+            if [ -f "./tiktok-agent/target/x86_64-apple-darwin/release/script" ]; then
+              cp ./tiktok-agent/target/x86_64-apple-darwin/release/script ./tiktok-agent/target/x86_64-apple-darwin/release/bin/
+            fi
+          fi
 
       - name: Upload ARM64 to R2
         uses: ryand56/r2-upload-action@v1.4
@@ -104,6 +185,7 @@ jobs:
         run: |
           # Extract version from input
           VERSION="${{ inputs.version }}"
+          BUILD_TARGET="${{ inputs.build_target }}"
 
           # Update function
           update_lib() {
@@ -132,10 +214,15 @@ jobs:
               "https://api.niostack.com/ci/update_lib"
           }
 
-          # Update all libraries
-          update_lib "agent" "mac-arm" "aarch64-apple-darwin"
-          update_lib "script" "mac-arm" "aarch64-apple-darwin"
-          update_lib "agent" "mac-intel" "x86_64-apple-darwin"
-          update_lib "script" "mac-intel" "x86_64-apple-darwin"
+          # Update libraries based on build target
+          if [[ "$BUILD_TARGET" == "all" || "$BUILD_TARGET" == "agent" ]]; then
+            update_lib "agent" "mac-arm" "aarch64-apple-darwin"
+            update_lib "agent" "mac-intel" "x86_64-apple-darwin"
+          fi
 
-          echo "Updated all library versions to $VERSION"
+          if [[ "$BUILD_TARGET" == "all" || "$BUILD_TARGET" == "script" ]]; then
+            update_lib "script" "mac-arm" "aarch64-apple-darwin"
+            update_lib "script" "mac-intel" "x86_64-apple-darwin"
+          fi
+
+          echo "Updated library versions to $VERSION (target: $BUILD_TARGET)"
