@@ -59,6 +59,7 @@ open = "5"
 url = "2.5"
 urlencoding = "2.1"
 lazy_static = "1.4"
+base64 = "0.22"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"

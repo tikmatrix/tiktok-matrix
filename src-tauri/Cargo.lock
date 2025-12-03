@@ -6,6 +6,7 @@ version = 4
 name = "TikMatrix"
 version = "1.0.0"
 dependencies = [
+ "base64 0.22.1",
  "chrono",
  "embed-resource",
  "flexi_logger",

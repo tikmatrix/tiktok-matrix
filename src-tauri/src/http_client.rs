@@ -1,5 +1,6 @@
 use crate::auto_update_manager;
 use crate::proxy_config;
+use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -28,6 +29,15 @@ pub struct HttpResponse {
     pub status: u16,
     pub headers: std::collections::HashMap<String, String>,
     pub body: String,
+}
+
+/// HTTP response with binary data support
+#[derive(Serialize, Deserialize, Debug)]
+pub struct HttpBinaryResponse {
+    pub status: u16,
+    pub headers: std::collections::HashMap<String, String>,
+    /// Base64 encoded binary data
+    pub data: String,
 }
 
 /// Generic HTTP request handler with intelligent proxy selection
@@ -122,9 +132,16 @@ pub async fn agent_request(
     data: Option<serde_json::Value>,
     timeout: Option<u64>,
     raw_response: bool,
+    response_type: Option<String>,
 ) -> Result<serde_json::Value, String> {
     // Update user activity timestamp for auto-update manager
     auto_update_manager::update_user_activity();
+
+    // Check if binary response is requested
+    let is_binary = response_type
+        .as_ref()
+        .map(|t| t.to_lowercase() == "binary")
+        .unwrap_or(false);
 
     // Read agent port from file
     let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
@@ -220,6 +237,19 @@ pub async fn agent_request(
         None
     };
 
+    // Handle binary response type separately
+    if is_binary {
+        return make_binary_request(
+            app_handle,
+            method,
+            query_url,
+            final_headers,
+            body_string,
+            timeout,
+        )
+        .await;
+    }
+
     // Make HTTP request using the generic http_request
     let response = http_request(
         method,
@@ -274,4 +304,104 @@ pub async fn agent_request(
         Ok(json) => Ok(json),
         Err(_) => Ok(serde_json::Value::String(response.body)),
     }
+}
+
+/// Handle binary response requests (for images, videos, etc.)
+async fn make_binary_request(
+    app_handle: tauri::AppHandle,
+    method: String,
+    url: String,
+    headers: std::collections::HashMap<String, String>,
+    body: Option<String>,
+    timeout: Option<u64>,
+) -> Result<serde_json::Value, String> {
+    let timeout_duration = std::time::Duration::from_secs(timeout.unwrap_or(60));
+    let mut client_builder = Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(10))
+        .timeout(timeout_duration);
+
+    client_builder = proxy_config::apply_proxy_config(client_builder, &url)?;
+
+    let client = client_builder
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
+
+    let mut request = match method.to_uppercase().as_str() {
+        "GET" => client.get(&url),
+        "POST" => client.post(&url),
+        "PUT" => client.put(&url),
+        "DELETE" => client.delete(&url),
+        "PATCH" => client.patch(&url),
+        "HEAD" => client.head(&url),
+        _ => return Err(format!("Unsupported HTTP method: {}", method)),
+    };
+
+    for (key, value) in headers.iter() {
+        request = request.header(key, value);
+    }
+
+    if let Some(body_content) = body {
+        request = request.body(body_content);
+    }
+
+    let response = request
+        .send()
+        .await
+        .map_err(|e| format!("Binary request failed: {}", e))?;
+
+    let status = response.status().as_u16();
+    log::info!(
+        "Binary HTTP request: {} {} ==> Response status: {}",
+        method,
+        url,
+        status
+    );
+
+    let mut response_headers = std::collections::HashMap::new();
+    for (key, value) in response.headers() {
+        if let Ok(value_str) = value.to_str() {
+            response_headers.insert(key.to_string(), value_str.to_string());
+        }
+    }
+
+    // Handle error responses
+    if status >= 400 {
+        let error_body = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Failed to read error response".to_string());
+        let error_message = format!("url: {}, code: {}, message: {}", url, status, error_body);
+
+        app_handle
+            .emit_all(
+                "NOTIFY",
+                serde_json::json!({
+                    "type": "error",
+                    "message": error_message,
+                    "timeout": 2000
+                }),
+            )
+            .ok();
+
+        return Ok(serde_json::json!({
+            "status": status,
+            "headers": response_headers,
+            "data": null,
+            "error": error_body
+        }));
+    }
+
+    // Read response as bytes and encode to base64
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| format!("Failed to read binary response: {}", e))?;
+
+    let base64_data = BASE64_STANDARD.encode(&bytes);
+
+    Ok(serde_json::json!({
+        "status": status,
+        "headers": response_headers,
+        "data": base64_data
+    }))
 }

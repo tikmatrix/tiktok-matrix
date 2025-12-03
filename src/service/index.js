@@ -1,6 +1,5 @@
 import request from '../utils/request'
 import api from '../api'
-import { ResponseType } from '@tauri-apps/api/http'
 export function auth({ password }) {
   return request({
     method: 'post',
@@ -1087,7 +1086,7 @@ export async function support_download_attachment(params) {
     method: 'get',
     url: api.support_download,
     params,
-    responseType: ResponseType.Binary,
+    responseType: 'binary',
     rawResponse: true
   })
 }

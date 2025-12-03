@@ -9,7 +9,7 @@ import { invoke } from '@tauri-apps/api/tauri';
  * - Error notifications
  */
 const request = async function request(config) {
-  const { method, url, params, headers, body, form, data, timeout, rawResponse } = config;
+  const { method, url, params, headers, body, form, data, timeout, rawResponse, responseType } = config;
 
   // Mock mode check
   if (import.meta.env.VITE_APP_MOCK === 'true') {
@@ -32,7 +32,8 @@ const request = async function request(config) {
       form: form || null,
       data: data !== undefined ? data : null,
       timeout: timeout ? Math.floor(timeout / 1000) : 30,
-      rawResponse: rawResponse || false
+      rawResponse: rawResponse || false,
+      responseType: responseType || null
     });
 
     return response;

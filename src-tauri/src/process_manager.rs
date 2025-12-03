@@ -110,6 +110,7 @@ async fn report_distributor_install(app_handle: AppHandle) {
         Some(payload), // data
         Some(30),      // timeout
         false,         // raw_response
+        None,          // response_type
     )
     .await
     {
