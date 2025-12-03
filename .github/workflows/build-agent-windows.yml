@@ -58,9 +58,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Check if tag already exists
-          if git rev-parse "${{ inputs.version }}" >/dev/null 2>&1; then
-            echo "Tag ${{ inputs.version }} already exists, skipping tag creation"
+          # Check if tag already exists on remote
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ inputs.version }}$"; then
+            echo "Tag ${{ inputs.version }} already exists on remote, skipping tag creation"
           else
             git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
             git push origin "${{ inputs.version }}"
