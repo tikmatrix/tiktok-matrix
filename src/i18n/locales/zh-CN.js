@@ -1245,6 +1245,7 @@
   supportDetailNo: '否',
   supportDetailMissingIdentifier: '工单编号缺失，请刷新列表后重试。',
   supportDetailLoadFailed: '读取工单详情失败。',
+  realSerial: '真实序列号',
   deviceSerialLabel: '序列号',
   deviceNameLabel: '名称',
   deviceGroupLabel: '分组',

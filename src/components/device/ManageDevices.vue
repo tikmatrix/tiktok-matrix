@@ -73,78 +73,86 @@
           <template #default="slotProps">
             <div class="flex flex-wrap gap-4 p-4">
               <div class="flex flex-wrap gap-3 flex-1" v-if="listMode">
-                <div
-                  class="overflow-x-auto w-full rounded-2xl border border-base-300/60 bg-base-200/50 shadow-md shadow-primary/5">
-                  <table class="table table-md md:table-md table-auto w-full align-middle text-sm md:text-base">
-                    <thead
-                      class="bg-base-200/70 text-[0.7rem] md:text-xs uppercase tracking-wide text-base-content/60 sticky top-0">
+                <div class="overflow-x-auto w-full rounded-lg border border-base-300/40 bg-base-100 shadow-sm">
+                  <table class="table table-xs table-fixed w-full">
+                    <thead class="bg-base-200/60 text-xs text-base-content/70">
                       <tr>
-                        <th class="font-semibold text-left">{{ $t('no') }}</th>
-                        <th class="font-semibold text-left">{{ $t('serial') }}</th>
-                        <th class="font-semibold text-left">{{ $t('mode') }}</th>
-                        <th class="font-semibold text-left">{{ $t('device') }}</th>
-                        <th class="font-semibold text-left">{{ $t('connectType') }}</th>
-                        <th class="font-semibold text-left">{{ $t('group') }}</th>
-                        <th class="font-semibold text-left">{{ $t('task') }}</th>
-                        <th class="font-semibold text-left">{{ $t('sort') }}</th>
-                        <th class="font-semibold text-left">{{ $t('proxyRotationUrl') }}</th>
-                        <th class="font-semibold text-left">{{ $t('lastProxyRotation') }}</th>
+                        <th class="w-12 py-2 px-2 font-medium">{{ $t('no') }}</th>
+                        <th class="w-40 py-2 px-2 font-medium">{{ $t('serial') }}</th>
+                        <th class="w-16 py-2 px-2 font-medium">{{ $t('mode') }}</th>
+                        <th class="w-32 py-2 px-2 font-medium">{{ $t('realSerial') }}</th>
+                        <th class="w-20 py-2 px-2 font-medium">{{ $t('connectType') }}</th>
+                        <th class="w-20 py-2 px-2 font-medium">{{ $t('group') }}</th>
+                        <th class="w-20 py-2 px-2 font-medium">{{ $t('status') }}</th>
+                        <th class="w-28 py-2 px-2 font-medium">{{ $t('sort') }}</th>
+                        <th class="w-48 py-2 px-2 font-medium">{{ $t('proxyRotationUrl') }}</th>
+                        <th class="w-40 py-2 px-2 font-medium">{{ $t('lastProxyRotation') }}</th>
                       </tr>
                     </thead>
-                    <tbody class="text-md text-base-content/80">
+                    <tbody class="text-sm text-base-content/80">
                       <tr v-for="(device, index) in slotProps.items" :key="device.real_serial || device.serial || index"
-                        class="hover:bg-base-100/60 transition-colors even:bg-base-100/40 device-card-appear">
-                        <td class="font-semibold text-base-content/70 whitespace-nowrap px-2">{{ device.key }}</td>
-                        <td class="px-2">
-                          <a class="link link-primary font-medium break-all" @click="$emiter('openDevice', device)"
-                            v-if="device.key">{{ device.serial }}</a>
+                        class="hover:bg-base-200/40 border-b border-base-200/50">
+                        <td class="py-2 px-2 text-base-content/60">{{ device.key }}</td>
+                        <td class="py-2 px-2">
+                          <div class="flex items-center gap-1">
+                            <a class="link link-primary text-xs font-medium truncate max-w-[100px]"
+                              @click="$emiter('openDevice', device)" v-if="device.key" :title="device.serial">{{
+                                device.serial }}</a>
+                            <button class="btn btn-ghost btn-xs p-0 h-5 min-h-0 w-5" @click="copySerial(device.serial)"
+                              :title="$t('copy')">
+                              <font-awesome-icon icon="fas fa-copy"
+                                class="h-3 w-3 text-base-content/50 hover:text-primary" />
+                            </button>
+                          </div>
                         </td>
-                        <td class="text-base-content/70 px-2 whitespace-nowrap">{{ device.mode }}</td>
-                        <td class="text-base-content/70 px-2 break-all">{{ device.real_serial }}</td>
-                        <td class="px-2 whitespace-nowrap">
-                          <div class="badge badge-outline badge-md md:badge-md border-base-300 text-base-content"
+                        <td class="py-2 px-2 text-base-content/60 text-xs">{{ device.mode }}</td>
+                        <td class="py-2 px-2 text-base-content/60 text-xs truncate" :title="device.real_serial">{{
+                          device.real_serial }}</td>
+                        <td class="py-2 px-2">
+                          <div class="badge badge-outline badge-xs border-base-300 text-base-content/70"
                             v-if="device.connect_type == '0'">USB</div>
-                          <div class="badge badge-primary badge-md md:badge-md" v-else>TCP</div>
+                          <div class="badge badge-primary badge-xs" v-else>TCP</div>
                         </td>
-                        <td class="px-2 text-base-content/70 wrap-break-word">{{ device.group_name || '--' }}</td>
-                        <td class="px-2 whitespace-nowrap">
-                          <div class="badge badge-success badge-md md:badge-md text-success-content"
-                            v-if="device.task_status == '1'">
+                        <td class="py-2 px-2 text-base-content/60 text-xs truncate" :title="device.group_name">{{
+                          device.group_name || '--' }}</td>
+                        <td class="py-2 px-2">
+                          <div class="badge badge-success badge-xs" v-if="device.task_status == '1'">
                             {{ $t('running') }}
                           </div>
-                          <div class="badge badge-info badge-md md:badge-md text-info-content" v-else>
+                          <div class="badge badge-ghost badge-xs" v-else>
                             {{ $t('ready') }}
                           </div>
                         </td>
-                        <td class="px-2">
-                          <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-base-content/70 whitespace-nowrap">{{ device.sort }}</span>
-                            <button class="btn btn-xs md:btn-sm btn-outline btn-primary"
-                              @click="showSetSortDialog(device)">{{ $t('setSort') }}</button>
+                        <td class="py-2 px-2">
+                          <div class="flex items-center gap-1">
+                            <span class="text-base-content/60 text-xs">{{ device.sort }}</span>
+                            <button class="btn btn-ghost btn-xs p-0 h-5 min-h-0 w-5" @click="showSetSortDialog(device)"
+                              :title="$t('setSort')">
+                              <font-awesome-icon icon="fas fa-edit"
+                                class="h-3 w-3 text-base-content/50 hover:text-primary" />
+                            </button>
                           </div>
                         </td>
-                        <td class="px-2">
-                          <div class="flex flex-col gap-2 max-w-56 md:max-w-[18rem]">
-                            <span v-if="device.proxyRotation?.rotation_url" class="truncate"
+                        <td class="py-2 px-2">
+                          <div class="flex flex-col gap-1">
+                            <span v-if="device.proxyRotation?.rotation_url" class="text-xs truncate max-w-[180px]"
                               :title="device.proxyRotation.rotation_url">{{
                                 device.proxyRotation.rotation_url }}</span>
-                            <span v-else class="text-base-content/50">{{ $t('proxyRotationNotConfigured') }}</span>
-                            <div class="flex flex-wrap gap-2">
-                              <button class="btn btn-xs btn-outline btn-secondary"
-                                @click="openProxyRotationDialog(device)">{{ $t('configure') }}</button>
-                            </div>
+                            <span v-else class="text-base-content/40 text-xs">{{ $t('proxyRotationNotConfigured')
+                            }}</span>
+                            <button class="btn btn-xs btn-ghost text-secondary h-5 min-h-0 px-1 w-fit"
+                              @click="openProxyRotationDialog(device)">{{ $t('configure') }}</button>
                           </div>
                         </td>
-                        <td class="px-2">
-                          <div class="flex flex-col gap-2 text-sm md:text-base">
-                            <div class="flex flex-col gap-1">
-                              <span>{{ formatRotationTime(device.proxyRotation?.last_rotated_at) }}</span>
-                              <span v-if="device.proxyRotation?.last_status"
-                                :class="['text-xs font-semibold', rotationStatusClass(device.proxyRotation?.last_status)]">
-                                {{ rotationStatusLabel(device.proxyRotation?.last_status) }}
-                              </span>
-                            </div>
-                            <button class="btn btn-xs md:btn-sm btn-outline btn-info w-full md:w-auto"
+                        <td class="py-2 px-2">
+                          <div class="flex flex-col gap-1">
+                            <span class="text-xs text-base-content/60">{{
+                              formatRotationTime(device.proxyRotation?.last_rotated_at) }}</span>
+                            <span v-if="device.proxyRotation?.last_status"
+                              :class="['text-xs', rotationStatusClass(device.proxyRotation?.last_status)]">
+                              {{ rotationStatusLabel(device.proxyRotation?.last_status) }}
+                            </span>
+                            <button class="btn btn-xs btn-ghost text-info h-5 min-h-0 px-1 w-fit"
                               :class="{ 'loading': isTestingRotation(device) }"
                               :disabled="!device.proxyRotation?.rotation_url || isTestingRotation(device)"
                               @click="testProxyRotation(device)">
@@ -418,6 +426,10 @@ export default {
   methods: {
     setDisplayMode(mode) {
       this.listMode = mode === 'list';
+    },
+    async copySerial(serial) {
+      if (!serial) return;
+      await this.copyText(serial);
     },
     async copyText(text) {
       await writeText(text)

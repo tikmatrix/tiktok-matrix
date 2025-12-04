@@ -1246,6 +1246,7 @@
   supportDetailNo: 'Нет',
   supportDetailMissingIdentifier: 'Не удалось определить тикет. Обновите список и попробуйте снова.',
   supportDetailLoadFailed: 'Не удалось загрузить детали тикета.',
+  realSerial: 'Реальный серийный номер',
   deviceSerialLabel: 'Серийный номер',
   deviceNameLabel: 'Название',
   deviceGroupLabel: 'Группа',

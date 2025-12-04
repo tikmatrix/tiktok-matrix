@@ -1246,6 +1246,7 @@
   supportDetailNo: 'No',
   supportDetailMissingIdentifier: 'Ticket identifier missing. Refresh the list and try again.',
   supportDetailLoadFailed: 'Failed to load ticket detail.',
+  realSerial: 'Real Serial',
   deviceSerialLabel: 'Serial',
   deviceNameLabel: 'Name',
   deviceGroupLabel: 'Group',
