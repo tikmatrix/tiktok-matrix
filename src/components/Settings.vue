@@ -103,7 +103,7 @@
         </div>
 
         <!-- 功能解锁 -->
-        <div class="flex items-center justify-between py-3">
+        <div class="flex items-center justify-between py-3 border-b border-base-200">
           <div class="flex-1">
             <label class="text-md font-medium text-base-content">{{ $t('featureUnlock') }}</label>
             <p class="text-md text-base-content/60 mt-1">{{ $t('featureUnlockTips') }}</p>
@@ -119,6 +119,22 @@
               {{ $t('unlock') }}
             </button>
           </div>
+        </div>
+
+        <!-- API文档 -->
+        <div class="flex items-center justify-between py-3">
+          <div class="flex-1">
+            <label class="text-md font-medium text-base-content">{{ $t('apiDocumentation') }}</label>
+            <p class="text-md text-base-content/60 mt-1">{{ $t('apiDocumentationTips') }}</p>
+          </div>
+          <a :href="whitelabelConfig.officialWebsite + '/docs/api/local-api'" target="_blank"
+            class="btn btn-md btn-outline btn-accent">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            {{ $t('viewDocs') }}
+          </a>
         </div>
       </div>
     </div>
