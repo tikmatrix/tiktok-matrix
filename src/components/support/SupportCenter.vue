@@ -380,7 +380,9 @@ import { getName, getVersion } from '@tauri-apps/api/app'
 import { open } from '@tauri-apps/api/dialog'
 import { readBinaryFile, readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { getSupportUnreadState, extractTicketKey } from '../../utils/supportNotifications.js'
+import { setItem } from '../../utils/storage.js'
 
+const SUPPORT_EMAIL_STORAGE_KEY = 'support_contact_email'
 const MAX_REPLY_ATTACHMENTS = 6
 const MAX_REPLY_ATTACHMENT_SIZE = 50 * 1024 * 1024
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'heic']
@@ -801,12 +803,13 @@ export default {
       const limit = Number(data.limit ?? payload?.limit ?? this.pageSize) || this.pageSize
       return { items, total, page, limit }
     },
-    applyTicketListPayload(payload, options = {}) {
+    async applyTicketListPayload(payload, options = {}) {
       if (!payload) {
         this.tickets = []
         this.total = 0
       } else {
         this.tickets = Array.isArray(payload.items) ? payload.items : []
+        await this.saveEmail();
         this.total = Number(payload.total) || 0
         if (Number.isFinite(payload.page) && payload.page >= 1) {
           this.page = payload.page
@@ -820,11 +823,27 @@ export default {
       }
       this.applyUnreadFlags()
     },
+    isValidEmail(value) {
+      if (!value || typeof value !== 'string') return false
+      const trimmed = value.trim()
+      // basic RFC-like email regex (practical for form validation)
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
+    },
+    async saveEmail() {
+      try {
+        const email = this.tickets.find(t => t.contact_email || t.contactEmail)?.contact_email || this.tickets.find(t => t.contact_email || t.contactEmail)?.contactEmail;
+        if (email && this.isValidEmail(email)) {
+          await setItem(SUPPORT_EMAIL_STORAGE_KEY, email)
+        }
+      } catch (error) {
+        console.warn('saveEmail error', error)
+      }
+    },
     async fetchTickets() {
       const { key: cacheKey, payload: cachedPayload } = this.readTicketListCache()
       const shouldHydrateCache = Boolean(cachedPayload) && this.lastTicketListCacheKey !== cacheKey
       if (shouldHydrateCache) {
-        this.applyTicketListPayload(cachedPayload, { cacheKey })
+        await this.applyTicketListPayload(cachedPayload, { cacheKey })
       }
       this.loading = !shouldHydrateCache
       try {
@@ -834,7 +853,7 @@ export default {
         })
         const normalized = this.normalizeTicketListPayload(res)
         const appliedKey = this.writeTicketListCache(normalized, normalized.page, normalized.limit)
-        this.applyTicketListPayload(normalized, { cacheKey: appliedKey })
+        await this.applyTicketListPayload(normalized, { cacheKey: appliedKey })
       } catch (error) {
         console.error('support fetchTickets error', error)
         if (!shouldHydrateCache) {

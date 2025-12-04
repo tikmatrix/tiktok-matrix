@@ -153,7 +153,9 @@
 import { open } from '@tauri-apps/api/dialog'
 import { readBinaryFile } from '@tauri-apps/api/fs'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
+import { getItem, setItem } from '../../utils/storage.js'
 
+const SUPPORT_EMAIL_STORAGE_KEY = 'support_contact_email'
 const MAX_CUSTOM_ATTACHMENTS = 6
 const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024
 const MAX_SELECTED_DEVICES = 5
@@ -232,6 +234,7 @@ export default {
   },
   mounted() {
     this.resetSubject()
+    this.loadSavedEmail()
     // Always schedule log preparation on mount, even with no devices selected
     // This ensures app/agent logs and data directory are prepared
     this.scheduleLogPreparation()
@@ -282,6 +285,26 @@ export default {
         }
       }
     },
+    async loadSavedEmail() {
+      try {
+        const savedEmail = await getItem(SUPPORT_EMAIL_STORAGE_KEY)
+        if (savedEmail && this.isValidEmail(savedEmail)) {
+          this.form.email = savedEmail
+        }
+      } catch (error) {
+        console.warn('loadSavedEmail error', error)
+      }
+    },
+    async saveEmail() {
+      try {
+        const email = this.form.email?.trim()
+        if (email && this.isValidEmail(email)) {
+          await setItem(SUPPORT_EMAIL_STORAGE_KEY, email)
+        }
+      } catch (error) {
+        console.warn('saveEmail error', error)
+      }
+    },
     resetSubject() {
       const today = new Date().toISOString().slice(0, 10)
       this.form.subject = `${this.$t('supportSubjectDefault')} ${today}`
@@ -294,6 +317,7 @@ export default {
         email: ''
       }
       this.resetSubject()
+      this.loadSavedEmail()
       this.clearLogPreparation()
       const initialSelection = Array.isArray(this.selecedDevices) ? [...this.selecedDevices] : []
       this.selectedSerials = this.sanitizeSelection(initialSelection, { silent: true })
@@ -1137,6 +1161,8 @@ export default {
         }
         const response = await this.$service.support_create_ticket(payload)
         const createdTicket = response?.data || response
+        // Save email for future use if provided
+        await this.saveEmail()
         await this.notify('success', this.$t('supportSubmitSuccess'))
         this.$emit('submitted', createdTicket)
         this.submittedTicket = null
