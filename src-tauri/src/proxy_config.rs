@@ -418,7 +418,9 @@ fn get_macos_proxy_url() -> Option<String> {
         }
     }
 
-    // Prefer HTTPS proxy
+    // Prefer HTTPS proxy (for proxying HTTPS traffic)
+    // Note: The proxy server itself uses HTTP protocol, not HTTPS
+    // "HTTPS Proxy" in system settings means "proxy server for HTTPS traffic"
     if map.get("HTTPSEnable").map(|v| v == "1").unwrap_or(false) {
         if let Some(host) = map.get("HTTPSProxy") {
             let host = host.trim();
@@ -432,9 +434,9 @@ fn get_macos_proxy_url() -> Option<String> {
                     }
                 });
                 return Some(if let Some(port) = port {
-                    format!("https://{}:{}", host, port)
+                    format!("http://{}:{}", host, port)
                 } else {
-                    format!("https://{}", host)
+                    format!("http://{}", host)
                 });
             }
         }
