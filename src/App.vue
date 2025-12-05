@@ -310,55 +310,45 @@ export default {
       try {
         const res = await this.$service.get_devices();
         const newDevices = Array.isArray(res.data) ? res.data : [];
-        const currentDevices = this.devices;
 
-        // 找出需要删除的设备
-        const devicesToRemove = currentDevices.filter(current =>
-          !newDevices.some(newDevice => newDevice.real_serial === current.real_serial)
+        // Build a map of existing devices by real_serial for quick lookup
+        const existingDevicesMap = new Map(
+          this.devices.map(d => [d.real_serial, d])
         );
 
-        // 找出需要添加或更新的设备
-        const devicesToAddOrUpdate = newDevices.filter(newDevice => {
-          const existingDevice = currentDevices.find(current =>
-            current.real_serial === newDevice.real_serial
-          );
-          return !existingDevice || JSON.stringify(existingDevice) !== JSON.stringify(newDevice);
-        });
+        // Build the final devices list based on API response
+        const finalDevices = [];
 
-        // 删除不存在的设备
-        devicesToRemove.forEach(device => {
-          const index = currentDevices.findIndex(d => d.real_serial === device.real_serial);
-          if (index !== -1) {
-            currentDevices.splice(index, 1);
-          }
-        });
-
-        // 添加或更新设备
-        for (const newDevice of devicesToAddOrUpdate) {
-          const existingIndex = currentDevices.findIndex(d => d.real_serial === newDevice.real_serial);
-          if (existingIndex === -1) {
+        for (const newDevice of newDevices) {
+          const existingDevice = existingDevicesMap.get(newDevice.real_serial);
+          if (existingDevice) {
+            // Update existing device properties while preserving local state
+            const updatedDevice = {
+              ...newDevice,
+              sort: existingDevice.sort ?? 0,
+              task_status: existingDevice.task_status ?? newDevice.task_status,
+            };
+            finalDevices.push(updatedDevice);
+          } else {
+            // New device - load sort from storage
             const storedSort = await getItem(`sort_${newDevice.real_serial}`);
             newDevice.sort = Number(storedSort ?? '0');
-            currentDevices.push(newDevice);
-          } else {
-            // 更新现有设备
-            Object.assign(currentDevices[existingIndex], newDevice);
+            finalDevices.push(newDevice);
           }
         }
 
-        // 创建新的排序后的数组
-        const sortedDevices = [...currentDevices].sort((a, b) => {
-          return a.sort - b.sort || a.group_id - b.group_id || a.serial.localeCompare(b.serial);
+        // Sort the devices
+        finalDevices.sort((a, b) => {
+          return (a.sort - b.sort) || (a.group_id - b.group_id) || a.serial.localeCompare(b.serial);
         });
 
-        // 使用Vue的响应式方法更新数组
-        this.devices.splice(0, this.devices.length, ...sortedDevices);
-
-        // 更新key
-        this.devices.forEach((device, index) => {
+        // Update key for each device
+        finalDevices.forEach((device, index) => {
           device.key = index + 1;
         });
 
+        // Replace the devices array atomically
+        this.devices.splice(0, this.devices.length, ...finalDevices);
 
       } catch (error) {
         console.error('获取设备列表失败:', error);
