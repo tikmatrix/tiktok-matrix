@@ -121,14 +121,6 @@ export function update_task(data) {
   })
 }
 
-
-export function init(data) {
-  return request({
-    method: 'post',
-    url: api.init,
-    data
-  })
-}
 export function index({ serial, index }) {
   return request({
     method: 'get',

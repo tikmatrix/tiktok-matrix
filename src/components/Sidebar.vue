@@ -533,22 +533,8 @@ export default {
         });
         return
       }
-      for (let i = 0; i < this.selection.length; i++) {
-        this.$emiter('NOTIFY', {
-          type: 'info',
-          message: `${this.$t('initing')} ${this.selection[i]}`,
-          timeout: 2000
-        });
-        this.$service.init({
-          serials: [this.selection[i]],
-        }).then(async () => {
-          await this.$emiter('NOTIFY', {
-            type: 'success',
-            message: `${this.$t('initSuccess')}`,
-            timeout: 2000
-          });
-        })
-      }
+      // Create init task through task scheduler instead of direct execution
+      await this.run_now_by_account('init', {})
     },
 
 

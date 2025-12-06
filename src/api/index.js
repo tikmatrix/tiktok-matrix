@@ -10,7 +10,6 @@ const api = {
   follow_now: '/api/follow_now',
   comment_now: '/api/comment_now',
   index: '/api/device/index',
-  init: '/api/device/init',
   group: '/api/group',
   music: '/api/music',
   watcher: '/api/dialog_watcher',

@@ -328,12 +328,6 @@ pub async fn install_lib_file(
             let dest_file = bin_dir.join(tmp_file_path.file_name().unwrap());
             fs::copy(tmp_file_path, &dest_file).map_err(|e| e.to_string())?;
 
-            if lib.name == "apk" || lib.name == "test-apk" {
-                unsafe {
-                    std::env::set_var("agent_version", &lib.version);
-                }
-            }
-
             log::info!("Installed {} to {:?}", lib.name, dest_file);
         }
         "script" | "agent" => {
