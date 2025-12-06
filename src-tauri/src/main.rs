@@ -224,7 +224,7 @@ fn main() -> std::io::Result<()> {
             log::info!("work_dir: {}", work_dir);
             if cfg!(debug_assertions) {
                 unsafe {
-                    std::env::set_var("LOG_LEVEL", "debug");
+                    std::env::set_var("LOG_LEVEL", "info");
                     std::env::set_var("RUST_BACKTRACE", "1");
                 };
             }
