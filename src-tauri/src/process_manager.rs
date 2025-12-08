@@ -326,11 +326,11 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
     {
         let mut command = Command::new(&agent_path);
         command.creation_flags(0x08000000); // Hide console window
-        command.stdout(Stdio::null());
-        command.stderr(Stdio::null());
+        command.stdout(Stdio::piped());
+        command.stderr(Stdio::piped());
 
         match command.spawn() {
-            Ok(child) => {
+            Ok(mut child) => {
                 let pid = child.id();
                 log::info!("Agent started with PID: {}", pid);
 
@@ -338,6 +338,29 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
                 let pid_file = app_data_dir.join("agent.pid");
                 if let Err(e) = fs::write(&pid_file, pid.to_string()) {
                     log::warn!("Failed to write PID file: {}", e);
+                }
+                if cfg!(debug_assertions) {
+                    //output the stdout and stderr for debugging
+                    let (mut stdout, mut stderr) =
+                        (child.stdout.take().unwrap(), child.stderr.take().unwrap());
+                    std::thread::spawn(move || {
+                        use std::io::{BufRead, BufReader};
+                        let reader = BufReader::new(&mut stdout);
+                        for line in reader.lines() {
+                            if let Ok(l) = line {
+                                log::debug!("[agent stdout] {}", l);
+                            }
+                        }
+                    });
+                    std::thread::spawn(move || {
+                        use std::io::{BufRead, BufReader};
+                        let reader = BufReader::new(&mut stderr);
+                        for line in reader.lines() {
+                            if let Ok(l) = line {
+                                log::debug!("[agent stderr] {}", l);
+                            }
+                        }
+                    });
                 }
 
                 Ok(AgentStartResult {
