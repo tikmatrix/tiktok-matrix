@@ -108,7 +108,7 @@
                                 {{ $t('datasetSelectLabel') }}
                             </label>
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap sm:gap-4">
-                                <div class="flex items-center gap-2 min-w-[200px] sm:flex-1 sm:min-w-[240px]">
+                                <div class="flex items-center gap-2 min-w-[200px] sm:flex-1 sm:min-w-60">
                                     <select class="select select-bordered select-sm w-full"
                                         :value="String(activeDatasetConfig.id || '')" @change="handleDatasetSelect"
                                         :disabled="datasetOptionsLoading[activeDatasetKey]">
@@ -303,6 +303,25 @@
                             </div>
                             <input type="checkbox" class="toggle toggle-error toggle-md"
                                 v-model="features.unfollowUsers" />
+                        </div>
+                    </div>
+
+                    <!-- 举报账号操作配置 -->
+                    <div :class="[
+                        'border border-base-200 rounded-lg p-3 transition-all space-y-2',
+                        features.reportAccount ? 'bg-warning/10 border-warning shadow' : 'bg-base-50'
+                    ]">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <font-awesome-icon icon="fa-solid fa-flag" class="text-warning" />
+                                <span class="font-semibold">{{ $t('reportAccountAction') }}</span>
+                            </div>
+                            <input type="checkbox" class="toggle toggle-warning toggle-md"
+                                v-model="features.reportAccount" />
+                        </div>
+                        <div v-if="features.reportAccount" class="text-xs text-base-content/70 mt-1">
+                            <p>{{ $t('reportAccountPath') }}</p>
+                            <p class="text-warning">{{ $t('reportAccountPathNote') }}</p>
                         </div>
                     </div>
 
@@ -744,6 +763,7 @@ export default {
                 features: {
                     followUsers: false,
                     unfollowUsers: false,
+                    reportAccount: false,
                     sendDM: false,
                     boostPosts: false,
                     massComment: false
