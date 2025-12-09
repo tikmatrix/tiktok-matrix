@@ -48,3 +48,19 @@ curl -X POST http://localhost:50809/api/v1/task \
     }
   }'
 ```
+
+## Account Warmup Task
+
+```shell
+curl -X POST http://localhost:50809/api/v1/task \
+  -H "Content-Type: application/json" \
+  -d '{
+    "serials": ["16091FDD40050N"],
+    "script_name": "account_warmup",
+    "script_config": {
+      "task_duration": 600,
+      "min_duration": 10,
+      "max_duration": 30
+    }
+  }'
+```
