@@ -348,7 +348,7 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
                         let reader = BufReader::new(&mut stdout);
                         for line in reader.lines() {
                             if let Ok(l) = line {
-                                log::debug!("[agent stdout] {}", l);
+                                log::info!("[agent stdout] {}", l);
                             }
                         }
                     });
@@ -357,7 +357,7 @@ pub fn start_agent_process(app_handle: &AppHandle) -> Result<AgentStartResult, S
                         let reader = BufReader::new(&mut stderr);
                         for line in reader.lines() {
                             if let Ok(l) = line {
-                                log::debug!("[agent stderr] {}", l);
+                                log::info!("[agent stderr] {}", l);
                             }
                         }
                     });
