@@ -367,6 +367,23 @@ pub async fn install_lib_file(
 
             // Resume agent monitor after successful installation
             crate::process_manager::resume_agent_monitor();
+
+            // Wait for agent to be fully ready before continuing
+            log::info!("Waiting for agent to be ready after {} update...", lib.name);
+            match crate::process_manager::wait_agent_ready(app_handle, 15).await {
+                Ok(true) => {
+                    log::info!("Agent is ready after {} update", lib.name);
+                }
+                Ok(false) => {
+                    log::warn!(
+                        "Agent did not become ready within timeout after {} update",
+                        lib.name
+                    );
+                }
+                Err(e) => {
+                    log::error!("Error waiting for agent after {} update: {}", lib.name, e);
+                }
+            }
         }
         _ => {
             return Err(format!("Unknown library type: {}", lib.name));
