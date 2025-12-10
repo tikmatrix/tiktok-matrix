@@ -698,7 +698,13 @@ pub async fn initialize_app(
                         Ok(ready) => {
                             if ready {
                                 result.success = true;
-                                result.agent_status = check_agent_running();
+                                // Agent is confirmed ready by wait_agent_ready, don't re-check
+                                // to avoid timing issues with port detection
+                                result.agent_status = AgentStatus {
+                                    running: true,
+                                    process_name: "agent.exe".to_string(),
+                                    error: String::new(),
+                                };
 
                                 app_handle
                                     .emit_all(
