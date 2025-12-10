@@ -68,6 +68,10 @@ let body = JSON.stringify({
         "darwin-arm64": {
             "signature": signature,
             "url": `https://r2.niostack.com/${params.appName}_${version}_universal.dmg`
+        },
+        "darwin-aarch64": {
+            "signature": signature,
+            "url": `https://r2.niostack.com/${params.appName}_${version}_universal.dmg`
         }
     }
 }, null, 2)
