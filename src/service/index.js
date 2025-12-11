@@ -482,6 +482,23 @@ export function scan_tcp_details(data) {
     url: api.scan_tcp_details
   })
 }
+
+export function cloud_phone_connect(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.cloud_phone_connect
+  })
+}
+
+export function cloud_phone_batch_connect(data) {
+  return request({
+    method: 'post',
+    data,
+    url: api.cloud_phone_batch_connect
+  })
+}
+
 export function stop_task(data) {
   return request({
     method: 'post',

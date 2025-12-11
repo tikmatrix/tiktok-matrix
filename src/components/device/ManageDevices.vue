@@ -215,40 +215,162 @@
       :gridCardHeight="gridCardHeight" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
-    <div class="modal-box bg-base-300">
-      <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
-      <div class="flex flex-row items-center">
-        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_1" />
-        <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_2" />
-        <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_3" />
-        <span class="font-bold p-1">.</span>
-        <input class="input input-bordered input-md w-20 ring ring-info" type="number" v-model="ip_4" />
-        <span class="font-bold p-2 mr-1 ml-1 text-lg">-</span>
-        <input class="input input-bordered input-md w-20 ring ring-success" type="number" v-model="ip_5" />
-      </div>
-      <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
-      <input class="input input-bordered input-md w-24 ring" type="number" v-model="port" />
-      <div class="flex flex-wrap items-center gap-2 mt-4">
-        <MyButton @click="scan" label="startScan" :showLoading="scaning" icon="fa fa-search" />
-        <span class="label-text">{{ scanResult }}</span>
-      </div>
-      <div class="mt-3 space-y-2" v-if="scanDetails.length">
-        <h5 class="font-bold text-sm">{{ $t('scanDetailsTitle') }}</h5>
-        <div
-          class="max-h-48 overflow-y-auto rounded-xl border border-base-200 bg-base-100/70 divide-y divide-base-200 text-sm">
-          <div v-for="(detail, index) in scanDetails" :key="`${detail.ip}-${index}`" class="px-3 py-2 space-y-1">
-            <div class="flex items-center justify-between gap-3">
-              <span class="font-mono text-base-content/80">{{ detail.ip }}</span>
-              <span :class="scanDetailStatusClass(detail)">{{ scanDetailStatusLabel(detail) }}</span>
+    <div class="modal-box bg-base-300 max-w-2xl">
+      <!-- Tabs -->
+      <div class="tabs tabs-md tabs-border border border-base-300 bg-base-500 rounded-md shadow-lg p-2 mb-4">
+        <input type="radio" name="scan_tabs" class="tab" :aria-label="$t('scanIpRange')" :checked="scanTab === 'range'"
+          @change="scanTab = 'range'" />
+        <div class="tab-content mt-2">
+          <h3 class="font-bold text-lg">{{ $t('scanIpTitle') }}</h3>
+          <div class="flex flex-row items-center">
+            <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_1" />
+            <span class="font-bold p-1">.</span>
+            <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_2" />
+            <span class="font-bold p-1">.</span>
+            <input class="input input-bordered input-md w-20 ring" type="number" v-model="ip_3" />
+            <span class="font-bold p-1">.</span>
+            <input class="input input-bordered input-md w-20 ring ring-info" type="number" v-model="ip_4" />
+            <span class="font-bold p-2 mr-1 ml-1 text-lg">-</span>
+            <input class="input input-bordered input-md w-20 ring ring-success" type="number" v-model="ip_5" />
+          </div>
+          <h5 class="font-bold">{{ $t('scanPortTip') }}</h5>
+          <input class="input input-bordered input-md w-24 ring" type="number" v-model="port" />
+          <div class="flex flex-wrap items-center gap-2 mt-4">
+            <MyButton @click="scan" label="startScan" :showLoading="scaning" icon="fa fa-search" />
+            <span class="label-text">{{ scanResult }}</span>
+          </div>
+          <div class="mt-3 space-y-2" v-if="scanDetails.length">
+            <h5 class="font-bold text-sm">{{ $t('scanDetailsTitle') }}</h5>
+            <div
+              class="max-h-48 overflow-y-auto rounded-xl border border-base-200 bg-base-100/70 divide-y divide-base-200 text-sm">
+              <div v-for="(detail, index) in scanDetails" :key="`${detail.ip}-${index}`" class="px-3 py-2 space-y-1">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="font-mono text-base-content/80">{{ detail.ip }}</span>
+                  <span :class="scanDetailStatusClass(detail)">{{ scanDetailStatusLabel(detail) }}</span>
+                </div>
+                <span class="text-sm text-base-content/60 break-all" :title="detail.message">{{ detail.message }}</span>
+              </div>
             </div>
-            <span class="text-sm text-base-content/60 break-all" :title="detail.message">{{ detail.message }}</span>
+          </div>
+          <div class="mt-3 text-sm text-base-content/70" v-else-if="scanSummary">
+            {{ $t('scanNoDevices') }}
           </div>
         </div>
-      </div>
-      <div class="mt-3 text-sm text-base-content/70" v-else-if="scanSummary">
-        {{ $t('scanNoDevices') }}
+
+        <input type="radio" name="scan_tabs" class="tab" :aria-label="$t('cloudPhoneList')"
+          :checked="scanTab === 'cloudPhone'" @change="scanTab = 'cloudPhone'" />
+        <div class="tab-content mt-2">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-lg">{{ $t('cloudPhoneList') }}</h3>
+            <MyButton @click="showAddCloudPhoneForm" label="add" icon="fa fa-plus" size="sm" />
+          </div>
+
+          <!-- Add/Edit Form -->
+          <div v-if="showCloudPhoneForm" class="mb-4 p-3 bg-base-200 rounded-lg space-y-2">
+            <div class="form-control">
+              <label class="label py-1">
+                <span class="label-text">{{ $t('cloudPhoneName') }}</span>
+              </label>
+              <input type="text" class="input input-bordered input-sm" v-model="cloudPhoneForm.name"
+                :placeholder="$t('cloudPhoneNamePlaceholder')" />
+            </div>
+            <div class="flex gap-2">
+              <div class="form-control flex-1">
+                <label class="label py-1">
+                  <span class="label-text">{{ $t('ipAddress') }}</span>
+                </label>
+                <input type="text" class="input input-bordered input-sm" v-model="cloudPhoneForm.ip"
+                  placeholder="192.168.1.100" />
+              </div>
+              <div class="form-control w-24">
+                <label class="label py-1">
+                  <span class="label-text">{{ $t('port') }}</span>
+                </label>
+                <input type="number" class="input input-bordered input-sm" v-model="cloudPhoneForm.port"
+                  placeholder="5555" />
+              </div>
+            </div>
+            <div class="form-control">
+              <label class="label py-1">
+                <span class="label-text">{{ $t('authCode') }} <span class="text-xs text-base-content/60">({{
+                  $t('authCodeOptional') }})</span></span>
+              </label>
+              <input type="text" class="input input-bordered input-sm" v-model="cloudPhoneForm.auth_code"
+                :placeholder="$t('authCodePlaceholder')" />
+            </div>
+            <div class="flex gap-2 mt-2">
+              <MyButton @click="saveCloudPhone" label="save" icon="fa fa-save" size="sm" />
+              <MyButton @click="cancelCloudPhoneForm" label="cancel" icon="fa fa-times" size="sm" type="ghost" />
+            </div>
+          </div>
+
+          <!-- Cloud Phone List -->
+          <div v-if="cloudPhoneList.length > 0" class="space-y-2">
+            <div class="flex items-center gap-2 mb-2">
+              <input type="checkbox" class="checkbox checkbox-sm" v-model="selectAllCloudPhones"
+                @change="toggleSelectAllCloudPhones" />
+              <span class="text-sm">{{ $t('selectAll') }}</span>
+              <MyButton v-if="selectedCloudPhones.length > 0" @click="connectSelectedCloudPhones"
+                :label="$t('connectSelected', { count: selectedCloudPhones.length })"
+                :showLoading="connectingCloudPhones" icon="fa fa-plug" size="sm" class="ml-auto" />
+            </div>
+            <div
+              class="max-h-64 overflow-y-auto rounded-xl border border-base-200 bg-base-100/70 divide-y divide-base-200">
+              <div v-for="(phone, index) in cloudPhoneList" :key="phone.id || index"
+                class="px-3 py-2 flex items-center gap-3 hover:bg-base-200/50">
+                <input type="checkbox" class="checkbox checkbox-sm" v-model="selectedCloudPhones" :value="phone.id" />
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium truncate">{{ phone.name || phone.ip }}</div>
+                  <div class="text-xs text-base-content/60">
+                    {{ phone.ip }}:{{ phone.port }}
+                    <span v-if="phone.auth_code" class="ml-2 badge badge-xs badge-info">{{ $t('hasAuthCode') }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span v-if="phone.lastStatus" :class="cloudPhoneStatusClass(phone.lastStatus)" class="text-xs">
+                    {{ cloudPhoneStatusLabel(phone.lastStatus) }}
+                  </span>
+                  <button class="btn btn-ghost btn-xs" @click="connectSingleCloudPhone(phone)"
+                    :disabled="connectingCloudPhones">
+                    <i class="fa fa-plug"></i>
+                  </button>
+                  <button class="btn btn-ghost btn-xs" @click="editCloudPhone(phone)">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn btn-ghost btn-xs text-error" @click="deleteCloudPhone(phone)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center py-8 text-base-content/60">
+            <i class="fa fa-cloud text-4xl mb-2"></i>
+            <p>{{ $t('noCloudPhones') }}</p>
+            <p class="text-xs mt-1">{{ $t('cloudPhoneHint') }}</p>
+          </div>
+
+          <!-- Connect Result -->
+          <div v-if="cloudPhoneConnectResult" class="mt-3 space-y-2">
+            <h5 class="font-bold text-sm">{{ $t('connectResult') }}</h5>
+            <div
+              class="max-h-48 overflow-y-auto rounded-xl border border-base-200 bg-base-100/70 divide-y divide-base-200 text-sm">
+              <div v-for="(result, index) in cloudPhoneConnectResult.details" :key="`result-${index}`"
+                class="px-3 py-2 space-y-1">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="font-mono text-base-content/80">{{ result.ip }}:{{ result.port }}</span>
+                  <span :class="result.success ? 'text-success font-semibold' : 'text-error font-semibold'">
+                    {{ result.success ? $t('scanStatusConnected') : $t('scanStatusFailed') }}
+                  </span>
+                </div>
+                <span class="text-sm text-base-content/60 break-all">{{ result.message }}</span>
+                <span v-if="result.auth_result" class="text-sm text-info break-all block">
+                  {{ $t('authResult') }}: {{ result.auth_result }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop">
@@ -351,6 +473,21 @@ export default {
       },
       testingRotations: {},
       requestHeadersSample: '{ "Authorization": "Bearer token" }',
+      // Cloud Phone
+      scanTab: 'range',
+      cloudPhoneList: [],
+      selectedCloudPhones: [],
+      selectAllCloudPhones: false,
+      showCloudPhoneForm: false,
+      editingCloudPhoneId: null,
+      cloudPhoneForm: {
+        name: '',
+        ip: '',
+        port: 5555,
+        auth_code: '',
+      },
+      connectingCloudPhones: false,
+      cloudPhoneConnectResult: null,
     }
   },
   watch: {
@@ -429,6 +566,8 @@ export default {
     }
     this.gridCardHeight = parseNumber(gridCardHeight, 150);
 
+    // Load cloud phone list
+    await this.loadCloudPhoneList();
 
   },
   methods: {
@@ -810,6 +949,235 @@ export default {
     scanDetailStatusLabel(detail) {
       return detail?.success ? this.$t('scanStatusConnected') : this.$t('scanStatusFailed')
     },
+
+    // Cloud Phone Management Methods
+    async loadCloudPhoneList() {
+      try {
+        const fileExists = await exists('data/cloud-phones.json', { dir: BaseDirectory.AppData })
+        if (!fileExists) {
+          this.cloudPhoneList = []
+          return
+        }
+        const content = await readTextFile('data/cloud-phones.json', { dir: BaseDirectory.AppData })
+        this.cloudPhoneList = JSON.parse(content || '[]')
+      } catch (error) {
+        console.error('Failed to load cloud phone list:', error)
+        this.cloudPhoneList = []
+      }
+    },
+    async saveCloudPhoneList() {
+      try {
+        const dataDirExists = await exists('data', { dir: BaseDirectory.AppData })
+        if (!dataDirExists) {
+          await createDir('data', { dir: BaseDirectory.AppData, recursive: true })
+        }
+        await writeTextFile('data/cloud-phones.json', JSON.stringify(this.cloudPhoneList, null, 2), {
+          dir: BaseDirectory.AppData
+        })
+      } catch (error) {
+        console.error('Failed to save cloud phone list:', error)
+        throw error
+      }
+    },
+    showAddCloudPhoneForm() {
+      this.editingCloudPhoneId = null
+      this.cloudPhoneForm = {
+        name: '',
+        ip: '',
+        port: 5555,
+        auth_code: '',
+      }
+      this.showCloudPhoneForm = true
+    },
+    editCloudPhone(phone) {
+      this.editingCloudPhoneId = phone.id
+      this.cloudPhoneForm = {
+        name: phone.name || '',
+        ip: phone.ip || '',
+        port: phone.port || 5555,
+        auth_code: phone.auth_code || '',
+      }
+      this.showCloudPhoneForm = true
+    },
+    cancelCloudPhoneForm() {
+      this.showCloudPhoneForm = false
+      this.editingCloudPhoneId = null
+      this.cloudPhoneForm = {
+        name: '',
+        ip: '',
+        port: 5555,
+        auth_code: '',
+      }
+    },
+    async saveCloudPhone() {
+      if (!this.cloudPhoneForm.ip) {
+        await this.$emiter('NOTIFY', {
+          type: 'warning',
+          message: this.$t('cloudPhoneIpRequired'),
+          timeout: 3000
+        })
+        return
+      }
+      try {
+        if (this.editingCloudPhoneId) {
+          // Update existing
+          const index = this.cloudPhoneList.findIndex(p => p.id === this.editingCloudPhoneId)
+          if (index !== -1) {
+            this.cloudPhoneList[index] = {
+              ...this.cloudPhoneList[index],
+              name: this.cloudPhoneForm.name,
+              ip: this.cloudPhoneForm.ip,
+              port: Number(this.cloudPhoneForm.port) || 5555,
+              auth_code: this.cloudPhoneForm.auth_code,
+            }
+          }
+        } else {
+          // Add new
+          const newPhone = {
+            id: Date.now().toString(),
+            name: this.cloudPhoneForm.name,
+            ip: this.cloudPhoneForm.ip,
+            port: Number(this.cloudPhoneForm.port) || 5555,
+            auth_code: this.cloudPhoneForm.auth_code,
+            lastStatus: null,
+          }
+          this.cloudPhoneList.push(newPhone)
+        }
+        await this.saveCloudPhoneList()
+        this.cancelCloudPhoneForm()
+        await this.$emiter('NOTIFY', {
+          type: 'success',
+          message: this.$t('cloudPhoneSaved'),
+          timeout: 2000
+        })
+      } catch (error) {
+        console.error('Failed to save cloud phone:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('cloudPhoneSaveFailed'),
+          timeout: 3000
+        })
+      }
+    },
+    async deleteCloudPhone(phone) {
+      const index = this.cloudPhoneList.findIndex(p => p.id === phone.id)
+      if (index !== -1) {
+        this.cloudPhoneList.splice(index, 1)
+        this.selectedCloudPhones = this.selectedCloudPhones.filter(id => id !== phone.id)
+        await this.saveCloudPhoneList()
+        await this.$emiter('NOTIFY', {
+          type: 'success',
+          message: this.$t('cloudPhoneDeleted'),
+          timeout: 2000
+        })
+      }
+    },
+    toggleSelectAllCloudPhones() {
+      if (this.selectAllCloudPhones) {
+        this.selectedCloudPhones = this.cloudPhoneList.map(p => p.id)
+      } else {
+        this.selectedCloudPhones = []
+      }
+    },
+    async connectSingleCloudPhone(phone) {
+      this.connectingCloudPhones = true
+      this.cloudPhoneConnectResult = null
+      try {
+        const payload = {
+          ip: phone.ip,
+          port: Number(phone.port) || 5555,
+          auth_code: phone.auth_code || null,
+        }
+        const res = await this.$service.cloud_phone_connect(payload)
+        const result = res?.data || res || {}
+        // Update phone status
+        const index = this.cloudPhoneList.findIndex(p => p.id === phone.id)
+        if (index !== -1) {
+          this.cloudPhoneList[index].lastStatus = result.success ? 'success' : 'failed'
+          await this.saveCloudPhoneList()
+        }
+        this.cloudPhoneConnectResult = {
+          total: 1,
+          success: result.success ? 1 : 0,
+          failed: result.success ? 0 : 1,
+          details: [result]
+        }
+        await this.$emiter('NOTIFY', {
+          type: result.success ? 'success' : 'error',
+          message: result.success ? this.$t('cloudPhoneConnected') : this.$t('cloudPhoneConnectFailed'),
+          timeout: 3000
+        })
+        if (result.success) {
+          this.$emiter('reload_devices', { force: true })
+        }
+      } catch (error) {
+        console.error('Cloud phone connect failed:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('cloudPhoneConnectFailed'),
+          timeout: 3000
+        })
+      } finally {
+        this.connectingCloudPhones = false
+      }
+    },
+    async connectSelectedCloudPhones() {
+      if (this.selectedCloudPhones.length === 0) return
+      this.connectingCloudPhones = true
+      this.cloudPhoneConnectResult = null
+      try {
+        const devices = this.cloudPhoneList
+          .filter(p => this.selectedCloudPhones.includes(p.id))
+          .map(p => ({
+            ip: p.ip,
+            port: Number(p.port) || 5555,
+            auth_code: p.auth_code || null,
+          }))
+        const res = await this.$service.cloud_phone_batch_connect({ devices })
+        const result = res?.data || res || {}
+        // Update phone statuses
+        if (result.details && Array.isArray(result.details)) {
+          for (const detail of result.details) {
+            const phone = this.cloudPhoneList.find(p => p.ip === detail.ip && p.port === detail.port)
+            if (phone) {
+              phone.lastStatus = detail.success ? 'success' : 'failed'
+            }
+          }
+          await this.saveCloudPhoneList()
+        }
+        this.cloudPhoneConnectResult = result
+        const successCount = result?.success ?? 0
+        const failedCount = result?.failed ?? 0
+        await this.$emiter('NOTIFY', {
+          type: successCount > 0 ? 'success' : 'error',
+          message: this.$t('cloudPhoneBatchResult', { success: successCount, failed: failedCount }),
+          timeout: 4000
+        })
+        if (successCount > 0) {
+          this.$emiter('reload_devices', { force: true })
+        }
+      } catch (error) {
+        console.error('Cloud phone batch connect failed:', error)
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('cloudPhoneConnectFailed'),
+          timeout: 3000
+        })
+      } finally {
+        this.connectingCloudPhones = false
+      }
+    },
+    cloudPhoneStatusClass(status) {
+      if (status === 'success') return 'text-success'
+      if (status === 'failed') return 'text-error'
+      return 'text-base-content/60'
+    },
+    cloudPhoneStatusLabel(status) {
+      if (status === 'success') return this.$t('scanStatusConnected')
+      if (status === 'failed') return this.$t('scanStatusFailed')
+      return ''
+    },
+
     async update_settings() {
       await this.$service.update_settings(this.settings)
       //reload settings

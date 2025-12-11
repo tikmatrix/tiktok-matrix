@@ -40,6 +40,8 @@ const api = {
   script: '/agent/api/script',
   scan_tcp: '/agent/api/tcp_scan',
   scan_tcp_details: '/agent/api/tcp_scan_details',
+  cloud_phone_connect: '/agent/api/cloud_phone_connect',
+  cloud_phone_batch_connect: '/agent/api/cloud_phone_batch_connect',
   stop_task: '/agent/api/stop_task',
   menus: '/api/menus',
   get_accounts_by_device: '/api/account_by_device',
