@@ -337,6 +337,19 @@ pub async fn install_lib_file(
             // Ensure both agent and script are stopped to avoid automatic restarts
             crate::kill_process("agent".to_string());
             crate::kill_process("script".to_string());
+            //reset ports to 0 to avoid conflicts
+            match std::fs::write(app_data_dir.join("port.txt"), "0") {
+                Ok(_) => (),
+                Err(e) => log::error!("Failed to reset port.txt: {}", e),
+            }
+            match std::fs::write(app_data_dir.join("wsport.txt"), "0") {
+                Ok(_) => (),
+                Err(e) => log::error!("Failed to reset wsport.txt: {}", e),
+            }
+            match std::fs::write(app_data_dir.join("wssport.txt"), "0") {
+                Ok(_) => (),
+                Err(e) => log::error!("Failed to reset wssport.txt: {}", e),
+            }
             std::thread::sleep(std::time::Duration::from_secs(3));
 
             let bin_dir = app_data_dir.join("bin");
@@ -350,6 +363,19 @@ pub async fn install_lib_file(
                 );
                 crate::kill_process("agent".to_string());
                 crate::kill_process("script".to_string());
+                //reset ports to 0 to avoid conflicts
+                match std::fs::write(app_data_dir.join("port.txt"), "0") {
+                    Ok(_) => (),
+                    Err(e) => log::error!("Failed to reset port.txt: {}", e),
+                }
+                match std::fs::write(app_data_dir.join("wsport.txt"), "0") {
+                    Ok(_) => (),
+                    Err(e) => log::error!("Failed to reset wsport.txt: {}", e),
+                }
+                match std::fs::write(app_data_dir.join("wssport.txt"), "0") {
+                    Ok(_) => (),
+                    Err(e) => log::error!("Failed to reset wssport.txt: {}", e),
+                }
             };
 
             copy_file_with_retry(tmp_file_path, &dest_file, 5, 500, Some(&mut retry_hook))

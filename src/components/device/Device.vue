@@ -28,15 +28,7 @@
               class="absolute top-0 left-0 w-full h-full hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               ref="canvas" @mousedown="mouseDownListener" @mouseup="mouseUpListener" @mouseleave="mouseLeaveListener"
               @mousemove="mouseMoveListener" tabindex="0" @keydown="keyDownListener" @keyup="keyUpListener"></canvas>
-            <img v-if="firstFrameImageUrl && !videoStarted" :src="firstFrameImageUrl"
-              class="absolute top-0 left-0 w-full h-full object-contain pointer-events-none select-none"
-              alt="first frame preview" />
-            <!-- Connecting overlay when first frame is shown but scrcpy is not ready -->
-            <div
-              class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center backdrop-blur-[2px] pointer-events-none"
-              v-if="firstFrameImageUrl && !videoStarted && this.big">
 
-            </div>
             <div @click="$emiter('openDevice', this.device)"
               class="absolute top-0 left-0 w-full h-full flex flex-col justify-top items-top" v-if="!big">
               <div class="bg-transparent p-2 rounded-md text-center">
@@ -102,7 +94,6 @@ import { getItem } from '@/utils/storage.js';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
-const FIRST_FRAME_PREFIX = 'FIRST_FRAME_BASE64:';
 export default {
   name: 'Device',
   components: {
@@ -154,8 +145,6 @@ export default {
       frameQueue: [],
       isRenderingFrame: false,
       configBuffer: undefined,
-      firstFrameRendered: false,
-      firstFrameImageUrl: null,
       videoStarted: false,
       // WebSocket retry mechanism
       scrcpyReconnectAttempts: 0,
@@ -177,9 +166,6 @@ export default {
     getTaskStatus() {
       if (this.loading) {
         return this.i18n.loading
-      }
-      if (this.firstFrameImageUrl && !this.videoStarted) {
-        return this.i18n.connecting
       }
       if (this.device.task_status == -1) {
         return this.i18n.preparing
@@ -205,9 +191,6 @@ export default {
       if (this.loading) {
         return 'status-success'
       }
-      if (this.firstFrameImageUrl && !this.videoStarted) {
-        return 'status-success'
-      }
       if (this.device.task_status == -1) {
         return 'status-warning'
       }
@@ -221,9 +204,6 @@ export default {
     },
     getTaskStatusTextColor() {
       if (this.loading) {
-        return 'text-success'
-      }
-      if (this.firstFrameImageUrl && !this.videoStarted) {
         return 'text-success'
       }
       if (this.device.task_status == -1) {
@@ -429,54 +409,8 @@ export default {
         img.src = URL.createObjectURL(blob)
       })
     },
-    drawFirstFrameImage(image) {
-      const canvas = this.$refs.canvas
-      if (!canvas) {
-        return
-      }
-      if (!this.canvasCtx) {
-        this.canvasCtx = canvas.getContext('2d')
-      }
-      const width = image.width || image.naturalWidth || this.real_width || this.width
-      const height = image.height || image.naturalHeight || this.real_height || this.height
-      if (!width || !height || !this.canvasCtx) {
-        return
-      }
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width
-        canvas.height = height
-      }
-      if (this.real_width === 0 || this.real_height === 0) {
-        this.real_width = width
-        this.real_height = height
-      }
-      this.canvasCtx.drawImage(image, 0, 0, canvas.width, canvas.height)
-      if (typeof image.close === 'function') {
-        image.close()
-      }
-      this.firstFrameRendered = true
-    },
-    async renderFirstFramePreview(base64Data) {
-      if (this.firstFrameRendered) {
-        return
-      }
-      try {
-        this.firstFrameImageUrl = `data:image/png;base64,${base64Data}`
-        this.videoStarted = false
-        this.loading = false
-        const bytes = this.base64ToUint8Array(base64Data)
-        if (!bytes) {
-          this.firstFrameImageUrl = null
-          return
-        }
-        const blob = new Blob([bytes], { type: 'image/png' })
-        const image = await this.blobToImageSource(blob)
-        this.drawFirstFrameImage(image)
-      } catch (error) {
-        this.firstFrameImageUrl = null
-        console.error(`${this.no}-${this.device.serial} render first frame failed:`, error)
-      }
-    },
+
+
     mapKeyToAndroid(code, key) {
       // 映射键盘按键到Android键码
       const keyMap = {
@@ -560,6 +494,18 @@ export default {
       this.touchSync('d', event)
     },
     initializeWebCodecs() {
+      // Clean up existing decoder before creating a new one
+      if (this.videoDecoder) {
+        try {
+          if (this.videoDecoder.state !== 'closed') {
+            this.videoDecoder.close();
+          }
+        } catch (e) {
+          console.warn(`${this.no}-${this.device.serial} Error closing existing videoDecoder:`, e);
+        }
+        this.videoDecoder = null;
+      }
+
       if (!this.canvasCtx) {
         // Check if canvas ref exists before trying to get context
         if (!this.$refs.canvas) {
@@ -604,7 +550,6 @@ export default {
           this.canvasCtx.drawImage(frame, 0, 0);
           if (!this.videoStarted) {
             this.videoStarted = true
-            this.firstFrameImageUrl = null
           }
         } else {
           console.warn(`${this.no}-${this.device.serial} Canvas or context not available, skipping frame`);
@@ -640,6 +585,16 @@ export default {
       //     | `- key frame
       //      `-- config packet
       try {
+        // Ensure videoDecoder is initialized before processing
+        if (!this.videoDecoder || this.videoDecoder.state === 'closed') {
+          console.log(`${this.no}-${this.device.serial} videoDecoder not ready, reinitializing...`);
+          this.initializeWebCodecs();
+          if (!this.videoDecoder) {
+            console.error(`${this.no}-${this.device.serial} Failed to initialize videoDecoder`);
+            return;
+          }
+        }
+
         // 处理完整的帧数据(包含12字节头部)
         let fullData = new Uint8Array(data);
         if (!fullData || fullData.length < 4) {
@@ -699,6 +654,17 @@ export default {
         }
       } catch (e) {
         console.error(`${this.no}解码H.264数据出错:`, e);
+        // Reset decoder on error to ensure clean state
+        if (this.videoDecoder) {
+          try {
+            if (this.videoDecoder.state !== 'closed') {
+              this.videoDecoder.close();
+            }
+          } catch (closeError) {
+            console.warn(`${this.no}-${this.device.serial} Error closing videoDecoder in catch:`, closeError);
+          }
+          this.videoDecoder = null;
+        }
         this.initializeWebCodecs();
       }
     },
@@ -806,6 +772,11 @@ export default {
     },
 
     async connect() {
+      // Reset state for fresh connection
+      this.message_index = 0;
+      this.configBuffer = undefined;
+      this.loading = true;
+
       // Clean up any existing connection without stopping reconnect
       // Preserve the reconnect flag that was set in syncDisplay
       if (this.scrcpy) {
@@ -815,6 +786,13 @@ export default {
         // Close with handlers cleared first (prevents callbacks during reconnection)
         this.closeWebSocketConnection(oldScrcpy, true);
       }
+
+      // Ensure videoDecoder is initialized (using nextTick to ensure canvas is ready)
+      this.$nextTick(() => {
+        if (!this.videoDecoder || this.videoDecoder.state === 'closed') {
+          this.initializeWebCodecs();
+        }
+      });
 
       try {
         const wsPort = await readTextFile('wsport.txt', { dir: BaseDirectory.AppData });
@@ -840,7 +818,7 @@ export default {
         return;
       }
 
-      this.scrcpy.onopen = () => {
+      this.scrcpy.onopen = (event) => {
         console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} WebSocket opened successfully`);
         this.clearScrcpyConnectionTimer();
 
@@ -848,19 +826,27 @@ export default {
         this.scrcpyReconnectAttempts = 0;
         this.clearScrcpyReconnectTimer();
 
+        // Use event.target to get the WebSocket that fired the event, avoiding race conditions
+        const ws = event.target;
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          console.warn(`${this.no}-${this.device.serial} WebSocket onopen fired but connection is not valid`);
+          return;
+        }
+
+        // Double check this WebSocket is still the current one
+        if (ws !== this.scrcpy) {
+          console.warn(`${this.no}-${this.device.serial} WebSocket onopen fired for stale connection, ignoring`);
+          return;
+        }
+
         let max_size = this.big ? 1024 : this.screenResolution;
-        this.scrcpy.send(`${this.device.serial}`);
+        ws.send(`${this.device.serial}`);
         // max size
-        this.scrcpy.send(max_size);
+        ws.send(max_size);
         // control
-        this.scrcpy.send('true');
+        ws.send('true');
         // fps
-        this.scrcpy.send(this.big ? 30 : 15);
-        // capabilities
-        this.scrcpy.send(JSON.stringify({
-          type: 'capabilities',
-          firstFramePreview: true
-        }));
+        ws.send(this.big ? 30 : 15);
       }
 
       this.scrcpy.onclose = () => {
@@ -869,6 +855,18 @@ export default {
         this.loading = true;
         this.videoStarted = false;
         this.scrcpy = null;
+
+        // Clean up videoDecoder on close to ensure fresh state on reconnect
+        if (this.videoDecoder) {
+          try {
+            if (this.videoDecoder.state !== 'closed') {
+              this.videoDecoder.close();
+            }
+          } catch (e) {
+            console.warn(`${this.no}-${this.device.serial} Error closing videoDecoder:`, e);
+          }
+          this.videoDecoder = null;
+        }
 
         if (this.scrcpyShouldReconnect) {
           this.scheduleScrcpyReconnect();
@@ -895,12 +893,7 @@ export default {
 
       this.scrcpy.onmessage = async message => {
         if (this.message_index >= 2 && typeof message.data === 'string') {
-          if (message.data.startsWith(FIRST_FRAME_PREFIX)) {
-            console.log(`${this.no}-${this.device.serial} receive first frame preview, time: ${new Date().toISOString()}`)
-            this.renderFirstFramePreview(message.data.slice(FIRST_FRAME_PREFIX.length))
-          } else {
-            console.log('scrcpy string message ignored', message.data)
-          }
+          console.log('scrcpy string message ignored', message.data)
           return
         }
         if (this.message_index < 2) {
@@ -969,8 +962,6 @@ export default {
     },
     async syncDisplay() {
       this.loading = true;
-      this.firstFrameRendered = false;
-      this.firstFrameImageUrl = null;
       this.videoStarted = false;
       this.message_index = 0;
       this.height = await this.calculateDeviceHeight()
@@ -987,8 +978,6 @@ export default {
       this.connect();
     },
     closeScrcpy() {
-      this.firstFrameRendered = false;
-      this.firstFrameImageUrl = null;
       this.videoStarted = false;
       this.message_index = 0;
 
@@ -1115,7 +1104,8 @@ export default {
       if (!e.payload.devices.includes(this.device.real_serial)) {
         return
       }
-      if (this.scrcpy) {
+      // Check WebSocket exists and is in OPEN state before sending
+      if (this.scrcpy && this.scrcpy.readyState === WebSocket.OPEN) {
         this.scrcpy.send(e.payload.data)
       }
     }))

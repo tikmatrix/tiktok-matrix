@@ -438,6 +438,8 @@ pub async fn wait_agent_ready(
             if let Ok(port) = content.trim().parse::<u16>() {
                 if port > 0 {
                     log::info!("Agent is ready on port: {}", port);
+                    //wait 1s
+                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
                     return Ok(true);
                 }
             }
