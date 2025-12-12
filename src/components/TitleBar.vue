@@ -286,7 +286,6 @@ import { getAll } from '@tauri-apps/api/window';
 import { ask } from '@tauri-apps/api/dialog'; // Used for exit confirmation in closeWindow() only
 import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion, getName } from '@tauri-apps/api/app';
-import { onUpdaterEvent } from '@tauri-apps/api/updater';
 import { open } from '@tauri-apps/api/shell';
 import { os } from '@tauri-apps/api';
 import LicenseManagementDialog from './LicenseManagementDialog.vue';
@@ -297,6 +296,7 @@ import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whi
 import { isFeatureUnlocked } from '../utils/features.js';
 import { getItem, setItem } from '@/utils/storage.js';
 import LicenseLifecycle from './LicenseLifecycle.vue';
+import { useUpdateManager } from '../composables/useUpdateManager.js';
 
 export default {
   name: 'TitleBar',
@@ -313,6 +313,10 @@ export default {
       default: 0
     }
   },
+  setup() {
+    const updateManager = useUpdateManager();
+    return { updateManager };
+  },
   data() {
     return {
       version: '',
@@ -321,24 +325,25 @@ export default {
       darkMode: false,
       currentLocale: 'en',
       licenseData: {},
-      remote_version: {},
-      download_progress: {
-        filesize: 0,
-        transfered: 0,
-        transfer_rate: 0,
-        percentage: 0
-      },
       check_update_dialog_title: '',
       isLoadingLicense: true,
       agentProcessName: '',
       agentErrorType: 'port',
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       isWhiteLabelUnlocked: false,
-      tauriUpdateAvailable: false,
-      tauriUpdateInfo: null,
       platform: 'windows',
     }
   },
+  computed: {
+    tauriUpdateAvailable() {
+      return this.updateManager.hasUpdateAvailable.value;
+    },
+    tauriUpdateInfo() {
+      return this.updateManager.updateState.value.tauriUpdateInfo;
+    },
+    download_progress() {
+      return this.updateManager.updateState.value.downloadProgress;
+    },
   watch: {
     sidebarVisible(val) {
       this.$emiter('sidebarChange', val);
@@ -473,136 +478,156 @@ export default {
         this.isLoadingLicense = false;
       }
     },
+    /**
+     * Check for updates with improved logic and error handling
+     * @param {Object|boolean} arg - Check options or legacy boolean silent parameter
+     */
     async check_update(arg = {}) {
-      let silent = false;
-      let includeTauri = true;
+      // Parse arguments (support both legacy boolean and new object format)
+      const options = this.parseCheckUpdateArgs(arg);
+      const { silent, checkTauriUpdate, checkLibraries } = options;
 
-      if (typeof arg === 'boolean') {
-        silent = arg;
-        includeTauri = !silent;
-      } else if (arg && typeof arg === 'object') {
-        silent = arg.silent ?? false;
-        includeTauri = arg.includeTauri ?? !silent;
-      }
-
+      // Show checking dialog if not silent
       if (!silent) {
-        // 用户主动触发检查时重置提示状态
-        if (includeTauri) {
-          this.tauriUpdateAvailable = false;
-          this.tauriUpdateInfo = null;
-        }
-      }
-
-      // Use unified initialization process from Rust backend
-      if (!silent) {
-        this.check_update_dialog_title = 'Checking update...';
+        this.check_update_dialog_title = this.$t('checkingUpdate') || 'Checking update...';
         this.$refs.download_dialog.showModal();
       }
 
       try {
-        const initResult = await invoke('initialize_app', {
-          options: {
-            check_updates: true,
-            silent: silent,
-            check_libs_url: '',
-            check_tauri_update: includeTauri // 是否检查 Tauri 更新由调用方控制
-          }
+        // Use the unified update manager
+        const result = await this.updateManager.checkForUpdates({
+          silent,
+          checkTauriUpdate,
+          checkLibraries
         });
 
-        console.log('Initialization result:', initResult);
-
-        // Handle Tauri app update if available
-        if (includeTauri && initResult.tauri_update && initResult.tauri_update.should_update) {
-          const updateInfo = initResult.tauri_update;
-          console.log(`Update available ${updateInfo.version}, ${updateInfo.date}, ${updateInfo.body}`);
-          this.tauriUpdateInfo = updateInfo;
-
-          // Use cached platform value from mounted()
-          
-          // Close the checking dialog
+        // Handle Tauri update if available
+        if (checkTauriUpdate && result.tauri_update?.should_update) {
           if (!silent) {
             this.$refs.download_dialog.close();
           }
-
-          // Show custom update dialog
+          // Show update dialog
           this.$refs.updateDialog.show();
           return;
-        } else if (includeTauri) {
-          // 没有可用更新时同步清空提示
-          this.tauriUpdateAvailable = false;
-          this.tauriUpdateInfo = null;
         }
 
+        // Close checking dialog if no update
         if (!silent) {
           this.$refs.download_dialog.close();
         }
 
-        if (initResult.success) {
-          // Initialization successful, nothing else to do
-        } else {
-          // Handle errors
-          if (initResult.error.includes('Port 50809 is occupied')) {
-            const pname = initResult.agent_status.process_name;
-            if (!silent) {
-              this.agentProcessName = pname;
-              this.agentErrorType = 'port';
-              this.$refs.agentErrorDialog.show();
-            } else {
-              await this.$emiter('NOTIFY', {
-                type: 'info',
-                message: this.$t('agentPortOccupied', { process: pname }),
-                timeout: 3000
-              });
-            }
-          } else if (initResult.error.includes('missing_vc_runtime')) {
-            if (!silent) {
-              this.agentErrorType = 'runtime';
-              this.$refs.agentErrorDialog.show();
-            } else {
-              await this.$emiter('NOTIFY', {
-                type: 'error',
-                message: this.$t('agentRuntimeMissing'),
-                timeout: 5000
-              });
-            }
-          } else if (initResult.error.includes('not found')) {
-            if (!silent) {
-              this.agentErrorType = 'notfound';
-              this.$refs.agentErrorDialog.show();
-            } else {
-              await this.$emiter('NOTIFY', {
-                type: 'error',
-                message: this.$t('agentNotFound'),
-                timeout: 4000
-              });
-            }
-          } else if (initResult.error.includes('timeout')) {
-            if (!silent) {
-              this.agentErrorType = 'timeout';
-              this.$refs.agentErrorDialog.show();
-            } else {
-              await this.$emiter('NOTIFY', {
-                type: 'error',
-                message: this.$t('agentStartTimeout'),
-                timeout: 4000
-              });
-            }
-          } else {
-            await this.$emiter('NOTIFY', {
-              type: 'error',
-              message: initResult.error,
-              timeout: 4000
-            });
-          }
+        // Handle initialization errors
+        if (!result.success) {
+          await this.handleInitializationError(result, silent);
         }
-      } catch (e) {
-        console.error('Initialization failed:', e);
+      } catch (error) {
+        console.error('Update check failed:', error);
         if (!silent) {
           this.$refs.download_dialog.close();
         }
         await this.$emiter('NOTIFY', {
           type: 'error',
           message: this.$t('updateCheckFailed'),
+          timeout: 4000
+        });
+      }
+    },
+
+    /**
+     * Parse check_update arguments to support both legacy and new formats
+     * @param {Object|boolean} arg - Arguments to parse
+     * @returns {Object} - Parsed options
+     */
+    parseCheckUpdateArgs(arg) {
+      let silent = false;
+      let checkTauriUpdate = true;
+      let checkLibraries = true;
+
+      if (typeof arg === 'boolean') {
+        // Legacy format: check_update(true) means silent
+        silent = arg;
+        checkTauriUpdate = !silent;
+      } else if (arg && typeof arg === 'object') {
+        // New format: check_update({ silent: true, checkTauriUpdate: false })
+        silent = arg.silent ?? false;
+        checkTauriUpdate = arg.checkTauriUpdate ?? arg.includeTauri ?? !silent;
+        checkLibraries = arg.checkLibraries ?? true;
+      }
+
+      return { silent, checkTauriUpdate, checkLibraries };
+    },
+
+    /**
+     * Handle initialization errors with appropriate UI feedback
+     * @param {Object} result - Initialization result
+     * @param {boolean} silent - Whether running in silent mode
+     */
+    async handleInitializationError(result, silent) {
+      const errorHandlers = {
+        'Port 50809 is occupied': () => {
+          const pname = result.agent_status?.process_name || 'Unknown';
+          if (!silent) {
+            this.agentProcessName = pname;
+            this.agentErrorType = 'port';
+            this.$refs.agentErrorDialog.show();
+          } else {
+            this.$emiter('NOTIFY', {
+              type: 'info',
+              message: this.$t('agentPortOccupied', { process: pname }),
+              timeout: 3000
+            });
+          }
+        },
+        'missing_vc_runtime': () => {
+          if (!silent) {
+            this.agentErrorType = 'runtime';
+            this.$refs.agentErrorDialog.show();
+          } else {
+            this.$emiter('NOTIFY', {
+              type: 'error',
+              message: this.$t('agentRuntimeMissing'),
+              timeout: 5000
+            });
+          }
+        },
+        'not found': () => {
+          if (!silent) {
+            this.agentErrorType = 'notfound';
+            this.$refs.agentErrorDialog.show();
+          } else {
+            this.$emiter('NOTIFY', {
+              type: 'error',
+              message: this.$t('agentNotFound'),
+              timeout: 4000
+            });
+          }
+        },
+        'timeout': () => {
+          if (!silent) {
+            this.agentErrorType = 'timeout';
+            this.$refs.agentErrorDialog.show();
+          } else {
+            this.$emiter('NOTIFY', {
+              type: 'error',
+              message: this.$t('agentStartTimeout'),
+              timeout: 4000
+            });
+          }
+        }
+      };
+
+      // Find and execute appropriate error handler
+      const errorType = Object.keys(errorHandlers).find(key => 
+        result.error?.includes(key)
+      );
+
+      if (errorType) {
+        await errorHandlers[errorType]();
+      } else {
+        // Generic error handling
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: result.error || 'Unknown error',
           timeout: 4000
         });
       }
@@ -636,55 +661,59 @@ export default {
       return platform;
     },
 
+    /**
+     * Handle update confirmation from dialog
+     */
     handleUpdateConfirm() {
-      // Handle update confirmation based on platform
-      if (this.platform === 'windows') {
-        this.performWindowsUpdate();
-      } else {
+      if (this.isMac) {
         this.performMacUpdate();
+      } else {
+        this.performWindowsUpdate();
       }
     },
 
     handleUpdateCancel() {
-      // User cancelled the update
       console.log('Update cancelled by user');
     },
 
+    /**
+     * Perform Windows update installation
+     */
     async performWindowsUpdate() {
       this.check_update_dialog_title = this.$t('downloadingUpdate');
       this.$refs.download_dialog.showModal();
 
-      // Listen for Tauri update download progress
-      await onUpdaterEvent(({ error, status }) => {
-        console.log('Updater event:', status, error);
-        if (status === 'PENDING') {
-          this.check_update_dialog_title = this.$t('downloadingUpdate');
-        } else if (status === 'DONE') {
-          this.check_update_dialog_title = this.$t('installingUpdate');
-          this.download_progress = { filesize: 0, transfered: 0, transfer_rate: 0, percentage: 0 };
-        } else if (status === 'ERROR') {
-          console.error('Update error:', error);
-        }
-      });
+      try {
+        // Listen for download progress updates
+        const progressListener = await this.$listen('tauri://update-download-progress', (event) => {
+          const { chunk_length, content_length } = event.payload;
+          if (content_length && content_length > 0) {
+            const currentTransferred = (this.download_progress.transfered || 0) + chunk_length;
+            this.updateManager.updateDownloadProgress({
+              filesize: content_length,
+              transfered: currentTransferred,
+              transfer_rate: chunk_length,
+              percentage: Math.round((currentTransferred / content_length) * 100)
+            });
+          }
+        });
 
-      // Listen for download progress event
-      await this.$listen('tauri://update-download-progress', (event) => {
-        const { chunk_length, content_length } = event.payload;
-        if (content_length && content_length > 0) {
-          // Update progress
-          const currentTransferred = (this.download_progress.transfered || 0) + chunk_length;
-          this.download_progress = {
-            filesize: content_length,
-            transfered: currentTransferred,
-            transfer_rate: chunk_length,
-            percentage: Math.round((currentTransferred / content_length) * 100)
-          };
-        }
-      });
-
-      await invoke('install_and_relaunch_update');
+        // Install update using the composable
+        await this.updateManager.installTauriUpdate();
+      } catch (error) {
+        console.error('Update installation failed:', error);
+        this.$refs.download_dialog.close();
+        await this.$emiter('NOTIFY', {
+          type: 'error',
+          message: this.$t('updateFailed'),
+          timeout: 4000
+        });
+      }
     },
 
+    /**
+     * Perform Mac update (open download page)
+     */
     async performMacUpdate() {
       const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
         ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
@@ -707,17 +736,12 @@ export default {
     this.isWhiteLabelUnlocked = await isFeatureUnlocked('whiteLabel');
 
     await this.$listen("DOWNLOAD_PROGRESS", async (e) => {
-      this.download_progress = e.payload;
+      this.updateManager.updateDownloadProgress(e.payload);
     });
 
     await this.$listen("DOWNLOAD_FINISHED", async () => {
       console.log("download finished");
-      this.download_progress = {
-        filesize: 0,
-        transfered: 0,
-        transfer_rate: 0,
-        percentage: 0
-      };
+      this.updateManager.resetDownloadProgress();
     });
 
     await this.$listen("UPDATE_STATUS", async (e) => {
@@ -773,13 +797,7 @@ export default {
 
     await this.$listen('TAURI_UPDATE_STATUS', async (event) => {
       const payload = event.payload || {};
-      if (payload.should_update) {
-        this.tauriUpdateAvailable = true;
-        this.tauriUpdateInfo = payload;
-      } else {
-        this.tauriUpdateAvailable = false;
-        this.tauriUpdateInfo = null;
-      }
+      this.updateManager.setTauriUpdateInfo(payload);
     });
 
     // Initialize platform

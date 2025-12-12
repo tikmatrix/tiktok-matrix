@@ -196,6 +196,7 @@
   chatgptSettings: 'ChatGPT 设置',
   checkInDaily: '每日签到',
   checkUpdate: '检查更新',
+  checkingUpdate: '正在检查更新...',
   choosePlan: '选择套餐',
   clear: '清空',
   clearAgentCache: '清除Agent缓存',
