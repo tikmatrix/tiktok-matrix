@@ -197,6 +197,7 @@
   chatgptSettings: 'ChatGPT Настройки',
   checkInDaily: 'Ежедневная регистрация',
   checkUpdate: 'Проверить обновления',
+  checkingUpdate: 'Проверка обновлений...',
   choosePlan: 'Выберите план',
   clear: 'Очистить',
   clearAgentCache: 'Очистить кэш агента',

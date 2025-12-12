@@ -45,6 +45,24 @@ impl UpdateStatus {
     }
 }
 
+/// Helper function to reset port files to prevent conflicts
+fn reset_port_files(app_data_dir: &PathBuf) {
+    let port_files = ["port.txt", "wsport.txt", "wssport.txt"];
+    for file in &port_files {
+        let path = app_data_dir.join(file);
+        if let Err(e) = std::fs::write(&path, "0") {
+            log::error!("Failed to reset {}: {}", file, e);
+        }
+    }
+}
+
+/// Helper function to kill agent and script processes and reset ports
+fn kill_agent_and_script(app_data_dir: &PathBuf) {
+    crate::kill_process("agent".to_string());
+    crate::kill_process("script".to_string());
+    reset_port_files(app_data_dir);
+}
+
 fn copy_file_with_retry(
     src: &Path,
     dest: &Path,
@@ -89,11 +107,20 @@ fn copy_file_with_retry(
         }
     }
 }
+/// Get default check_libs_url based on build configuration
+fn get_default_check_libs_url() -> String {
+    if cfg!(debug_assertions) {
+        // In dev builds prefer local dev server
+        "http://127.0.0.1:8787/front-api/check_libs?beta=0".to_string()
+    } else {
+        // Production default
+        "https://api.niostack.com/front-api/check_libs?beta=0".to_string()
+    }
+}
 
 /// Check libraries update from remote server
 pub async fn check_libs_update(
     app_handle: &AppHandle,
-    check_libs_url: &str,
     platform: &str,
     app_name: &str,
 ) -> Result<CheckLibsResponse, String> {
@@ -103,7 +130,7 @@ pub async fn check_libs_update(
         lib_name: None,
     };
     status.emit(app_handle);
-
+    let check_libs_url = get_default_check_libs_url();
     // Build the request URL first for proxy bypass check
     let url = format!("{}&time={}", check_libs_url, chrono::Utc::now().timestamp());
     log::info!("Checking libraries update from: {}", url);
@@ -334,50 +361,25 @@ pub async fn install_lib_file(
             // Pause agent monitor to prevent auto-restart during update
             crate::process_manager::pause_agent_monitor();
 
-            // Ensure both agent and script are stopped to avoid automatic restarts
-            crate::kill_process("agent".to_string());
-            crate::kill_process("script".to_string());
-            //reset ports to 0 to avoid conflicts
-            match std::fs::write(app_data_dir.join("port.txt"), "0") {
-                Ok(_) => (),
-                Err(e) => log::error!("Failed to reset port.txt: {}", e),
-            }
-            match std::fs::write(app_data_dir.join("wsport.txt"), "0") {
-                Ok(_) => (),
-                Err(e) => log::error!("Failed to reset wsport.txt: {}", e),
-            }
-            match std::fs::write(app_data_dir.join("wssport.txt"), "0") {
-                Ok(_) => (),
-                Err(e) => log::error!("Failed to reset wssport.txt: {}", e),
-            }
+            // Kill processes and reset ports
+            kill_agent_and_script(&app_data_dir);
             std::thread::sleep(std::time::Duration::from_secs(3));
 
             let bin_dir = app_data_dir.join("bin");
             fs::create_dir_all(&bin_dir).map_err(|e| e.to_string())?;
 
             let dest_file = bin_dir.join(tmp_file_path.file_name().unwrap());
+
+            // Define retry hook to kill processes if file is locked
             let mut retry_hook = |attempt: u32| {
                 log::info!(
                     "Re-killing agent/script before retry attempt {} due to locked file",
                     attempt + 1
                 );
-                crate::kill_process("agent".to_string());
-                crate::kill_process("script".to_string());
-                //reset ports to 0 to avoid conflicts
-                match std::fs::write(app_data_dir.join("port.txt"), "0") {
-                    Ok(_) => (),
-                    Err(e) => log::error!("Failed to reset port.txt: {}", e),
-                }
-                match std::fs::write(app_data_dir.join("wsport.txt"), "0") {
-                    Ok(_) => (),
-                    Err(e) => log::error!("Failed to reset wsport.txt: {}", e),
-                }
-                match std::fs::write(app_data_dir.join("wssport.txt"), "0") {
-                    Ok(_) => (),
-                    Err(e) => log::error!("Failed to reset wssport.txt: {}", e),
-                }
+                kill_agent_and_script(&app_data_dir);
             };
 
+            // Copy file with retry logic
             copy_file_with_retry(tmp_file_path, &dest_file, 5, 500, Some(&mut retry_hook))
                 .map_err(|e| {
                     // Resume monitor on error

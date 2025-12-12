@@ -197,6 +197,7 @@
   chatgptSettings: 'ChatGPT Settings',
   checkInDaily: 'Check in daily',
   checkUpdate: 'Check Update',
+  checkingUpdate: 'Checking for updates...',
   choosePlan: 'Choose Plan',
   clear: 'Clear',
   clearAgentCache: 'Clear Agent Cache',

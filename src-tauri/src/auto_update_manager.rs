@@ -47,6 +47,67 @@ lazy_static::lazy_static! {
     pub static ref AUTO_UPDATE_CONFIG: Arc<Mutex<AutoUpdateConfig>> = Arc::new(Mutex::new(AutoUpdateConfig::default()));
 }
 
+/// Check if enough time has elapsed since last update check
+fn should_check_for_update(check_interval_minutes: u64) -> bool {
+    AUTO_UPDATE_STATE
+        .lock()
+        .ok()
+        .and_then(|state| {
+            state.last_check.map(|last_check| {
+                let elapsed = last_check.elapsed();
+                let interval_duration = Duration::from_secs(check_interval_minutes * 60);
+                elapsed >= interval_duration
+            })
+        })
+        .unwrap_or(true) // If no last check, should check
+}
+
+/// Check all conditions required for auto-update to proceed
+async fn can_auto_update(
+    app_handle: &AppHandle,
+    config: &AutoUpdateConfig,
+) -> Result<bool, String> {
+    // Check if auto-update is enabled
+    if !config.enabled {
+        log::debug!("Auto-update is disabled");
+        return Ok(false);
+    }
+
+    // Check if system is idle
+    if !is_system_idle(config.idle_threshold_minutes) {
+        log::debug!("System is not idle");
+        return Ok(false);
+    }
+
+    // Check if script process is running
+    if is_script_running() {
+        log::debug!("Script process is running");
+        return Ok(false);
+    }
+
+    // Check time since last check
+    if !should_check_for_update(config.check_interval_minutes) {
+        log::debug!("Not enough time since last check");
+        return Ok(false);
+    }
+
+    // Check if has running tasks
+    match check_has_running_tasks(app_handle).await {
+        Ok(has_tasks) => {
+            if has_tasks {
+                log::debug!("Has running tasks");
+                return Ok(false);
+            }
+        }
+        Err(e) => {
+            log::warn!("Failed to check running tasks: {}", e);
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
+}
+
 /// Update user activity timestamp (called from frontend)
 pub fn update_user_activity() {
     if let Ok(mut state) = AUTO_UPDATE_STATE.lock() {
@@ -173,69 +234,52 @@ pub async fn start_auto_update_timer(
                 .map(|c| c.clone())
                 .unwrap_or_default();
 
-            if !current_config.enabled {
-                log::debug!("Auto-update is disabled, skipping check");
-                continue;
-            }
+            // Check if all conditions are met for auto-update
+            match can_auto_update(&app_handle, &current_config).await {
+                Ok(true) => {
+                    // All conditions met, trigger both Tauri and library updates
+                    log::info!("Auto-update conditions met, checking for updates");
+                    update_last_check();
 
-            // Check if system is idle
-            if !is_system_idle(current_config.idle_threshold_minutes) {
-                log::debug!("System is not idle, skipping auto-update");
-                continue;
-            }
+                    // Check Tauri application update
+                    match crate::update_manager::check_tauri_update(&app_handle).await {
+                        Ok(info) => {
+                            log::info!("Tauri update check result: {:?}", info);
+                            if let Err(e) = app_handle.emit_all("TAURI_UPDATE_STATUS", &info) {
+                                log::error!("Failed to emit Tauri update status: {}", e);
+                            }
+                        }
+                        Err(e) => {
+                            log::warn!("Background Tauri update check failed: {}", e);
+                        }
+                    }
 
-            // Check if script process is running
-            if is_script_running() {
-                log::debug!("Script process is running, skipping auto-update");
-                continue;
-            }
-
-            // Check time since last check
-            let should_check = AUTO_UPDATE_STATE
-                .lock()
-                .ok()
-                .and_then(|state| {
-                    state.last_check.map(|last_check| {
-                        let elapsed = last_check.elapsed();
-                        let interval_duration =
-                            Duration::from_secs(current_config.check_interval_minutes * 60);
-                        elapsed >= interval_duration
-                    })
-                })
-                .unwrap_or(true); // If no last check, should check
-
-            if !should_check {
-                log::debug!("Not enough time since last check");
-                continue;
-            }
-
-            // Check if has running tasks by querying agent
-            let has_running_tasks = match check_has_running_tasks(&app_handle).await {
-                Ok(has_tasks) => has_tasks,
-                Err(e) => {
-                    log::warn!("Failed to check running tasks: {}, skipping update", e);
-                    continue;
-                }
-            };
-
-            if has_running_tasks {
-                log::debug!("Has running tasks, skipping auto-update");
-                continue;
-            }
-
-            // All conditions met, trigger Tauri update check
-            log::info!("Auto-update conditions met, checking Tauri application update");
-            update_last_check();
-
-            match crate::update_manager::check_tauri_update(&app_handle).await {
-                Ok(info) => {
-                    log::info!("Tauri update check result: {:?}", info);
-                    if let Err(e) = app_handle.emit_all("TAURI_UPDATE_STATUS", &info) {
-                        log::error!("Failed to emit Tauri update status: {}", e);
+                    // Check and apply library updates
+                    match crate::process_manager::check_and_process_library_updates(
+                        &app_handle,
+                        true, // Silent mode for background updates
+                    )
+                    .await
+                    {
+                        Ok(updates_applied) => {
+                            if !updates_applied.is_empty() {
+                                log::info!("Library updates applied: {:?}", updates_applied);
+                            } else {
+                                log::debug!("All libraries are up to date");
+                            }
+                        }
+                        Err(e) => {
+                            log::warn!("Background library update check failed: {}", e);
+                        }
                     }
                 }
+                Ok(false) => {
+                    // Conditions not met, skip this check
+                    continue;
+                }
                 Err(e) => {
-                    log::warn!("Background Tauri update check failed: {}", e);
+                    log::error!("Error checking auto-update conditions: {}", e);
+                    continue;
                 }
             }
         }
