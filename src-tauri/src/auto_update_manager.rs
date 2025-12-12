@@ -257,7 +257,6 @@ pub async fn start_auto_update_timer(
                     // Check and apply library updates
                     match crate::process_manager::check_and_process_library_updates(
                         &app_handle,
-                        "", // Empty URL will trigger environment/default lookup
                         true, // Silent mode for background updates
                     )
                     .await

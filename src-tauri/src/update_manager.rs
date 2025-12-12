@@ -107,11 +107,20 @@ fn copy_file_with_retry(
         }
     }
 }
+/// Get default check_libs_url based on build configuration
+fn get_default_check_libs_url() -> String {
+    if cfg!(debug_assertions) {
+        // In dev builds prefer local dev server
+        "http://127.0.0.1:8787/front-api/check_libs?beta=0".to_string()
+    } else {
+        // Production default
+        "https://api.niostack.com/front-api/check_libs?beta=0".to_string()
+    }
+}
 
 /// Check libraries update from remote server
 pub async fn check_libs_update(
     app_handle: &AppHandle,
-    check_libs_url: &str,
     platform: &str,
     app_name: &str,
 ) -> Result<CheckLibsResponse, String> {
@@ -121,7 +130,7 @@ pub async fn check_libs_update(
         lib_name: None,
     };
     status.emit(app_handle);
-
+    let check_libs_url = get_default_check_libs_url();
     // Build the request URL first for proxy bypass check
     let url = format!("{}&time={}", check_libs_url, chrono::Utc::now().timestamp());
     log::info!("Checking libraries update from: {}", url);
@@ -360,7 +369,7 @@ pub async fn install_lib_file(
             fs::create_dir_all(&bin_dir).map_err(|e| e.to_string())?;
 
             let dest_file = bin_dir.join(tmp_file_path.file_name().unwrap());
-            
+
             // Define retry hook to kill processes if file is locked
             let mut retry_hook = |attempt: u32| {
                 log::info!(

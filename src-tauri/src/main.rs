@@ -113,11 +113,10 @@ fn kill_process(name: String) {
 #[tauri::command]
 async fn check_libs_update(
     app_handle: tauri::AppHandle,
-    check_libs_url: String,
     platform: String,
     app_name: String,
 ) -> Result<update_manager::CheckLibsResponse, String> {
-    update_manager::check_libs_update(&app_handle, &check_libs_url, &platform, &app_name).await
+    update_manager::check_libs_update(&app_handle, &platform, &app_name).await
 }
 
 /// Get local library version

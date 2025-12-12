@@ -12,12 +12,12 @@ export function useUpdateManager() {
     // Tauri app update state
     tauriUpdateAvailable: false,
     tauriUpdateInfo: null,
-    
+
     // Library update state
     checkingUpdates: false,
     downloadingUpdate: false,
     installingUpdate: false,
-    
+
     // Progress tracking
     downloadProgress: {
       filesize: 0,
@@ -25,7 +25,7 @@ export function useUpdateManager() {
       transfer_rate: 0,
       percentage: 0
     },
-    
+
     // Status messages
     currentOperation: '',
     lastError: null
@@ -33,9 +33,9 @@ export function useUpdateManager() {
 
   // Computed properties
   const hasUpdateAvailable = computed(() => updateState.value.tauriUpdateAvailable);
-  const isUpdating = computed(() => 
-    updateState.value.checkingUpdates || 
-    updateState.value.downloadingUpdate || 
+  const isUpdating = computed(() =>
+    updateState.value.checkingUpdates ||
+    updateState.value.downloadingUpdate ||
     updateState.value.installingUpdate
   );
   const updateVersion = computed(() => updateState.value.tauriUpdateInfo?.version || '');
@@ -112,7 +112,6 @@ export function useUpdateManager() {
         options: {
           check_updates: checkLibraries,
           silent,
-          check_libs_url: '',
           check_tauri_update: checkTauriUpdate
         }
       });
@@ -148,7 +147,7 @@ export function useUpdateManager() {
       // Listen for download progress
       await onUpdaterEvent(({ error, status }) => {
         console.log('Updater event:', status, error);
-        
+
         if (status === 'PENDING') {
           updateState.value.currentOperation = 'Downloading update...';
         } else if (status === 'DONE') {
@@ -178,12 +177,12 @@ export function useUpdateManager() {
   return {
     // State
     updateState,
-    
+
     // Computed
     hasUpdateAvailable,
     isUpdating,
     updateVersion,
-    
+
     // Methods
     checkForUpdates,
     installTauriUpdate,
