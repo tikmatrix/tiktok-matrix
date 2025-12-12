@@ -276,7 +276,7 @@
 
   <!-- 更新对话框 -->
   <UpdateDialog ref="updateDialog" :current-version="version" :new-version="tauriUpdateInfo?.version || ''"
-    :update-body="tauriUpdateInfo?.body || ''" :is-mac="platform === 'mac-arm' || platform === 'mac-intel'"
+    :update-body="tauriUpdateInfo?.body || ''" :is-mac="isMac"
     @confirm="handleUpdateConfirm" @cancel="handleUpdateCancel" />
 </template>
 
@@ -386,6 +386,9 @@ export default {
         return flag;
       }
       return true;
+    },
+    isMac() {
+      return this.platform === 'mac-arm' || this.platform === 'mac-intel';
     }
   },
   async created() {

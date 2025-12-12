@@ -1056,7 +1056,7 @@
   updateAvailableTitle: 'Update Available',
   currentVersion: 'Current Version',
   newVersion: 'New Version',
-  updateNotes: 'What\'s New',
+  updateNotes: "What's New",
   macUpdateSubtitle: 'A new version is ready to download',
   windowsUpdateSubtitle: 'A new version is ready to install',
   downloadNow: 'Download Now',
