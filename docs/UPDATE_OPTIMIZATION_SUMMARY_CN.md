@@ -97,6 +97,11 @@ async fn can_auto_update(
     app_handle: &AppHandle,
     config: &AutoUpdateConfig,
 ) -> Result<bool, String>
+
+// 检查并应用库更新（静默模式）
+async fn check_and_apply_library_updates(
+    app_handle: &AppHandle
+) -> Result<Vec<String>, String>
 ```
 
 **优化前:**
@@ -111,6 +116,9 @@ if !is_system_idle(...) {
     continue;
 }
 // ... 更多重复的条件检查
+
+// 只检查 Tauri 更新
+check_tauri_update(&app_handle).await
 ```
 
 **优化后:**
@@ -118,7 +126,11 @@ if !is_system_idle(...) {
 // 清晰简洁的单函数调用
 match can_auto_update(&app_handle, &current_config).await {
     Ok(true) => {
-        // 执行更新检查
+        // 检查 Tauri 应用更新
+        check_tauri_update(&app_handle).await;
+        
+        // 检查并应用库更新（新增）
+        check_and_apply_library_updates(&app_handle).await;
     }
     Ok(false) => continue,
     Err(e) => {
@@ -133,6 +145,7 @@ match can_auto_update(&app_handle, &current_config).await {
 - 逻辑更清晰
 - 更易于添加新的检查条件
 - 更好的错误处理
+- **自动更新现在包括 Tauri 更新和库更新（agent、script 等）**
 
 ### 3. 用户体验改进
 

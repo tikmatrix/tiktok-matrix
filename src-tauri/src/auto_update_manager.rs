@@ -179,6 +179,82 @@ pub fn is_script_running() -> bool {
     }
 }
 
+/// Check and apply library updates in silent mode
+/// Returns a list of successfully updated libraries
+async fn check_and_apply_library_updates(app_handle: &AppHandle) -> Result<Vec<String>, String> {
+    log::info!("Checking for library updates in background");
+    
+    // Get platform info
+    let platform = match std::env::consts::OS {
+        "windows" => "windows",
+        "macos" => "macos",
+        _ => "linux",
+    };
+    let app_name = app_handle.package_info().name.clone();
+    
+    // Determine check_libs_url with same logic as initialize_app
+    let check_libs_url = if let Ok(env_url) = std::env::var("TIKMATRIX_CHECK_LIBS_URL") {
+        if !env_url.trim().is_empty() {
+            env_url
+        } else {
+            get_default_check_libs_url()
+        }
+    } else {
+        get_default_check_libs_url()
+    };
+    
+    log::debug!("Using check_libs_url: {}", check_libs_url);
+    
+    // Check for library updates
+    match crate::update_manager::check_libs_update(
+        app_handle,
+        &check_libs_url,
+        platform,
+        &app_name,
+    )
+    .await
+    {
+        Ok(response) => {
+            let libs = response.data.libs;
+            let mut updates_applied = Vec::new();
+            
+            // Update each library
+            for lib in libs {
+                match crate::update_manager::process_lib_update(app_handle, &lib).await {
+                    Ok(true) => {
+                        log::info!("Background update: Library {} updated successfully", lib.name);
+                        updates_applied.push(lib.name.clone());
+                    }
+                    Ok(false) => {
+                        log::debug!("Background update: Library {} is up to date", lib.name);
+                    }
+                    Err(e) => {
+                        log::warn!("Background update: Failed to update library {}: {}", lib.name, e);
+                        // Continue with other libraries even if one fails
+                    }
+                }
+            }
+            
+            Ok(updates_applied)
+        }
+        Err(e) => {
+            log::error!("Failed to check library updates: {}", e);
+            Err(format!("Library update check failed: {}", e))
+        }
+    }
+}
+
+/// Get default check_libs_url based on build configuration
+fn get_default_check_libs_url() -> String {
+    if cfg!(debug_assertions) {
+        // In dev builds prefer local dev server
+        "http://127.0.0.1:8787/front-api/check_libs?beta=0".to_string()
+    } else {
+        // Production default
+        "https://api.niostack.com/front-api/check_libs?beta=0".to_string()
+    }
+}
+
 /// Update the last check timestamp
 fn update_last_check() {
     if let Ok(mut state) = AUTO_UPDATE_STATE.lock() {
@@ -237,10 +313,11 @@ pub async fn start_auto_update_timer(
             // Check if all conditions are met for auto-update
             match can_auto_update(&app_handle, &current_config).await {
                 Ok(true) => {
-                    // All conditions met, trigger Tauri update check
-                    log::info!("Auto-update conditions met, checking Tauri application update");
+                    // All conditions met, trigger both Tauri and library updates
+                    log::info!("Auto-update conditions met, checking for updates");
                     update_last_check();
 
+                    // Check Tauri application update
                     match crate::update_manager::check_tauri_update(&app_handle).await {
                         Ok(info) => {
                             log::info!("Tauri update check result: {:?}", info);
@@ -250,6 +327,20 @@ pub async fn start_auto_update_timer(
                         }
                         Err(e) => {
                             log::warn!("Background Tauri update check failed: {}", e);
+                        }
+                    }
+
+                    // Check and apply library updates
+                    match check_and_apply_library_updates(&app_handle).await {
+                        Ok(updates_applied) => {
+                            if !updates_applied.is_empty() {
+                                log::info!("Library updates applied: {:?}", updates_applied);
+                            } else {
+                                log::debug!("All libraries are up to date");
+                            }
+                        }
+                        Err(e) => {
+                            log::warn!("Background library update check failed: {}", e);
                         }
                     }
                 }

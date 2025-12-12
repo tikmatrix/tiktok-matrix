@@ -217,17 +217,28 @@ can_auto_update() checks conditions:
     ↓
 All conditions met?
     ↓ Yes
-update_manager::check_tauri_update()
-    ↓
-Emit 'TAURI_UPDATE_STATUS' event
-    ↓
-Frontend receives event
-    ↓
-useUpdateManager.setTauriUpdateInfo()
-    ↓
-Red badge appears on version button
-    ↓
-User can click to see UpdateDialog
+├─ Check Tauri app update
+│  └─ update_manager::check_tauri_update()
+│      ↓
+│      Emit 'TAURI_UPDATE_STATUS' event
+│      ↓
+│      Frontend receives event → Red badge on version button
+│
+└─ Check and apply library updates
+   └─ check_and_apply_library_updates()
+       ├─ update_manager::check_libs_update()
+       │   └─ Get list of available updates
+       │
+       └─ For each library:
+           └─ update_manager::process_lib_update()
+               ├─ Compare versions
+               ├─ download_lib_file()
+               ├─ install_lib_file()
+               └─ save_local_lib_version()
+       ↓
+       Log applied updates
+       ↓
+       All updates applied silently
 ```
 
 ## Error Handling
