@@ -57,7 +57,7 @@
             {{ $t('cancel') }}
           </button>
           <button class="btn btn-success flex-1" @click="handleConfirm">
-            <font-awesome-icon icon="fa-solid fa-download" class="mr-2" />
+            <font-awesome-icon :icon="isMac ? 'fa-solid fa-download' : 'fa-solid fa-sync'" class="mr-2" />
             {{ confirmButtonText }}
           </button>
         </form>
@@ -123,11 +123,22 @@ export default {
         gfm: true
       });
       
-      // Sanitize HTML to prevent XSS attacks
-      return DOMPurify.sanitize(rawHtml, {
+      // Sanitize HTML to prevent XSS attacks and tabnabbing
+      const sanitized = DOMPurify.sanitize(rawHtml, {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a'],
         ALLOWED_ATTR: ['href', 'target', 'rel']
       });
+
+      // Add noopener and noreferrer to all links for security
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = sanitized;
+      const links = tempDiv.querySelectorAll('a');
+      links.forEach(link => {
+        link.setAttribute('rel', 'noopener noreferrer');
+        link.setAttribute('target', '_blank');
+      });
+      
+      return tempDiv.innerHTML;
     }
   },
   methods: {

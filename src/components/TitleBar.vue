@@ -651,16 +651,16 @@ export default {
     },
 
     async performWindowsUpdate() {
-      this.check_update_dialog_title = 'Downloading update...';
+      this.check_update_dialog_title = this.$t('downloadingUpdate');
       this.$refs.download_dialog.showModal();
 
       // Listen for Tauri update download progress
       await onUpdaterEvent(({ error, status }) => {
         console.log('Updater event:', status, error);
         if (status === 'PENDING') {
-          this.check_update_dialog_title = 'Downloading update...';
+          this.check_update_dialog_title = this.$t('downloadingUpdate');
         } else if (status === 'DONE') {
-          this.check_update_dialog_title = 'Installing update...';
+          this.check_update_dialog_title = this.$t('installingUpdate');
           this.download_progress = { filesize: 0, transfered: 0, transfer_rate: 0, percentage: 0 };
         } else if (status === 'ERROR') {
           console.error('Update error:', error);

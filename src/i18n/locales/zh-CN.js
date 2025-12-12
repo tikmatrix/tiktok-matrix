@@ -1061,6 +1061,8 @@
   downloadNow: '立即下载',
   installNow: '立即安装',
   macUpdateInfo: '将在浏览器中打开下载页面，请手动下载并安装。',
+  downloadingUpdate: '正在下载更新...',
+  installingUpdate: '正在安装更新...',
   macUpdateAvailable: '发现新版本',
   macUpdatePrompt: '检测到新版本 {version}，是否前往下载？',
   macUpdateDownload: '前往下载',

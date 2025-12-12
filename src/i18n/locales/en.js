@@ -1062,6 +1062,8 @@
   downloadNow: 'Download Now',
   installNow: 'Install Update',
   macUpdateInfo: 'The download page will open in your browser. Please download and install manually.',
+  downloadingUpdate: 'Downloading update...',
+  installingUpdate: 'Installing update...',
   macUpdateAvailable: 'New version available',
   macUpdatePrompt: 'A new version {version} is available. Would you like to download it?',
   macUpdateDownload: 'Download',

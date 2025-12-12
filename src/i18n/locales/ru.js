@@ -1062,6 +1062,8 @@
   downloadNow: 'Скачать сейчас',
   installNow: 'Установить обновление',
   macUpdateInfo: 'Страница загрузки откроется в браузере. Пожалуйста, скачайте и установите вручную.',
+  downloadingUpdate: 'Загрузка обновления...',
+  installingUpdate: 'Установка обновления...',
   macUpdateAvailable: 'Доступна новая версия',
   macUpdatePrompt: 'Доступна новая версия {version}. Хотите загрузить её?',
   macUpdateDownload: 'Загрузить',
