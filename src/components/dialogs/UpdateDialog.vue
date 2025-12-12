@@ -1,6 +1,6 @@
 <template>
   <dialog ref="updateDialog" class="modal">
-    <div class="modal-box max-w-2xl bg-gradient-to-br from-base-100 to-base-200">
+    <div class="modal-box max-w-2xl bg-linear-to-br from-base-100 to-base-200">
       <!-- Close button -->
       <form method="dialog">
         <button
@@ -38,8 +38,8 @@
         </div>
 
         <!-- Update notes with markdown support -->
-        <div v-if="updateBody" class="bg-base-300/30 rounded-lg p-4 max-h-64 overflow-y-auto" 
-          tabindex="0" role="region" :aria-label="$t('updateNotes')">
+        <div v-if="updateBody" class="bg-base-300/30 rounded-lg p-4 max-h-64 overflow-y-auto" tabindex="0" role="region"
+          :aria-label="$t('updateNotes')">
           <h4 class="text-sm font-semibold text-base-content/80 mb-2">{{ $t('updateNotes') }}</h4>
           <!-- 
             v-html is safe here because:
@@ -125,13 +125,13 @@ export default {
       if (!this.updateBody) {
         return '';
       }
-      
+
       // Convert markdown to HTML with options passed directly
       const rawHtml = marked(this.updateBody, {
         breaks: true,
         gfm: true
       });
-      
+
       // Sanitize HTML with strict URL protocol validation
       const sanitized = DOMPurify.sanitize(rawHtml, {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a'],
@@ -148,7 +148,7 @@ export default {
         link.setAttribute('rel', 'noopener noreferrer');
         link.setAttribute('target', '_blank');
       });
-      
+
       return doc.body.innerHTML;
     }
   },
