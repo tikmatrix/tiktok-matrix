@@ -123,22 +123,22 @@ export default {
         gfm: true
       });
       
-      // Sanitize HTML to prevent XSS attacks and tabnabbing
+      // Sanitize HTML to prevent XSS attacks
       const sanitized = DOMPurify.sanitize(rawHtml, {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a'],
-        ALLOWED_ATTR: ['href', 'target', 'rel']
+        ALLOWED_ATTR: ['href']
       });
 
-      // Add noopener and noreferrer to all links for security
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = sanitized;
-      const links = tempDiv.querySelectorAll('a');
+      // Use DOMParser for safer HTML parsing and add security attributes to all links
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(sanitized, 'text/html');
+      const links = doc.querySelectorAll('a');
       links.forEach(link => {
         link.setAttribute('rel', 'noopener noreferrer');
         link.setAttribute('target', '_blank');
       });
       
-      return tempDiv.innerHTML;
+      return doc.body.innerHTML;
     }
   },
   methods: {

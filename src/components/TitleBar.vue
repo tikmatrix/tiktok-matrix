@@ -283,7 +283,7 @@
 <script>
 import { appWindow } from '@tauri-apps/api/window';
 import { getAll } from '@tauri-apps/api/window';
-import { ask } from '@tauri-apps/api/dialog';
+import { ask } from '@tauri-apps/api/dialog'; // Used for window close confirmation only
 import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion, getName } from '@tauri-apps/api/app';
 import { onUpdaterEvent } from '@tauri-apps/api/updater';
@@ -517,7 +517,7 @@ export default {
           console.log(`Update available ${updateInfo.version}, ${updateInfo.date}, ${updateInfo.body}`);
           this.tauriUpdateInfo = updateInfo;
 
-          this.platform = await this.getPlatform();
+          // Use cached platform value from mounted()
           
           // Close the checking dialog
           if (!silent) {
