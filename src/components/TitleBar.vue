@@ -815,7 +815,7 @@ export default {
     // Initialize platform
     this.platform = await this.getPlatform();
 
-    this.check_update({ includeTauri: false });
+    this.check_update({ includeTauri: true });
   }
 }
 </script>
