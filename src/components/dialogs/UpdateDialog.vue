@@ -41,6 +41,14 @@
         <div v-if="updateBody" class="bg-base-300/30 rounded-lg p-4 max-h-64 overflow-y-auto" 
           tabindex="0" role="region" :aria-label="$t('updateNotes')">
           <h4 class="text-sm font-semibold text-base-content/80 mb-2">{{ $t('updateNotes') }}</h4>
+          <!-- 
+            v-html is safe here because:
+            1. Content comes from trusted update server (same origin as app)
+            2. DOMPurify sanitizes with strict whitelist
+            3. URL protocols validated (blocks javascript:, data:, etc)
+            4. All links get noopener noreferrer
+            5. Parsed with DOMParser, not innerHTML
+          -->
           <div class="prose prose-sm max-w-none text-base-content/90" v-html="renderedMarkdown"></div>
         </div>
 
@@ -124,11 +132,12 @@ export default {
         gfm: true
       });
       
-      // Sanitize HTML to prevent XSS attacks with URL protocol validation
+      // Sanitize HTML with strict URL protocol validation
       const sanitized = DOMPurify.sanitize(rawHtml, {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a'],
         ALLOWED_ATTR: ['href'],
-        ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))/i
+        // Only allow safe URL protocols: https, http, mailto, tel
+        ALLOWED_URI_REGEXP: /^(https?|mailto|tel):/i
       });
 
       // Use DOMParser for safer HTML parsing and add security attributes to all links
