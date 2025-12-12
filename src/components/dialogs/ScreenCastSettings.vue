@@ -59,7 +59,7 @@
         <!-- Screen Size Control -->
         <div class="bg-base-200/70 rounded-xl p-4 border border-base-300/60">
           <div class="flex items-center gap-2 mb-3">
-            <font-awesome-icon icon="fa-solid fa-expand-arrows-alt" class="h-4 w-4 text-primary" />
+            <font-awesome-icon icon="fa-solid fa-up-down-left-right" class="h-4 w-4 text-primary" />
             <h4 class="font-semibold">{{ $t('screenSize') }}</h4>
           </div>
           
