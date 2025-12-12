@@ -96,13 +96,6 @@ export default {
     }
   },
   emits: ['confirm', 'cancel'],
-  created() {
-    // Configure marked for basic markdown support
-    marked.setOptions({
-      breaks: true,
-      gfm: true
-    });
-  },
   computed: {
     title() {
       return this.$t('updateAvailableTitle');
@@ -124,8 +117,11 @@ export default {
         return '';
       }
       
-      // Convert markdown to HTML using the recommended API
-      const rawHtml = marked(this.updateBody);
+      // Convert markdown to HTML with options passed directly
+      const rawHtml = marked(this.updateBody, {
+        breaks: true,
+        gfm: true
+      });
       
       // Sanitize HTML to prevent XSS attacks
       return DOMPurify.sanitize(rawHtml, {
