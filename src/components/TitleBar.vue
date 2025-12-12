@@ -273,6 +273,11 @@
   <!-- Agent错误弹窗 -->
   <AgentErrorDialog ref="agentErrorDialog" :process-name="agentProcessName" :error-type="agentErrorType"
     @exit-app="closeApp" />
+
+  <!-- 更新对话框 -->
+  <UpdateDialog ref="updateDialog" :current-version="version" :new-version="tauriUpdateInfo?.version || ''"
+    :update-body="tauriUpdateInfo?.body || ''" :is-mac="platform === 'mac-arm' || platform === 'mac-intel'"
+    @confirm="handleUpdateConfirm" @cancel="handleUpdateCancel" />
 </template>
 
 <script>
@@ -287,6 +292,7 @@ import { os } from '@tauri-apps/api';
 import LicenseManagementDialog from './LicenseManagementDialog.vue';
 import WhiteLabelDialog from './WhiteLabelDialog.vue';
 import AgentErrorDialog from './AgentErrorDialog.vue';
+import UpdateDialog from './dialogs/UpdateDialog.vue';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 import { isFeatureUnlocked } from '../utils/features.js';
 import { getItem, setItem } from '@/utils/storage.js';
@@ -298,7 +304,8 @@ export default {
     LicenseManagementDialog,
     WhiteLabelDialog,
     AgentErrorDialog,
-    LicenseLifecycle
+    LicenseLifecycle,
+    UpdateDialog
   },
   props: {
     supportUnreadCount: {
@@ -329,6 +336,7 @@ export default {
       isWhiteLabelUnlocked: false,
       tauriUpdateAvailable: false,
       tauriUpdateInfo: null,
+      platform: 'windows',
     }
   },
   watch: {
@@ -506,62 +514,16 @@ export default {
           console.log(`Update available ${updateInfo.version}, ${updateInfo.date}, ${updateInfo.body}`);
           this.tauriUpdateInfo = updateInfo;
 
-          const platform = await this.getPlatform();
-          if (platform === 'windows') {
-            // Windows: Auto-update via Tauri
-            const updateMessage = updateInfo.body || this.$t('updateAvailable');
-            const yes = await ask(updateMessage, this.$t('updateConfirm'));
-            if (yes) {
-              this.check_update_dialog_title = 'Downloading update...';
-
-              // Listen for Tauri update download progress
-              await onUpdaterEvent(({ error, status }) => {
-                console.log('Updater event:', status, error);
-                if (status === 'PENDING') {
-                  this.check_update_dialog_title = 'Downloading update...';
-                } else if (status === 'DONE') {
-                  this.check_update_dialog_title = 'Installing update...';
-                  this.download_progress = { filesize: 0, transfered: 0, transfer_rate: 0, percentage: 0 };
-                } else if (status === 'ERROR') {
-                  console.error('Update error:', error);
-                }
-              });
-
-              // Listen for download progress event
-              await this.$listen('tauri://update-download-progress', (event) => {
-                const { chunk_length, content_length } = event.payload;
-                if (content_length && content_length > 0) {
-                  // Update progress
-                  const currentTransferred = (this.download_progress.transfered || 0) + chunk_length;
-                  this.download_progress = {
-                    filesize: content_length,
-                    transfered: currentTransferred,
-                    transfer_rate: chunk_length,
-                    percentage: Math.round((currentTransferred / content_length) * 100)
-                  };
-                }
-              });
-
-              await invoke('install_and_relaunch_update');
-              return;
-            }
-          } else {
-            // macOS: Prompt user to download manually
-            const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
-              ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
-              : `${this.whitelabelConfig.officialWebsite}/Download`;
-
-            const yes = await ask(
-              this.$t('macUpdatePrompt', { version: updateInfo.version }),
-              this.$t('macUpdateAvailable')
-            );
-
-            if (yes) {
-              console.log('Opening download page:', downloadUrl);
-              await open(downloadUrl);
-            }
-            // Continue to handle other results
+          this.platform = await this.getPlatform();
+          
+          // Close the checking dialog
+          if (!silent) {
+            this.$refs.download_dialog.close();
           }
+
+          // Show custom update dialog
+          this.$refs.updateDialog.show();
+          return;
         } else if (includeTauri) {
           // 没有可用更新时同步清空提示
           this.tauriUpdateAvailable = false;
@@ -670,6 +632,64 @@ export default {
       }
       return platform;
     },
+
+    handleUpdateConfirm() {
+      // Handle update confirmation based on platform
+      if (this.platform === 'windows') {
+        this.performWindowsUpdate();
+      } else {
+        this.performMacUpdate();
+      }
+    },
+
+    handleUpdateCancel() {
+      // User cancelled the update
+      console.log('Update cancelled by user');
+    },
+
+    async performWindowsUpdate() {
+      this.check_update_dialog_title = 'Downloading update...';
+      this.$refs.download_dialog.showModal();
+
+      // Listen for Tauri update download progress
+      await onUpdaterEvent(({ error, status }) => {
+        console.log('Updater event:', status, error);
+        if (status === 'PENDING') {
+          this.check_update_dialog_title = 'Downloading update...';
+        } else if (status === 'DONE') {
+          this.check_update_dialog_title = 'Installing update...';
+          this.download_progress = { filesize: 0, transfered: 0, transfer_rate: 0, percentage: 0 };
+        } else if (status === 'ERROR') {
+          console.error('Update error:', error);
+        }
+      });
+
+      // Listen for download progress event
+      await this.$listen('tauri://update-download-progress', (event) => {
+        const { chunk_length, content_length } = event.payload;
+        if (content_length && content_length > 0) {
+          // Update progress
+          const currentTransferred = (this.download_progress.transfered || 0) + chunk_length;
+          this.download_progress = {
+            filesize: content_length,
+            transfered: currentTransferred,
+            transfer_rate: chunk_length,
+            percentage: Math.round((currentTransferred / content_length) * 100)
+          };
+        }
+      });
+
+      await invoke('install_and_relaunch_update');
+    },
+
+    async performMacUpdate() {
+      const downloadUrl = this.whitelabelConfig.targetApp === 'instagram'
+        ? `${this.whitelabelConfig.officialWebsite}/Download-IgMatrix`
+        : `${this.whitelabelConfig.officialWebsite}/Download`;
+
+      console.log('Opening download page:', downloadUrl);
+      await open(downloadUrl);
+    },
   },
   async mounted() {
     // Version & Name
@@ -758,6 +778,9 @@ export default {
         this.tauriUpdateInfo = null;
       }
     });
+
+    // Initialize platform
+    this.platform = await this.getPlatform();
 
     this.check_update({ includeTauri: false });
   }
