@@ -276,15 +276,14 @@
 
   <!-- 更新对话框 -->
   <UpdateDialog ref="updateDialog" :current-version="version" :new-version="tauriUpdateInfo?.version || ''"
-    :update-body="tauriUpdateInfo?.body || ''" :is-mac="isMac"
-    @confirm="handleUpdateConfirm" @cancel="handleUpdateCancel" />
+    :update-body="tauriUpdateInfo?.body || ''" :is-mac="isMac" @confirm="handleUpdateConfirm"
+    @cancel="handleUpdateCancel" />
 </template>
 
 <script>
 import { appWindow } from '@tauri-apps/api/window';
 import { getAll } from '@tauri-apps/api/window';
 import { ask } from '@tauri-apps/api/dialog'; // Used for exit confirmation in closeWindow() only
-import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion, getName } from '@tauri-apps/api/app';
 import { open } from '@tauri-apps/api/shell';
 import { os } from '@tauri-apps/api';
@@ -334,16 +333,7 @@ export default {
       platform: 'windows',
     }
   },
-  computed: {
-    tauriUpdateAvailable() {
-      return this.updateManager.hasUpdateAvailable.value;
-    },
-    tauriUpdateInfo() {
-      return this.updateManager.updateState.value.tauriUpdateInfo;
-    },
-    download_progress() {
-      return this.updateManager.updateState.value.downloadProgress;
-    },
+
   watch: {
     sidebarVisible(val) {
       this.$emiter('sidebarChange', val);
@@ -357,6 +347,15 @@ export default {
     }
   },
   computed: {
+    tauriUpdateAvailable() {
+      return this.updateManager.hasUpdateAvailable.value;
+    },
+    tauriUpdateInfo() {
+      return this.updateManager.updateState.value.tauriUpdateInfo;
+    },
+    download_progress() {
+      return this.updateManager.updateState.value.downloadProgress;
+    },
     currentLogoSrc() {
       if (this.whitelabelConfig.logo?.main) {
         const logoPath = this.whitelabelConfig.logo.main;
@@ -617,7 +616,7 @@ export default {
       };
 
       // Find and execute appropriate error handler
-      const errorType = Object.keys(errorHandlers).find(key => 
+      const errorType = Object.keys(errorHandlers).find(key =>
         result.error?.includes(key)
       );
 
@@ -683,9 +682,11 @@ export default {
       this.check_update_dialog_title = this.$t('downloadingUpdate');
       this.$refs.download_dialog.showModal();
 
+      let unlistenProgress = null;
       try {
         // Listen for download progress updates
-        const progressListener = await this.$listen('tauri://update-download-progress', (event) => {
+        // $listen returns an unlisten function — keep and call it in finally to avoid leaking listeners
+        unlistenProgress = await this.$listen('tauri://update-download-progress', (event) => {
           const { chunk_length, content_length } = event.payload;
           if (content_length && content_length > 0) {
             const currentTransferred = (this.download_progress.transfered || 0) + chunk_length;
@@ -708,6 +709,17 @@ export default {
           message: this.$t('updateFailed'),
           timeout: 4000
         });
+      } finally {
+        if (unlistenProgress) {
+          try {
+            // call the unlisten function to remove the listener
+            await unlistenProgress();
+          } catch (e) {
+            // swallow errors from unlisten but keep a log for debugging
+            // ...existing code...
+            console.warn('Failed to unlisten tauri update progress', e);
+          }
+        }
       }
     },
 
