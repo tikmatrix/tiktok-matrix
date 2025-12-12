@@ -97,52 +97,67 @@ async fn can_auto_update(
     app_handle: &AppHandle,
     config: &AutoUpdateConfig,
 ) -> Result<bool, String>
+```
 
-// 检查并应用库更新（静默模式）
-async fn check_and_apply_library_updates(
-    app_handle: &AppHandle
+#### process_manager.rs 新增公共函数
+**提取的公共库更新逻辑:**
+```rust
+// 获取默认的更新检查 URL
+fn get_default_check_libs_url() -> String
+
+// 确定最终使用的更新检查 URL（支持环境变量覆盖）
+fn determine_check_libs_url(provided_url: &str) -> String
+
+// 检查并处理库更新（公共函数，被多处调用）
+pub async fn check_and_process_library_updates(
+    app_handle: &AppHandle,
+    check_libs_url: &str,
+    silent: bool,
 ) -> Result<Vec<String>, String>
 ```
 
-**优化前:**
+**优化前（重复代码）:**
 ```rust
-// 60+ 行嵌套的条件检查
-if !current_config.enabled {
-    log::debug!("Auto-update is disabled");
-    continue;
+// initialize_app 中有一份库更新逻辑
+match check_libs_update(...).await {
+    Ok(response) => {
+        for lib in response.data.libs {
+            process_lib_update(&lib).await;
+        }
+    }
 }
-if !is_system_idle(...) {
-    log::debug!("System is not idle");
-    continue;
-}
-// ... 更多重复的条件检查
 
-// 只检查 Tauri 更新
-check_tauri_update(&app_handle).await
+// auto_update_manager 中又复制了一份相同逻辑
+async fn check_and_apply_library_updates(...) {
+    match check_libs_update(...).await {
+        Ok(response) => {
+            for lib in response.data.libs {
+                process_lib_update(&lib).await;
+            }
+        }
+    }
+}
 ```
 
-**优化后:**
+**优化后（提取公共函数）:**
 ```rust
-// 清晰简洁的单函数调用
-match can_auto_update(&app_handle, &current_config).await {
-    Ok(true) => {
-        // 检查 Tauri 应用更新
-        check_tauri_update(&app_handle).await;
-        
-        // 检查并应用库更新（新增）
-        check_and_apply_library_updates(&app_handle).await;
-    }
-    Ok(false) => continue,
-    Err(e) => {
-        log::error!("Error: {}", e);
-        continue;
-    }
+// process_manager.rs 中的公共函数
+pub async fn check_and_process_library_updates(...) -> Result<Vec<String>, String> {
+    // 统一的库更新逻辑
 }
+
+// initialize_app 调用
+check_and_process_library_updates(&app_handle, &check_libs_url, options.silent).await
+
+// auto_update_manager 调用
+crate::process_manager::check_and_process_library_updates(&app_handle, "", true).await
 ```
 
 **效果:**
 - 代码量减少 60%
 - 逻辑更清晰
+- **消除代码重复，遵循 DRY 原则**
+- **统一的库更新逻辑，更易维护**
 - 更易于添加新的检查条件
 - 更好的错误处理
 - **自动更新现在包括 Tauri 更新和库更新（agent、script 等）**

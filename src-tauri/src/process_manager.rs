@@ -590,89 +590,28 @@ pub async fn initialize_app(
 
     // Step 1: Check updates if requested
     if options.check_updates {
+        let check_libs_url = determine_check_libs_url(&options.check_libs_url);
+
+        // Emit which URL we're using for frontend visibility/debug
         app_handle
             .emit_all(
                 "INIT_STATUS",
                 &serde_json::json!({
-                    "stage": "checking_updates",
-                    "message": "Checking for updates..."
+                    "stage": "check_libs_url",
+                    "message": format!("Using check_libs_url: {}", check_libs_url)
                 }),
             )
             .ok();
 
-        // Get platform info
-        let platform = get_platform();
-        let app_name = app_handle.package_info().name.clone();
-
-        // Determine check_libs_url: use provided option, else fallback to env / dev / prod defaults
-        let mut check_libs_url = options.check_libs_url.clone();
-        if check_libs_url.trim().is_empty() {
-            // 1) try environment variable override
-            if let Ok(env_url) = std::env::var("TIKMATRIX_CHECK_LIBS_URL") {
-                if !env_url.trim().is_empty() {
-                    check_libs_url = env_url;
-                }
-            }
-
-            // 2) fallback defaults
-            if check_libs_url.trim().is_empty() {
-                if cfg!(debug_assertions) {
-                    // In dev builds prefer local dev server
-                    check_libs_url =
-                        "http://127.0.0.1:8787/front-api/check_libs?beta=0".to_string();
-                } else {
-                    // Production default (can be overridden by environment)
-                    check_libs_url =
-                        "https://api.niostack.com/front-api/check_libs?beta=0".to_string();
-                }
-            }
-
-            // Emit which URL we're using for frontend visibility/debug
-            app_handle
-                .emit_all(
-                    "INIT_STATUS",
-                    &serde_json::json!({
-                        "stage": "check_libs_url",
-                        "message": format!("Using check_libs_url: {}", check_libs_url)
-                    }),
-                )
-                .ok();
-        }
-
-        // Check libraries update
-        match crate::update_manager::check_libs_update(
-            &app_handle,
-            &check_libs_url,
-            &platform,
-            &app_name,
-        )
-        .await
-        {
-            Ok(response) => {
+        // Check and process library updates
+        match check_and_process_library_updates(&app_handle, &check_libs_url, options.silent).await {
+            Ok(updates_applied) => {
                 result.updates_checked = true;
-
-                let libs = response.data.libs;
-
-                // Update each library
-                for lib in libs {
-                    match crate::update_manager::process_lib_update(&app_handle, &lib).await {
-                        Ok(true) => {
-                            log::info!("Library {} updated successfully", lib.name);
-                            result.updates_applied.push(lib.name.clone());
-                        }
-                        Ok(false) => {
-                            log::info!("Library {} is up to date", lib.name);
-                        }
-                        Err(e) => {
-                            log::error!("Failed to update library {}: {}", lib.name, e);
-                            result.error = format!("Library update failed: {}", e);
-                        }
-                    }
-                }
+                result.updates_applied = updates_applied;
             }
             Err(e) => {
-                log::error!("Failed to check updates: {}", e);
-                result.error = format!("Update check failed: {}", e);
+                log::error!("Failed to check/process library updates: {}", e);
+                result.error = e;
             }
         }
     }
@@ -808,6 +747,104 @@ fn get_platform() -> String {
     #[cfg(not(any(target_os = "windows", target_os = "macos")))]
     {
         "unknown".to_string()
+    }
+}
+
+/// Get default check_libs_url based on build configuration
+fn get_default_check_libs_url() -> String {
+    if cfg!(debug_assertions) {
+        // In dev builds prefer local dev server
+        "http://127.0.0.1:8787/front-api/check_libs?beta=0".to_string()
+    } else {
+        // Production default
+        "https://api.niostack.com/front-api/check_libs?beta=0".to_string()
+    }
+}
+
+/// Determine check_libs_url from options and environment
+fn determine_check_libs_url(provided_url: &str) -> String {
+    if !provided_url.trim().is_empty() {
+        return provided_url.to_string();
+    }
+
+    // Try environment variable override
+    if let Ok(env_url) = std::env::var("TIKMATRIX_CHECK_LIBS_URL") {
+        if !env_url.trim().is_empty() {
+            return env_url;
+        }
+    }
+
+    // Fallback to default
+    get_default_check_libs_url()
+}
+
+/// Check and process library updates
+/// Returns a list of successfully updated libraries
+pub async fn check_and_process_library_updates(
+    app_handle: &AppHandle,
+    check_libs_url: &str,
+    silent: bool,
+) -> Result<Vec<String>, String> {
+    let platform = get_platform();
+    let app_name = app_handle.package_info().name.clone();
+
+    if !silent {
+        app_handle
+            .emit_all(
+                "INIT_STATUS",
+                &serde_json::json!({
+                    "stage": "checking_updates",
+                    "message": "Checking for updates..."
+                }),
+            )
+            .ok();
+    }
+
+    let log_prefix = if silent { "Background update: " } else { "" };
+
+    // Check for library updates
+    match crate::update_manager::check_libs_update(
+        app_handle,
+        check_libs_url,
+        &platform,
+        &app_name,
+    )
+    .await
+    {
+        Ok(response) => {
+            let libs = response.data.libs;
+            let mut updates_applied = Vec::new();
+
+            // Update each library
+            for lib in libs {
+                match crate::update_manager::process_lib_update(app_handle, &lib).await {
+                    Ok(true) => {
+                        log::info!("{}Library {} updated successfully", log_prefix, lib.name);
+                        updates_applied.push(lib.name.clone());
+                    }
+                    Ok(false) => {
+                        log::debug!("{}Library {} is up to date", log_prefix, lib.name);
+                    }
+                    Err(e) => {
+                        let error_msg = format!("Failed to update library {}: {}", lib.name, e);
+                        if silent {
+                            log::warn!("{}{}", log_prefix, error_msg);
+                            // Continue with other libraries in silent mode
+                        } else {
+                            log::error!("{}", error_msg);
+                            return Err(format!("Library update failed: {}", e));
+                        }
+                    }
+                }
+            }
+
+            Ok(updates_applied)
+        }
+        Err(e) => {
+            let error_msg = format!("Failed to check library updates: {}", e);
+            log::error!("{}", error_msg);
+            Err(error_msg)
+        }
     }
 }
 
