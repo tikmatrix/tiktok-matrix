@@ -761,7 +761,7 @@ pub async fn initialize_app(
             .emit_all(
                 "INIT_STATUS",
                 &serde_json::json!({
-                    "stage": "completed",
+                    "stage": "already_running",
                     "message": "Agent already running"
                 }),
             )
