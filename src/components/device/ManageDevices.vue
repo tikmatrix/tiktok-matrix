@@ -26,6 +26,7 @@
                 <!-- Screen Cast Settings Button -->
                 <button class="btn btn-md md:btn-md btn-circle btn-ghost tooltip tooltip-bottom" 
                   :data-tip="$t('screenCastSettings')"
+                  :aria-label="$t('screenCastSettings')"
                   @click="$refs.screen_cast_settings.show()">
                   <font-awesome-icon icon="fa-solid fa-desktop" class="h-5 w-5 text-primary" />
                 </button>
