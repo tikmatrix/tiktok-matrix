@@ -23,6 +23,14 @@
               </div>
 
               <div class="flex flex-wrap items-center gap-2">
+                <!-- Screen Cast Settings Button -->
+                <button class="btn btn-md md:btn-md btn-circle btn-ghost tooltip tooltip-bottom" 
+                  :data-tip="$t('screenCastSettings')"
+                  :aria-label="$t('screenCastSettings')"
+                  @click="$refs.screen_cast_settings.show()">
+                  <font-awesome-icon icon="fa-solid fa-desktop" class="h-5 w-5 text-primary" />
+                </button>
+
                 <div
                   class="flex items-center gap-2 px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-md"
                   role="group" :aria-label="$t('displayMode')">
@@ -398,6 +406,9 @@
   <!-- Debug Dialog -->
   <DeviceDebugDialog v-if="debugDevice" v-model="showDebugDialog" :device="debugDevice"
     @close="handleCloseDebugDialog" />
+
+  <!-- Screen Cast Settings Dialog -->
+  <ScreenCastSettings ref="screen_cast_settings" :gridCardHeight="gridCardHeight" />
 </template>
 <style>
 @import "vue-draggable-resizable/style.css";
@@ -409,6 +420,7 @@ import Pagination from '../Pagination.vue'
 import DeviceGrid from './DeviceGrid.vue'
 import DeviceDebugDialog from '../dialogs/DeviceDebugDialog.vue'
 import DeviceProxyRotation from './DeviceProxyRotation.vue'
+import ScreenCastSettings from '../dialogs/ScreenCastSettings.vue'
 import { writeText } from '@tauri-apps/api/clipboard';
 import { readTextFile, writeTextFile, exists, createDir, BaseDirectory } from '@tauri-apps/api/fs';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../../config/whitelabel.js';
@@ -435,7 +447,8 @@ export default {
     Pagination,
     DeviceGrid,
     DeviceDebugDialog,
-    DeviceProxyRotation
+    DeviceProxyRotation,
+    ScreenCastSettings
   },
   data() {
     return {
@@ -1240,6 +1253,13 @@ export default {
       if (device) {
         this.debugDevice = device
         this.showDebugDialog = true
+      }
+    });
+
+    // Listen for screen scale action from ScreenCastSettings dialog
+    await this.$listen('screenScaleAction', async (e) => {
+      if (e.payload && e.payload.action) {
+        await this.handleScale(e.payload.action);
       }
     });
 

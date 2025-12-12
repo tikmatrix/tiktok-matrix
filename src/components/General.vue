@@ -74,14 +74,6 @@
 
 
 
-    <button class="btn btn-md btn-primary ml-1 mb-1" @click="$refs.resolution_dialog.show()">
-        <font-awesome-icon icon="fa fa-tv" class="h-3 w-3" />
-        {{ $t('adjustResolution') }}
-    </button>
-    <button class="btn btn-md btn-primary  ml-1 mb-1" @click="$emiter('send_screen_mode', 'off')">
-        <font-awesome-icon icon="fa fa-power-off" class="h-3 w-3 text-primary-content" />
-        {{ $t('screenOff') }}
-    </button>
     <button class="btn btn-md btn-primary  ml-1 mb-1" v-if="isFeatureUnlocked('followPlan')"
         @click="$emiter('showDialog', { name: 'plans' })">
         <font-awesome-icon icon="fa-solid fa-calendar-check" class="h-3 w-3 mr-1" />
@@ -120,54 +112,6 @@
 
 
 
-    <dialog ref="resolution_dialog" class="modal">
-        <div class="modal-box bg-base-300">
-            <h3 class="font-bold text-lg">{{ $t('adjustResolution') }}</h3>
-            <div class="flex flex-col p-2 gap-4">
-                <div class="flex flex-wrap gap-2">
-                    <button class="btn btn-md" :class="{ 'btn-active': resolution === 256 }"
-                        @click="setResolution(256)">
-                        {{ $t('lowResolution') }} (256px)
-                    </button>
-                    <button class="btn btn-md" :class="{ 'btn-active': resolution === 512 }"
-                        @click="setResolution(512)">
-                        {{ $t('highResolution') }} (512px)
-                    </button>
-                    <button class="btn btn-md" :class="{ 'btn-active': resolution === 720 }"
-                        @click="setResolution(720)">
-                        {{ $t('ultraResolution') }} (720px)
-                    </button>
-                    <button class="btn btn-md" :class="{ 'btn-active': resolution === 1080 }"
-                        @click="setResolution(1080)">
-                        {{ $t('fullHD') }} (1080px)
-                    </button>
-                </div>
-
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">{{ $t('customResolution') }}</span>
-                    </label>
-                    <div class="flex items-center gap-2">
-                        <input type="number" v-model="customResolution" min="128" max="1920" step="16"
-                            class="input input-bordered input-md w-24" />
-                        <span>px</span>
-                        <button @click="setResolution(Number(customResolution))" class="btn btn-md btn-primary"
-                            :disabled="!isValidResolution">
-                            {{ $t('apply') }}
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mt-2 text-md opacity-70">
-                    <p>{{ $t('resolutionNote') }}</p>
-                </div>
-            </div>
-        </div>
-        <form method="dialog" class="modal-backdrop">
-            <button>close</button>
-        </form>
-    </dialog>
-
     <dialog ref="clear_cache_dialog" class="modal">
         <div class="modal-box bg-base-300">
             <h3 class="font-bold text-lg">{{ $t('clearData') }}</h3>
@@ -194,18 +138,12 @@ export default {
         return {
             proxy_host: 'localhost',
             proxy_port: '8080',
-            resolution: 512,
-            customResolution: 512,
             uninstall_package: '',
             unlocked: [],
             whitelabelConfig: cloneDefaultWhiteLabelConfig(),
         }
     },
     computed: {
-        isValidResolution() {
-            const res = Number(this.customResolution);
-            return !isNaN(res) && res >= 128 && res <= 1920;
-        }
     },
     methods: {
         isFeatureUnlocked(key) {
@@ -258,18 +196,11 @@ export default {
             });
         },
 
-        async setResolution(value) {
-            this.resolution = value;
-            this.customResolution = value;
-            await setItem('screenResolution', value);
-            await this.$emiter('screenResolution', { resolution: value });
-        },
     },
     async mounted() {
-        const [storedHost, storedPort, storedResolution, features] = await Promise.all([
+        const [storedHost, storedPort, features] = await Promise.all([
             getItem('proxy_host'),
             getItem('proxy_port'),
-            getItem('screenResolution'),
             getUnlockedFeatures()
         ]);
 
@@ -278,13 +209,6 @@ export default {
         }
         if (storedPort) {
             this.proxy_port = storedPort;
-        }
-        if (storedResolution) {
-            const parsed = Number(storedResolution);
-            if (!Number.isNaN(parsed)) {
-                this.resolution = parsed;
-                this.customResolution = parsed;
-            }
         }
         if (Array.isArray(features)) {
             this.unlocked = features;
