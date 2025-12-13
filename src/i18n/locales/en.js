@@ -1303,4 +1303,21 @@
   deviceNameLabel: 'Name',
   deviceGroupLabel: 'Group',
   deviceLastSeenLabel: 'Last Active',
+
+  // AI Agent
+  aiAgent: 'AI Agent',
+  aiAgentDescription: 'AI Agent uses AI to automatically control your phone. Describe your goal and the AI will navigate the UI to complete the task - works with any app, starting from home screen.',
+  taskGoal: 'Task Goal',
+  aiAgentGoalPlaceholder: 'e.g., Open TikTok and search for "cats", then like the first 3 videos',
+  aiAgentGoalHint: 'Describe what you want to achieve. Be specific about the app, actions, and expected outcome.',
+  maxSteps: 'Max Steps',
+  maxStepsHint: 'Maximum operations before stopping (prevents infinite loops)',
+  aiAgentSystemPromptHint: 'Leave empty to use the default prompt. Advanced users can customize AI behavior here.',
+  testConnection: 'Test Connection',
+  connectionSuccess: 'Connection successful!',
+  unexpectedResponse: 'Unexpected response from API',
+  goalRequired: 'Please enter a task goal',
+  apiKeyRequired: 'Please enter an API key',
+  temperature: 'Temperature',
+  advancedSettings: 'Advanced Settings',
 };

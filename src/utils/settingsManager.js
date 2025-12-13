@@ -194,6 +194,7 @@ export const massCommentSettings = new SettingsManager('mass_comment_settings.js
 export const followBackSettings = new SettingsManager('follow_back_settings.json');
 export const superMarketingSettings = new SettingsManager('super_marketing_settings.json');
 export const boostCommentsSettings = new SettingsManager('boost_comments_settings.json');
+export const aiAgentSettings = new SettingsManager('ai_agent_settings.json');
 
 // 导出常用函数
 export async function loadSettings(filename, defaultSettings = {}) {

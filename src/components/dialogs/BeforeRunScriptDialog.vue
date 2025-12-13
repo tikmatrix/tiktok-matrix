@@ -69,6 +69,7 @@
     <MassCommentDialog v-if="script.name === 'massComment'" ref="currentDialog" />
     <SwitchAccountDialog v-if="script.name === 'switchAccount'" ref="currentDialog" />
     <SuperMarketingDialog v-if="script.name === 'superMarketing'" ref="currentDialog" />
+    <AIAgentDialog v-if="script.name === 'aiAgent'" ref="currentDialog" />
 
     <div class="flex items-center flex-row gap-2 max-w-full w-full mt-2">
       <div class="flex flex-1"></div>
@@ -98,6 +99,7 @@ import MassCommentDialog from './MassCommentDialog.vue'
 import BoostLivesDialog from './BoostLivesDialog.vue'
 import SwitchAccountDialog from './SwitchAccountDialog.vue'
 import SuperMarketingDialog from './SuperMarketingDialog.vue'
+import AIAgentDialog from './AIAgentDialog.vue'
 import { beforeRunScriptSettings } from '@/utils/settingsManager';
 
 const beforeRunScriptMixin = beforeRunScriptSettings.createVueMixin(
@@ -154,7 +156,8 @@ export default {
     MassCommentDialog,
     BoostLivesDialog,
     SwitchAccountDialog,
-    SuperMarketingDialog
+    SuperMarketingDialog,
+    AIAgentDialog
   },
 
   data() {

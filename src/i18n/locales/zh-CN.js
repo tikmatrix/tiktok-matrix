@@ -1302,4 +1302,21 @@
   deviceNameLabel: '名称',
   deviceGroupLabel: '分组',
   deviceLastSeenLabel: '最近活跃',
+
+  // AI 智能代理
+  aiAgent: 'AI 智能代理',
+  aiAgentDescription: 'AI 智能代理使用人工智能自动控制您的手机。描述您的目标，AI 将自动操作界面来完成任务 - 适用于任何应用，从主屏幕开始。',
+  taskGoal: '任务目标',
+  aiAgentGoalPlaceholder: '例如：打开抖音搜索"猫咪"，然后给前3个视频点赞',
+  aiAgentGoalHint: '描述您想要实现的目标。请具体说明要操作的应用、动作和预期结果。',
+  maxSteps: '最大步数',
+  maxStepsHint: '停止前的最大操作次数（防止无限循环）',
+  aiAgentSystemPromptHint: '留空使用默认提示词。高级用户可在此自定义 AI 行为。',
+  testConnection: '测试连接',
+  connectionSuccess: '连接成功！',
+  unexpectedResponse: 'API 返回了意外的响应',
+  goalRequired: '请输入任务目标',
+  apiKeyRequired: '请输入 API 密钥',
+  temperature: '温度参数',
+  advancedSettings: '高级设置',
 };
