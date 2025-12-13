@@ -44,22 +44,7 @@
             :true-value="true" :false-value="false" @change="update_settings" />
         </div>
 
-        <!-- 大屏幕模式 -->
-        <div class="flex items-center justify-between py-3 border-b border-base-200">
-          <div class="flex-1">
-            <label class="text-md font-medium text-base-content">{{ $t('bigScreen') }}</label>
-          </div>
-          <div class="flex items-center gap-3">
-            <label class="flex items-center cursor-pointer">
-              <input type="radio" value="standard" v-model="bigScreen" class="radio radio-primary radio-md mr-2">
-              <span class="text-md">{{ $t('standardWindow') }}</span>
-            </label>
-            <label class="flex items-center cursor-pointer">
-              <input type="radio" value="docked" v-model="bigScreen" class="radio radio-primary radio-md mr-2">
-              <span class="text-md">{{ $t('dockedWindow') }}</span>
-            </label>
-          </div>
-        </div>
+        <!-- 大屏幕模式 已迁移到投屏设置组件 ScreenCastSettings.vue -->
 
 
       </div>
@@ -143,7 +128,7 @@
 <script>
 import { invoke } from "@tauri-apps/api/tauri";
 import { appDataDir } from '@tauri-apps/api/path';
-import { getItem, setItem } from '@/utils/storage.js';
+// bigScreen moved to ScreenCastSettings; storage access removed from this file
 import { getUnlockedFeatures, unlockFeature as unlockFeatureFlag } from '@/utils/features.js';
 import { getWhiteLabelConfig, cloneDefaultWhiteLabelConfig } from '../config/whitelabel.js';
 
@@ -180,19 +165,14 @@ export default {
       }
       this.update_settings();
     },
-    bigScreen: {
-      async handler(newVal) {
-        await setItem('bigScreen', newVal)
-      },
-      deep: false
-    }
+    // bigScreen migrated to ScreenCastSettings.vue
   },
   data() {
     return {
       localSettings: {},
       hasLoadedSettings: false,
       packagename: '',
-      bigScreen: 'standard',
+      // bigScreen moved to ScreenCastSettings
       work_path: '',
       featureCode: '',
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
@@ -260,10 +240,7 @@ export default {
       this.packagename = this.localSettings.packagename;
     }
     this.work_path = await appDataDir();
-    const storedBigScreen = await getItem('bigScreen');
-    if (storedBigScreen) {
-      this.bigScreen = storedBigScreen;
-    }
+    // bigScreen handled by ScreenCastSettings component
 
   }
 }

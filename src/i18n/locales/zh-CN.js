@@ -167,6 +167,8 @@
   batchSyncTikTok: '批量同步',
   batchTiktokSyncDone: '批量同步完成',
   bigScreen: '大屏幕',
+  bigScreenNote: "选择大屏显示方式：'标准' 会在独立窗口打开设备；'悬浮' 会将设备以悬浮/停靠方式显示在设备列表中。",
+  bigScreenUpdated: '大屏幕模式已更新',
   bios: '签名',
   biosTips: '输入签名,一行一个签名',
   block: '封禁',

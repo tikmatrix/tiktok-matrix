@@ -103,6 +103,30 @@
           </div>
         </div>
 
+        <!-- Big screen mode -->
+        <div class="bg-base-200/70 rounded-xl p-4 border border-base-300/60">
+          <div class="flex items-center gap-2 mb-3">
+            <font-awesome-icon icon="fa-solid fa-border-all" class="h-4 w-4 text-primary" />
+            <h4 class="font-semibold">{{ $t('bigScreen') }}</h4>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <label class="flex items-center cursor-pointer">
+              <input type="radio" value="standard" v-model="bigScreenMode" class="radio radio-primary radio-md mr-2"
+                @change="setBigScreenMode('standard')">
+              <span class="text-md">{{ $t('standardWindow') }}</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input type="radio" value="docked" v-model="bigScreenMode" class="radio radio-primary radio-md mr-2"
+                @change="setBigScreenMode('docked')">
+              <span class="text-md">{{ $t('dockedWindow') }}</span>
+            </label>
+            <div class="text-sm text-base-content/70 ml-2">
+              {{ $t('bigScreenNote') || $t('bigScreen') }}
+            </div>
+          </div>
+        </div>
+
         <!-- Hibernation Casting -->
         <div class="bg-base-200/70 rounded-xl p-4 border border-base-300/60">
           <div class="flex items-center gap-2 mb-3">
@@ -146,6 +170,7 @@ export default {
       resolutionSmall: 480,
       resolutionBig: 1080,
       hibernateCasting: false,
+      bigScreenMode: 'standard',
     }
   },
   computed: {
@@ -197,6 +222,21 @@ export default {
         console.error('Failed to save hibernate setting', err);
       }
     },
+    // Big screen mode setter
+    async setBigScreenMode(value) {
+      try {
+        this.bigScreenMode = value;
+        await setItem('bigScreen', value);
+        await this.$emiter('bigScreen', { mode: value });
+        await this.$emiter('NOTIFY', {
+          type: 'success',
+          message: this.$t('bigScreenUpdated') || 'Big screen mode updated',
+          timeout: 2000
+        });
+      } catch (err) {
+        console.error('Failed to set bigScreen mode', err);
+      }
+    },
     async handleScale(action) {
       await this.$emiter('screenScaleAction', { action });
     },
@@ -235,6 +275,18 @@ export default {
       }
     } catch (err) {
       console.warn('Failed to load hibernateCasting setting', err);
+    }
+    // load big screen mode setting
+    try {
+      const storedBig = await getItem('bigScreen');
+      if (storedBig !== null && storedBig !== undefined) {
+        const parsed = String(storedBig).replace(/"/g, '')
+        if (parsed === 'standard' || parsed === 'docked') {
+          this.bigScreenMode = parsed
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load bigScreen setting', err);
     }
   }
 }

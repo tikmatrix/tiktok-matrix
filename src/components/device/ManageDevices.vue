@@ -637,6 +637,16 @@ export default {
           console.warn('failed handling screenResolutionBig event', err);
         }
       }));
+      // Listen to bigScreen mode change emitted by ScreenCastSettings
+      this.listeners.push(await this.$listen('bigScreen', async (e) => {
+        try {
+          const newMode = e?.payload?.mode;
+          if (!newMode) return;
+          this.bigScreenMode = String(newMode) || this.bigScreenMode;
+        } catch (err) {
+          console.warn('failed handling bigScreen event', err);
+        }
+      }));
     } catch (err) {
       console.warn('Failed to register resolution listeners', err);
     }

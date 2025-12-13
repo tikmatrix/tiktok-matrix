@@ -168,6 +168,8 @@
   batchSyncTikTok: 'Batch Sync',
   batchTiktokSyncDone: 'Batch sync completed',
   bigScreen: 'Big Screen',
+  bigScreenNote: "Choose how big-screen mode behaves: 'Standard' opens the device in a separate window; 'Docked' keeps the device shown docked inside the device grid.",
+  bigScreenUpdated: 'Big screen mode updated',
   bios: 'Bios',
   biosTips: 'Enter the signature, one signature per line',
   block: 'Block',
