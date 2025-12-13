@@ -1162,7 +1162,21 @@ export default {
         console.warn(`${this.no}-${this.device.serial} screenScaled event missing targetWidth or invalid real dimensions, this.real_width: ${this.real_width}, this.real_height: ${this.real_height}`)
       }
     }))
-
+    // Listen to small screen resolution changes and apply only to small view
+    this.listeners.push(await this.$listen('screenResolutionSmall', async (e) => {
+      try {
+        const newRes = e.payload?.resolution;
+        if (!newRes) return;
+        if (!this.big) {
+          // Will be picked up in connect() via getItem or this change
+          this.closeScrcpy();
+          this.closeDecoder();
+          await this.syncDisplay();
+        }
+      } catch (err) {
+        console.warn(`${this.no}-${this.device.serial} failed to handle screenResolutionSmall`, err);
+      }
+    }))
 
     // Listen to big screen resolution changes and apply only to big view
     this.listeners.push(await this.$listen('screenResolutionBig', async (e) => {
