@@ -63,10 +63,7 @@ fn get_distributor_code(app_handle: tauri::AppHandle) -> Result<String, String> 
 fn setup_env(working_dir: &str, version: String) {
     unsafe {
         std::env::set_var("MATRIX_APP_WORK_DIR", working_dir);
-        std::env::set_var(
-            "MATRIX_APP_NAME",
-            std::env::var("VITE_APP_NAME").unwrap_or("TikMatrix".into()),
-        );
+        std::env::set_var("MATRIX_APP_NAME", "TikMatrix".to_string());
         std::env::set_var("MATRIX_APP_VERSION", version.clone());
         if cfg!(debug_assertions) {
             std::env::set_var("MOSS_URL", "http://localhost:8787/moss");
