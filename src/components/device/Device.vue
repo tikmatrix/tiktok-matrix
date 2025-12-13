@@ -90,7 +90,6 @@
 <script>
 /* global VideoDecoder, EncodedVideoChunk */
 import RightBars from './RightBars.vue';
-import { getItem } from '@/utils/storage.js';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
@@ -112,6 +111,16 @@ export default {
     resolutionBig: {
       type: Number,
       default: undefined,
+    },
+    // Centralized display mode passed from parent (ManageDevices)
+    bigScreenMode: {
+      type: String,
+      default: 'standard'
+    },
+    // Centralized hibernate casting flag passed from parent
+    hibernateCastingEnabled: {
+      type: Boolean,
+      default: false
     },
     no: {
       type: Number,
@@ -972,9 +981,8 @@ export default {
         // After handshake and when first real frames arrive, send hibernate/screen mode based on stored setting
         try {
           if (!this.hibernateSent && this.message_index >= 2) {
-            // read persisted setting
-            const storedHibernate = await getItem('hibernateCasting');
-            const enabled = String(storedHibernate) === 'true' || storedHibernate === true;
+            // use centralized setting provided by parent
+            const enabled = String(this.hibernateCastingEnabled) === 'true' || this.hibernateCastingEnabled === true;
             const mode = enabled ? 'off' : 'on';
             this.sendScreenMode(mode);
             this.hibernateSent = true;
@@ -990,7 +998,7 @@ export default {
     //计算设备高度
     async calculateDeviceHeight() {
       if (this.big) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'standard') {
           // min 50% of screen height; max 90% of screen height
           const screenHeight = window.innerHeight;
@@ -1082,7 +1090,7 @@ export default {
 
     this.listeners.push(await this.$listen('closeDevice', async (e) => {
       if (this.big) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -1107,7 +1115,7 @@ export default {
     }))
     this.listeners.push(await this.$listen('openDevice', async (e) => {
       if (e.payload.serial === this.device.serial) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -1123,7 +1131,7 @@ export default {
         }
       }
       if (e.payload.serial !== this.device.serial && this.operating) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -1132,7 +1140,7 @@ export default {
           await this.syncDisplay();
         }
       } else if (e.payload.serial !== this.device.serial && this.big) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'docked') {
           this.closeScrcpy();
           this.closeDecoder();

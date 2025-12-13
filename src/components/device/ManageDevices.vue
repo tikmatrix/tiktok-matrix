@@ -27,7 +27,7 @@
                 <button class="btn btn-md md:btn-md btn-circle btn-ghost tooltip tooltip-bottom"
                   :data-tip="$t('screenCastSettings')" :aria-label="$t('screenCastSettings')"
                   @click="$refs.screen_cast_settings.show()">
-                  <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       d="M4 10V7C4 6.44772 4.44772 6 5 6H19C19.5523 6 20 6.44772 20 7V17C20 17.5523 19.5523 18 19 18H12M6 18C6 16.8954 5.10457 16 4 16M8 18C8 15.7909 6.20914 14 4 14M4 12C7.31371 12 10 14.6863 10 18"
                       stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
@@ -163,7 +163,8 @@
                 </div>
               </div>
               <DeviceGrid v-else :devices="slotProps.items" :gridCardHeight="gridCardHeight"
-                :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig" />
+                :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig" :bigScreenMode="bigScreenMode"
+                :hibernateCastingEnabled="hibernateCastingEnabled" />
             </div>
           </template>
         </Pagination>
@@ -203,7 +204,8 @@
     :z="20" drag-handle=".drag"
     class="bg-base-100 fixed top-32 right-32 border border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
     <Device :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'"
-      :gridCardHeight="gridCardHeight" :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig" />
+      :gridCardHeight="gridCardHeight" :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig"
+      :bigScreenMode="bigScreenMode" :hibernateCastingEnabled="hibernateCastingEnabled" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300 max-w-2xl">
@@ -435,6 +437,10 @@ export default {
   },
   data() {
     return {
+      // Centralized bigScreen mode (standard | docked)
+      bigScreenMode: 'standard',
+      // Centralized hibernate casting flag
+      hibernateCastingEnabled: false,
       device: null,
       whitelabelConfig: cloneDefaultWhiteLabelConfig(),
       listMode: false,
@@ -529,6 +535,9 @@ export default {
       gridCardHeight,
       storedScreenResolutionSmall,
       storedScreenResolutionBig
+      ,
+      storedBigScreen,
+      storedHibernateCasting
     ] = await Promise.all([
       getWhiteLabelConfig(),
       getItem('listMode'),
@@ -543,6 +552,9 @@ export default {
       getItem('gridCardHeight'),
       getItem('screenResolutionSmall'),
       getItem('screenResolutionBig')
+      ,
+      getItem('bigScreen'),
+      getItem('hibernateCasting')
     ]);
 
     const parseNumber = (value, fallback) => {
@@ -591,6 +603,18 @@ export default {
       this.resolutionBig = parseNumber(storedScreenResolutionBig, 1080);
     } catch (err) {
       this.resolutionBig = 1080;
+    }
+
+    // Load centralized bigScreen and hibernateCasting values
+    try {
+      this.bigScreenMode = (storedBigScreen && String(storedBigScreen).replace(/"/g, '')) || 'standard'
+    } catch (err) {
+      this.bigScreenMode = 'standard'
+    }
+    try {
+      this.hibernateCastingEnabled = (String(storedHibernateCasting) === 'true' || storedHibernateCasting === true)
+    } catch (err) {
+      this.hibernateCastingEnabled = false
     }
 
     // Listen to resolution change events emitted by ScreenCastSettings and update centralized values
@@ -644,7 +668,15 @@ export default {
           const next = this.computeGridCardHeight()
           if (Math.abs(next - this.gridCardHeight) > 2) {
             this.gridCardHeight = next
-            // persist computed default so it's stable across reloads
+            // Persist the computed default so it's stable across reloads.
+            // NOTE: We intentionally do NOT flip `gridCardHeightFromStorage` here.
+            // - The value saved here is considered a computed default (derived from viewport),
+            //   not an explicit user preference.
+            // - Keeping `gridCardHeightFromStorage` as false allows future automatic
+            //   recomputation and persistence on subsequent resizes.
+            // If you prefer to treat the first persisted value as a user-set value
+            // (preventing further automatic persistence), set
+            // `this.gridCardHeightFromStorage = true` after a successful setItem().
             try {
               await setItem('gridCardHeight', this.gridCardHeight)
             } catch (err) {
@@ -1297,8 +1329,7 @@ export default {
     await this.loadProxyRotations()
     this.syncDisplayedDevices()
     await this.$listen('openDevice', async (e) => {
-      const storedBigScreen = await getItem('bigScreen')
-      const bigScreen = storedBigScreen || 'standard'
+      const bigScreen = this.bigScreenMode || 'standard'
       if (bigScreen === 'standard') {
         let device = e.payload
         for (let i = 0; i < this.mydevices.length; i++) {

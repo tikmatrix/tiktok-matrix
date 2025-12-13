@@ -2,16 +2,16 @@
     <div :style="gridStyle" class="grid auto-rows-fr gap-4">
         <div v-for="(device, index) in renderedDevices" :key="deviceKey(device, index)"
             :class="['device-card-appear', isDockedBig(device) ? 'col-span-2 row-span-2 z-20' : 'z-10']">
-            <!-- Forward centralized resolution props into Device so each device doesn't read storage itself -->
+            <!-- Forward centralized resolution and display props into Device so each device doesn't read storage itself -->
             <Device :device="device" :no="device?.key" :gridCardHeight="gridCardHeight"
-                :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig" />
+                :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig" :bigScreenMode="bigScreenMode"
+                :hibernateCastingEnabled="hibernateCastingEnabled" />
         </div>
     </div>
 </template>
 
 <script>
 import Device from './Device.vue'
-import { getItem } from '@/utils/storage.js';
 const DEFAULT_BATCH_SIZE = 1
 const DEFAULT_RENDER_INTERVAL = 300
 
@@ -28,11 +28,21 @@ export default {
         // Centralized resolution values passed from parent (ManageDevices)
         resolutionSmall: {
             type: Number,
-            default: null
+            default: undefined
         },
         resolutionBig: {
             type: Number,
-            default: null
+            default: undefined
+        },
+        // Centralized big screen mode passed from parent
+        bigScreenMode: {
+            type: String,
+            default: 'standard'
+        },
+        // Centralized hibernate casting flag passed from parent
+        hibernateCastingEnabled: {
+            type: Boolean,
+            default: false
         },
         gridCardHeight: {
             type: Number,
@@ -123,8 +133,7 @@ export default {
     async mounted() {
         // Listen for openDevice event to track docked big screen device
         this.listeners.push(await this.$listen('openDevice', async (e) => {
-            const bigScreen = await getItem('bigScreen') || 'standard'
-            if (bigScreen === 'docked') {
+            if (this.bigScreenMode === 'docked') {
                 this.dockedDeviceSerial = e.payload?.serial || null
             }
         }))
