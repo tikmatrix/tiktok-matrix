@@ -364,8 +364,23 @@ export default {
         console.log("current is dev environment")
         return;
       }
-      // 禁用右键菜单
-      document.addEventListener('contextmenu', event => event.preventDefault());
+      // Disable right-click context menu and block common refresh shortcuts
+      // Handlers are stored so they can be removed on unmount to avoid leaks
+      this._contextMenuHandler = (event) => event.preventDefault();
+      document.addEventListener('contextmenu', this._contextMenuHandler);
+
+      // Prevent F5 and common reload shortcuts (Ctrl+R / Cmd+R)
+      this._keydownHandler = (event) => {
+        const key = event.key;
+        const isF5 = key === 'F5';
+        const isCtrlR = (event.ctrlKey && (key === 'r' || key === 'R'));
+        const isMetaR = (event.metaKey && (key === 'r' || key === 'R'));
+        if (isF5 || isCtrlR || isMetaR) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      };
+      document.addEventListener('keydown', this._keydownHandler);
     },
 
 
@@ -473,6 +488,16 @@ export default {
 
     // Cleanup network monitoring
     this.cleanupNetworkMonitoring();
+
+    // Remove any handlers added by disableMenu to avoid memory leaks
+    if (this._contextMenuHandler) {
+      document.removeEventListener('contextmenu', this._contextMenuHandler);
+      this._contextMenuHandler = null;
+    }
+    if (this._keydownHandler) {
+      document.removeEventListener('keydown', this._keydownHandler);
+      this._keydownHandler = null;
+    }
   }
 }
 </script>

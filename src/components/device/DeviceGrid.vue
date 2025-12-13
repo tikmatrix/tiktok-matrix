@@ -2,7 +2,9 @@
     <div :style="gridStyle" class="grid auto-rows-fr gap-4">
         <div v-for="(device, index) in renderedDevices" :key="deviceKey(device, index)"
             :class="['device-card-appear', isDockedBig(device) ? 'col-span-2 row-span-2 z-20' : 'z-10']">
-            <Device :device="device" :no="device?.key" :gridCardHeight="gridCardHeight" />
+            <!-- Forward centralized resolution props into Device so each device doesn't read storage itself -->
+            <Device :device="device" :no="device?.key" :gridCardHeight="gridCardHeight"
+                :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig" />
         </div>
     </div>
 </template>
@@ -22,6 +24,15 @@ export default {
         devices: {
             type: Array,
             default: () => []
+        },
+        // Centralized resolution values passed from parent (ManageDevices)
+        resolutionSmall: {
+            type: Number,
+            default: null
+        },
+        resolutionBig: {
+            type: Number,
+            default: null
         },
         gridCardHeight: {
             type: Number,

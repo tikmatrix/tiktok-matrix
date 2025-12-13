@@ -24,11 +24,14 @@
 
               <div class="flex flex-wrap items-center gap-2">
                 <!-- Screen Cast Settings Button -->
-                <button class="btn btn-md md:btn-md btn-circle btn-ghost tooltip tooltip-bottom" 
-                  :data-tip="$t('screenCastSettings')"
-                  :aria-label="$t('screenCastSettings')"
+                <button class="btn btn-md md:btn-md btn-circle btn-ghost tooltip tooltip-bottom"
+                  :data-tip="$t('screenCastSettings')" :aria-label="$t('screenCastSettings')"
                   @click="$refs.screen_cast_settings.show()">
-                  <font-awesome-icon icon="fa-solid fa-desktop" class="h-5 w-5 text-primary" />
+                  <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M4 10V7C4 6.44772 4.44772 6 5 6H19C19.5523 6 20 6.44772 20 7V17C20 17.5523 19.5523 18 19 18H12M6 18C6 16.8954 5.10457 16 4 16M8 18C8 15.7909 6.20914 14 4 14M4 12C7.31371 12 10 14.6863 10 18"
+                      stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
                 </button>
 
                 <div
@@ -53,27 +56,6 @@
                   </div>
                 </div>
 
-                <div
-                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-base-200/80 border border-base-300/60 shadow-md">
-                  <span class="text-md font-medium whitespace-nowrap">{{ $t('screenSize') }}</span>
-                  <div class="join">
-                    <button class="btn btn-md join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
-                      @click="handleScale('minus')">
-                      <font-awesome-icon icon="fa-solid fa-minus" class="h-3 w-3" />
-                    </button>
-                    <div
-                      class="join-item px-3 py-1 text-md font-semibold rounded-none bg-base-100 border border-base-300 text-base-content">
-                      {{ screenSizeDisplay }}
-                    </div>
-                    <button class="btn btn-md join-item btn-ghost btn-circle" :title="$t('screenScaledNote')"
-                      @click="handleScale('plus')">
-                      <font-awesome-icon icon="fa-solid fa-plus" class="h-3 w-3" />
-                    </button>
-                  </div>
-                  <div class="tooltip tooltip-bottom" :data-tip="$t('screenScaledNote')">
-                    <font-awesome-icon icon="fa-solid fa-circle-info" class="h-4 w-4 text-info" />
-                  </div>
-                </div>
               </div>
             </div>
           </template>
@@ -180,7 +162,8 @@
                   </table>
                 </div>
               </div>
-              <DeviceGrid v-else :devices="slotProps.items" :gridCardHeight="gridCardHeight" />
+              <DeviceGrid v-else :devices="slotProps.items" :gridCardHeight="gridCardHeight"
+                :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig" />
             </div>
           </template>
         </Pagination>
@@ -220,7 +203,7 @@
     :z="20" drag-handle=".drag"
     class="bg-base-100 fixed top-32 right-32 border border-base-300 justify-center items-center flex flex-col ring-1 ring-info ring-opacity-50 shadow-2xl rounded-md">
     <Device :device="device" :no="device.key" :bigSize="true" :key="device.real_serial + '_big'"
-      :gridCardHeight="gridCardHeight" />
+      :gridCardHeight="gridCardHeight" :resolutionSmall="resolutionSmall" :resolutionBig="resolutionBig" />
   </vue-draggable-resizable>
   <dialog ref="scan_dialog" class="modal">
     <div class="modal-box bg-base-300 max-w-2xl">
@@ -470,7 +453,17 @@ export default {
       scanDetails: [],
       groups: [],
       currentDevice: null,
-      gridCardHeight: 150,
+      // grid card height is computed dynamically on mount when no stored value
+      gridCardHeight: 0,
+      // whether gridCardHeight was loaded from storage (user set)
+      gridCardHeightFromStorage: false,
+      // Centralized resolution values read once and passed to Device components
+      resolutionSmall: 360,
+      resolutionBig: 1080,
+      // event listeners cleanup
+      listeners: [],
+      // resize debounce
+      resizeTimeout: null,
       // Debug Dialog
       showDebugDialog: false,
       debugDevice: null,
@@ -533,7 +526,9 @@ export default {
       scanPort,
       storedProxyHost,
       storedProxyPort,
-      gridCardHeight
+      gridCardHeight,
+      storedScreenResolutionSmall,
+      storedScreenResolutionBig
     ] = await Promise.all([
       getWhiteLabelConfig(),
       getItem('listMode'),
@@ -546,6 +541,8 @@ export default {
       getItem('proxy_host'),
       getItem('proxy_port'),
       getItem('gridCardHeight'),
+      getItem('screenResolutionSmall'),
+      getItem('screenResolutionBig')
     ]);
 
     const parseNumber = (value, fallback) => {
@@ -577,13 +574,88 @@ export default {
     if (storedProxyPort !== null) {
       this.proxy_port = parseNumber(storedProxyPort, 8080);
     }
-    this.gridCardHeight = parseNumber(gridCardHeight, 150);
+    // If user has stored a gridCardHeight use it, otherwise leave 0 and compute on mounted
+    const parsedGridCardHeight = parseNumber(gridCardHeight, null);
+    if (parsedGridCardHeight !== null) {
+      this.gridCardHeight = parsedGridCardHeight;
+      this.gridCardHeightFromStorage = true;
+    }
+
+    // Load centralized small/big screen resolution values (fallback to legacy key for small)
+    try {
+      this.resolutionSmall = parseNumber(storedScreenResolutionSmall, 360);
+    } catch (err) {
+      this.resolutionSmall = 360;
+    }
+    try {
+      this.resolutionBig = parseNumber(storedScreenResolutionBig, 1080);
+    } catch (err) {
+      this.resolutionBig = 1080;
+    }
+
+    // Listen to resolution change events emitted by ScreenCastSettings and update centralized values
+    try {
+      this.listeners.push(await this.$listen('screenResolutionSmall', async (e) => {
+        try {
+          const newRes = e?.payload?.resolution;
+          if (!newRes) return;
+          this.resolutionSmall = Number(newRes) || this.resolutionSmall;
+        } catch (err) {
+          console.warn('failed handling screenResolutionSmall event', err);
+        }
+      }));
+      this.listeners.push(await this.$listen('screenResolutionBig', async (e) => {
+        try {
+          const newRes = e?.payload?.resolution;
+          if (!newRes) return;
+          this.resolutionBig = Number(newRes) || this.resolutionBig;
+        } catch (err) {
+          console.warn('failed handling screenResolutionBig event', err);
+        }
+      }));
+    } catch (err) {
+      console.warn('Failed to register resolution listeners', err);
+    }
 
     // Load cloud phone list
     await this.loadCloudPhoneList();
 
   },
   methods: {
+    // Compute a reasonable default card height based on viewport height.
+    // Use 1/4 of viewport height as default, clamped to a sensible range so cards don't become absurdly large.
+    computeGridCardHeight() {
+      try {
+        const h = (typeof window !== 'undefined' && window.innerHeight) ? window.innerHeight : 900
+        // Default to 1/4 of viewport height
+        const calc = Math.round(h / 4)
+        // Clamp between 140 and 600 to avoid too-small or too-huge cards on extreme displays
+        return Math.max(140, Math.min(600, calc))
+      } catch (e) {
+        return 150
+      }
+    },
+
+    onWindowResize() {
+      // debounce updates to avoid thrash
+      if (this.resizeTimeout) clearTimeout(this.resizeTimeout)
+      this.resizeTimeout = setTimeout(async () => {
+        if (!this.gridCardHeightFromStorage) {
+          const next = this.computeGridCardHeight()
+          if (Math.abs(next - this.gridCardHeight) > 2) {
+            this.gridCardHeight = next
+            // persist computed default so it's stable across reloads
+            try {
+              await setItem('gridCardHeight', this.gridCardHeight)
+            } catch (err) {
+              // ignore persistence errors
+              console.warn('Failed saving gridCardHeight on resize:', err)
+            }
+            this.$emiter('screenScaled', { size: this.gridCardHeight })
+          }
+        }
+      }, 120)
+    },
     setDisplayMode(mode) {
       this.listMode = mode === 'list';
     },
@@ -1217,9 +1289,6 @@ export default {
     },
   },
   computed: {
-    screenSizeDisplay() {
-      return Math.round(this.gridCardHeight || 0);
-    },
     canClearProxyRotation() {
       return !!this.proxyRotationForm.device_serial && !!this.proxyRotationMap[this.proxyRotationForm.device_serial]
     }
@@ -1263,6 +1332,46 @@ export default {
       }
     });
 
+    // If user didn't provide a stored gridCardHeight, compute a default based on viewport
+    if (!this.gridCardHeightFromStorage) {
+      const defaultHeight = this.computeGridCardHeight()
+      this.gridCardHeight = defaultHeight
+      try {
+        await setItem('gridCardHeight', defaultHeight)
+      } catch (err) {
+        console.warn('Failed to persist computed gridCardHeight:', err)
+      }
+      // notify other components about the computed size
+      this.$emiter('screenScaled', { size: defaultHeight })
+    }
+
+    // react to window resize only when gridCardHeight not explicitly set by user
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', this.onWindowResize)
+    }
+
+  },
+
+  beforeUnmount() {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.onWindowResize)
+    }
+    if (this.resizeTimeout) clearTimeout(this.resizeTimeout)
+    // cleanup any $listen listeners we registered
+    try {
+      if (Array.isArray(this.listeners)) {
+        this.listeners.forEach(l => {
+          try {
+            if (typeof l === 'function') l()
+          } catch (e) {
+            // ignore
+          }
+        })
+        this.listeners = []
+      }
+    } catch (e) {
+      // ignore
+    }
   },
 }
 </script>

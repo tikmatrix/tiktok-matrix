@@ -648,25 +648,7 @@ export default {
         }));
       }, 100);
     },
-    async send_screen_mode(mode) {
-      if (this.selection.length == 0) {
-        await this.$emiter('NOTIFY', {
-          type: 'error',
-          message: this.$t('noDevicesSelected'),
-          timeout: 2000
-        });
-        return
-      }
-      await this.$emiter('eventData', JSON.stringify({
-        type: 'screen',//type=keycode
-        mode
-      }));
-      await this.$emiter('NOTIFY', {
-        type: 'success',
-        message: this.$t('commandSendSuccess'),
-        timeout: 2000
-      });
-    },
+
 
 
 
@@ -850,9 +832,7 @@ export default {
     this.listeners.push(await this.$listen('send_keycode', (e) => {
       this.send_keycode(e.payload)
     }))
-    this.listeners.push(await this.$listen('send_screen_mode', (e) => {
-      this.send_screen_mode(e.payload)
-    }))
+
     this.listeners.push(await this.$listen('clearGallery', () => {
       this.clearGallery()
     }))
