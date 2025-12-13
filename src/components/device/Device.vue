@@ -90,7 +90,6 @@
 <script>
 /* global VideoDecoder, EncodedVideoChunk */
 import RightBars from './RightBars.vue';
-import { getItem } from '@/utils/storage.js';
 import { readTextFile, BaseDirectory } from '@tauri-apps/api/fs'
 import { writeText } from '@tauri-apps/api/clipboard'
 import { h264ParseConfiguration } from '@yume-chan/scrcpy';
@@ -101,6 +100,25 @@ export default {
   },
   props: {
     bigSize: {
+      type: Boolean,
+      default: false
+    },
+    // central resolution overrides (optional)
+    resolutionSmall: {
+      type: Number,
+      default: undefined,
+    },
+    resolutionBig: {
+      type: Number,
+      default: undefined,
+    },
+    // Centralized display mode passed from parent (ManageDevices)
+    bigScreenMode: {
+      type: String,
+      default: 'standard'
+    },
+    // Centralized hibernate casting flag passed from parent
+    hibernateCastingEnabled: {
       type: Boolean,
       default: false
     },
@@ -140,12 +158,12 @@ export default {
       real_height: 0,
       listeners: [],
       touch: false,
-      screenResolution: 512,
       canvasCtx: null,
       frameQueue: [],
       isRenderingFrame: false,
       configBuffer: undefined,
       videoStarted: false,
+      hibernateSent: false,
       // WebSocket retry mechanism
       scrcpyReconnectAttempts: 0,
       scrcpyMaxRetries: 5,
@@ -565,6 +583,21 @@ export default {
       }
     },
 
+    // send a screen mode message via scrcpy websocket (if available)
+    sendScreenMode(mode) {
+      try {
+        if (this.scrcpy && this.scrcpy.readyState === WebSocket.OPEN) {
+          const payload = JSON.stringify({ type: 'screen', mode });
+          this.scrcpy.send(payload);
+          console.log(`${this.no}-${this.device.serial} sent screen mode:`, payload);
+        } else {
+          console.warn(`${this.no}-${this.device.serial} scrcpy not ready, cannot send screen mode`);
+        }
+      } catch (err) {
+        console.error(`${this.no}-${this.device.serial} failed to send screen mode`, err);
+      }
+    },
+
     hexTwoDigits(value) {
       return value.toString(16).toUpperCase().padStart(2, "0");
     },
@@ -774,6 +807,7 @@ export default {
     async connect() {
       // Reset state for fresh connection
       this.message_index = 0;
+      this.hibernateSent = false;
       this.configBuffer = undefined;
       this.loading = true;
 
@@ -818,7 +852,7 @@ export default {
         return;
       }
 
-      this.scrcpy.onopen = (event) => {
+      this.scrcpy.onopen = async (event) => {
         console.log(`${this.no}-${this.device.serial}-${this.big ? 'big' : 'small'} WebSocket opened successfully`);
         this.clearScrcpyConnectionTimer();
 
@@ -839,9 +873,11 @@ export default {
           return;
         }
 
-        let max_size = this.big ? 1024 : this.screenResolution;
+        let max_size = this.big ? this.resolutionBig : this.resolutionSmall;
+
+
         ws.send(`${this.device.serial}`);
-        // max size
+        // max size 
         ws.send(max_size);
         // control
         ws.send('true');
@@ -942,6 +978,19 @@ export default {
           return
         }
         this.loading = false
+        // After handshake and when first real frames arrive, send hibernate/screen mode based on stored setting
+        try {
+          if (!this.hibernateSent && this.message_index >= 2) {
+            // use centralized setting provided by parent
+            const enabled = String(this.hibernateCastingEnabled) === 'true' || this.hibernateCastingEnabled === true;
+            const mode = enabled ? 'off' : 'on';
+            this.sendScreenMode(mode);
+            this.hibernateSent = true;
+          }
+        } catch (err) {
+          console.warn(`${this.no}-${this.device.serial} failed to send initial hibernate mode`, err);
+        }
+
         // 使用WebCodecs处理视频数据
         this.processH264Data(message.data);
       }
@@ -949,7 +998,7 @@ export default {
     //计算设备高度
     async calculateDeviceHeight() {
       if (this.big) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'standard') {
           // min 50% of screen height; max 90% of screen height
           const screenHeight = window.innerHeight;
@@ -1041,7 +1090,7 @@ export default {
 
     this.listeners.push(await this.$listen('closeDevice', async (e) => {
       if (this.big) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -1066,7 +1115,7 @@ export default {
     }))
     this.listeners.push(await this.$listen('openDevice', async (e) => {
       if (e.payload.serial === this.device.serial) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -1082,7 +1131,7 @@ export default {
         }
       }
       if (e.payload.serial !== this.device.serial && this.operating) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'standard') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -1091,7 +1140,7 @@ export default {
           await this.syncDisplay();
         }
       } else if (e.payload.serial !== this.device.serial && this.big) {
-        const bigScreen = await getItem('bigScreen') || 'standard'
+        const bigScreen = this.bigScreenMode || 'standard'
         if (bigScreen === 'docked') {
           this.closeScrcpy();
           this.closeDecoder();
@@ -1121,11 +1170,47 @@ export default {
         console.warn(`${this.no}-${this.device.serial} screenScaled event missing targetWidth or invalid real dimensions, this.real_width: ${this.real_width}, this.real_height: ${this.real_height}`)
       }
     }))
-    this.listeners.push(await this.$listen('screenResolution', async (e) => {
-      this.screenResolution = e.payload.resolution;
-      this.closeScrcpy();
-      this.closeDecoder();
-      await this.syncDisplay();
+    // Listen to small screen resolution changes and apply only to small view
+    this.listeners.push(await this.$listen('screenResolutionSmall', async (e) => {
+      try {
+        const newRes = e.payload?.resolution;
+        if (!newRes) return;
+        if (!this.big) {
+          // Will be picked up in connect() via getItem or this change
+          this.closeScrcpy();
+          this.closeDecoder();
+          await this.syncDisplay();
+        }
+      } catch (err) {
+        console.warn(`${this.no}-${this.device.serial} failed to handle screenResolutionSmall`, err);
+      }
+    }))
+
+    // Listen to big screen resolution changes and apply only to big view
+    this.listeners.push(await this.$listen('screenResolutionBig', async (e) => {
+      try {
+        const newRes = e.payload?.resolution;
+        if (!newRes) return;
+        if (this.big) {
+          // Will be picked up in connect() via getItem or this change
+          this.closeScrcpy();
+          this.closeDecoder();
+          await this.syncDisplay();
+        }
+      } catch (err) {
+        console.warn(`${this.no}-${this.device.serial} failed to handle screenResolutionBig`, err);
+      }
+    }))
+
+    // listen for hibernateCastingChanged event and forward to device via scrcpy websocket
+    this.listeners.push(await this.$listen('hibernateCastingChanged', async (e) => {
+      try {
+        const enabled = Boolean(e?.payload?.enabled);
+        const mode = enabled ? 'off' : 'on';
+        this.sendScreenMode(mode);
+      } catch (err) {
+        console.warn(`${this.no}-${this.device.serial} failed to handle hibernateCastingChanged`, err);
+      }
     }))
 
     document.addEventListener('visibilitychange', () => {
